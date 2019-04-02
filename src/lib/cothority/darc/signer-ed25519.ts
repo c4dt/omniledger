@@ -2,7 +2,7 @@ import { curve, Point, Scalar, sign } from "@dedis/kyber";
 import IdentityEd25519 from "./identity-ed25519";
 import ISigner from "./signer";
 import {PRNG} from "../../../../../cothority/external/js/kyber/spec/helpers/utils";
-import {randomBytes, randomFill} from "crypto-ts";
+import {randomBytes, randomFill} from "crypto";
 
 const ed25519 = curve.newCurve("edwards25519");
 const { schnorr } = sign;

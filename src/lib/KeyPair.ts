@@ -1,6 +1,6 @@
 require("nativescript-nodeify");
 
-import {randomBytes} from "crypto-ts";
+import {randomBytes} from "crypto";
 import {curve, Point} from "@dedis/kyber";
 import {Buffer} from "buffer";
 import {Log} from "./Log";

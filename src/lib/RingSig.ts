@@ -2,7 +2,6 @@
 
 import {Private, Public} from "./KeyPair";
 
-require("nativescript-nodeify");
 const Kyber = require("@dedis/kyber-js");
 const Blake = require("@stablelib/blake2xs").BLAKE2Xs;
 import {cloneDeep} from "lodash";

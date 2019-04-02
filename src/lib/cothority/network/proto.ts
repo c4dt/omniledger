@@ -1,6 +1,6 @@
 console.log("p1");
 import { Point, PointFactory } from "@dedis/kyber";
-import { createHash } from "crypto-ts";
+import { createHash } from "crypto";
 import { Message, Properties } from "protobufjs/light";
 import UUID from "pure-uuid";
 import * as toml from "toml";

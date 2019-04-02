@@ -1,7 +1,7 @@
 import {InstanceID} from "./cothority/byzcoin/instance";
 import {Log} from "./Log";
 import ByzCoinRPC from "./cothority/byzcoin/byzcoin-rpc";
-import {randomBytes} from "crypto-ts";
+import {randomBytes} from "crypto";
 import {RingSig, Sign} from "./RingSig";
 import {Party} from "./Party";
 import {Private, Public} from "./KeyPair";

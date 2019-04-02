@@ -1,4 +1,4 @@
-import {createHash} from "crypto-ts";
+import {createHash} from "crypto";
 import * as _ from "lodash";
 import {Message, Properties} from "protobufjs/light";
 import {registerMessage} from "../protobuf";

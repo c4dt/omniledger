@@ -1,4 +1,4 @@
-import {createHash} from "crypto-ts";
+import {createHash} from "crypto";
 import * as Long from "long";
 import {Message, Properties} from "protobufjs/light";
 import DarcInstance from "../byzcoin/contracts/darc-instance";
