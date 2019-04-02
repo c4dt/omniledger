@@ -13,6 +13,9 @@
         "build": {
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
+            "customWebpackConfig": {
+              "path": "./extra-webpack.config.js"
+            },
             "outputPath": "dist/dynasent3",
             "index": "src/index.html",
             "main": "src/main.ts",
