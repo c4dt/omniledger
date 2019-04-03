@@ -2,7 +2,7 @@
 
 import {Private, Public} from "./KeyPair";
 
-const Kyber = require("@dedis/kyber-js");
+const Kyber = require("@dedis/kyber");
 const Blake = require("@stablelib/blake2xs").BLAKE2Xs;
 import {cloneDeep} from "lodash";
 

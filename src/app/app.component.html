@@ -1,18 +1,44 @@
-<mat-tab-group>
+<mat-tab-group (focusChange)="tabChanged($event)">
   <mat-tab label="Yourself">
+    <div fxLayout="row" style="margin-top:5%;">
+      <div fxFlex="66" fxFlexOffset="15">
+        <div *ngIf="gData && !gData.contact.isRegistered()">
+          You're not yet registered. Please enter a registered id:
 
+          <form [formGroup]="idForm" class="example-form" (ngSubmit)="addID($event)">
+            <input type="text" formControlName="accountRequest"/>
+            <br>
+            <button md-button class="submit-btn" type="submit">Register</button>
+          </form>
+        </div>
+
+        <div *ngIf="gData && gData.contact.isRegistered()">
+          Congrats! You're registered!
+        </div>
+      </div>
+    </div>
   </mat-tab>
+
+
   <mat-tab label="Contacts">
 
   </mat-tab>
+
+
   <mat-tab label="Groups">
 
   </mat-tab>
+
+
   <mat-tab label="Status">
-    <ul>
-      <li *ngFor="let node of nodes">
-        {{ node }}
-      </li>
-    </ul>
+    <div fxLayout="row" style="margin-top:5%;">
+      <div fxFlex="66" fxFlexOffset="15">
+        <ul>
+          <li *ngFor="let node of nodes">
+            {{ node }}
+          </li>
+        </ul>
+      </div>
+    </div>
   </mat-tab>
 </mat-tab-group>

@@ -2,8 +2,8 @@ import {Public} from "./KeyPair";
 // import {screen} from "tns-core-modules/platform";
 // import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
 
-const ZXing = require("nativescript-zxing");
-const QRGenerator = new ZXing();
+// const ZXing = require("nativescript-zxing");
+// const QRGenerator = new ZXing();
 import {Log} from "./Log";
 import {PopPartyInstance} from "./cothority/byzcoin/contracts/pop-party/pop-party-instance";
 import {PopDesc, PopPartyStruct} from "./cothority/byzcoin/contracts/pop-party/proto";

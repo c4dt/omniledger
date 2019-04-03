@@ -1,11 +1,9 @@
-console.log("p1");
 import { Point, PointFactory } from "@dedis/kyber";
 import { createHash } from "crypto";
 import { Message, Properties } from "protobufjs/light";
 import UUID from "pure-uuid";
 import * as toml from "toml";
 import { EMPTY_BUFFER, registerMessage } from "../protobuf";
-console.log("p2");
 
 const BASE_URL_WS = "wss://";
 const BASE_URL_TLS = "tls://";

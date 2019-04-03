@@ -1,8 +1,6 @@
 import {createHash} from "crypto";
 import * as Long from "long";
 import {Message, Properties} from "protobufjs/light";
-import DarcInstance from "../byzcoin/contracts/darc-instance";
-import Proof from "../byzcoin/proof";
 import {EMPTY_BUFFER, registerMessage} from "../protobuf";
 import {IIdentity} from "./identity-wrapper";
 import Rules from "./rules";
@@ -59,25 +57,7 @@ export default class Darc extends Message<Darc> {
 
         return darc;
     }
-
-    /**
-     * Instantiate a darc using a proof
-     * @param key   Key of the proof
-     * @param p     The proof to use
-     * @returns the darc when compatible
-     */
-    static fromProof(key: Buffer, p: Proof): Darc {
-        if (!p.matchContract(DarcInstance.contractID)) {
-            throw new Error(`mismatch contract ID: ${DarcInstance.contractID} != ${p.contractID}`);
-        }
-
-        if (!p.exists(key)) {
-            throw new Error(`invalid key for proof: ${key.toString("hex")}`);
-        }
-
-        return Darc.decode(p.value);
-    }
-
+    
     readonly version: Long;
     readonly description: Buffer;
     readonly baseID: Buffer;

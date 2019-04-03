@@ -5,7 +5,6 @@ import { EMPTY_BUFFER, registerMessage } from "../../protobuf";
 import ByzCoinRPC from "../byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "../client-transaction";
 import { InstanceID } from "../instance";
-import { SPAWNER_COIN } from "./spawner-instance";
 
 export default class CoinInstance {
     static readonly contractID = "coin";
@@ -23,7 +22,7 @@ export default class CoinInstance {
         bc: ByzCoinRPC,
         darcID: InstanceID,
         signers: Signer[],
-        type: Buffer = SPAWNER_COIN,
+        type: Buffer,
     ): Promise<CoinInstance> {
         const inst = Instruction.createSpawn(
             darcID,

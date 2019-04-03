@@ -21,6 +21,7 @@ import {
 } from "./proto/requests";
 import {InstanceID} from "./instance";
 import * as Long from "long";
+import DarcInstance from './contracts/darc-instance';
 
 export const currentVersion = 1;
 
@@ -66,8 +67,8 @@ export default class ByzCoinRPC implements ICounterUpdater {
         const ccProof = await rpc.getProof(CONFIG_INSTANCE_ID);
         rpc.config = ChainConfig.fromProof(ccProof);
 
-        const gdProof = await rpc.getProof(ccProof.stateChangeBody.darcID);
-        rpc.genesisDarc = Darc.fromProof(ccProof.stateChangeBody.darcID, gdProof);
+        let di = await DarcInstance.fromByzcoin(rpc, ccProof.stateChangeBody.darcID);
+        rpc.genesisDarc = di.getDarc();
 
         return rpc;
     }
@@ -165,9 +166,9 @@ export default class ByzCoinRPC implements ICounterUpdater {
         this.config = ChainConfig.fromProof(pr);
 
         const darcIID = pr.stateChangeBody.darcID;
-        const genesisDarcProof = await this.getProof(darcIID);
+        const genesisDarcInstance = await DarcInstance.fromByzcoin(this, darcIID);
 
-        this.genesisDarc = Darc.fromProof(darcIID, genesisDarcProof);
+        this.genesisDarc = genesisDarcInstance.getDarc();
     }
 
     /**

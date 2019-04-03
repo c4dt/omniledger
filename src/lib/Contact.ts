@@ -83,14 +83,10 @@ export class Contact {
                 }
 
                 if (this.darcInstance == null) {
-                    Log.print(1)
                     this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
-                    Log.print(2)
                     // this.darcInstance = new DarcInstance(bc, SpawnerInstance.prepareUserDarc(this.pubIdentity, this.alias));
                 } else {
-                    Log.print(3)
                     await this.darcInstance.update();
-                    Log.print(4)
                 }
 
                 if (this.coinInstance == null) {
@@ -166,14 +162,10 @@ export class Contact {
 
     async addBC(bc: ByzCoinRPC, obj: any) {
         if (obj.credentialIID) {
-            Log.print(1)
             this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, Buffer.from(obj.credentialIID));
             this.credential = this.credentialInstance.credential.copy();
-            Log.print(2)
             this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
-            Log.print(3)
             this.coinInstance = await CoinInstance.fromByzcoin(bc, this.credentialInstance.getAttribute("coin", "coinIID"));
-            Log.print(4)
         } else {
             await this.verifyRegistration(bc);
         }
