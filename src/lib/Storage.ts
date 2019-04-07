@@ -16,7 +16,7 @@ export class Storage{
 
   static getObject(key: string): any{
     let obj = JSON.parse(Storage.get(key), (key, value) => {
-      if (typeof value === "object" && value.type == "Buffer"){
+      if (value && typeof value === "object" && value.type == "Buffer"){
         return Buffer.from(value);
       }
       return value;

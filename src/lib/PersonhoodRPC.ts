@@ -433,6 +433,6 @@ export class UserLocation {
     }
 
     static fromContact(c: Contact): UserLocation {
-        return new UserLocation(c.credential, "somewhere", c.pubIdentity, c.credentialIID);
+        return new UserLocation(c.credential, "somewhere", c.seedPublic, c.credentialIID);
     }
 }

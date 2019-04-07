@@ -166,6 +166,7 @@ export class RosterWSConnection extends WebSocketConnection {
             } catch (e) {
                 Logger.lvl3(`fail to send on ${addr} with error:`, e);
                 errors.push(e.message);
+                break;
             }
         }
 

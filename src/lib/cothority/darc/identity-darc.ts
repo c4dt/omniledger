@@ -1,6 +1,6 @@
 import { Message, Properties } from "protobufjs/light";
 import { EMPTY_BUFFER, registerMessage } from "../protobuf";
-import IdentityWrapper, { IIdentity } from "./identity-wrapper";
+import IdentityWrapper, {IIdentity} from "./identity-wrapper";
 
 /**
  * Identity based on a DARC identifier
@@ -41,3 +41,4 @@ export default class IdentityDarc extends Message<IdentityDarc> implements IIden
         return `darc:${this.id.toString("hex")}`;
     }
 }
+

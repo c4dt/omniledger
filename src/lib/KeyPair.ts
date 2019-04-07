@@ -114,6 +114,10 @@ export class Public {
         return Buffer.from(this.point.marshalBinary());
     }
 
+    toProto(): Buffer {
+        return Buffer.from(this.point.toProto());
+    }
+
     mul(s: Private): Public{
         let ret = Curve25519.point();
         ret.mul(s.scalar, this.point);
@@ -133,6 +137,12 @@ export class Public {
     static fromBuffer(buf: Buffer): Public {
         let p = Curve25519.point();
         p.unmarshalBinary(buf);
+        return new Public(p);
+    }
+
+    static fromProto(buf: Buffer): Public {
+        let p = Curve25519.point();
+        p.unmarshalBinary(Buffer.from(buf.subarray(16)));
         return new Public(p);
     }
 

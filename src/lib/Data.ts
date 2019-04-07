@@ -12,7 +12,7 @@ import * as Long from 'long';
 import {Defaults} from './Defaults';
 import {Storage} from './Storage';
 import {Log} from './Log';
-import {KeyPair, Public} from './KeyPair';
+import {KeyPair, Private, Public} from './KeyPair';
 import {Buffer} from 'buffer';
 import Instance, {InstanceID} from './cothority/byzcoin/instance';
 import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
@@ -21,7 +21,7 @@ import CredentialInstance, {
   Credential,
   CredentialStruct, RecoverySignature
 } from './cothority/byzcoin/contracts/credentials-instance';
-import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
+import CoinInstance, {Coin} from './cothority/byzcoin/contracts/coin-instance';
 import {TestStoreRPC} from './TestStoreRPC';
 import SpawnerInstance, {SPAWNER_COIN} from './cothority/byzcoin/contracts/spawner-instance';
 import Signer from './cothority/darc/signer';
@@ -36,6 +36,9 @@ import {sprintf} from 'sprintf-js';
 import {parseQRCode} from './Scan';
 import Darc from './cothority/darc/darc';
 import {Roster} from './cothority/network';
+import ClientTransaction, {Argument, Instruction} from './cothority/byzcoin/client-transaction';
+import IdentityEd25519 from './cothority/darc/identity-ed25519';
+import IdentityDarc from './cothority/darc/identity-darc';
 
 
 /**
@@ -51,7 +54,7 @@ export class Data {
   spawnerInstance: SpawnerInstance = null;
   constructorObj: any;
   contact: Contact = null;
-  friends: Contact[] = [];
+  contacts: Contact[] = [];
   parties: Party[] = [];
   badges: Badge[] = [];
   ropascis: RoPaSciInstance[] = [];
@@ -180,11 +183,11 @@ export class Data {
       }
 
       Log.lvl2('Getting contact informations');
-      this.friends = [];
-      if (obj.friends) {
-        let f = obj.friends.filter(u => u);
+      this.contacts = [];
+      if (obj.contacts) {
+        let f = obj.contacts.filter(u => u);
         for (let i = 0; i < f.length; i++) {
-          this.friends.push(await Contact.fromObjectBC(this.bc, f[i]));
+          this.contacts.push(await Contact.fromObjectBC(this.bc, f[i]));
         }
       }
     } catch (e) {
@@ -199,7 +202,7 @@ export class Data {
       personhoodPublished: this.personhoodPublished,
       keyPersonhood: this.keyPersonhood._private.toHex(),
       keyIdentity: this.keyIdentity._private.toHex(),
-      friends: this.friends.map(u => u.toObject()),
+      friends: this.contacts.map(u => u.toObject()),
       meetups: this.meetups.map(m => m.toObject()),
       contact: this.contact.toObject(),
       bcRoster: null,
@@ -290,18 +293,19 @@ export class Data {
       if (contact.isRegistered()) {
         return Promise.reject('cannot register already registered contact');
       }
-      let pub = contact.pubIdentity;
+      let pub = contact.seedPublic;
       Log.lvl2('Registering contact', contact.alias,
         'with public key:', pub.toHex());
       Log.lvl2('Registering darc');
       progress('Creating Darc', 20);
-      let darcInstance = await this.spawnerInstance.createUserDarc(this.coinInstance,
-        [this.keyIdentitySigner], pub.point, contact.alias);
+      const d = Contact.prepareUserDarc(pub.point, contact.alias);
+      let darcInstance = await this.spawnerInstance.createDarc(this.coinInstance,
+        [this.keyIdentitySigner], d)[0];
 
       progress('Creating Coin', 50);
       Log.lvl2('Registering coin');
       let coinInstance = await this.spawnerInstance.createCoin(this.coinInstance,
-        [this.keyIdentitySigner], darcInstance.getDarc().getBaseID());
+        [this.keyIdentitySigner], darcInstance.getDarc().getBaseID(), contact.seedPublic.toBuffer());
       let referral = null;
       if (this.contact.credentialInstance) {
         referral = this.contact.credentialInstance.id;
@@ -343,7 +347,7 @@ export class Data {
       cred.credentials[0].attributes.push(new Attribute({name: 'referred', value: referral}));
     }
     return await this.spawnerInstance.createCredential(this.coinInstance,
-      [this.keyIdentitySigner], darcID, cred);
+      [this.keyIdentitySigner], darcID, pub.toBuffer(), cred);
   }
 
   async verifyRegistration() {
@@ -370,11 +374,11 @@ export class Data {
   // It also updates all contacts by getting proofs from byzcoin.
   async searchRecovery(): Promise<Contact[]> {
     let recoveries: Contact[] = [];
-    for (let i = 0; i < this.friends.length; i++) {
-      await this.friends[i].update(this.bc);
-      if (this.friends[i].recover.trustees.filter(t =>
+    for (let i = 0; i < this.contacts.length; i++) {
+      await this.contacts[i].update(this.bc);
+      if (this.contacts[i].recover.trustees.filter(t =>
         t.equals(this.contact.credentialIID)).length > 0) {
-        recoveries.push(this.friends[i]);
+        recoveries.push(this.contacts[i]);
       }
     }
     return recoveries;
@@ -472,11 +476,11 @@ export class Data {
 
   addContact(nu: Contact) {
     this.rmContact(nu);
-    this.friends.push(nu);
+    this.contacts.push(nu);
   }
 
   rmContact(nu: Contact) {
-    this.friends = this.friends.filter(u => !u.equals(nu));
+    this.contacts = this.contacts.filter(u => !u.equals(nu));
   }
 
   async reloadParties(): Promise<Party[]> {
@@ -586,6 +590,75 @@ export class Data {
     }
   }
 
+  // createUser sets up a new user with all the necessary darcs. It does the following:
+  // - creates all necessary darcs (four)
+  // - creates credential and coin
+  // If darcID is given, it will use this darc to create all the instances. If darcID == null,
+  // then the gData needs to have enough coins to pay for all the instances when using
+  // the 'SpawnerInstance'.
+  async createUser(ephemeral: Private, alias: string, darcID: InstanceID = null): Promise<Contact> {
+    let pub = Public.base().mul(ephemeral);
+    let pubId = new IdentityEd25519({point: pub.toProto()});
+    let darcDevice = Darc.newDarc([pubId], [pubId], Buffer.from('device'));
+    let darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
+    let darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from('signer'));
+    let darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
+    let darcCred = Darc.newDarc([], [darcSignId], Buffer.from('credential'),
+      ['invoke:' + CredentialInstance.contractID + '.update']);
+    let rules = ['mint', 'transfer', 'fetch', 'store'].map(inv => 'invoke:' + CoinInstance.contractID + inv);
+    let darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
+
+    let cred = new CredentialStruct();
+    cred.setAttribute("1-public", "alias", Buffer.from(alias));
+    cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
+    cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
+    cred.setAttribute("1-public", "seedPub", pub.toBuffer());
+
+    if (darcID == null) {
+      let signers = [this.keyIdentitySigner];
+      Log.lvl1("Creating identity from spawner");
+      await this.spawnerInstance.createDarc(this.coinInstance, signers,
+        darcDevice, darcSign, darcCred, darcCoin);
+      await this.spawnerInstance.createCoin(this.coinInstance, signers, darcCoin.getBaseID(), pub.toBuffer());
+      await this.spawnerInstance.createCredential(this.coinInstance, signers, darcCred.getBaseID(), pub.toBuffer(), cred);
+    } else {
+      Log.lvl1("Creating identity from darc");
+      let signers = [new SignerEd25519(pub.point, ephemeral.scalar)];
+      let ctx = new ClientTransaction({
+        instructions:
+          // [darcDevice].map(d => {
+          [darcDevice, darcSign, darcCred, darcCoin].map(d => {
+              return Instruction.createSpawn(darcID, DarcInstance.contractID, [
+                new Argument({name: 'darc', value: d.toBytes()})
+              ]);
+            }
+          )
+      });
+      ctx.instructions.push(Instruction.createSpawn(darcID, CoinInstance.contractID,[
+        new Argument({name: 'coinID', value: pub.toBuffer()}),
+        new Argument({name: 'darcID', value: darcCoin.getBaseID()}),
+        new Argument({name: 'type', value: SPAWNER_COIN})
+      ]));
+      ctx.instructions.push(Instruction.createSpawn(darcID, CredentialInstance.contractID, [
+        new Argument({name: 'credID', value: pub.toBuffer()}),
+        new Argument({name: 'darcID', value: darcCred.getBaseID()}),
+        new Argument({name: 'credential', value: cred.toBytes()})
+      ]));
+      await ctx.updateCountersAndSign(this.bc, [signers]);
+      await this.bc.sendTransactionAndWait(ctx, 5);
+    }
+    let c = new Contact(cred);
+    await c.verifyRegistration(this.bc);
+    return c;
+  }
+
+  async attachAndEvolve(ephemeral: Private): Promise<void>{
+    let pub = Public.base().mul(ephemeral);
+    Log.print("coinIID should be:", CoinInstance.coinIID(pub.toBuffer()));
+    this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
+    this.keyIdentity = new KeyPair(ephemeral.toHex());
+  }
+
   get keyIdentitySigner(): Signer {
     return new SignerEd25519(this.keyIdentity._public.point, this.keyIdentity._private.scalar);
   }
@@ -632,15 +705,16 @@ export class TestData {
   async createUserDarc(alias: string) {
     Log.lvl1('Creating user darc');
     this.d.contact.alias = alias;
-    this.d.contact.darcInstance = await this.cbc.spawner.createUserDarc(this.cbc.genesisCoin,
-      [this.cbc.admin], this.d.keyIdentity._public.point, alias);
+    const d = Contact.prepareUserDarc(this.d.keyIdentity._public.point, alias);
+    this.d.contact.darcInstance = await this.cbc.spawner.createDarc(this.cbc.genesisCoin,
+      [this.cbc.admin], d)[0];
     Log.lvl2('Created user darc', this.d.darcInstance.iid);
   }
 
   async createUserCoin() {
     Log.lvl1('Creating user coin');
     this.d.contact.coinInstance = await this.cbc.spawner.createCoin(this.cbc.genesisCoin,
-      [this.cbc.admin], this.d.darcInstance.getDarc().getBaseID());
+      [this.cbc.admin], this.d.darcInstance.getDarc().getBaseID(), this.d.keyIdentity._public.toBuffer());
     await this.cbc.genesisCoin.transfer(Long.fromNumber(1e9), this.d.coinInstance.id, [this.cbc.admin]);
     Log.lvl2('Created user coin with 1e9 coins', this.d.coinInstance.id);
   }
@@ -665,12 +739,13 @@ export class CreateByzCoin {
     Log.lvl1('Creating user with spawner');
     Log.lvl1('Spawning darc');
     let user = new KeyPair();
-    let userDarc = await this.spawner.createUserDarc(this.genesisCoin,
-      [this.admin], user._public.point, alias);
+    const d = Contact.prepareUserDarc(user._public.point, alias);
+    let userDarc = await this.spawner.createDarc(this.genesisCoin,
+      [this.admin], d)[0];
 
     Log.lvl1('Spawning coin');
     let userCoin = await this.spawner.createCoin(this.genesisCoin,
-      [this.admin], userDarc.getDarc().getBaseID(), Long.fromNumber(1e6));
+      [this.admin], userDarc.getDarc().getBaseID(), Buffer.from("123"), Long.fromNumber(1e6));
     return new cbcUser(userDarc, userCoin);
   }
 

@@ -1,10 +1,12 @@
-import {Component} from '@angular/core';
+import {Component, Inject} from '@angular/core';
 import {Defaults} from '../lib/Defaults';
 import StatusRPC from '../lib/cothority/status/status-rpc';
 import {Log} from '../lib/Log';
 import {Data, gData} from '../lib/Data';
-import {MatTabChangeEvent} from '@angular/material';
+import {MAT_DIALOG_DATA, MatDialogRef, MatTabChangeEvent} from '@angular/material';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {Private} from '../lib/KeyPair';
+import SkipchainRPC from '../lib/cothority/skipchain/skipchain-rpc';
 
 @Component({
   selector: 'app-root',
@@ -15,28 +17,79 @@ export class AppComponent {
   title = 'Welcome to DynaSent';
   nodes = [];
   gData: Data;
-  idForm: FormGroup;
+  registerForm: FormGroup;
+  contactForm: FormGroup;
+  isRegistered = false;
+  isLoaded = false;
+  blockCount = -1;
 
   constructor() {
-    this.idForm = new FormGroup({
-      accountRequest: new FormControl('account request', Validators.required),
+    this.registerForm = new FormGroup({
+      ephemeralKey: new FormControl('dccd8216bb4c87890ab5c52c01366265ba1d57bcfaaa0a384a94597c33c47d0c', Validators.pattern(/[0-9a-fA-F]{64}/)),
+      darcID: new FormControl('7ec0220b1a4a5c99578188e81f01036acb6c5c9ead9fb002162b8dd111417a7c', Validators.pattern(/[0-9a-fA-F]{64}/)),
+      alias: new FormControl('garfield')
     });
 
-    gData.load().then(()=>{
+    gData.load().then(() => {
       this.gData = gData;
-      Log.print(gData.contact);
+      Log.print("Contact is:", gData.contact);
+      this.isRegistered = gData.contact.isRegistered();
+      Log.print("isRegistered: ", this.isRegistered);
+      this.updateContactForm();
     }).catch(e => {
       Log.catch(e);
+    }).finally(()=>{
+      this.isLoaded = true;
     })
   }
 
-  addID(event: Event) {
-    event.preventDefault();
-    Log.print(this.idForm.controls['accountRequest'].value);
+  updateContactForm(){
+    this.contactForm = new FormGroup({
+      alias: new FormControl(gData.contact.alias),
+      email: new FormControl(gData.contact.email, Validators.email),
+      phone: new FormControl(gData.contact.phone)
+    });
   }
 
-  tabChanged(tabChangeEvent: MatTabChangeEvent){
-    switch(tabChangeEvent.index){
+  async updateContact(event: Event){
+    gData.contact.alias = this.contactForm.controls['alias'].value;
+    gData.contact.email = this.contactForm.controls['email'].value;
+    gData.contact.phone = this.contactForm.controls['phone'].value;
+    await gData.contact.sendUpdate(gData.keyIdentitySigner);
+  }
+
+  async addID(event: Event) {
+    try {
+      if (this.registerForm.controls['ephemeralKey'].valid) {
+        let ekStr = <string> this.registerForm.controls['ephemeralKey'].value;
+        let ek = Private.fromHex(ekStr);
+        let did = this.registerForm.controls['darcID'].value;
+        if (this.registerForm.controls['darcID'].valid && did.length == 64) {
+          Log.print('creating first identity');
+          gData.contact = await gData.createUser(ek, this.registerForm.controls['alias'].value, Buffer.from(did, 'hex'));
+        } else {
+          Log.print('creating follow-up identity');
+          await gData.attachAndEvolve(ek);
+        }
+      }
+    } catch(e){
+      Log.catch(e);
+    }
+    this.isRegistered = gData.contact.isRegistered();
+    await gData.save();
+    this.updateContactForm();
+    Log.print("done - is registered:", this.isRegistered);
+  }
+
+  async createContact(){
+    let ek = Private.fromRand();
+    await gData.createUser(ek, "test")
+  }
+
+  async addContact(){}
+
+  tabChanged(tabChangeEvent: MatTabChangeEvent) {
+    switch (tabChangeEvent.index) {
       case 0:
         break;
       case 1:
@@ -49,8 +102,8 @@ export class AppComponent {
     }
   }
 
-  async update(){
-    Log.print("updating status of roster");
+  async update() {
+    Log.print('updating status of roster');
     this.nodes = [];
     let list = Defaults.Roster.list;
     let srpc = new StatusRPC(Defaults.Roster);
@@ -58,14 +111,37 @@ export class AppComponent {
       let node = list[i].description;
       try {
         let s = await srpc.getStatus(i);
-        node += ": OK - Port:" + JSON.stringify(s.status.Generic.field["Port"]);
+        node += ': OK - Port:' + JSON.stringify(s.status.Generic.field['Port']);
       } catch (e) {
-        node += ": Failed";
+        node += ': Failed';
       }
       this.nodes.push(node);
     }
     this.nodes.sort();
+    await gData.bc.updateConfig();
+    let skiprpc = new SkipchainRPC(gData.bc.getConfig().roster);
+    let last = await skiprpc.getLatestBlock(gData.bc.genesisID);
+    this.blockCount = last.index;
   }
+}
 
+export interface DialogData {
+  animal: string;
+  name: string;
+}
+
+@Component({
+  selector: 'create-user',
+  templateUrl: 'create-user.html',
+})
+export class CreateUser {
+
+  constructor(
+    public dialogRef: MatDialogRef<CreateUser>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
 
 }

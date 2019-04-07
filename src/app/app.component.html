@@ -1,44 +1,81 @@
-<mat-tab-group (focusChange)="tabChanged($event)">
-  <mat-tab label="Yourself">
+<div *ngIf="!isLoaded">
+  <div fxLayout="row" style="margin-top:5%;" fxLayoutAlign="center">
+    <div fxFlex="66" fxFlexOffset="15">
+      <h1 mat>Loading</h1>
+    </div>
+  </div>
+</div>
+<div *ngIf="isLoaded">
+  <div *ngIf="!isRegistered">
+    You're not yet registered. Please enter an ephemeral key:
+
+    <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addID($event)">
+      <mat-form-field class="fullwidth" style="width:100%;">
+        <input matInput type="text" placeholder="Ephemeral Key" formControlName="ephemeralKey"/>
+      </mat-form-field>
+      <mat-form-field class="fullwidth" style="width:100%;">
+        <input matInput type="text" placeholder="DarcID" formControlName="darcID"/>
+      </mat-form-field>
+      <mat-form-field class="fullwidth" style="width:100%;">
+        <input matInput type="text" placeholder="Alias" formControlName="alias"/>
+      </mat-form-field>
+      <br>
+      <button mat-button class="submit-btn" type="submit">Register</button>
+    </form>
+  </div>
+
+  <div *ngIf="isRegistered">
     <div fxLayout="row" style="margin-top:5%;">
       <div fxFlex="66" fxFlexOffset="15">
-        <div *ngIf="gData && !gData.contact.isRegistered()">
-          You're not yet registered. Please enter a registered id:
+        <mat-tab-group (focusChange)="tabChanged($event)">
+          <mat-tab label="Yourself">
+            <h1>Welcome {{gData.contact.alias}}</h1>
+            <ul>
+              <li>Coins: {{gData.coinInstance.getCoin().value.toNumber()}}</li>
+            </ul>
+            <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact($event)">
+              <mat-form-field class="fullwidth" style="width:100%;">
+                <input matInput type="text" placeholder="Alias" formControlName="alias"/>
+              </mat-form-field>
+              <mat-form-field class="fullwidth" style="width:100%;">
+                <input matInput type="text" placeholder="Your Email" formControlName="email"/>
+              </mat-form-field>
+              <mat-form-field class="fullwidth" style="width:100%;">
+                <input matInput type="text" placeholder="Your Phone" formControlName="phone"/>
+              </mat-form-field>
+              <br>
+              <button mat-button class="submit-btn" type="submit">Upate</button>
+            </form>
+          </mat-tab>
 
-          <form [formGroup]="idForm" class="example-form" (ngSubmit)="addID($event)">
-            <input type="text" formControlName="accountRequest"/>
-            <br>
-            <button md-button class="submit-btn" type="submit">Register</button>
-          </form>
-        </div>
 
-        <div *ngIf="gData && gData.contact.isRegistered()">
-          Congrats! You're registered!
-        </div>
+          <mat-tab label="Contacts">
+            <ul>
+              <li *ngFor="let contact of gData.contacts">
+                {{ contact.alias }}
+              </li>
+            </ul>
+            <button mat-raised-button class="mat-button" (click)="createContact()">Create Contact</button>
+            <button mat-raised-button class="mat-button" (click)="addContact()">Add Contact</button>
+          </mat-tab>
+
+          <mat-tab label="Secured Data">
+
+          </mat-tab>
+
+
+          <mat-tab label="Status">
+            <ul>
+              <li *ngFor="let node of nodes">
+                {{ node }}
+              </li>
+            </ul>
+            <ul>
+              <li>Skipchain-height: {{ blockCount }}</li>
+            </ul>
+          </mat-tab>
+        </mat-tab-group>
       </div>
     </div>
-  </mat-tab>
-
-
-  <mat-tab label="Contacts">
-
-  </mat-tab>
-
-
-  <mat-tab label="Groups">
-
-  </mat-tab>
-
-
-  <mat-tab label="Status">
-    <div fxLayout="row" style="margin-top:5%;">
-      <div fxFlex="66" fxFlexOffset="15">
-        <ul>
-          <li *ngFor="let node of nodes">
-            {{ node }}
-          </li>
-        </ul>
-      </div>
-    </div>
-  </mat-tab>
-</mat-tab-group>
+  </div>
+</div>

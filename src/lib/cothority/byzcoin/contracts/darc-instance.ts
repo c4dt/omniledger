@@ -96,7 +96,7 @@ export default class DarcInstance {
     const instr = Instruction.createInvoke(this.darc.getBaseID(), DarcInstance.contractID, 'evolve', args);
 
     const ctx = new ClientTransaction({instructions: [instr]});
-    await ctx.updateCounters(this.rpc, signers);
+    await ctx.updateCounters(this.rpc, [signers]);
     ctx.signWith([signers]);
 
     await this.rpc.sendTransactionAndWait(ctx, wait);
@@ -107,26 +107,38 @@ export default class DarcInstance {
   /**
    * Request to spawn an instance and wait for the inclusion
    *
-   * @param contractID    Contract name of the new instance
+   * @param d             The darc to spawn
    * @param signers       Signers for the counters
    * @param wait          Number of blocks to wait for
    * @returns a promise that resolves with the new darc instance
    */
   async spawnDarcAndWait(d: Darc, signers: Signer[], wait: number = 0): Promise<DarcInstance> {
-    const args = [
-      new Argument({
+    await this.spawnInstanceAndWait(DarcInstance.contractID,
+      [new Argument({
         name: 'darc',
         value: Buffer.from(Darc.encode(d).finish()),
-      }),
-    ];
+      })], signers, wait);
+    return DarcInstance.fromByzcoin(this.rpc, d.getBaseID());
+  }
+
+  /**
+   * Request to spawn an instance of any contract and wait
+   *
+   * @param contractID    Contract name of the new instance
+   * @param signers       Signers for the counters
+   * @param wait          Number of blocks to wait for
+   * @returns a promise that resolves with the instanceID of the new instance, which is only valid if the
+   *          contract.spawn uses DeriveID.
+   */
+  async spawnInstanceAndWait(contractID: string, args: Argument[], signers: Signer[], wait: number = 0): Promise<InstanceID> {
     const instr = Instruction.createSpawn(this.darc.getBaseID(), DarcInstance.contractID, args);
 
     const ctx = new ClientTransaction({instructions: [instr]});
-    await ctx.updateCounters(this.rpc, signers);
+    await ctx.updateCounters(this.rpc, [signers]);
     ctx.signWith([signers]);
 
     await this.rpc.sendTransactionAndWait(ctx, wait);
 
-    return DarcInstance.fromByzcoin(this.rpc, d.getBaseID());
+    return ctx.instructions[0].deriveId();
   }
 }

@@ -5,7 +5,7 @@ import UUID from "pure-uuid";
 import * as toml from "toml";
 import { EMPTY_BUFFER, registerMessage } from "../protobuf";
 
-const BASE_URL_WS = "wss://";
+const BASE_URL_WS = "ws://";
 const BASE_URL_TLS = "tls://";
 const URL_PORT_SPLITTER = ":";
 const PORT_MIN = 0;

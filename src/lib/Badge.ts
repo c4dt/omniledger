@@ -3,6 +3,7 @@ import {KeyPair} from "./KeyPair";
 import ByzCoinRPC from "./cothority/byzcoin/byzcoin-rpc";
 import {Data} from "./Data";
 import SpawnerInstance from "./cothority/byzcoin/contracts/spawner-instance";
+import {Contact} from './Contact';
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
@@ -28,7 +29,7 @@ export class Badge {
                 d.coinInstance.id, null);
         } else {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
-                null, SpawnerInstance.prepareUserDarc(d.keyIdentity._public.point,
+                null, Contact.prepareUserDarc(d.keyIdentity._public.point,
                     d.alias));
         }
     }
