@@ -785,6 +785,7 @@ export class CreateByzCoin {
       costs: costs,
       beneficiary: genesisCoin.id
     });
+
     Log.lvl2('Created spawner:', spawner.id);
     return new CreateByzCoin(bc, admin, spawner, genesisDarcIID, genesisCoin);
   }

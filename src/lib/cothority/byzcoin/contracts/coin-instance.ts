@@ -7,6 +7,7 @@ import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import {InstanceID} from '../instance';
 import Instance from '../instance';
 import {createHash} from 'crypto';
+import {Log} from '../../../Log';
 
 export default class CoinInstance {
   static readonly contractID = 'coin';

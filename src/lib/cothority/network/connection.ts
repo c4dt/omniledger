@@ -122,7 +122,7 @@ export class WebSocketConnection implements IConnection {
         try {
           Log.print(id, 'received reply');
           ws.close(1000);
-          Log.print(id, "closed");
+          Log.print(id, "closing");
           clearTimeout(timer);
           const buf = Buffer.from(data);
           Log.llvl3(id, 'Getting message with length:', buf.length);
@@ -148,7 +148,7 @@ export class WebSocketConnection implements IConnection {
       });
 
       ws.onClose((code: number, reason: string) => {
-        Log.print(id, 'closing');
+        Log.print(id, 'onClose');
         if (code !== 1000) {
           Log.error(id, 'Got close:', code, reason);
           reject(new Error(reason));

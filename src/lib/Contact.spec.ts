@@ -23,7 +23,7 @@ import Instance from './cothority/byzcoin/instance';
 import CredentialsInstance from './cothority/byzcoin/contracts/credentials-instance';
 
 fdescribe('Contact tests', () => {
-  describe('no byzcoin needed to test', () => {
+  xdescribe('no byzcoin needed to test', () => {
     // Always-matching proof
     class proofNull extends Proof {
       public stateChangeBody2: StateChangeBody;
@@ -130,15 +130,10 @@ fdescribe('Contact tests', () => {
     let unreg2: Contact;
 
     beforeAll(async () => {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 250000;
       try {
         Log.lvl1('Creating Byzcoin');
         tdAdmin = await TestData.init(new Data());
-        for (let i = 0; i < 100; i++){
-          Log.print("reading", i);
-          await tdAdmin.cbc.bc.updateConfig();
-        }
-        Log.print("createAll")
+        Log.print("createAll");
         await tdAdmin.createAll('admin');
         Log.print("creating contact");
         reg1 = new Contact(null, Public.fromRand());
@@ -150,15 +145,10 @@ fdescribe('Contact tests', () => {
         Log.catch(e);
         throw new Error(e);
       }
-    });
+    }, 100000);
 
     it('should marshal / unmarshal contact', async () => {
       Log.lvl1('*** marshal / unmarshal contact');
-      Log.print('before wait:', new Date().getTime());
-      var start = new Date().getTime();
-      while ((new Date().getTime() - start) < 1000000) {
-      }
-      Log.print('after wait:', new Date().getTime());
       Log.lvl1('testing registered user');
       let str = JSON.stringify(reg1.toObject());
       Log.lvl2('string is:', str);
@@ -198,7 +188,7 @@ fdescribe('Contact tests', () => {
   });
 
 
-  describe('With Byzcoin', async () => {
+  xdescribe('With Byzcoin', async () => {
     let tdAdmin: TestData;
     let admin: Data;
     let phrpc: PersonhoodRPC;

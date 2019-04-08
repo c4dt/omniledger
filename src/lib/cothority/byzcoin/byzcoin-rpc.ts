@@ -82,7 +82,7 @@ export default class ByzCoinRPC implements ICounterUpdater {
    */
   static async newByzCoinRPC(roster: Roster, darc: Darc, blockInterval: Long): Promise<ByzCoinRPC> {
     const rpc = new ByzCoinRPC();
-    rpc.conn = new RosterWSConnection(roster, 'ByzCoin');
+    rpc.conn = new WebSocketConnection(roster.list[0].getWebSocketAddress(), 'ByzCoin');
     rpc.genesisDarc = darc;
     rpc.config = new ChainConfig({blockInterval});
 
