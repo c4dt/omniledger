@@ -1,4 +1,12 @@
-<div *ngIf="!isLoaded">
+<div *ngIf="testing">
+  <div fxLayout="row" style="margin-top:5%;" fxLayoutAlign="center">
+    <div fxFlex="66" fxFlexOffset="15">
+      <h1 mat>Testing</h1>
+      <button mat-raised-button class="mat-button" (click)="doTest()">Start Test</button>
+    </div>
+  </div>
+</div>
+<div *ngIf="!isLoaded && !testing">
   <div fxLayout="row" style="margin-top:5%;" fxLayoutAlign="center">
     <div fxFlex="66" fxFlexOffset="15">
       <h1 mat>Loading</h1>
@@ -31,7 +39,7 @@
           <mat-tab label="Yourself">
             <h1>Welcome {{gData.contact.alias}}</h1>
             <ul>
-              <li>Coins: {{gData.coinInstance.getCoin().value.toNumber()}}</li>
+              <li>Coins: {{gData.coinInstance.coin.value.toNumber()}}</li>
             </ul>
             <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact($event)">
               <mat-form-field class="fullwidth" style="width:100%;">

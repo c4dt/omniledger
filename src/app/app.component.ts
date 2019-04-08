@@ -2,11 +2,12 @@ import {Component, Inject} from '@angular/core';
 import {Defaults} from '../lib/Defaults';
 import StatusRPC from '../lib/cothority/status/status-rpc';
 import {Log} from '../lib/Log';
-import {Data, gData} from '../lib/Data';
+import {Data, gData, TestData} from '../lib/Data';
 import {MAT_DIALOG_DATA, MatDialogRef, MatTabChangeEvent} from '@angular/material';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {Private} from '../lib/KeyPair';
+import {Private, Public} from '../lib/KeyPair';
 import SkipchainRPC from '../lib/cothority/skipchain/skipchain-rpc';
+import {Contact} from '../lib/Contact';
 
 @Component({
   selector: 'app-root',
@@ -21,26 +22,52 @@ export class AppComponent {
   contactForm: FormGroup;
   isRegistered = false;
   isLoaded = false;
+  testing = true;
   blockCount = -1;
 
   constructor() {
-    this.registerForm = new FormGroup({
-      ephemeralKey: new FormControl('dccd8216bb4c87890ab5c52c01366265ba1d57bcfaaa0a384a94597c33c47d0c', Validators.pattern(/[0-9a-fA-F]{64}/)),
-      darcID: new FormControl('7ec0220b1a4a5c99578188e81f01036acb6c5c9ead9fb002162b8dd111417a7c', Validators.pattern(/[0-9a-fA-F]{64}/)),
-      alias: new FormControl('garfield')
-    });
+    if (!this.testing) {
+      this.registerForm = new FormGroup({
+        ephemeralKey: new FormControl('dccd8216bb4c87890ab5c52c01366265ba1d57bcfaaa0a384a94597c33c47d0c', Validators.pattern(/[0-9a-fA-F]{64}/)),
+        darcID: new FormControl('7ec0220b1a4a5c99578188e81f01036acb6c5c9ead9fb002162b8dd111417a7c', Validators.pattern(/[0-9a-fA-F]{64}/)),
+        alias: new FormControl('garfield')
+      });
 
-    gData.load().then(() => {
-      this.gData = gData;
-      Log.print("Contact is:", gData.contact);
-      this.isRegistered = gData.contact.isRegistered();
-      Log.print("isRegistered: ", this.isRegistered);
-      this.updateContactForm();
-    }).catch(e => {
+      gData.load().then(() => {
+        this.gData = gData;
+        Log.print("Contact is:", gData.contact);
+        this.isRegistered = gData.contact.isRegistered();
+        Log.print("isRegistered: ", this.isRegistered);
+        this.updateContactForm();
+      }).catch(e => {
+        Log.catch(e);
+      }).finally(() => {
+        this.isLoaded = true;
+      })
+    }
+  }
+
+  async doTest(){
+    try {
+      // jasmine.DEFAULT_TIMEOUT_INTERVAL = 250000;
+      Log.lvl1('Creating Byzcoin');
+      let tdAdmin = await TestData.init(new Data());
+      for (let i = 0; i < 100; i++){
+        Log.print("reading", i);
+        await tdAdmin.cbc.bc.updateConfig();
+      }
+      Log.print("createAll")
+      await tdAdmin.createAll('admin');
+      Log.print("creating contact");
+      let reg1 = new Contact(null, Public.fromRand());
+      reg1.alias = 'reg1';
+      await tdAdmin.d.registerContact(reg1);
+      let unreg2 = new Contact(null, Public.fromRand());
+      unreg2.alias = 'unreg2';
+    } catch (e){
       Log.catch(e);
-    }).finally(()=>{
-      this.isLoaded = true;
-    })
+      throw new Error(e);
+    }
   }
 
   updateContactForm(){

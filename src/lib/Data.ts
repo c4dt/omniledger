@@ -1,5 +1,4 @@
-/**
- * This is the main library for storing and getting things from the phone's file
+/* This is the main library for storing and getting things from the phone's file
  * system.
  */
 import {PersonhoodRPC, PollStruct} from './PersonhoodRPC';
@@ -277,8 +276,8 @@ export class Data {
     if (amount.lessThanOrEqual(0)) {
       return Promise.reject('Cannot send 0 or less coins');
     }
-    if (amount.greaterThanOrEqual(this.coinInstance.getCoin().value)) {
-      return Promise.reject('You only have ' + this.coinInstance.getCoin().value.toString() + ' coins.');
+    if (amount.greaterThanOrEqual(this.coinInstance.coin.value)) {
+      return Promise.reject('You only have ' + this.coinInstance.coin.value.toString() + ' coins.');
     }
     return true;
   }
@@ -608,25 +607,21 @@ export class Data {
     let rules = ['mint', 'transfer', 'fetch', 'store'].map(inv => 'invoke:' + CoinInstance.contractID + inv);
     let darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
 
-    let cred = new CredentialStruct();
-    cred.setAttribute("1-public", "alias", Buffer.from(alias));
-    cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
-    cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
-    cred.setAttribute("1-public", "seedPub", pub.toBuffer());
+    let cred = Contact.prepareInitialCred(alias, pub);
 
     if (darcID == null) {
       let signers = [this.keyIdentitySigner];
-      Log.lvl1("Creating identity from spawner");
+      Log.lvl1('Creating identity from spawner');
       await this.spawnerInstance.createDarc(this.coinInstance, signers,
         darcDevice, darcSign, darcCred, darcCoin);
       await this.spawnerInstance.createCoin(this.coinInstance, signers, darcCoin.getBaseID(), pub.toBuffer());
       await this.spawnerInstance.createCredential(this.coinInstance, signers, darcCred.getBaseID(), pub.toBuffer(), cred);
     } else {
-      Log.lvl1("Creating identity from darc");
+      Log.lvl1('Creating identity from darc');
       let signers = [new SignerEd25519(pub.point, ephemeral.scalar)];
       let ctx = new ClientTransaction({
         instructions:
-          // [darcDevice].map(d => {
+        // [darcDevice].map(d => {
           [darcDevice, darcSign, darcCred, darcCoin].map(d => {
               return Instruction.createSpawn(darcID, DarcInstance.contractID, [
                 new Argument({name: 'darc', value: d.toBytes()})
@@ -634,7 +629,7 @@ export class Data {
             }
           )
       });
-      ctx.instructions.push(Instruction.createSpawn(darcID, CoinInstance.contractID,[
+      ctx.instructions.push(Instruction.createSpawn(darcID, CoinInstance.contractID, [
         new Argument({name: 'coinID', value: pub.toBuffer()}),
         new Argument({name: 'darcID', value: darcCoin.getBaseID()}),
         new Argument({name: 'type', value: SPAWNER_COIN})
@@ -652,9 +647,9 @@ export class Data {
     return c;
   }
 
-  async attachAndEvolve(ephemeral: Private): Promise<void>{
+  async attachAndEvolve(ephemeral: Private): Promise<void> {
     let pub = Public.base().mul(ephemeral);
-    Log.print("coinIID should be:", CoinInstance.coinIID(pub.toBuffer()));
+    Log.print('coinIID should be:', CoinInstance.coinIID(pub.toBuffer()));
     this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
     this.keyIdentity = new KeyPair(ephemeral.toHex());
   }
@@ -694,8 +689,11 @@ export class TestData {
   static async init(d: Data): Promise<TestData> {
     Log.lvl1('Creating new ByzCoin');
     let td = new TestData(d, await CreateByzCoin.start());
+    Log.print("setting teststore", new Date());
     await TestStoreRPC.save(Defaults.Roster, td.cbc.bc.getGenesis().computeHash(), td.cbc.spawner.id);
+    Log.print("setting values");
     await td.d.setValues({});
+    Log.print("setting values done");
     td.d.bc = td.cbc.bc;
     td.d.spawnerInstance = td.cbc.spawner;
     td.d.keyIdentity = new KeyPair(Buffer.from(td.cbc.admin.secret.marshalBinary()).toString('hex'));
@@ -706,8 +704,14 @@ export class TestData {
     Log.lvl1('Creating user darc');
     this.d.contact.alias = alias;
     const d = Contact.prepareUserDarc(this.d.keyIdentity._public.point, alias);
-    this.d.contact.darcInstance = await this.cbc.spawner.createDarc(this.cbc.genesisCoin,
-      [this.cbc.admin], d)[0];
+    let di = await this.cbc.spawner.createDarc(this.cbc.genesisCoin,
+      [this.cbc.admin], d);
+    this.d.contact.darcInstance = di[0];
+    Log.print('before wait:', new Date().getTime());
+    var start = new Date().getTime();
+    while ((new Date().getTime() - start) < 1000) {
+    }
+    Log.print('after wait:', new Date().getTime());
     Log.lvl2('Created user darc', this.d.darcInstance.iid);
   }
 
@@ -730,6 +734,7 @@ export class TestData {
   }
 }
 
+
 export class CreateByzCoin {
   constructor(public bc: ByzCoinRPC = null, public admin: SignerEd25519, public spawner: SpawnerInstance = null,
               public genesisDarcIID: InstanceID = null, public genesisCoin: CoinInstance = null) {
@@ -745,7 +750,7 @@ export class CreateByzCoin {
 
     Log.lvl1('Spawning coin');
     let userCoin = await this.spawner.createCoin(this.genesisCoin,
-      [this.admin], userDarc.getDarc().getBaseID(), Buffer.from("123"), Long.fromNumber(1e6));
+      [this.admin], userDarc.getDarc().getBaseID(), Buffer.from('123'), Long.fromNumber(1e6));
     return new cbcUser(userDarc, userCoin);
   }
 
@@ -760,7 +765,7 @@ export class CreateByzCoin {
     let genesisDarcIID = bc.getDarc().getBaseID();
 
     Log.lvl2('Creating a coin instance');
-    let genesisCoin = await CoinInstance.create(bc, genesisDarcIID, [admin], SPAWNER_COIN);
+    let genesisCoin = await CoinInstance.spawn(bc, genesisDarcIID, [admin], SPAWNER_COIN);
 
     Log.lvl2('Minting some money');
     await genesisCoin.mint([admin], Long.fromNumber(1e10));
@@ -773,7 +778,7 @@ export class CreateByzCoin {
       costDarc: Long.fromNumber(100),
       costParty: Long.fromNumber(1e7),
     };
-    let spawner = await SpawnerInstance.create({
+    let spawner = await SpawnerInstance.spawn({
       bc: bc,
       darcID: genesisDarcIID,
       signers: [admin],

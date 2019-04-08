@@ -25,7 +25,7 @@ export default class CoinInstance {
   }
 
   /**
-   * Create a coin instance from a darc id
+   * Spawn a coin instance from a darc id
    *
    * @param bc        The RPC to use
    * @param darcID    The darc instance ID
@@ -33,7 +33,7 @@ export default class CoinInstance {
    * @param type      The coin instance type
    * @returns a promise that resolves with the new instance
    */
-  static async create(
+  static async spawn(
     bc: ByzCoinRPC,
     darcID: InstanceID,
     signers: Signer[],
@@ -55,6 +55,22 @@ export default class CoinInstance {
   }
 
   /**
+   * Create returns a CoinInstance from the given parameters.
+   * @param bc
+   * @param coinID
+   * @param darcID
+   * @param coin
+   */
+  static create(
+    bc: ByzCoinRPC,
+    coinID: InstanceID,
+    darcID: InstanceID,
+    coin: Coin,
+  ): CoinInstance {
+    return new CoinInstance(bc, Instance.fromFields(coinID, CoinInstance.contractID, darcID, coin.toBytes()));
+  }
+
+  /**
    * Initializes using an existing coinInstance from ByzCoin
    * @param bc    The RPC to use
    * @param iid   The instance ID
@@ -64,7 +80,7 @@ export default class CoinInstance {
     return new CoinInstance(bc, await Instance.fromByzCoin(bc, iid));
   }
 
-  private coin: Coin;
+  public coin: Coin;
 
   constructor(private rpc: ByzCoinRPC, private inst: Instance) {
     this.coin = Coin.decode(inst.data);
@@ -92,14 +108,6 @@ export default class CoinInstance {
    */
   get value(): Long {
     return this.coin.value;
-  }
-
-  /**
-   * Get the coin object
-   * @returns the coin object
-   */
-  getCoin(): Coin {
-    return this.coin;
   }
 
   /**

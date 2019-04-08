@@ -55,14 +55,18 @@ export default class ClientTransaction extends Message<ClientTransaction> {
     }
 
     if (signers.length != this.instructions.length){
-      return Promise.reject("less signers than instructions");
+      return Promise.reject("length of signers and instructions do not match");
     }
 
     // Get all counters from all signers of all instructions and map them into an object.
     let uniqueSigners = signers.reduce((acc, val) => acc.concat(val));
     uniqueSigners = uniqueSigners.filter((us, i) =>
       uniqueSigners.findIndex(usf => usf.toString() == us.toString()) == i);
+
+    Log.print("getting counters");
     const counters = await rpc.getSignerCounters(uniqueSigners, 1);
+    Log.print("got counters");
+
     let signerCounters = {};
     uniqueSigners.forEach((us, i) =>{
       signerCounters[us.toString()] = counters[i];

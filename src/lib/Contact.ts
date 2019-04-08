@@ -17,6 +17,7 @@ import {Point} from '@dedis/kyber';
 import Darc from './cothority/darc/darc';
 import IdentityEd25519 from './cothority/darc/identity-ed25519';
 import Rules from './cothority/darc/rules';
+import * as Long from "long";
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
@@ -60,6 +61,15 @@ export class Contact {
     return darc;
   }
 
+  static prepareInitialCred(alias: string, pub: Public): CredentialStruct{
+    let cred = new CredentialStruct();
+    cred.setAttribute("1-public", "alias", Buffer.from(alias));
+    cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
+    cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
+    cred.setAttribute("1-public", "seedPub", pub.toBuffer());
+    return cred;
+  }
+
   constructor(public credential: CredentialStruct = null, public unregisteredPub: Public = null) {
     if (credential == null) {
       this.credential = new CredentialStruct();
@@ -92,6 +102,7 @@ export class Contact {
   }
 
   async update(bc: ByzCoinRPC): Promise<Contact> {
+    return this;
     try {
       if (this.credentialInstance == null) {
         if (this.credentialIID) {

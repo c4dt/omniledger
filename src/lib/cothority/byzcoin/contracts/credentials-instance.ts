@@ -7,7 +7,7 @@ import Instance, {InstanceID} from '../instance';
 import {Point} from '@dedis/kyber';
 import {Coin} from './coin-instance';
 import {Public} from '../../../KeyPair';
-import {createHash} from 'crypto';
+import {createHash, randomBytes} from 'crypto';
 
 export default class CredentialsInstance extends Instance {
   static readonly contractID = 'credential';
@@ -26,7 +26,7 @@ export default class CredentialsInstance extends Instance {
   }
 
   /**
-   * Create a new credential instance from a darc
+   * Spawn a new credential instance from a darc
    *
    * @param bc        The RPC to use
    * @param darcID    The darc instance ID
@@ -36,7 +36,7 @@ export default class CredentialsInstance extends Instance {
    * @param did       Optional - if given, replaces the responsible darc with the given did
    * @returns a promise that resolves with the new instance
    */
-  static async create(
+  static async spawn(
     bc: ByzCoinRPC,
     darcID: InstanceID,
     signers: Signer[],
@@ -67,6 +67,28 @@ export default class CredentialsInstance extends Instance {
   }
 
   /**
+   * Create a new credential instance from a darc
+   *
+   * @param bc        The RPC to use
+   * @param darcID    The darc instance ID
+   * @param cred      The credential to store
+   * @param credID       Optional - if given, the instanceID will be sha256("credential" | credID)
+   * @returns a promise that resolves with the new instance
+   */
+  static create(
+    bc: ByzCoinRPC,
+    darcID: InstanceID,
+    cred: CredentialStruct,
+    credID: Buffer = null
+  ): CredentialsInstance {
+    if (!credID){
+      credID = randomBytes(32);
+    }
+    return new CredentialsInstance(bc, Instance.fromFields(CredentialsInstance.credentialIID(credID), CredentialsInstance.contractID,
+      darcID, cred.toBytes()));
+  }
+
+    /**
    * Get an existing credential instance using its instance ID by fetching
    * the proof.
    * @param bc    the byzcoin RPC

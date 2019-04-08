@@ -2,7 +2,7 @@ import {TestBed, async} from '@angular/core/testing';
 import {Storage} from './Storage';
 import {Log} from './Log';
 
-fdescribe('Storage', () => {
+describe('Storage', () => {
   beforeEach(async () => {
   });
 
@@ -11,7 +11,7 @@ fdescribe('Storage', () => {
     expect(Storage.get('one')).toBe('1');
   });
 
-  fit('should marshal buffer', async () => {
+  it('should marshal buffer', async () => {
     let a = {
       one: 1,
       two: Buffer.from('two')

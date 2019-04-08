@@ -26,7 +26,7 @@ export default class SpawnerInstance extends Instance {
   static readonly contractID = 'spawner';
 
   /**
-   * Create a spawner instance
+   * Spawn a spawner instance
    *
    * @param bc The ByzCoinRPC to use
    * @param darcID The darc instance ID
@@ -34,7 +34,7 @@ export default class SpawnerInstance extends Instance {
    * @param costs The different cost for new instances
    * @param beneficiary The beneficiary of the costs
    */
-  static async create(params: ICreateSpawner): Promise<SpawnerInstance> {
+  static async spawn(params: ICreateSpawner): Promise<SpawnerInstance> {
     const {bc, darcID, signers, costs, beneficiary} = params;
 
     const args = [
@@ -47,7 +47,7 @@ export default class SpawnerInstance extends Instance {
 
     const inst = Instruction.createSpawn(darcID, this.contractID, args);
     const ctx = new ClientTransaction({instructions: [inst]});
-    await ctx.updateCountersAndSign(bc, [signers, []]);
+    await ctx.updateCountersAndSign(bc, [signers]);
 
     await bc.sendTransactionAndWait(ctx);
 
@@ -117,6 +117,7 @@ export default class SpawnerInstance extends Instance {
    * @returns a promise that resolves with the new darc instance
    */
   async createDarc(coin: CoinInstance, signers: Signer[], ...darcs: Darc[]): Promise<DarcInstance[]> {
+    Log.print("CREATE DARC");
     // const d = SpawnerInstance.prepareUserDarc(pubKey, alias);
     const ctx = new ClientTransaction({
       instructions: [
@@ -158,13 +159,17 @@ export default class SpawnerInstance extends Instance {
    * @returns a promise that resolves with the new coin instance
    */
   async createCoin(coin: CoinInstance, signers: Signer[], darcID: InstanceID, coinID: Buffer, balance?: Long): Promise<CoinInstance> {
-    try {
-      const ci = await CoinInstance.fromByzcoin(this.rpc, CoinInstance.coinIID(coinID));
-      Log.warn('this coin is already registered');
-      return ci;
-    } catch (e) {
-      // doesn't exist
-    }
+    Log.print("searching for existing coin");
+
+    // try {
+    //   const ci = await CoinInstance.fromByzcoin(this.rpc, CoinInstance.coinIID(coinID));
+    //   Log.warn('this coin is already registered');
+    //   return ci;
+    // } catch (e) {
+    //   // doesn't exist
+    // }
+
+    Log.print("creating coin");
 
     balance = balance || Long.fromNumber(0);
     const valueBuf = this.struct.costCoin.value.add(balance).toBytesLE();
