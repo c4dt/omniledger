@@ -1,9 +1,9 @@
-import * as byzcoin from "./byzcoin";
-import * as contracts from "./byzcoin/contracts";
-import * as darc from "./darc";
-import * as network from "./network";
-import * as skipchain from "./skipchain";
-import * as status from "./status";
+import * as byzcoin from './byzcoin';
+import * as contracts from './byzcoin/contracts';
+import * as darc from './darc';
+import * as network from './network';
+import * as skipchain from './skipchain';
+import * as status from './status';
 
 export {
     byzcoin,

@@ -1,4 +1,4 @@
-import StatusRPC from "./status-rpc";
+import StatusRPC from './status-rpc';
 
 export {
     StatusRPC,

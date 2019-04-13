@@ -1,9 +1,9 @@
-import {createHash} from "crypto";
-import * as Long from "long";
-import {Message, Properties} from "protobufjs/light";
-import {EMPTY_BUFFER, registerMessage} from "../protobuf";
-import {IIdentity} from "./identity-wrapper";
-import Rules from "./rules";
+import {createHash} from 'crypto';
+import * as Long from 'long';
+import {Message, Properties} from 'protobufjs/light';
+import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import {IIdentity} from './identity-wrapper';
+import Rules from './rules';
 
 /**
  * Create a list of rules with basic permissions for owners and signers
@@ -14,8 +14,8 @@ import Rules from "./rules";
 function initRules(owners: IIdentity[], signers: IIdentity[]): Rules {
     const rules = new Rules();
 
-    owners.forEach((o) => rules.appendToRule("invoke:darc.evolve", o, Rules.AND));
-    signers.forEach((s) => rules.appendToRule("_sign", s, Rules.OR));
+    owners.forEach((o) => rules.appendToRule('invoke:darc.evolve', o, Rules.AND));
+    signers.forEach((s) => rules.appendToRule('_sign', s, Rules.OR));
 
     return rules;
 }
@@ -28,7 +28,7 @@ export default class Darc extends Message<Darc> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("Darc", Darc, Rules);
+        registerMessage('Darc', Darc, Rules);
     }
 
     /**
@@ -43,21 +43,21 @@ export default class Darc extends Message<Darc> {
         const darc = new Darc({
             baseID: Buffer.from([]),
             description: desc,
-            prevID: createHash("sha256").digest(),
+            prevID: createHash('sha256').digest(),
             rules: initRules(owners, signers),
             version: Long.fromNumber(0, true),
         });
-        if (rules){
-            rules.forEach(r =>{
-                signers.forEach(s =>{
-                    darc.rules.appendToRule(r, s, "|");
+        if (rules) {
+            rules.forEach(r => {
+                signers.forEach(s => {
+                    darc.rules.appendToRule(r, s, '|');
                 });
             });
         }
 
         return darc;
     }
-    
+
     readonly version: Long;
     readonly description: Buffer;
     readonly baseID: Buffer;
@@ -74,7 +74,7 @@ export default class Darc extends Message<Darc> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "baseid", {
+        Object.defineProperty(this, 'baseid', {
             get(): Buffer {
                 return this.baseID;
             },
@@ -83,7 +83,7 @@ export default class Darc extends Message<Darc> {
             },
         });
 
-        Object.defineProperty(this, "previd", {
+        Object.defineProperty(this, 'previd', {
             get(): Buffer {
                 return this.prevID;
             },
@@ -98,7 +98,7 @@ export default class Darc extends Message<Darc> {
      * @returns the id as a buffer
      */
     get id(): Buffer {
-        const h = createHash("sha256");
+        const h = createHash('sha256');
         const versionBuf = Buffer.from(this.version.toBytesLE());
         h.update(versionBuf);
         h.update(this.description);
@@ -161,11 +161,11 @@ export default class Darc extends Message<Darc> {
      * @returns the string representation
      */
     toString(): string {
-        return "ID: " + this.id.toString("hex") + "\n" +
-            "Base: " + this.baseID.toString("hex") + "\n" +
-            "Prev: " + this.prevID.toString("hex") + "\n" +
-            "Version: " + this.version + "\n" +
-            "Rules: " + this.rules;
+        return 'ID: ' + this.id.toString('hex') + '\n' +
+            'Base: ' + this.baseID.toString('hex') + '\n' +
+            'Prev: ' + this.prevID.toString('hex') + '\n' +
+            'Version: ' + this.version + '\n' +
+            'Rules: ' + this.rules;
     }
 
     /**

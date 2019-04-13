@@ -1,17 +1,16 @@
-import {InstanceID} from "./cothority/byzcoin/instance";
-import {Log} from "./Log";
-import {Roster} from "./cothority/network";
-import {WebSocketConnection} from "./cothority/network/connection";
-import {Message, Properties} from "protobufjs";
-import {registerMessage} from "./cothority/protobuf";
-import {Coin} from "./cothority/byzcoin/contracts/coin-instance";
+import {InstanceID} from './cothority/byzcoin/instance';
+import {Roster} from './cothority/network';
+import {WebSocketConnection} from './cothority/network/connection';
+import {Message, Properties} from 'protobufjs';
+import {registerMessage} from './cothority/protobuf';
 
-export class TestStoreRPC{
-    static serviceName = "TestData";
+export class TestStoreRPC {
+    static serviceName = 'TestData';
 
-    constructor (public bcID: Buffer, public spawnerIID: InstanceID){}
+    constructor(public bcID: Buffer, public spawnerIID: InstanceID) {
+    }
 
-    static async save(r: Roster, bcID: Buffer, spawnerIID: InstanceID){
+    static async save(r: Roster, bcID: Buffer, spawnerIID: InstanceID) {
         let s = new WebSocketConnection(r.list[0].getWebSocketAddress(), TestStoreRPC.serviceName);
         await s.send(new TestStore({
             byzcoinid: bcID,
@@ -19,28 +18,29 @@ export class TestStoreRPC{
         }), TestStore);
     }
 
-    static async load(r: Roster): Promise<TestStore>{
+    static async load(r: Roster): Promise<TestStore> {
         let s = new WebSocketConnection(r.list[0].getWebSocketAddress(), TestStoreRPC.serviceName);
         let ts = await s.send(new TestStore({}), TestStore);
         return new TestStore(ts);
     }
 }
 
-export class TestStore extends Message<TestStore>{
+export class TestStore extends Message<TestStore> {
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage("testdata.TestStore", TestStore);
+        registerMessage('testdata.TestStore', TestStore);
     }
 
-    static fromBytes(b: Buffer): TestStore{
-        return TestStore.decode(b)
+    static fromBytes(b: Buffer): TestStore {
+        return TestStore.decode(b);
     }
+
     readonly byzcoinid: InstanceID;
     readonly spawneriid: InstanceID;
 
-    constructor(props?: Properties<TestStore>){
+    constructor(props?: Properties<TestStore>) {
         super(props);
     }
 
@@ -52,11 +52,11 @@ export class TestStore extends Message<TestStore>{
         return Buffer.from(TestStore.encode(this).finish());
     }
 
-    get byzcoinID(): InstanceID{
+    get byzcoinID(): InstanceID {
         return this.byzcoinid;
     }
 
-    get spawnerIID(): InstanceID{
+    get spawnerIID(): InstanceID {
         return this.spawneriid;
     }
 }

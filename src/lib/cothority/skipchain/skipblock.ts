@@ -1,13 +1,13 @@
-import { Point, sign } from "@dedis/kyber";
-import { BN256G1Point, BN256G2Point } from "@dedis/kyber/pairing/point";
-import { createHash } from "crypto";
-import { Message, Properties } from "protobufjs/light";
-import { Roster } from "../network/proto";
-import { registerMessage } from "../protobuf";
+import {Point, sign} from '@dedis/kyber';
+import {BN256G1Point, BN256G2Point} from '@dedis/kyber/pairing/point';
+import {createHash} from 'crypto';
+import {Message, Properties} from 'protobufjs/light';
+import {Roster} from '../network/proto';
+import {registerMessage} from '../protobuf';
 
 const EMPTY_BUFFER = Buffer.allocUnsafe(0);
 
-const { bls, Mask } = sign;
+const {bls, Mask} = sign;
 
 /**
  * Convert an integer into a little-endian buffer
@@ -27,7 +27,7 @@ export class SkipBlock extends Message<SkipBlock> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("SkipBlock", SkipBlock, Roster, ForwardLink);
+        registerMessage('SkipBlock', SkipBlock, Roster, ForwardLink);
     }
 
     readonly hash: Buffer;
@@ -70,7 +70,7 @@ export class SkipBlock extends Message<SkipBlock> {
      * @returns the hash
      */
     computeHash(): Buffer {
-        const h = createHash("sha256");
+        const h = createHash('sha256');
         h.update(int2buf(this.index));
         h.update(int2buf(this.height));
         h.update(int2buf(this.maxHeight));
@@ -102,7 +102,7 @@ export class ForwardLink extends Message<ForwardLink> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("ForwardLink", ForwardLink, Roster, ByzcoinSignature);
+        registerMessage('ForwardLink', ForwardLink, Roster, ByzcoinSignature);
     }
 
     readonly from: Buffer;
@@ -123,7 +123,7 @@ export class ForwardLink extends Message<ForwardLink> {
      * @returns the hash
      */
     hash(): Buffer {
-        const h = createHash("sha256");
+        const h = createHash('sha256');
         h.update(this.from);
         h.update(this.to);
 
@@ -142,13 +142,13 @@ export class ForwardLink extends Message<ForwardLink> {
      */
     verify(publics: Point[]): Error {
         if (!this.hash().equals(this.signature.msg)) {
-            return new Error("recreated message does not match");
+            return new Error('recreated message does not match');
         }
 
         const agg = this.signature.getAggregate(publics) as BN256G2Point;
 
         if (!bls.verify(this.signature.msg, agg, this.signature.getSignature())) {
-            return new Error("signature not verified");
+            return new Error('signature not verified');
         }
 
         return null;
@@ -160,7 +160,7 @@ export class ByzcoinSignature extends Message<ByzcoinSignature> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("ByzcoinSig", ByzcoinSignature);
+        registerMessage('ByzcoinSig', ByzcoinSignature);
     }
 
     readonly msg: Buffer;

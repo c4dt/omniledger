@@ -1,13 +1,13 @@
-import { Message, Properties } from "protobufjs/light";
-import { registerMessage } from "../../protobuf";
-import ClientTransaction from "../client-transaction";
+import {Message, Properties} from 'protobufjs/light';
+import {registerMessage} from '../../protobuf';
+import ClientTransaction from '../client-transaction';
 
 export default class TxResult extends Message<TxResult> {
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage("byzcoin.TxResult", TxResult, ClientTransaction);
+        registerMessage('byzcoin.TxResult', TxResult, ClientTransaction);
     }
 
     readonly clientTransaction: ClientTransaction;
@@ -18,7 +18,7 @@ export default class TxResult extends Message<TxResult> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "clienttransaction", {
+        Object.defineProperty(this, 'clienttransaction', {
             get(): ClientTransaction {
                 return this.clientTransaction;
             },

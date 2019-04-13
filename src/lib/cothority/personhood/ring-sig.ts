@@ -1,14 +1,12 @@
-"use strict";
+'use strict';
 
-import {Private, Public} from "../../KeyPair";
+import {Private, Public} from '../../KeyPair';
+import {cloneDeep} from 'lodash';
 
-const Kyber = require("@dedis/kyber");
-const Blake = require("@stablelib/blake2xs").BLAKE2Xs;
-import {cloneDeep} from "lodash";
+const Kyber = require('@dedis/kyber');
+const Blake = require('@stablelib/blake2xs').BLAKE2Xs;
 
 export const Suite = new Kyber.curve.edwards25519.Curve;
-
-import {Log} from "../../Log";
 
 /**
  * Sign a message using (un)linkable ring signature. This method is ported from the Kyber Golang version
@@ -89,7 +87,7 @@ export async function Sign(message: Buffer, anonymitySet: Public[],
 export async function Verify(message: Buffer, anonymitySet: Public[], linkScope: Buffer, signatureBuffer: Buffer):
     Promise<SignatureVerification> {
     if (!(signatureBuffer instanceof Uint8Array)) {
-        return Promise.reject("signatureBuffer must be Uint8Array");
+        return Promise.reject('signatureBuffer must be Uint8Array');
     }
     anonymitySet.sort((a, b) => {
         return Buffer.compare(a.toBuffer(), b.toBuffer());
@@ -101,7 +99,7 @@ export async function Verify(message: Buffer, anonymitySet: Public[], linkScope:
     let linkBase, linkTag;
     let sig = decodeSignature(signatureBuffer, !!linkScope);
     if (anonymitySet.length != sig.S.length) {
-        return Promise.reject("given anonymity set and signature anonymity set not of equal length")
+        return Promise.reject('given anonymity set and signature anonymity set not of equal length');
     }
 
     if (linkScope) {
@@ -169,11 +167,11 @@ export function SignWithBadge(b, message, scope) {
     }
 
     if (mine < 0) {
-        return Promise.reject("Pop Token is invalid");
+        return Promise.reject('Pop Token is invalid');
     }
 
     // @ts-ignore
-    return this.Sign(Suite, message, [...anonymitySet], scope, mine, minePrivate)
+    return this.Sign(Suite, message, [...anonymitySet], scope, mine, minePrivate);
 }
 
 function concatArrays(constructor, arrays) {
@@ -192,12 +190,12 @@ function concatArrays(constructor, arrays) {
 
 function createStreamFromBlake(blakeInstance) {
     if (!(blakeInstance instanceof Blake)) {
-        return Promise.reject("blakeInstance must be of type Blake2xs");
+        return Promise.reject('blakeInstance must be of type Blake2xs');
     }
 
     function getNextBytes(count) {
         if (!Number.isInteger(count)) {
-            return Promise.reject("count must be a integer");
+            return Promise.reject('count must be a integer');
         }
         let array = new Uint8Array(count);
         blakeInstance.stream(array);
@@ -272,14 +270,14 @@ export class RingSig {
     }
 }
 
-async function sortSet(anonymitySet: Public[], privateKey: Private): Promise<number>{
+async function sortSet(anonymitySet: Public[], privateKey: Private): Promise<number> {
     anonymitySet.sort((a, b) => {
         return Buffer.compare(a.toBuffer(), b.toBuffer());
     });
     let pubKey = Public.base().mul(privateKey);
     let pi = anonymitySet.findIndex(pub => pub.equal(pubKey));
-    if (pi < 0){
-        return Promise.reject("didn't find public key in anonymity set")
+    if (pi < 0) {
+        return Promise.reject('didn\'t find public key in anonymity set');
     }
     return pi;
 }

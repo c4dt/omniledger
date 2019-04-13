@@ -56,7 +56,7 @@ export const Defaults = {
 //     [servers.Services.blsCoSiService]
 //       Public = "24b73271432ded23909a23452f0de4e0f4a3fd70fcf11200dd29f57795ea8d2b5523d3b1c1c8c0f53b75f7e6de1c049c6cba43ea208a708be9440b92fcfe7cf8514b8865fef8d0ebeca3ae2380902081f41e5ec4154b831c508cdce380291d6b3579318141a244049a6c8fe34254dc9d96724d9a9827a3e87a1a24e62cd0c893"
 //       Suite = "bn256.adapter"
-  RosterTOMLLOCAL: `
+    RosterTOMLLOCAL: `
 [[servers]]
   Address = "tls://local.c4dt.org:7774"
   Suite = "Ed25519"

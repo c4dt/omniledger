@@ -1,8 +1,7 @@
-import {Party} from "./Party";
-import {KeyPair} from "./KeyPair";
-import ByzCoinRPC from "./cothority/byzcoin/byzcoin-rpc";
-import {Data} from "./Data";
-import SpawnerInstance from "./cothority/byzcoin/contracts/spawner-instance";
+import {Party} from './Party';
+import {KeyPair} from './KeyPair';
+import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
+import {Data} from './Data';
 import {Contact} from './Contact';
 
 // const ZXing = require("nativescript-zxing");
@@ -19,7 +18,7 @@ export class Badge {
             party: this.party.toObject(),
             keypair: this.keypair.toObject(),
             mined: this.mined,
-        }
+        };
     }
 
     async mine(d: Data, setProgress: Function = null) {

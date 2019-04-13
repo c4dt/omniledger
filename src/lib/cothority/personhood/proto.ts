@@ -1,15 +1,15 @@
-import * as Long from "long";
-import { Point, PointFactory } from "@dedis/kyber";
-import * as Moment from "moment";
-import { Message, Properties } from "protobufjs/light";
-import { EMPTY_BUFFER, registerMessage } from "../protobuf";
+import * as Long from 'long';
+import {Point, PointFactory} from '@dedis/kyber';
+import * as Moment from 'moment';
+import {Message, Properties} from 'protobufjs/light';
+import {EMPTY_BUFFER, registerMessage} from '../protobuf';
 
 export class PopPartyStruct extends Message<PopPartyStruct> {
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage("personhood.PopPartyStruct", PopPartyStruct, PopDesc, Attendees, LRSTag);
+        registerMessage('personhood.PopPartyStruct', PopPartyStruct, PopDesc, Attendees, LRSTag);
     }
 
     public state: number;
@@ -32,7 +32,7 @@ export class PopPartyStruct extends Message<PopPartyStruct> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "miningreward", {
+        Object.defineProperty(this, 'miningreward', {
             get(): Long {
                 return this.miningReward;
             },
@@ -60,7 +60,7 @@ export class FinalStatement extends Message<FinalStatement> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("personhood.FinalStatement", FinalStatement, PopDesc, Attendees);
+        registerMessage('personhood.FinalStatement', FinalStatement, PopDesc, Attendees);
     }
 
     readonly desc: PopDesc;
@@ -72,7 +72,7 @@ export class PopDesc extends Message<PopDesc> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("personhood.PopDesc", PopDesc);
+        registerMessage('personhood.PopDesc', PopDesc);
     }
 
     readonly name: string;
@@ -97,7 +97,7 @@ export class PopDesc extends Message<PopDesc> {
      * @returns a string of the time
      */
     get dateString(): string {
-        return new Date(this.timestamp).toString().replace(/ GMT.*/, "");
+        return new Date(this.timestamp).toString().replace(/ GMT.*/, '');
     }
 
     /**
@@ -106,7 +106,7 @@ export class PopDesc extends Message<PopDesc> {
      */
     get uniqueName(): string {
         const d = new Date(this.timestamp);
-        return Moment(d).format("YY-MM-DD HH:mm");
+        return Moment(d).format('YY-MM-DD HH:mm');
     }
 
     /**
@@ -123,7 +123,7 @@ export class Attendees extends Message<Attendees> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("personhood.Attendees", Attendees);
+        registerMessage('personhood.Attendees', Attendees);
     }
 
     readonly keys: Buffer[];
@@ -156,7 +156,7 @@ export class LRSTag extends Message<LRSTag> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("personhood.LRSTag", LRSTag);
+        registerMessage('personhood.LRSTag', LRSTag);
     }
 
     readonly tag: Buffer;

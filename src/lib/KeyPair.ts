@@ -1,9 +1,8 @@
-import {randomBytes} from "crypto";
-import {curve, Point} from "@dedis/kyber";
-import {Buffer} from "buffer";
-import {Log} from "./Log";
+import {randomBytes} from 'crypto';
+import {curve, Point} from '@dedis/kyber';
+import {Buffer} from 'buffer';
 
-const Curve25519 = curve.newCurve("edwards25519");
+const Curve25519 = curve.newCurve('edwards25519');
 
 /**
  * KeyPair holds the private and public key that go together. It has
@@ -14,7 +13,7 @@ export class KeyPair {
     _private: Private;
     _public: Public;
 
-    constructor(privHex: string = "") {
+    constructor(privHex: string = '') {
         if (privHex && privHex.length == 64) {
             this.setPrivateHex(privHex);
         } else {
@@ -35,18 +34,18 @@ export class KeyPair {
         this.setPrivate(Private.fromRand());
     }
 
-    toObject(): any{
+    toObject(): any {
         return {
             pub: this._public.toBuffer(),
             priv: this._private.toBuffer(),
-        }
+        };
     }
 
     static fromBuffer(priv: any): KeyPair {
         return new KeyPair(Buffer.from(priv).toString('hex'));
     }
 
-    static fromObject(obj: any){
+    static fromObject(obj: any) {
         return new KeyPair(Private.fromBuffer(obj.priv).toHex());
     }
 }
@@ -118,13 +117,13 @@ export class Public {
         return Buffer.from(this.point.toProto());
     }
 
-    mul(s: Private): Public{
+    mul(s: Private): Public {
         let ret = Curve25519.point();
         ret.mul(s.scalar, this.point);
         return new Public(ret);
     }
 
-    add(p: Public): Public{
+    add(p: Public): Public {
         return new Public(Curve25519.point().add(this.point, p.point));
     }
 

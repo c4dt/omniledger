@@ -9,24 +9,24 @@ import {FlexLayoutModule} from '@angular/flex-layout';
 import {MatDialogModule} from '@angular/material';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    CreateUser
-  ],
-  imports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    DemoMaterialModule,
-    FormsModule,
-    FlexLayoutModule,
-    ReactiveFormsModule,
-    MatDialogModule
-  ],
-  entryComponents:[
-    CreateUser
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+    declarations: [
+        AppComponent,
+        CreateUser
+    ],
+    imports: [
+        BrowserModule,
+        BrowserAnimationsModule,
+        DemoMaterialModule,
+        FormsModule,
+        FlexLayoutModule,
+        ReactiveFormsModule,
+        MatDialogModule
+    ],
+    entryComponents: [
+        CreateUser
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
 })
 export class AppModule {
 }

@@ -1,24 +1,24 @@
-import {InstanceID} from "../byzcoin/instance";
-import {Log} from "../../Log";
-import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
-import {randomBytes} from "crypto";
-import {RingSig, Sign} from "./ring-sig";
-import {Party} from "../../Party";
-import {Private, Public} from "../../KeyPair";
-import CredentialInstance, {CredentialStruct} from "../byzcoin/contracts/credentials-instance";
-import * as Long from "long";
-import {Contact} from "../../Contact";
-import DarcInstance from "../byzcoin/contracts/darc-instance";
-import {Roster, ServerIdentity} from "../network";
-import {objToProto, root} from "../protobuf";
-import {IConnection, RosterWSConnection, WebSocketConnection} from "../network/connection";
+import {InstanceID} from '../byzcoin/instance';
+import {Log} from '../../Log';
+import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
+import {randomBytes} from 'crypto';
+import {Sign} from './ring-sig';
+import {Party} from '../../Party';
+import {Private, Public} from '../../KeyPair';
+import CredentialInstance, {CredentialStruct} from '../byzcoin/contracts/credentials-instance';
+import * as Long from 'long';
+import {Contact} from '../../Contact';
+import DarcInstance from '../byzcoin/contracts/darc-instance';
+import {Roster, ServerIdentity} from '../network';
+import {objToProto, root} from '../protobuf';
+import {IConnection, RosterWSConnection, WebSocketConnection} from '../network/connection';
 
-const crypto = require("crypto");
+const crypto = require('crypto');
 
 export class PersonhoodRPC {
     private socket: IConnection;
     private list: ServerIdentity[];
-    static serviceID = "Personhood";
+    static serviceID = 'Personhood';
 
     constructor(public bc: ByzCoinRPC) {
         this.socket = new RosterWSConnection(bc.getConfig().roster, PersonhoodRPC.serviceID);
@@ -122,13 +122,13 @@ export class PersonhoodRPC {
 
     async pollAnswer(priv: Private, personhood: Party, pollId: Buffer, choice: number): Promise<PollStruct> {
         let context = Buffer.alloc(68);
-        context.write("Poll");
+        context.write('Poll');
         personhood.partyInstance.bc.genesisID.copy(context, 4);
         pollId.copy(context, 36);
         let msg = Buffer.alloc(7);
-        msg.write("Choice");
+        msg.write('Choice');
         msg.writeUInt8(choice, 6);
-        let contextHash = crypto.createHash("sha256");
+        let contextHash = crypto.createHash('sha256');
         contextHash.update(context);
         let points = personhood.partyInstance.popPartyStruct.attendees.publics.map(p =>
             new Public(p));
@@ -144,7 +144,7 @@ export class PersonhoodRPC {
 
     async callPoll(p: Poll): Promise<PollStruct[]> {
         let resp: PollResponse[] = [];
-        await this.callAllPoll("Poll", "PollResponse", p.toObject(), resp);
+        await this.callAllPoll('Poll', 'PollResponse', p.toObject(), resp);
         let str: PollStruct[] = [];
         resp.forEach(r => {
             if (r) {
@@ -152,7 +152,7 @@ export class PersonhoodRPC {
                     if (!str.find(s => s.pollID.equals(poll.pollID))) {
                         str.push(poll);
                     }
-                })
+                });
             }
         });
         return str;
@@ -175,7 +175,7 @@ export class PersonhoodParty {
             roster: this.roster.toBytes(),
             byzcoinid: this.byzcoinID,
             instanceid: this.instanceID,
-        }
+        };
     }
 
     static fromObject(obj: any): PersonhoodParty {
@@ -193,7 +193,7 @@ export class RoPaSci {
         return {
             byzcoinid: this.byzcoinID,
             ropasciid: this.instanceID,
-        }
+        };
     }
 
     static fromObject(obj: any): RoPaSci {
@@ -213,7 +213,7 @@ export class Poll {
             newpoll: this.newPoll ? this.newPoll.toObject() : null,
             list: this.list ? this.list.toObject() : null,
             answer: this.answer ? this.answer.toObject() : null,
-        }
+        };
     }
 
     static fromObject(obj: any): Poll {
@@ -256,7 +256,7 @@ export class PollStruct {
             description: this.description,
             choices: this.choices,
             chosen: this.chosen.map(c => c.toObject()),
-        }
+        };
     }
 
     static fromObject(obj: any): PollStruct {
@@ -269,7 +269,7 @@ export class PollStruct {
 
     choiceCount(c: number): number {
         return this.chosen.reduce((prev: number, curr) => {
-            return curr.choice == c ? prev + 1 : prev
+            return curr.choice == c ? prev + 1 : prev;
         }, 0);
     }
 }
@@ -288,7 +288,7 @@ export class PollAnswer {
             pollid: this.pollID,
             choice: this.choice,
             lrs: this.lrs,
-        }
+        };
     }
 
     static fromObject(obj: any): PollAnswer {
@@ -308,7 +308,7 @@ export class PollChoice {
         return {
             choice: this.choice,
             lrstag: this.lrstag,
-        }
+        };
     }
 
     static fromObject(obj: any): PollChoice {
@@ -324,7 +324,7 @@ export class PollResponse {
     toObject(): any {
         return {
             polls: this.polls.map(p => p.toObject()),
-        }
+        };
     }
 
     static fromObject(obj: any): PollResponse {
@@ -356,7 +356,7 @@ export class Meetup {
 
 // UserLocation is one user in one location, either a registered one, or an unregistered one.
 export class UserLocation {
-    static readonly protoName = "UserLocation";
+    static readonly protoName = 'UserLocation';
 
     constructor(public credential: CredentialStruct, public location: string,
                 public publicKey: Public = null,
@@ -377,7 +377,7 @@ export class UserLocation {
         if (this.publicKey) {
             o.publickey = this.publicKey.toBuffer();
         }
-        return o
+        return o;
     }
 
     toProto(): Buffer {
@@ -385,7 +385,7 @@ export class UserLocation {
     }
 
     get alias(): string {
-        return this.credential.getAttribute("personal", "alias").toString();
+        return this.credential.getAttribute('personal', 'alias').toString();
     }
 
     get unique(): Buffer {
@@ -411,7 +411,7 @@ export class UserLocation {
             }
             return c;
         } catch (e) {
-            return Log.rcatch(e, "couldn't convert toContact");
+            return Log.rcatch(e, 'couldn\'t convert toContact');
         }
     }
 
@@ -433,6 +433,6 @@ export class UserLocation {
     }
 
     static fromContact(c: Contact): UserLocation {
-        return new UserLocation(c.credential, "somewhere", c.seedPublic, c.credentialIID);
+        return new UserLocation(c.credential, 'somewhere', c.seedPublic, c.credentialIID);
     }
 }

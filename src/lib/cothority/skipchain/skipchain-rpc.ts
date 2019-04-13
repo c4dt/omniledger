@@ -1,6 +1,5 @@
-import {Log} from "../Log";
-import { IConnection, RosterWSConnection, WebSocketConnection } from "../network/connection";
-import { Roster } from "../network/proto";
+import {IConnection, RosterWSConnection, WebSocketConnection} from '../network/connection';
+import {Roster} from '../network/proto';
 import {
     GetAllSkipChainIDs,
     GetAllSkipChainIDsReply,
@@ -11,15 +10,15 @@ import {
     GetUpdateChainReply,
     StoreSkipBlock,
     StoreSkipBlockReply,
-} from "./proto";
-import { SkipBlock } from "./skipblock";
+} from './proto';
+import {SkipBlock} from './skipblock';
 
 /**
  * SkipchainRPC provides basic tools to interact with a skipchain
  * with a given roster
  */
 export default class SkipchainRPC {
-    static serviceName = "Skipchain";
+    static serviceName = 'Skipchain';
 
     private roster: Roster;
     private pool: IConnection;
@@ -41,8 +40,8 @@ export default class SkipchainRPC {
      * @returns a promise that resolves with the genesis block
      */
     createSkipchain(baseHeight: number = 1, maxHeight: number = 3): Promise<StoreSkipBlockReply> {
-        const newBlock = new SkipBlock({ roster: this.roster, maxHeight, baseHeight });
-        const req = new StoreSkipBlock({ newBlock });
+        const newBlock = new SkipBlock({roster: this.roster, maxHeight, baseHeight});
+        const req = new StoreSkipBlock({newBlock});
 
         return this.conn[0].send(req, StoreSkipBlockReply);
     }
@@ -54,7 +53,7 @@ export default class SkipchainRPC {
      * @throws an error if the request is not successful
      */
     addBlock(gid: Buffer, msg: Buffer): Promise<StoreSkipBlockReply> {
-        const newBlock = new SkipBlock({ roster: this.roster, data: msg });
+        const newBlock = new SkipBlock({roster: this.roster, data: msg});
         const req = new StoreSkipBlock({
             newBlock,
             targetSkipChainID: gid,
@@ -70,11 +69,11 @@ export default class SkipchainRPC {
      * @returns a promise that resolves with the block
      */
     async getSkipBlock(bid: Buffer): Promise<SkipBlock> {
-        const req = new GetSingleBlock({ id: bid });
+        const req = new GetSingleBlock({id: bid});
 
         const block = await this.pool.send<SkipBlock>(req, SkipBlock);
         if (!block.computeHash().equals(block.hash)) {
-            throw new Error("invalid block: hash does not match");
+            throw new Error('invalid block: hash does not match');
         }
 
         return block;
@@ -88,11 +87,11 @@ export default class SkipchainRPC {
      * @returns a promise that resolves with the block, or reject with an error
      */
     async getSkipBlockByIndex(genesis: Buffer, index: number): Promise<GetSingleBlockByIndexReply> {
-        const req = new GetSingleBlockByIndex({ genesis, index });
+        const req = new GetSingleBlockByIndex({genesis, index});
 
         const reply = await this.pool.send<GetSingleBlockByIndexReply>(req, GetSingleBlockByIndexReply);
         if (!reply.skipblock.computeHash().equals(reply.skipblock.hash)) {
-            throw new Error("invalid block: hash does not match");
+            throw new Error('invalid block: hash does not match');
         }
 
         return reply;
@@ -119,7 +118,7 @@ export default class SkipchainRPC {
      * @returns a promise that resolves with the list of blocks
      */
     async getUpdateChain(latestID: Buffer, verify = true): Promise<SkipBlock[]> {
-        const req = new GetUpdateChain({ latestID });
+        const req = new GetUpdateChain({latestID});
         const ret = await this.pool.send<GetUpdateChainReply>(req, GetUpdateChainReply);
         const blocks = ret.update;
 
@@ -167,12 +166,12 @@ export default class SkipchainRPC {
     verifyChain(blocks: SkipBlock[], firstID?: Buffer): Error {
         if (blocks.length === 0) {
             // expect to have blocks
-            return new Error("no block returned in the chain");
+            return new Error('no block returned in the chain');
         }
 
         if (firstID && !blocks[0].computeHash().equals(firstID)) {
             // expect the first block to be a particular block
-            return new Error("the first ID is not the one we have");
+            return new Error('the first ID is not the one we have');
         }
 
         for (let i = 1; i < blocks.length; i++) {
@@ -180,16 +179,16 @@ export default class SkipchainRPC {
             const curr = blocks[i];
 
             if (!curr.computeHash().equals(curr.hash)) {
-                return new Error("invalid block hash");
+                return new Error('invalid block hash');
             }
 
             if (prev.forwardLinks.length === 0) {
-                return new Error("no forward link included in the skipblock");
+                return new Error('no forward link included in the skipblock');
             }
 
             const link = prev.forwardLinks.find((l) => l.to.equals(curr.hash));
             if (!link) {
-                return new Error("no forward link associated with the next block");
+                return new Error('no forward link associated with the next block');
             }
 
             const err = link.verify(prev.roster.getServicePublics(SkipchainRPC.serviceName));

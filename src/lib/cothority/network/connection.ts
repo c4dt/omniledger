@@ -1,8 +1,8 @@
-import { Message, util } from "protobufjs/light";
-import shuffle from "shuffle-array";
-import {Log} from "../Log";
-import { Roster } from "./proto";
-import { BrowserWebSocketAdapter, WebSocketAdapter } from "./websocket-adapter";
+import {Message, util} from 'protobufjs/light';
+import shuffle from 'shuffle-array';
+import {Log} from '../Log';
+import {Roster} from './proto';
+import {BrowserWebSocketAdapter, WebSocketAdapter} from './websocket-adapter';
 
 let factory: (path: string) => WebSocketAdapter = (path: string) => new BrowserWebSocketAdapter(path);
 
@@ -79,12 +79,12 @@ export class WebSocketConnection implements IConnection {
         }
 
         return new Promise((resolve, reject) => {
-            const path = this.url + "/" + this.service + "/" + message.$type.name.replace(/.*\./, "");
+            const path = this.url + '/' + this.service + '/' + message.$type.name.replace(/.*\./, '');
             Log.lvl4(`Socket: new WebSocket(${path})`);
             const ws = factory(path);
             const bytes = Buffer.from(message.$type.encode(message).finish());
 
-            const timer = setTimeout(() => ws.close(4000, "timeout"), this.timeout);
+            const timer = setTimeout(() => ws.close(4000, 'timeout'), this.timeout);
 
             ws.onOpen(() => {
                 ws.send(bytes);
@@ -93,7 +93,7 @@ export class WebSocketConnection implements IConnection {
             ws.onMessage((data: Buffer) => {
                 clearTimeout(timer);
                 const buf = Buffer.from(data);
-                Log.lvl4("Getting message with length:", buf.length);
+                Log.lvl4('Getting message with length:', buf.length);
 
                 try {
                     const ret = reply.decode(buf) as T;
@@ -114,7 +114,7 @@ export class WebSocketConnection implements IConnection {
 
             ws.onClose((code: number, reason: string) => {
                 if (code !== 1000) {
-                    Log.error("Got close:", code, reason);
+                    Log.error('Got close:', code, reason);
                     reject(new Error(reason));
                 }
             });
@@ -122,7 +122,7 @@ export class WebSocketConnection implements IConnection {
             ws.onError((err: Error) => {
                 clearTimeout(timer);
 
-                reject(new Error("error in websocket " + path + ": " + err));
+                reject(new Error('error in websocket ' + path + ': ' + err));
             });
         });
     }
@@ -139,7 +139,7 @@ export class RosterWSConnection extends WebSocketConnection {
      * @param service   The name of the service to reach
      */
     constructor(r: Roster, service: string) {
-        super("", service);
+        super('', service);
         this.addresses = r.list.map((conode) => conode.getWebSocketAddress());
     }
 
@@ -161,7 +161,7 @@ export class RosterWSConnection extends WebSocketConnection {
             }
         }
 
-        throw new Error(`send fails with errors: [${errors.join("; ")}]`);
+        throw new Error(`send fails with errors: [${errors.join('; ')}]`);
     }
 }
 
@@ -175,7 +175,7 @@ export class LeaderConnection extends WebSocketConnection {
      */
     constructor(roster: Roster, service: string) {
         if (roster.list.length === 0) {
-            throw new Error("Roster should have at least one node");
+            throw new Error('Roster should have at least one node');
         }
 
         super(roster.list[0].address, service);

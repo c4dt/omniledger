@@ -1,13 +1,13 @@
-import { Point, PointFactory } from "@dedis/kyber";
-import { createHash } from "crypto";
-import { Message, Properties } from "protobufjs/light";
-import UUID from "pure-uuid";
-import * as toml from "toml";
-import { EMPTY_BUFFER, registerMessage } from "../protobuf";
+import {Point, PointFactory} from '@dedis/kyber';
+import {createHash} from 'crypto';
+import {Message, Properties} from 'protobufjs/light';
+import UUID from 'pure-uuid';
+import * as toml from 'toml';
+import {EMPTY_BUFFER, registerMessage} from '../protobuf';
 
-const BASE_URL_WS = "ws://";
-const BASE_URL_TLS = "tls://";
-const URL_PORT_SPLITTER = ":";
+const BASE_URL_WS = 'ws://';
+const BASE_URL_TLS = 'tls://';
+const URL_PORT_SPLITTER = ':';
 const PORT_MIN = 0;
 const PORT_MAX = 65535;
 
@@ -19,10 +19,10 @@ export class Roster extends Message<Roster> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("Roster", Roster, ServerIdentity);
+        registerMessage('Roster', Roster, ServerIdentity);
     }
 
-    static fromBytes(b: Buffer): Roster{
+    static fromBytes(b: Buffer): Roster {
         return Roster.decode(b);
     }
 
@@ -47,7 +47,7 @@ export class Roster extends Message<Roster> {
     static fromTOML(data: string): Roster {
         const roster = toml.parse(data);
         const list = roster.servers.map((server: any) => {
-            const { Public, Suite, Address, Description, Services } = server;
+            const {Public, Suite, Address, Description, Services} = server;
             const p = PointFactory.fromToml(Suite, Public);
 
             return new ServerIdentity({
@@ -55,15 +55,15 @@ export class Roster extends Message<Roster> {
                 description: Description,
                 public: p.toProto(),
                 serviceIdentities: Object.keys(Services || {}).map((key) => {
-                    const { Public: pub, Suite: suite } = Services[key];
+                    const {Public: pub, Suite: suite} = Services[key];
                     const point = PointFactory.fromToml(suite, pub);
 
-                    return new ServiceIdentity({ name: key, public: point.toProto(), suite });
+                    return new ServiceIdentity({name: key, public: point.toProto(), suite});
                 }),
             });
         });
 
-        return new Roster({ list });
+        return new Roster({list});
     }
 
     readonly id: Buffer;
@@ -79,10 +79,10 @@ export class Roster extends Message<Roster> {
             return;
         }
 
-        const { id, list, aggregate } = properties;
+        const {id, list, aggregate} = properties;
 
         if (!id || !aggregate) {
-            const h = createHash("sha256");
+            const h = createHash('sha256');
             list.forEach((srvid) => {
                 h.update(srvid.getPublic().marshalBinary());
 
@@ -99,7 +99,7 @@ export class Roster extends Message<Roster> {
 
             // protobuf fields need to be initialized if we want to encode later
             this.aggregate = this._agg.toProto();
-            this.id = Buffer.from(new UUID(5, "ns:URL", h.digest().toString("hex")).export());
+            this.id = Buffer.from(new UUID(5, 'ns:URL', h.digest().toString('hex')).export());
         }
     }
 
@@ -133,7 +133,7 @@ export class Roster extends Message<Roster> {
      * @returns the new roster
      */
     slice(start: number, end?: number): Roster {
-        return new Roster({ list: this.list.slice(start, end) });
+        return new Roster({list: this.list.slice(start, end)});
     }
 
     /**
@@ -153,7 +153,7 @@ export class ServerIdentity extends Message<ServerIdentity> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("ServerIdentity", ServerIdentity, ServiceIdentity);
+        registerMessage('ServerIdentity', ServerIdentity, ServiceIdentity);
     }
 
     /**
@@ -163,7 +163,7 @@ export class ServerIdentity extends Message<ServerIdentity> {
      */
     static isValidAddress(address: string): boolean {
         if (address.startsWith(BASE_URL_TLS)) {
-            const [, ...array] = address.replace(BASE_URL_TLS, "").split(URL_PORT_SPLITTER);
+            const [, ...array] = address.replace(BASE_URL_TLS, '').split(URL_PORT_SPLITTER);
 
             if (array.length === 1) {
                 const port = parseInt(array[0], 10);
@@ -182,8 +182,8 @@ export class ServerIdentity extends Message<ServerIdentity> {
      * @param path      the path after the base urlRegistered
      * @returns a websocket address
      */
-    static addressToWebsocket(address: string, path: string = ""): string {
-        const [ip, portStr] = address.replace(BASE_URL_TLS, "").split(URL_PORT_SPLITTER);
+    static addressToWebsocket(address: string, path: string = ''): string {
+        const [ip, portStr] = address.replace(BASE_URL_TLS, '').split(URL_PORT_SPLITTER);
         const port = parseInt(portStr, 10) + 1;
 
         return BASE_URL_WS + ip + URL_PORT_SPLITTER + port + path;
@@ -207,7 +207,7 @@ export class ServerIdentity extends Message<ServerIdentity> {
 
         if (!properties.id) {
             const hex = this.getPublic().toString();
-            this.id = Buffer.from(new UUID(5, "ns:URL", `https://dedis.epfl.ch/id/${hex}`).export());
+            this.id = Buffer.from(new UUID(5, 'ns:URL', `https://dedis.epfl.ch/id/${hex}`).export());
         }
     }
 
@@ -242,7 +242,7 @@ export class ServiceIdentity extends Message<ServiceIdentity> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("ServiceIdentity", ServiceIdentity);
+        registerMessage('ServiceIdentity', ServiceIdentity);
     }
 
     readonly name: string;

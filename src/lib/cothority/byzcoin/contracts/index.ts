@@ -1,10 +1,10 @@
-import CoinInstance, { Coin } from "./coin-instance";
-import CredentialsInstance, { Attribute, Credential, CredentialStruct } from "./credentials-instance";
-import DarcInstance from "./darc-instance";
-import { PopPartyInstance } from "../../Personhood/pop-party-instance";
-import * as PopPartyProto from "../../Personhood/proto";
-import RoPaSciInstance, { RoPaSciStruct } from "../../Personhood/ro-pa-sci-instance";
-import SpawnerInstance, { SpawnerStruct } from "./spawner-instance";
+import CoinInstance, {Coin} from './coin-instance';
+import CredentialsInstance, {Attribute, Credential, CredentialStruct} from './credentials-instance';
+import DarcInstance from './darc-instance';
+import {PopPartyInstance} from '../../Personhood/pop-party-instance';
+import * as PopPartyProto from '../../Personhood/proto';
+import RoPaSciInstance, {RoPaSciStruct} from '../../Personhood/ro-pa-sci-instance';
+import SpawnerInstance, {SpawnerStruct} from './spawner-instance';
 
 const coin = {
     Coin,

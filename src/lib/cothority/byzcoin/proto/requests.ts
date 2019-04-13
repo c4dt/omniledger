@@ -1,11 +1,10 @@
-import { Message, Properties } from "protobufjs/light";
-import Darc from "../../darc/darc";
-import { Roster } from "../../network/proto";
-import { registerMessage } from "../../protobuf";
-import { SkipBlock } from "../../skipchain/skipblock";
-import ClientTransaction from "../client-transaction";
-import Proof from "../proof";
-import {Log} from "../../Log";
+import {Message, Properties} from 'protobufjs/light';
+import Darc from '../../darc/darc';
+import {Roster} from '../../network/proto';
+import {registerMessage} from '../../protobuf';
+import {SkipBlock} from '../../skipchain/skipblock';
+import ClientTransaction from '../client-transaction';
+import Proof from '../proof';
 
 /**
  * Request to create a byzcoin skipchain
@@ -15,7 +14,7 @@ export class CreateGenesisBlock extends Message<CreateGenesisBlock> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("CreateGenesisBlock", CreateGenesisBlock, Roster, Darc);
+        registerMessage('CreateGenesisBlock', CreateGenesisBlock, Roster, Darc);
     }
 
     readonly version: number;
@@ -32,7 +31,7 @@ export class CreateGenesisBlock extends Message<CreateGenesisBlock> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "genesisdarc", {
+        Object.defineProperty(this, 'genesisdarc', {
             get(): Darc {
                 return this.genesisDarc;
             },
@@ -41,7 +40,7 @@ export class CreateGenesisBlock extends Message<CreateGenesisBlock> {
             },
         });
 
-        Object.defineProperty(this, "blockinterval", {
+        Object.defineProperty(this, 'blockinterval', {
             get(): Long {
                 return this.blockInterval;
             },
@@ -50,7 +49,7 @@ export class CreateGenesisBlock extends Message<CreateGenesisBlock> {
             },
         });
 
-        Object.defineProperty(this, "maxblocksize", {
+        Object.defineProperty(this, 'maxblocksize', {
             get(): number {
                 return this.maxBlockSize;
             },
@@ -59,7 +58,7 @@ export class CreateGenesisBlock extends Message<CreateGenesisBlock> {
             },
         });
 
-        Object.defineProperty(this, "darccontractids", {
+        Object.defineProperty(this, 'darccontractids', {
             get(): string[] {
                 return this.darcContractIDs;
             },
@@ -78,7 +77,7 @@ export class CreateGenesisBlockResponse extends Message<CreateGenesisBlockRespon
      * @see README#Message classes
      */
     static register() {
-        registerMessage("CreateGenesisBlockResponse", CreateGenesisBlockResponse, SkipBlock);
+        registerMessage('CreateGenesisBlockResponse', CreateGenesisBlockResponse, SkipBlock);
     }
 
     readonly version: number;
@@ -93,7 +92,7 @@ export class GetProof extends Message<GetProof> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetProof", GetProof);
+        registerMessage('GetProof', GetProof);
     }
 
     readonly version: number;
@@ -109,7 +108,7 @@ export class GetProofResponse extends Message<GetProofResponse> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetProofResponse", GetProofResponse, Proof);
+        registerMessage('GetProofResponse', GetProofResponse, Proof);
     }
 
     readonly version: number;
@@ -124,7 +123,7 @@ export class AddTxRequest extends Message<AddTxRequest> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("AddTxRequest", AddTxRequest, ClientTransaction);
+        registerMessage('AddTxRequest', AddTxRequest, ClientTransaction);
     }
 
     readonly version: number;
@@ -137,7 +136,7 @@ export class AddTxRequest extends Message<AddTxRequest> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "skipchainid", {
+        Object.defineProperty(this, 'skipchainid', {
             get(): Buffer {
                 return this.skipchainID;
             },
@@ -156,7 +155,7 @@ export class AddTxResponse extends Message<AddTxResponse> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("AddTxResponse", AddTxResponse);
+        registerMessage('AddTxResponse', AddTxResponse);
     }
 
     readonly version: number;
@@ -170,7 +169,7 @@ export class GetSignerCounters extends Message<GetSignerCounters> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetSignerCounters", GetSignerCounters);
+        registerMessage('GetSignerCounters', GetSignerCounters);
     }
 
     readonly signerIDs: string[];
@@ -183,7 +182,7 @@ export class GetSignerCounters extends Message<GetSignerCounters> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "signerids", {
+        Object.defineProperty(this, 'signerids', {
             get(): string[] {
                 return this.signerIDs;
             },
@@ -192,7 +191,7 @@ export class GetSignerCounters extends Message<GetSignerCounters> {
             },
         });
 
-        Object.defineProperty(this, "skipchainid", {
+        Object.defineProperty(this, 'skipchainid', {
             get(): Buffer {
                 return this.skipchainID;
             },
@@ -211,7 +210,7 @@ export class GetSignerCountersResponse extends Message<GetSignerCountersResponse
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetSignerCountersResponse", GetSignerCountersResponse);
+        registerMessage('GetSignerCountersResponse', GetSignerCountersResponse);
     }
 
     readonly counters: Long[];

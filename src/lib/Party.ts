@@ -1,22 +1,18 @@
-import {Public} from "./KeyPair";
-// import {screen} from "tns-core-modules/platform";
-// import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
-
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
-import {Log} from "./Log";
-import {PopPartyInstance} from "./cothority/Personhood/pop-party-instance";
-import {PopDesc, PopPartyStruct} from "./cothority/Personhood/proto";
-import * as Long from "long";
-import ByzCoinRPC from "./cothority/byzcoin/byzcoin-rpc";
-import Instance, {InstanceID} from "./cothority/byzcoin/instance";
-import DarcInstance from "./cothority/byzcoin/contracts/darc-instance";
+import {PopPartyInstance} from './cothority/Personhood/pop-party-instance';
+import {PopDesc, PopPartyStruct} from './cothority/Personhood/proto';
+import * as Long from 'long';
+import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
+import Instance from './cothority/byzcoin/instance';
+// import {screen} from "tns-core-modules/platform";
+// import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
 
 export class Party {
     static readonly PreBarrier = 1;
     static readonly Scanning = 2;
     static readonly Finalized = 3;
-    static readonly url = "https://pop.dedis.ch/qrcode/party";
+    static readonly url = 'https://pop.dedis.ch/qrcode/party';
     isOrganizer: boolean = false;
 
     constructor(public partyInstance: PopPartyInstance) {
@@ -39,7 +35,7 @@ export class Party {
         return {
             party: this.partyInstance.toBytes(),
             isOrganizer: this.isOrganizer,
-        }
+        };
     }
 
     get state(): number {

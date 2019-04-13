@@ -1,8 +1,10 @@
-import * as Long from "long";
-import {Reader} from "protobufjs/light";
-const protobuf = require("protobufjs/light");
-import {Log} from "../Log";
-const models = require("./models.json");
+import * as Long from 'long';
+import {Reader} from 'protobufjs/light';
+import {Log} from '../Log';
+
+const protobuf = require('protobufjs/light');
+
+const models = require('./models.json');
 // import models from "./models.json";
 
 /**
@@ -15,7 +17,7 @@ if (!protobuf.util.isNode) {
     // The module is needed only for a specific environment so
     // we delay the import
     // tslint:disable-next-line
-    const buffer = require("buffer");
+    const buffer = require('buffer');
 
     // @ts-ignore
     protobuf.Reader.prototype._slice = buffer.Buffer.prototype.slice;
@@ -29,8 +31,8 @@ if (!protobuf.util.isNode) {
  * Detect a wrong import of the protobufsjs library that could lead
  * to inconsistency at runtime because of different bundles
  */
-if (protobuf.build !== "light") {
-    throw new Error("expecting to use the light module of protobufs");
+if (protobuf.build !== 'light') {
+    throw new Error('expecting to use the light module of protobufs');
 }
 
 export const root = protobuf.Root.fromJSON(models);
@@ -71,7 +73,7 @@ export function objToProto(obj: object, modelName: string): Buffer {
     const requestModel = root.lookup(modelName);
     const errMsg = requestModel.verify(obj);
     if (errMsg) {
-        Log.error("couldn't verify data:", errMsg);
+        Log.error('couldn\'t verify data:', errMsg);
         return null;
     }
     const message = requestModel.create(obj);

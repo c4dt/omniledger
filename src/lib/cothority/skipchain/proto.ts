@@ -1,13 +1,13 @@
-import { Message, Properties } from "protobufjs/light";
-import { EMPTY_BUFFER, registerMessage } from "../protobuf";
-import { ForwardLink, SkipBlock } from "./skipblock";
+import {Message, Properties} from 'protobufjs/light';
+import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import {ForwardLink, SkipBlock} from './skipblock';
 
 export class GetAllSkipChainIDs extends Message<GetAllSkipChainIDs> {
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetAllSkipChainIDs", GetAllSkipChainIDs);
+        registerMessage('GetAllSkipChainIDs', GetAllSkipChainIDs);
     }
 }
 
@@ -16,7 +16,7 @@ export class GetAllSkipChainIDsReply extends Message<GetAllSkipChainIDsReply> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetAllSkipChainIDsReply", GetAllSkipChainIDsReply);
+        registerMessage('GetAllSkipChainIDsReply', GetAllSkipChainIDsReply);
     }
 
     readonly skipChainIDs: Buffer[];
@@ -33,7 +33,7 @@ export class StoreSkipBlock extends Message<StoreSkipBlock> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("StoreSkipBlock", StoreSkipBlock, SkipBlock);
+        registerMessage('StoreSkipBlock', StoreSkipBlock, SkipBlock);
     }
 
     readonly targetSkipChainID: Buffer;
@@ -53,7 +53,7 @@ export class StoreSkipBlockReply extends Message<StoreSkipBlock> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("StoreSkipBlockReply", StoreSkipBlockReply, SkipBlock);
+        registerMessage('StoreSkipBlockReply', StoreSkipBlockReply, SkipBlock);
     }
 
     readonly latest: SkipBlock;
@@ -65,7 +65,7 @@ export class GetSingleBlock extends Message<GetSingleBlock> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetSingleBlock", GetSingleBlock);
+        registerMessage('GetSingleBlock', GetSingleBlock);
     }
 
     readonly id: Buffer;
@@ -82,7 +82,7 @@ export class GetSingleBlockByIndex extends Message<GetSingleBlockByIndex> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetSingleBlockByIndex", GetSingleBlockByIndex);
+        registerMessage('GetSingleBlockByIndex', GetSingleBlockByIndex);
     }
 
     readonly genesis: Buffer;
@@ -100,7 +100,7 @@ export class GetSingleBlockByIndexReply extends Message<GetSingleBlockByIndexRep
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetSingleBlockByIndexReply", GetSingleBlockByIndexReply);
+        registerMessage('GetSingleBlockByIndexReply', GetSingleBlockByIndexReply);
     }
 
     readonly skipblock: SkipBlock;
@@ -118,7 +118,7 @@ export class GetUpdateChain extends Message<GetUpdateChain> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetUpdateChain", GetUpdateChain);
+        registerMessage('GetUpdateChain', GetUpdateChain);
     }
 
     readonly latestID: Buffer;
@@ -135,7 +135,7 @@ export class GetUpdateChainReply extends Message<GetUpdateChainReply> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("GetUpdateChainReply", GetUpdateChainReply, SkipBlock);
+        registerMessage('GetUpdateChainReply', GetUpdateChainReply, SkipBlock);
     }
 
     readonly update: SkipBlock[];

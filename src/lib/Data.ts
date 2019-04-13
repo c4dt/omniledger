@@ -2,9 +2,6 @@
  * system.
  */
 import {PersonhoodRPC, PollStruct} from './cothority/personhood/personhood-rpc';
-
-const curve = require('@dedis/kyber').curve.newCurve('edwards25519');
-const Schnorr = require('@dedis/kyber').sign.schnorr;
 import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
 
 import * as Long from 'long';
@@ -16,11 +13,12 @@ import {Buffer} from 'buffer';
 import Instance, {InstanceID} from './cothority/byzcoin/instance';
 import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
 import CredentialInstance, {
-  Attribute,
-  Credential,
-  CredentialStruct, RecoverySignature
+    Attribute,
+    Credential,
+    CredentialStruct,
+    RecoverySignature
 } from './cothority/byzcoin/contracts/credentials-instance';
-import CoinInstance, {Coin} from './cothority/byzcoin/contracts/coin-instance';
+import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
 import {TestStoreRPC} from './TestStoreRPC';
 import SpawnerInstance, {SPAWNER_COIN} from './cothority/byzcoin/contracts/spawner-instance';
 import Signer from './cothority/darc/signer';
@@ -36,720 +34,724 @@ import {parseQRCode} from './Scan';
 import Darc from './cothority/darc/darc';
 import {Roster} from './cothority/network';
 import ClientTransaction, {Argument, Instruction} from './cothority/byzcoin/client-transaction';
-import IdentityEd25519 from './cothority/darc/identity-ed25519';
 import IdentityDarc from './cothority/darc/identity-darc';
 import {Scalar} from '@dedis/kyber';
+
+const curve = require('@dedis/kyber').curve.newCurve('edwards25519');
+const Schnorr = require('@dedis/kyber').sign.schnorr;
 
 
 /**
  * Data holds the data of the app.
  */
 export class Data {
-  dataFileName: string;
-  continuousScan: boolean;
-  personhoodPublished: boolean;
-  keyPersonhood: KeyPair;
-  keyIdentity: KeyPair;
-  bc: ByzCoinRPC = null;
-  constructorObj: any;
-  contact: Contact = null;
-  contacts: Contact[] = [];
-  parties: Party[] = [];
-  badges: Badge[] = [];
-  ropascis: RoPaSciInstance[] = [];
-  polls: PollStruct[] = [];
-  meetups: SocialNode[] = [];
+    dataFileName: string;
+    continuousScan: boolean;
+    personhoodPublished: boolean;
+    keyPersonhood: KeyPair;
+    keyIdentity: KeyPair;
+    bc: ByzCoinRPC = null;
+    constructorObj: any;
+    contact: Contact = null;
+    contacts: Contact[] = [];
+    parties: Party[] = [];
+    badges: Badge[] = [];
+    ropascis: RoPaSciInstance[] = [];
+    polls: PollStruct[] = [];
+    meetups: SocialNode[] = [];
 
-  // Non-stored fields
-  recoverySignatures: RecoverySignature[] = [];
+    // Non-stored fields
+    recoverySignatures: RecoverySignature[] = [];
 
-  static readonly urlRecoveryRequest = 'https://pop.dedis.ch/recoveryReq-1';
-  static readonly urlRecoverySignature = 'https://pop.dedis.ch/recoverySig-1';
+    static readonly urlRecoveryRequest = 'https://pop.dedis.ch/recoveryReq-1';
+    static readonly urlRecoverySignature = 'https://pop.dedis.ch/recoverySig-1';
 
-  /**
-   * Constructs a new Data, optionally initialized with an object containing
-   * fields for initialization of the class.
-   * @param obj (optional) object with all fields for the class.
-   */
-  constructor(obj: any = {}) {
-    this.constructorObj = obj;
-    this.setValues(obj);
-    this.setFileName('data.json');
-  }
-
-  setFileName(n: string) {
-    this.dataFileName = Defaults.DataDir + '/' + n;
-  }
-
-  setValues(obj: any) {
-    this.constructorObj = obj;
-    try {
-      this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
-      this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
-      this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
-      this.keyIdentity = obj.keyIdentity ? new KeyPair(obj.keyIdentity) : new KeyPair();
-      this.meetups = obj.meetups ? obj.meetups.map(m => SocialNode.fromObject(m)) : [];
-
-      if (obj.contact != null) {
-        this.contact = Contact.fromObject(obj.contact);
-      } else {
-        this.contact = new Contact(Contact.prepareInitialCred('new identity', this.keyIdentity._public, null));
-      }
-    } catch (e) {
-      Log.catch(e);
+    /**
+     * Constructs a new Data, optionally initialized with an object containing
+     * fields for initialization of the class.
+     * @param obj (optional) object with all fields for the class.
+     */
+    constructor(obj: any = {}) {
+        this.constructorObj = obj;
+        this.setValues(obj);
+        this.setFileName('data.json');
     }
-  }
 
-  delete() {
-    this.setValues({});
-    this.bc = null;
-    this.constructorObj = {};
-    this.meetups = [];
-    this.parties = [];
-    this.badges = [];
-    this.ropascis = [];
-    this.polls = [];
-  }
+    setFileName(n: string) {
+        this.dataFileName = Defaults.DataDir + '/' + n;
+    }
 
-  async connectByzcoin(): Promise<ByzCoinRPC> {
-    try {
-      let obj = this.constructorObj;
-      let bcID: Buffer;
-      if (this.bc != null) {
-        Log.lvl2('Not connecting if bc is already initialized');
-        bcID = this.bc.genesisID;
-      } else if (Defaults.LoadTestStore && this.bc == null) {
-        Log.lvl1('Loading data from TestStoreRPC');
-        let ts = await TestStoreRPC.load(Defaults.Roster);
-        Defaults.ByzCoinID = ts.byzcoinID;
-        Log.lvl1('Updated Defaults bcID/spawnerIID:', ts.byzcoinID, ts.spawnerIID);
-        bcID = obj.bcID ? Buffer.from(obj.bcID) : Defaults.ByzCoinID;
-        let roster = obj.roster ? Roster.fromObject(obj.roster) : Defaults.Roster;
-        if (bcID == null || bcID.length == 0) {
-          if (Defaults.Testing) {
-            return;
-          } else {
-            return Promise.reject('Cannot connect to ByzCoin');
-          }
+    setValues(obj: any) {
+        this.constructorObj = obj;
+        try {
+            this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
+            this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
+            this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
+            this.keyIdentity = obj.keyIdentity ? new KeyPair(obj.keyIdentity) : new KeyPair();
+            this.meetups = obj.meetups ? obj.meetups.map(m => SocialNode.fromObject(m)) : [];
+
+            if (obj.contact != null) {
+                this.contact = Contact.fromObject(obj.contact);
+            } else {
+                this.contact = new Contact(Contact.prepareInitialCred('new identity', this.keyIdentity._public, null));
+            }
+        } catch (e) {
+            Log.catch(e);
         }
-        this.bc = await ByzCoinRPC.fromByzcoin(roster, bcID);
-      }
+    }
 
-      Log.lvl2('getting parties and badges');
-      if (obj.parties) {
-        this.parties = obj.parties.map(p => Party.fromObject(this.bc, p));
-      }
-      if (obj.badges) {
-        this.badges = obj.badges.map(b => Badge.fromObject(this.bc, b));
-        this.badges = this.badges.filter((badge, i) =>
-          this.badges.findIndex(b => b.party.uniqueName == badge.party.uniqueName) == i);
-      }
+    delete() {
+        this.setValues({});
+        this.bc = null;
+        this.constructorObj = {};
+        this.meetups = [];
+        this.parties = [];
+        this.badges = [];
+        this.ropascis = [];
+        this.polls = [];
+    }
 
-      Log.lvl2('Getting rock-paper-scissors and polls');
-      if (obj.ropascis) {
-        this.ropascis = obj.ropascis.map(rps =>
-          new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
-      }
-      if (obj.polls) {
-        this.polls = obj.polls.map(rps => PollStruct.fromObject(rps));
-      }
+    async connectByzcoin(): Promise<ByzCoinRPC> {
+        try {
+            let obj = this.constructorObj;
+            let bcID: Buffer;
+            if (this.bc != null) {
+                Log.lvl2('Not connecting if bc is already initialized');
+                bcID = this.bc.genesisID;
+            } else if (Defaults.LoadTestStore && this.bc == null) {
+                Log.lvl1('Loading data from TestStoreRPC');
+                let ts = await TestStoreRPC.load(Defaults.Roster);
+                Defaults.ByzCoinID = ts.byzcoinID;
+                Log.lvl1('Updated Defaults bcID/spawnerIID:', ts.byzcoinID, ts.spawnerIID);
+                bcID = obj.bcID ? Buffer.from(obj.bcID) : Defaults.ByzCoinID;
+                let roster = obj.roster ? Roster.fromObject(obj.roster) : Defaults.Roster;
+                if (bcID == null || bcID.length == 0) {
+                    if (Defaults.Testing) {
+                        return;
+                    } else {
+                        return Promise.reject('Cannot connect to ByzCoin');
+                    }
+                }
+                this.bc = await ByzCoinRPC.fromByzcoin(roster, bcID);
+            }
 
-      if (obj.contact) {
-        this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
-      } else if (this.contact) {
-        Log.print('updating contact');
+            Log.lvl2('getting parties and badges');
+            if (obj.parties) {
+                this.parties = obj.parties.map(p => Party.fromObject(this.bc, p));
+            }
+            if (obj.badges) {
+                this.badges = obj.badges.map(b => Badge.fromObject(this.bc, b));
+                this.badges = this.badges.filter((badge, i) =>
+                    this.badges.findIndex(b => b.party.uniqueName == badge.party.uniqueName) == i);
+            }
+
+            Log.lvl2('Getting rock-paper-scissors and polls');
+            if (obj.ropascis) {
+                this.ropascis = obj.ropascis.map(rps =>
+                    new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
+            }
+            if (obj.polls) {
+                this.polls = obj.polls.map(rps => PollStruct.fromObject(rps));
+            }
+
+            if (obj.contact) {
+                this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
+            } else if (this.contact) {
+                Log.print('updating contact');
+                await this.contact.connectBC(this.bc);
+            }
+
+            Log.lvl2('Getting contact informations');
+            this.contacts = [];
+            if (obj.contacts) {
+                let f = obj.contacts.filter(u => u);
+                for (let i = 0; i < f.length; i++) {
+                    this.contacts.push(await Contact.fromObjectBC(this.bc, f[i]));
+                }
+            }
+        } catch (e) {
+            await Log.rcatch(e);
+        }
+        return this.bc;
+    }
+
+    toObject(): any {
+        let v = {
+            continuousScan: this.continuousScan,
+            personhoodPublished: this.personhoodPublished,
+            keyPersonhood: this.keyPersonhood._private.toHex(),
+            keyIdentity: this.keyIdentity._private.toHex(),
+            friends: this.contacts.map(u => u.toObject()),
+            meetups: this.meetups.map(m => m.toObject()),
+            contact: this.contact.toObject(),
+            bcRoster: null,
+            bcID: null,
+            darcInstance: null,
+            credentialInstance: null,
+            coinInstance: null,
+            parties: [],
+            badges: [],
+            ropascis: [],
+            polls: [],
+        };
+        if (this.bc) {
+            v.bcRoster = this.bc.getConfig().roster.toJSON();
+            v.bcID = this.bc.getGenesis().computeHash();
+            v.parties = this.parties ? this.parties.map(p => p.toObject()) : null;
+            v.badges = this.badges ? this.badges.map(b => b.toObject()) : null;
+            v.ropascis = this.ropascis ? this.ropascis.map(rps => rps.toBytes()) : null;
+            v.polls = this.polls ? this.polls.map(rps => rps.toObject()) : null;
+        }
+        return v;
+    }
+
+    async publishPersonhood(publish: boolean) {
+        this.personhoodPublished = publish;
+        if (publish) {
+            try {
+                Log.lvl2('Personhood not yet stored - adding to credential');
+                this.contact.credential.setAttribute('personhood',
+                    'ed25519', this.keyPersonhood._public.toBuffer());
+                await this.contact.sendUpdate(this.keyIdentitySigner);
+            } catch (e) {
+                Log.catch(e);
+            }
+        }
+    }
+
+    /**
+     * Returns a promise with the loaded Data in it, when available. If the file
+     * is not found, it returns an empty data.
+     */
+    async load(): Promise<Data> {
+        try {
+            await this.setValues(Storage.getObject(this.dataFileName));
+        } catch (e) {
+            Log.catch(e);
+        }
+        this.bc = null;
+        await this.connectByzcoin();
+        return this;
+    }
+
+    async save(): Promise<Data> {
+        Storage.putObject(this.dataFileName, this.toObject());
+        if (this.personhoodPublished) {
+            this.contact.credential.setAttribute('personhood',
+                'ed25519', this.keyPersonhood._public.toBuffer());
+        }
+        if (this.contact.isRegistered()) {
+            await this.contact.sendUpdate(this.keyIdentitySigner);
+        }
+        return this;
+    }
+
+    async canPay(amount: Long): Promise<boolean> {
+        if (!(this.coinInstance && this.spawnerInstance)) {
+            return Promise.reject('Cannot sign up a contact without coins and spawner');
+        }
+        await this.coinInstance.update();
+        if (amount.lessThanOrEqual(0)) {
+            return Promise.reject('Cannot send 0 or less coins');
+        }
+        if (amount.greaterThanOrEqual(this.coinInstance.coin.value)) {
+            return Promise.reject('You only have ' + this.coinInstance.coin.value.toString() + ' coins.');
+        }
+        return true;
+    }
+
+    dummyProgress(text: string = '', width: number = 0) {
+        Log.lvl2('Dummyprogress:', text, width);
+    }
+
+    async registerContact(contact: Contact, balance: Long = Long.fromNumber(0), progress: Function = this.dummyProgress): Promise<any> {
+        try {
+            progress('Verifying Registration', 10);
+            if (contact.isRegistered()) {
+                return Promise.reject('cannot register already registered contact');
+            }
+            let pub = contact.seedPublic;
+            Log.lvl2('Registering contact', contact.alias,
+                'with public key:', pub.toHex());
+            Log.lvl2('Registering darc');
+            progress('Creating Darc', 20);
+            const d = Contact.prepareUserDarc(pub.point, contact.alias);
+            let darcInstances = await this.spawnerInstance.spawnDarc(this.coinInstance,
+                [this.keyIdentitySigner], d);
+
+            progress('Creating Coin', 50);
+            Log.lvl2('Registering coin');
+            let coinInstance = await this.spawnerInstance.spawnCoin(this.coinInstance,
+                [this.keyIdentitySigner], darcInstances[0].getDarc().getBaseID(), contact.seedPublic.toBuffer());
+            let referral = null;
+            if (this.contact.credentialInstance) {
+                referral = this.contact.credentialInstance.id;
+                Log.lvl2('Adding a referral to the credentials');
+            }
+            Log.lvl2('Registering credential');
+
+            progress('Creating Credential', 80);
+            let credentialInstance = await this.createUserCredentials(pub, darcInstances[0].iid, coinInstance.id,
+                referral, contact);
+            await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
+            Log.lvl2('Registered user for darc::coin::credential:', darcInstances[0].iid, coinInstance.id,
+                credentialInstance.id);
+            await contact.update(this.bc);
+            progress('Done', 100);
+        } catch (e) {
+            Log.catch(e);
+            progress('Error: ' + e.toString(), -100);
+            return Promise.reject(e);
+        }
+    }
+
+    async createUserCredentials(pub: Public = this.keyIdentity._public,
+                                darcID: Buffer = this.darcInstance.iid,
+                                coinIID: Buffer = this.coinInstance.id,
+                                referral: Buffer = null,
+                                orig: Contact = null): Promise<CredentialInstance> {
+        let cred: CredentialStruct = null;
+        if (orig == null) {
+            Log.lvl1('Creating user credential');
+            let credPub = Credential.fromNameAttr('public', 'ed25519', pub.toBuffer());
+            let credDarc = Credential.fromNameAttr('darc', 'darcID', darcID);
+            let credCoin = Credential.fromNameAttr('coin', 'coinIID', coinIID);
+            cred = new CredentialStruct({credentials: [credPub, credDarc, credCoin]});
+        } else {
+            cred = orig.credential.copy();
+        }
+        if (referral) {
+            cred.credentials[0].attributes.push(new Attribute({name: 'referred', value: referral}));
+        }
+        return await this.spawnerInstance.spawnCredential(this.coinInstance,
+            [this.keyIdentitySigner], darcID, pub.toBuffer(), cred);
+    }
+
+    async verifyRegistration() {
+        if (this.bc == null) {
+            return Promise.reject('cannot verify if no byzCoin connection is set');
+        }
         await this.contact.connectBC(this.bc);
-      }
+    }
 
-      Log.lvl2('Getting contact informations');
-      this.contacts = [];
-      if (obj.contacts) {
-        let f = obj.contacts.filter(u => u);
-        for (let i = 0; i < f.length; i++) {
-          this.contacts.push(await Contact.fromObjectBC(this.bc, f[i]));
+    // setTrustees stores the given contacts in the credential, so that a threshold of these contacts
+    // can recover the darc. Only one set of contacts for recovery can be stored.
+    setTrustees(threshold: number, cs: Contact[]): Promise<any> {
+        if (cs.filter(c => c.isRegistered()).length != cs.length) {
+            return Promise.reject('not all contacts are registered');
         }
-      }
-    } catch (e) {
-      await Log.rcatch(e);
-    }
-    return this.bc;
-  }
-
-  toObject(): any {
-    let v = {
-      continuousScan: this.continuousScan,
-      personhoodPublished: this.personhoodPublished,
-      keyPersonhood: this.keyPersonhood._private.toHex(),
-      keyIdentity: this.keyIdentity._private.toHex(),
-      friends: this.contacts.map(u => u.toObject()),
-      meetups: this.meetups.map(m => m.toObject()),
-      contact: this.contact.toObject(),
-      bcRoster: null,
-      bcID: null,
-      darcInstance: null,
-      credentialInstance: null,
-      coinInstance: null,
-      parties: [],
-      badges: [],
-      ropascis: [],
-      polls: [],
-    };
-    if (this.bc) {
-      v.bcRoster = this.bc.getConfig().roster.toJSON();
-      v.bcID = this.bc.getGenesis().computeHash();
-      v.parties = this.parties ? this.parties.map(p => p.toObject()) : null;
-      v.badges = this.badges ? this.badges.map(b => b.toObject()) : null;
-      v.ropascis = this.ropascis ? this.ropascis.map(rps => rps.toBytes()) : null;
-      v.polls = this.polls ? this.polls.map(rps => rps.toObject()) : null;
-    }
-    return v;
-  }
-
-  async publishPersonhood(publish: boolean) {
-    this.personhoodPublished = publish;
-    if (publish) {
-      try {
-        Log.lvl2('Personhood not yet stored - adding to credential');
-        this.contact.credential.setAttribute('personhood',
-          'ed25519', this.keyPersonhood._public.toBuffer());
-        await this.contact.sendUpdate(this.keyIdentitySigner);
-      } catch (e) {
-        Log.catch(e);
-      }
-    }
-  }
-
-  /**
-   * Returns a promise with the loaded Data in it, when available. If the file
-   * is not found, it returns an empty data.
-   */
-  async load(): Promise<Data> {
-    try {
-      await this.setValues(Storage.getObject(this.dataFileName));
-    } catch (e) {
-      Log.catch(e);
-    }
-    this.bc = null;
-    await this.connectByzcoin();
-    return this;
-  }
-
-  async save(): Promise<Data> {
-    Storage.putObject(this.dataFileName, this.toObject());
-    if (this.personhoodPublished) {
-      this.contact.credential.setAttribute('personhood',
-        'ed25519', this.keyPersonhood._public.toBuffer());
-    }
-    if (this.contact.isRegistered()) {
-      await this.contact.sendUpdate(this.keyIdentitySigner);
-    }
-    return this;
-  }
-
-  async canPay(amount: Long): Promise<boolean> {
-    if (!(this.coinInstance && this.spawnerInstance)) {
-      return Promise.reject('Cannot sign up a contact without coins and spawner');
-    }
-    await this.coinInstance.update();
-    if (amount.lessThanOrEqual(0)) {
-      return Promise.reject('Cannot send 0 or less coins');
-    }
-    if (amount.greaterThanOrEqual(this.coinInstance.coin.value)) {
-      return Promise.reject('You only have ' + this.coinInstance.coin.value.toString() + ' coins.');
-    }
-    return true;
-  }
-
-  dummyProgress(text: string = '', width: number = 0) {
-    Log.lvl2('Dummyprogress:', text, width);
-  }
-
-  async registerContact(contact: Contact, balance: Long = Long.fromNumber(0), progress: Function = this.dummyProgress): Promise<any> {
-    try {
-      progress('Verifying Registration', 10);
-      if (contact.isRegistered()) {
-        return Promise.reject('cannot register already registered contact');
-      }
-      let pub = contact.seedPublic;
-      Log.lvl2('Registering contact', contact.alias,
-        'with public key:', pub.toHex());
-      Log.lvl2('Registering darc');
-      progress('Creating Darc', 20);
-      const d = Contact.prepareUserDarc(pub.point, contact.alias);
-      let darcInstances = await this.spawnerInstance.createDarc(this.coinInstance,
-        [this.keyIdentitySigner], d);
-
-      progress('Creating Coin', 50);
-      Log.lvl2('Registering coin');
-      let coinInstance = await this.spawnerInstance.createCoin(this.coinInstance,
-        [this.keyIdentitySigner], darcInstances[0].getDarc().getBaseID(), contact.seedPublic.toBuffer());
-      let referral = null;
-      if (this.contact.credentialInstance) {
-        referral = this.contact.credentialInstance.id;
-        Log.lvl2('Adding a referral to the credentials');
-      }
-      Log.lvl2('Registering credential');
-
-      progress('Creating Credential', 80);
-      let credentialInstance = await this.createUserCredentials(pub, darcInstances[0].iid, coinInstance.id,
-        referral, contact);
-      await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
-      Log.lvl2('Registered user for darc::coin::credential:', darcInstances[0].iid, coinInstance.id,
-        credentialInstance.id);
-      await contact.update(this.bc);
-      progress('Done', 100);
-    } catch (e) {
-      Log.catch(e);
-      progress('Error: ' + e.toString(), -100);
-      return Promise.reject(e);
-    }
-  }
-
-  async createUserCredentials(pub: Public = this.keyIdentity._public,
-                              darcID: Buffer = this.darcInstance.iid,
-                              coinIID: Buffer = this.coinInstance.id,
-                              referral: Buffer = null,
-                              orig: Contact = null): Promise<CredentialInstance> {
-    let cred: CredentialStruct = null;
-    if (orig == null) {
-      Log.lvl1('Creating user credential');
-      let credPub = Credential.fromNameAttr('public', 'ed25519', pub.toBuffer());
-      let credDarc = Credential.fromNameAttr('darc', 'darcID', darcID);
-      let credCoin = Credential.fromNameAttr('coin', 'coinIID', coinIID);
-      cred = new CredentialStruct({credentials: [credPub, credDarc, credCoin]});
-    } else {
-      cred = orig.credential.copy();
-    }
-    if (referral) {
-      cred.credentials[0].attributes.push(new Attribute({name: 'referred', value: referral}));
-    }
-    return await this.spawnerInstance.createCredential(this.coinInstance,
-      [this.keyIdentitySigner], darcID, pub.toBuffer(), cred);
-  }
-
-  async verifyRegistration() {
-    if (this.bc == null) {
-      return Promise.reject('cannot verify if no byzCoin connection is set');
-    }
-    await this.contact.connectBC(this.bc);
-  }
-
-  // setTrustees stores the given contacts in the credential, so that a threshold of these contacts
-  // can recover the darc. Only one set of contacts for recovery can be stored.
-  setTrustees(threshold: number, cs: Contact[]): Promise<any> {
-    if (cs.filter(c => c.isRegistered()).length != cs.length) {
-      return Promise.reject('not all contacts are registered');
-    }
-    let recoverBuf = Buffer.alloc(32 * cs.length);
-    cs.forEach((c, i) =>
-      cs[i].credentialIID.copy(recoverBuf, i * 32, 0, 32));
-    this.contact.recover.trusteesBuf = recoverBuf;
-    this.contact.recover.threshold = threshold;
-  }
-
-  // searchRecovery searches all contacts to know if this user is in the list of recovery possibilities.
-  // It also updates all contacts by getting proofs from byzcoin.
-  async searchRecovery(): Promise<Contact[]> {
-    let recoveries: Contact[] = [];
-    for (let i = 0; i < this.contacts.length; i++) {
-      await this.contacts[i].update(this.bc);
-      if (this.contacts[i].recover.trustees.filter(t =>
-        t.equals(this.contact.credentialIID)).length > 0) {
-        recoveries.push(this.contacts[i]);
-      }
-    }
-    return recoveries;
-  }
-
-  // recoveryRequest returns a string for a qrcode that holds the new public key of the new user.
-  recoveryRequest(): string {
-    return sprintf('%s?public=%s', Data.urlRecoveryRequest, this.keyIdentity._public.toHex());
-  }
-
-  // RecoverySignature returns a string for a qrcode that holds the signature to be used to proof that this
-  // trustee is OK with recovering a given account.
-  async recoverySignature(request: string, user: Contact): Promise<string> {
-    let requestObj = parseQRCode(request, 1);
-    if (requestObj.url != Data.urlRecoveryRequest) {
-      return Promise.reject('not a recovery request');
-    }
-    if (!requestObj.public) {
-      return Promise.reject('recovery request is missing public argument');
-    }
-    let publicKey = Buffer.from(requestObj.public, 'hex');
-    if (publicKey.length != RecoverySignature.pub) {
-      return Promise.reject('got wrong public key length');
+        let recoverBuf = Buffer.alloc(32 * cs.length);
+        cs.forEach((c, i) =>
+            cs[i].credentialIID.copy(recoverBuf, i * 32, 0, 32));
+        this.contact.recover.trusteesBuf = recoverBuf;
+        this.contact.recover.threshold = threshold;
     }
 
-    await user.update(this.bc);
-
-    // the message to be signed is:
-    // credentialIID + newPublicKey + latestDarcVersion
-    let msg = Buffer.alloc(RecoverySignature.msgBuf);
-    user.credentialIID.copy(msg);
-    publicKey.copy(msg, RecoverySignature.credIID);
-    msg.writeUInt32LE(user.darcInstance.getDarc().version.toNumber(), RecoverySignature.credIID + RecoverySignature.pub);
-
-    let sig = Schnorr.sign(curve, this.keyIdentity._private.scalar, new Uint8Array(msg));
-    let sigBuf = Buffer.alloc(RecoverySignature.pubSig);
-    this.keyIdentity._public.toBuffer().copy(sigBuf);
-    Buffer.from(sig).copy(sigBuf, RecoverySignature.pub);
-
-    return sprintf('%s?credentialIID=%s&pubSig=%s', Data.urlRecoverySignature,
-      user.credentialIID.toString('hex'),
-      sigBuf.toString('hex'));
-  }
-
-  /**
-   * recoveryStore stores a signature for restauration. It checks if all the signature are for
-   * restauration of the same credentialIID.
-   *
-   * @param signature the qrcode-string received from scanning.
-   */
-  async recoveryStore(signature: string): Promise<string> {
-    let sigObj = parseQRCode(signature, 2);
-    if (sigObj.url != Data.urlRecoverySignature) {
-      return Promise.reject('not a recovery signature');
-    }
-    if (!sigObj.credentialIID || !sigObj.pubSig) {
-      return Promise.reject('credentialIID or signature missing');
-    }
-    let credIID = Buffer.from(sigObj.credentialIID, 'hex');
-    let pubSig = Buffer.from(sigObj.pubSig, 'hex');
-    if (pubSig.length != RecoverySignature.pubSig) {
-      return Promise.reject('signature should be of length 64');
+    // searchRecovery searches all contacts to know if this user is in the list of recovery possibilities.
+    // It also updates all contacts by getting proofs from byzcoin.
+    async searchRecovery(): Promise<Contact[]> {
+        let recoveries: Contact[] = [];
+        for (let i = 0; i < this.contacts.length; i++) {
+            await this.contacts[i].update(this.bc);
+            if (this.contacts[i].recover.trustees.filter(t =>
+                t.equals(this.contact.credentialIID)).length > 0) {
+                recoveries.push(this.contacts[i]);
+            }
+        }
+        return recoveries;
     }
 
-    if (this.recoverySignatures.length > 0) {
-      if (!this.recoverySignatures[0].credentialIID.equals(credIID)) {
+    // recoveryRequest returns a string for a qrcode that holds the new public key of the new user.
+    recoveryRequest(): string {
+        return sprintf('%s?public=%s', Data.urlRecoveryRequest, this.keyIdentity._public.toHex());
+    }
+
+    // RecoverySignature returns a string for a qrcode that holds the signature to be used to proof that this
+    // trustee is OK with recovering a given account.
+    async recoverySignature(request: string, user: Contact): Promise<string> {
+        let requestObj = parseQRCode(request, 1);
+        if (requestObj.url != Data.urlRecoveryRequest) {
+            return Promise.reject('not a recovery request');
+        }
+        if (!requestObj.public) {
+            return Promise.reject('recovery request is missing public argument');
+        }
+        let publicKey = Buffer.from(requestObj.public, 'hex');
+        if (publicKey.length != RecoverySignature.pub) {
+            return Promise.reject('got wrong public key length');
+        }
+
+        await user.update(this.bc);
+
+        // the message to be signed is:
+        // credentialIID + newPublicKey + latestDarcVersion
+        let msg = Buffer.alloc(RecoverySignature.msgBuf);
+        user.credentialIID.copy(msg);
+        publicKey.copy(msg, RecoverySignature.credIID);
+        msg.writeUInt32LE(user.darcInstance.getDarc().version.toNumber(), RecoverySignature.credIID + RecoverySignature.pub);
+
+        let sig = Schnorr.sign(curve, this.keyIdentity._private.scalar, new Uint8Array(msg));
+        let sigBuf = Buffer.alloc(RecoverySignature.pubSig);
+        this.keyIdentity._public.toBuffer().copy(sigBuf);
+        Buffer.from(sig).copy(sigBuf, RecoverySignature.pub);
+
+        return sprintf('%s?credentialIID=%s&pubSig=%s', Data.urlRecoverySignature,
+            user.credentialIID.toString('hex'),
+            sigBuf.toString('hex'));
+    }
+
+    /**
+     * recoveryStore stores a signature for restauration. It checks if all the signature are for
+     * restauration of the same credentialIID.
+     *
+     * @param signature the qrcode-string received from scanning.
+     */
+    async recoveryStore(signature: string): Promise<string> {
+        let sigObj = parseQRCode(signature, 2);
+        if (sigObj.url != Data.urlRecoverySignature) {
+            return Promise.reject('not a recovery signature');
+        }
+        if (!sigObj.credentialIID || !sigObj.pubSig) {
+            return Promise.reject('credentialIID or signature missing');
+        }
+        let credIID = Buffer.from(sigObj.credentialIID, 'hex');
+        let pubSig = Buffer.from(sigObj.pubSig, 'hex');
+        if (pubSig.length != RecoverySignature.pubSig) {
+            return Promise.reject('signature should be of length 64');
+        }
+
+        if (this.recoverySignatures.length > 0) {
+            if (!this.recoverySignatures[0].credentialIID.equals(credIID)) {
+                this.recoverySignatures = [];
+            }
+        }
+        this.recoverySignatures.push(new RecoverySignature(credIID, pubSig));
+    }
+
+    // recoveryUser returns the user that is currently being recovered.
+    async recoveryUser(): Promise<Contact> {
+        if (this.recoverySignatures.length == 0) {
+            return Promise.reject('don\'t have any recovery signatures stored yet.');
+        }
+        return Contact.fromByzcoin(this.bc, this.recoverySignatures[0].credentialIID);
+    }
+
+    // recoverIdentity sends all received signatures to the credential instance, thus evolving the
+    // darc to include our new public key.
+    async recoverIdentity(): Promise<any> {
+        this.contact = await this.recoveryUser();
+        await this.contact.credentialInstance.recoverIdentity(this.keyIdentity._public.point, this.recoverySignatures);
         this.recoverySignatures = [];
-      }
+        await this.contact.darcInstance.update();
+        let newDarc = this.contact.darcInstance.getDarc().copy();
+        ['update', 'fetch', 'transfer'].forEach(r => {
+            newDarc.rules.appendToRule('invoke:' + r, this.keyIdentitySigner, '&');
+        });
+        await this.contact.darcInstance.evolveDarcAndWait(newDarc, [this.keyIdentitySigner], 5);
+        await this.verifyRegistration();
     }
-    this.recoverySignatures.push(new RecoverySignature(credIID, pubSig));
-  }
 
-  // recoveryUser returns the user that is currently being recovered.
-  async recoveryUser(): Promise<Contact> {
-    if (this.recoverySignatures.length == 0) {
-      return Promise.reject('don\'t have any recovery signatures stored yet.');
+    addContact(nu: Contact) {
+        this.rmContact(nu);
+        this.contacts.push(nu);
     }
-    return Contact.fromByzcoin(this.bc, this.recoverySignatures[0].credentialIID);
-  }
 
-  // recoverIdentity sends all received signatures to the credential instance, thus evolving the
-  // darc to include our new public key.
-  async recoverIdentity(): Promise<any> {
-    this.contact = await this.recoveryUser();
-    await this.contact.credentialInstance.recoverIdentity(this.keyIdentity._public.point, this.recoverySignatures);
-    this.recoverySignatures = [];
-    await this.contact.darcInstance.update();
-    let newDarc = this.contact.darcInstance.getDarc().copy();
-    ['update', 'fetch', 'transfer'].forEach(r => {
-      newDarc.rules.appendToRule('invoke:' + r, this.keyIdentitySigner, '&');
-    });
-    await this.contact.darcInstance.evolveDarcAndWait(newDarc, [this.keyIdentitySigner], 5);
-    await this.verifyRegistration();
-  }
+    rmContact(nu: Contact) {
+        this.contacts = this.contacts.filter(u => !u.equals(nu));
+    }
 
-  addContact(nu: Contact) {
-    this.rmContact(nu);
-    this.contacts.push(nu);
-  }
+    async reloadParties(): Promise<Party[]> {
+        let phrpc = new PersonhoodRPC(this.bc);
+        let phParties = await phrpc.listParties();
+        await Promise.all(phParties.map(async php => {
+            if (this.parties.find(p => p.partyInstance.id.equals(php.instanceID)) == null) {
+                Log.lvl2('Found new party id');
+                let ppi = await PopPartyInstance.fromByzcoin(this.bc, php.instanceID);
+                Log.lvl2('Found new party', ppi.popPartyStruct.description.name);
+                let orgKeys = await ppi.fetchOrgKeys();
+                let p = new Party(ppi);
+                p.isOrganizer = !!orgKeys.find(k => k.equals(this.keyPersonhood._public.point));
+                this.parties.push(p);
+            }
+        }));
+        Log.lvl2('finished with searching');
+        await this.save();
+        return this.parties;
+    }
 
-  rmContact(nu: Contact) {
-    this.contacts = this.contacts.filter(u => !u.equals(nu));
-  }
+    async updateParties(): Promise<Party[]> {
+        await Promise.all(this.parties.map(async p => p.partyInstance.update()));
+        // Move all finalized parties into badges
+        let parties: Party[] = [];
+        this.parties.forEach(p => {
+            if (p.state == Party.Finalized) {
+                if (p.partyInstance.popPartyStruct.attendees.keys.find(k =>
+                    k.equals(this.keyPersonhood._public.point.marshalBinary()))) {
+                    this.badges.push(new Badge(p, this.keyPersonhood));
+                }
+                Log.lvl2('removing party that doesn\'t have our key stored');
+            } else {
+                parties.push(p);
+            }
+        });
+        this.parties = parties;
+        await this.save();
+        return this.parties;
+    }
 
-  async reloadParties(): Promise<Party[]> {
-    let phrpc = new PersonhoodRPC(this.bc);
-    let phParties = await phrpc.listParties();
-    await Promise.all(phParties.map(async php => {
-      if (this.parties.find(p => p.partyInstance.id.equals(php.instanceID)) == null) {
-        Log.lvl2('Found new party id');
-        let ppi = await PopPartyInstance.fromByzcoin(this.bc, php.instanceID);
-        Log.lvl2('Found new party', ppi.popPartyStruct.description.name);
-        let orgKeys = await ppi.fetchOrgKeys();
-        let p = new Party(ppi);
-        p.isOrganizer = !!orgKeys.find(k => k.equals(this.keyPersonhood._public.point));
+    async addParty(p: Party) {
         this.parties.push(p);
-      }
-    }));
-    Log.lvl2('finished with searching');
-    await this.save();
-    return this.parties;
-  }
+        let phrpc = new PersonhoodRPC(this.bc);
+        await this.save();
+        await phrpc.listParties(p.partyInstance.id);
+    }
 
-  async updateParties(): Promise<Party[]> {
-    await Promise.all(this.parties.map(async p => p.partyInstance.update()));
-    // Move all finalized parties into badges
-    let parties: Party[] = [];
-    this.parties.forEach(p => {
-      if (p.state == Party.Finalized) {
-        if (p.partyInstance.popPartyStruct.attendees.keys.find(k =>
-          k.equals(this.keyPersonhood._public.point.marshalBinary()))) {
-          this.badges.push(new Badge(p, this.keyPersonhood));
+    async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
+        let phrpc = new PersonhoodRPC(this.bc);
+        let phRoPaScis = await phrpc.listRPS();
+        await Promise.all(phRoPaScis.map(async rps => {
+            if (this.ropascis.find(r => r.id.equals(rps.instanceID)) == null) {
+                Log.lvl2('Found new ropasci');
+                let rpsInst = await RoPaSciInstance.fromByzcoin(this.bc, rps.instanceID);
+                Log.lvl2('RoPaSciInstance is:', rpsInst.struct.description, rpsInst.struct.firstPlayer, rpsInst.struct.secondPlayer);
+                this.ropascis.push(rpsInst);
+            }
+        }));
+        Log.lvl2('finished with searching');
+        await this.save();
+        return this.ropascis;
+    }
+
+    async updateRoPaScis(): Promise<RoPaSciInstance[]> {
+        await Promise.all(this.ropascis
+            .filter(rps => rps.struct.firstPlayer < 0)
+            .map(async rps => rps.update()));
+        await this.save();
+        return this.ropascis;
+    }
+
+    async addRoPaSci(rps: RoPaSciInstance) {
+        this.ropascis.push(rps);
+        let phrpc = new PersonhoodRPC(this.bc);
+        await this.save();
+        await phrpc.listRPS(rps.id);
+    }
+
+    async delRoPaSci(rps: RoPaSciInstance) {
+        let i = this.ropascis.findIndex(r => r.id.equals(rps.id));
+        if (i >= 0) {
+            this.ropascis.splice(i, 1);
         }
-        Log.lvl2('removing party that doesn\'t have our key stored');
-      } else {
-        parties.push(p);
-      }
-    });
-    this.parties = parties;
-    await this.save();
-    return this.parties;
-  }
-
-  async addParty(p: Party) {
-    this.parties.push(p);
-    let phrpc = new PersonhoodRPC(this.bc);
-    await this.save();
-    await phrpc.listParties(p.partyInstance.id);
-  }
-
-  async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
-    let phrpc = new PersonhoodRPC(this.bc);
-    let phRoPaScis = await phrpc.listRPS();
-    await Promise.all(phRoPaScis.map(async rps => {
-      if (this.ropascis.find(r => r.id.equals(rps.instanceID)) == null) {
-        Log.lvl2('Found new ropasci');
-        let rpsInst = await RoPaSciInstance.fromByzcoin(this.bc, rps.instanceID);
-        Log.lvl2('RoPaSciInstance is:', rpsInst.struct.description, rpsInst.struct.firstPlayer, rpsInst.struct.secondPlayer);
-        this.ropascis.push(rpsInst);
-      }
-    }));
-    Log.lvl2('finished with searching');
-    await this.save();
-    return this.ropascis;
-  }
-
-  async updateRoPaScis(): Promise<RoPaSciInstance[]> {
-    await Promise.all(this.ropascis
-      .filter(rps => rps.struct.firstPlayer < 0)
-      .map(async rps => rps.update()));
-    await this.save();
-    return this.ropascis;
-  }
-
-  async addRoPaSci(rps: RoPaSciInstance) {
-    this.ropascis.push(rps);
-    let phrpc = new PersonhoodRPC(this.bc);
-    await this.save();
-    await phrpc.listRPS(rps.id);
-  }
-
-  async delRoPaSci(rps: RoPaSciInstance) {
-    let i = this.ropascis.findIndex(r => r.id.equals(rps.id));
-    if (i >= 0) {
-      this.ropascis.splice(i, 1);
+        await this.save();
     }
-    await this.save();
-  }
 
-  async reloadPolls(): Promise<PollStruct[]> {
-    let phrpc = new PersonhoodRPC(this.bc);
-    this.polls = await phrpc.pollList(gData.badges.map(b => b.party.partyInstance.id));
-    return this.polls;
-  }
-
-  async addPoll(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
-    let phrpc = new PersonhoodRPC(this.bc);
-    let rps = await phrpc.pollNew(personhood, title, description, choices);
-    this.polls.push(rps);
-    await this.save();
-    return rps;
-  }
-
-  async delPoll(rps: PollStruct) {
-    let i = this.polls.findIndex(r => r.pollID.equals(rps.pollID));
-    if (i >= 0) {
-      this.polls.splice(i, 1);
-      await this.save();
+    async reloadPolls(): Promise<PollStruct[]> {
+        let phrpc = new PersonhoodRPC(this.bc);
+        this.polls = await phrpc.pollList(gData.badges.map(b => b.party.partyInstance.id));
+        return this.polls;
     }
-  }
 
-  // createUser sets up a new user with all the necessary darcs. It does the following:
-  // - creates all necessary darcs (four)
-  // - creates credential and coin
-  // gData needs to have enough coins to pay for all the instances when using
-  // the 'SpawnerInstance'.
-  async createUser(ephemeral: Private, alias: string): Promise<Data> {
-    Log.lvl1('Starting to create user', alias);
-    let d = new Data();
-    if (!ephemeral) {
-      d.keyIdentity = new KeyPair();
-    } else {
-      d.keyIdentity = new KeyPair(ephemeral.toHex());
+    async addPoll(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
+        let phrpc = new PersonhoodRPC(this.bc);
+        let rps = await phrpc.pollNew(personhood, title, description, choices);
+        this.polls.push(rps);
+        await this.save();
+        return rps;
     }
-    let darcDevice = Darc.newDarc([d.keyIdentitySigner], [d.keyIdentitySigner], Buffer.from('device'));
-    let darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
-    let darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from('signer'));
-    let darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-    let darcCred = Darc.newDarc([], [darcSignId], Buffer.from('credential'),
-      ['invoke:' + CredentialInstance.contractID + '.update']);
-    let rules = ['transfer', 'fetch', 'store'].map(inv => sprintf('invoke:%s.%s', CoinInstance.contractID, inv));
-    let darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
 
-    let cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id);
+    async delPoll(rps: PollStruct) {
+        let i = this.polls.findIndex(r => r.pollID.equals(rps.pollID));
+        if (i >= 0) {
+            this.polls.splice(i, 1);
+            await this.save();
+        }
+    }
 
-    let signers = [this.keyIdentitySigner];
-    Log.lvl1('Creating identity from spawner');
-    await this.spawnerInstance.createDarc(this.coinInstance, signers,
-      darcDevice, darcSign, darcCred, darcCoin);
-    await this.spawnerInstance.createCoin(this.coinInstance, signers, darcCoin.getBaseID(), d.keyIdentity._public.toBuffer());
-    await this.spawnerInstance.createCredential(this.coinInstance, signers, darcCred.getBaseID(), d.keyIdentity._public.toBuffer(), cred);
+    // createUser sets up a new user with all the necessary darcs. It does the following:
+    // - creates all necessary darcs (four)
+    // - creates credential and coin
+    // gData needs to have enough coins to pay for all the instances when using
+    // the 'SpawnerInstance'.
+    async createUser(ephemeral: Private, alias: string): Promise<Data> {
+        Log.lvl1('Starting to create user', alias);
+        let d = new Data();
+        if (!ephemeral) {
+            d.keyIdentity = new KeyPair();
+        } else {
+            d.keyIdentity = new KeyPair(ephemeral.toHex());
+        }
+        let darcDevice = Darc.newDarc([d.keyIdentitySigner], [d.keyIdentitySigner], Buffer.from('device'));
+        let darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
+        let darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from('signer'));
+        let darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
+        let darcCred = Darc.newDarc([], [darcSignId], Buffer.from('credential'),
+            ['invoke:' + CredentialInstance.contractID + '.update']);
+        let rules = ['transfer', 'fetch', 'store'].map(inv => sprintf('invoke:%s.%s', CoinInstance.contractID, inv));
+        let darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
 
-    d.contact = new Contact(cred);
-    d.bc = this.bc;
-    await d.connectByzcoin();
-    return d;
-  }
+        let cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id);
 
-  async attachAndEvolve(ephemeral: Private): Promise<void> {
-    let pub = Public.base().mul(ephemeral);
-    this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
-    this.keyIdentity = new KeyPair(ephemeral.toHex());
-  }
+        let signers = [this.keyIdentitySigner];
+        Log.lvl1('Creating identity from spawner');
+        await this.spawnerInstance.spawnDarc(this.coinInstance, signers,
+            darcDevice, darcSign, darcCred, darcCoin);
+        await this.spawnerInstance.spawnCoin(this.coinInstance, signers, darcCoin.getBaseID(), d.keyIdentity._public.toBuffer());
+        await this.spawnerInstance.spawnCredential(this.coinInstance, signers, darcCred.getBaseID(), d.keyIdentity._public.toBuffer(), cred);
 
-  get keyIdentitySigner(): Signer {
-    return new SignerEd25519(this.keyIdentity._public.point, this.keyIdentity._private.scalar);
-  }
+        d.contact = new Contact(cred);
+        d.bc = this.bc;
+        await d.connectByzcoin();
+        return d;
+    }
 
-  get darcInstance(): DarcInstance {
-    return this.contact.darcInstance;
-  }
+    async attachAndEvolve(ephemeral: Private): Promise<void> {
+        let pub = Public.base().mul(ephemeral);
+        this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
+        this.keyIdentity = new KeyPair(ephemeral.toHex());
+    }
 
-  get coinInstance(): CoinInstance {
-    return this.contact.coinInstance;
-  }
+    get keyIdentitySigner(): Signer {
+        return new SignerEd25519(this.keyIdentity._public.point, this.keyIdentity._private.scalar);
+    }
 
-  get credentialInstance(): CredentialInstance {
-    return this.contact.credentialInstance;
-  }
+    get darcInstance(): DarcInstance {
+        return this.contact.darcInstance;
+    }
 
-  get alias(): string {
-    return this.contact.alias;
-  }
+    get coinInstance(): CoinInstance {
+        return this.contact.coinInstance;
+    }
 
-  get spawnerInstance(): SpawnerInstance {
-    return this.contact.spawnerInstance;
-  }
+    get credentialInstance(): CredentialInstance {
+        return this.contact.credentialInstance;
+    }
 
-  set spawnerInstance(si: SpawnerInstance) {
-    this.contact.spawnerInstance = si;
-  }
+    get alias(): string {
+        return this.contact.alias;
+    }
 
-  get uniqueMeetings(): number {
-    let meetups = this.meetups.map(m => Contact.sortAlias(m.users));
-    let unique = meetups.filter((meetup, i) =>
-      meetups.findIndex(m => m.join() == meetup.join()) == i);
-    return unique.length;
-  }
+    get spawnerInstance(): SpawnerInstance {
+        return this.contact.spawnerInstance;
+    }
 
-  // createFirstUser sets up a new user with all the necessary darcs. It does the following:
-  // - creates all necessary darcs (four)
-  // - creates credential and coin
-  // If darcID is given, it will use this darc to create all the instances. If darcID == null,
-  // then the gData needs to have enough coins to pay for all the instances when using
-  // the 'SpawnerInstance'.
-  static async createFirstUser(bc: ByzCoinRPC, adminDarc: InstanceID, adminKey: Scalar, alias: string): Promise<Data> {
-    let d = new Data({alias: alias, bc: bc});
-    let adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
-    let adminSigner = new SignerEd25519(adminPub.point, adminKey);
-    let darcDevice = Darc.newDarc([d.keyIdentitySigner]
-      , [d.keyIdentitySigner], Buffer.from('device'));
-    let darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
-    let darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from('signer'));
-    let darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-    let darcCred = Darc.newDarc([], [darcSignId], Buffer.from('credential'),
-      ['invoke:' + CredentialInstance.contractID + '.update']);
-    let rules = ['mint', 'transfer', 'fetch', 'store'].map(inv => sprintf('invoke:%s.%s', CoinInstance.contractID, inv));
-    let darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
+    set spawnerInstance(si: SpawnerInstance) {
+        this.contact.spawnerInstance = si;
+    }
 
-    Log.lvl2('Creating spawner');
-    //         const { bc, darcID, signers, costs, beneficiary } = params;
-    const costs = {
-      costCoin: Long.fromNumber(100),
-      costCredential: Long.fromNumber(100),
-      costDarc: Long.fromNumber(100),
-      costParty: Long.fromNumber(1e7),
-    };
-    let spawner = await SpawnerInstance.spawn({
-      bc: bc,
-      darcID: adminDarc,
-      signers: [adminSigner],
-      costs: costs,
-      beneficiary: null
-    });
+    get uniqueMeetings(): number {
+        let meetups = this.meetups.map(m => Contact.sortAlias(m.users));
+        let unique = meetups.filter((meetup, i) =>
+            meetups.findIndex(m => m.join() == meetup.join()) == i);
+        return unique.length;
+    }
 
-    let cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id);
+    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
+    // - creates all necessary darcs (four)
+    // - creates credential and coin
+    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
+    // then the gData needs to have enough coins to pay for all the instances when using
+    // the 'SpawnerInstance'.
+    static async createFirstUser(bc: ByzCoinRPC, adminDarc: InstanceID, adminKey: Scalar, alias: string): Promise<Data> {
+        let d = new Data({alias: alias, bc: bc});
+        let adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
+        let adminSigner = new SignerEd25519(adminPub.point, adminKey);
 
-    Log.lvl1('Creating coin from darc');
-    let signers = [adminSigner];
-    let ctx = new ClientTransaction({
-      instructions:
-        [darcDevice, darcSign, darcCred, darcCoin].map(d => {
-            return Instruction.createSpawn(adminDarc, DarcInstance.contractID, [
-              new Argument({name: 'darc', value: d.toBytes()})
-            ]);
-          }
-        )
-    });
-    let idBuf = d.keyIdentity._public.toBuffer();
-    ctx.instructions.push(Instruction.createSpawn(adminDarc, CoinInstance.contractID, [
-      new Argument({name: 'coinID', value: idBuf}),
-      new Argument({name: 'darcID', value: darcCoin.getBaseID()}),
-      new Argument({name: 'type', value: SPAWNER_COIN})
-    ]));
-    ctx.instructions.push(Instruction.createSpawn(adminDarc, CredentialInstance.contractID, [
-      new Argument({name: 'credID', value: idBuf}),
-      new Argument({name: 'darcID', value: darcCred.getBaseID()}),
-      new Argument({name: 'credential', value: cred.toBytes()})
-    ]));
-    let amount = Long.fromNumber(1e9);
-    ctx.instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
-      CoinInstance.contractID,
-      CoinInstance.commandMint,
-      [new Argument({name: 'coins', value: Buffer.from(amount.toBytesLE())})]));
+        let darcDevice = Darc.newDarc([d.keyIdentitySigner]
+            , [d.keyIdentitySigner], Buffer.from('device'));
+        let darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
+        let darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from('signer'));
+        let darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
+        let darcCred = Darc.newDarc([], [darcSignId], Buffer.from('credential'),
+            ['invoke:' + CredentialInstance.contractID + '.update']);
+        let rules = ['mint', 'transfer', 'fetch', 'store'].map(inv => sprintf('invoke:%s.%s', CoinInstance.contractID, inv));
+        let darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
 
-    await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers, [d.keyIdentitySigner]]);
-    await bc.sendTransactionAndWait(ctx, 5);
+        Log.lvl2('Creating spawner');
+        const costs = {
+            costCoin: Long.fromNumber(100),
+            costCredential: Long.fromNumber(1000),
+            costDarc: Long.fromNumber(100),
+            costParty: Long.fromNumber(1000),
+            costCWrite: Long.fromNumber(1000),
+            costCRead: Long.fromNumber(100)
+        };
+        let spawner = await SpawnerInstance.spawn({
+            bc: bc,
+            darcID: adminDarc,
+            signers: [adminSigner],
+            costs: costs,
+            beneficiary: null
+        });
 
-    d.contact = new Contact(cred);
-    d.bc = bc;
-    await d.contact.connectBC(bc);
-    await d.connectByzcoin();
-    return d;
-  }
+        let cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id);
+
+        Log.lvl1('Creating coin from darc');
+        let signers = [adminSigner];
+        let ctx = new ClientTransaction({
+            instructions:
+                [darcDevice, darcSign, darcCred, darcCoin].map(d => {
+                        return Instruction.createSpawn(adminDarc, DarcInstance.contractID, [
+                            new Argument({name: 'darc', value: d.toBytes()})
+                        ]);
+                    }
+                )
+        });
+        let idBuf = d.keyIdentity._public.toBuffer();
+        ctx.instructions.push(Instruction.createSpawn(adminDarc, CoinInstance.contractID, [
+            new Argument({name: 'coinID', value: idBuf}),
+            new Argument({name: 'darcID', value: darcCoin.getBaseID()}),
+            new Argument({name: 'type', value: SPAWNER_COIN})
+        ]));
+        ctx.instructions.push(Instruction.createSpawn(adminDarc, CredentialInstance.contractID, [
+            new Argument({name: 'credID', value: idBuf}),
+            new Argument({name: 'darcID', value: darcCred.getBaseID()}),
+            new Argument({name: 'credential', value: cred.toBytes()})
+        ]));
+        let amount = Long.fromNumber(1e9);
+        ctx.instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
+            CoinInstance.contractID,
+            CoinInstance.commandMint,
+            [new Argument({name: 'coins', value: Buffer.from(amount.toBytesLE())})]));
+
+        await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers, [d.keyIdentitySigner]]);
+        await bc.sendTransactionAndWait(ctx, 5);
+
+        d.contact = new Contact(cred);
+        d.bc = bc;
+        await d.contact.connectBC(bc);
+        await d.connectByzcoin();
+        return d;
+    }
 }
 
 export class TestData extends Data {
-  public admin: Signer;
-  public darc: Darc;
+    public admin: Signer;
+    public darc: Darc;
 
-  constructor(obj: {}) {
-    super(obj);
-  }
+    constructor(obj: {}) {
+        super(obj);
+    }
 
-  static async init(r: Roster, alias: string): Promise<TestData> {
-    let admin = SignerEd25519.random();
-    let d = ByzCoinRPC.makeGenesisDarc([admin], r, 'genesis darc');
-    ['spawn:spawner', 'spawn:coin', 'spawn:credential', 'spawn:longTermSecret', 'spawn:calypsoWrite',
-      'spawn:calypsoRead',
-      'invoke:coin.mint', 'invoke:coin.transfer', 'invoke:coin.fetch'].forEach(rule => {
-      d.rules.appendToRule(rule, admin, '|');
-    });
-    let bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
+    static async init(r: Roster, alias: string): Promise<TestData> {
+        let admin = SignerEd25519.random();
+        let d = ByzCoinRPC.makeGenesisDarc([admin], r, 'genesis darc');
+        ['spawn:spawner', 'spawn:coin', 'spawn:credential', 'spawn:longTermSecret', 'spawn:calypsoWrite',
+            'spawn:calypsoRead',
+            'invoke:coin.mint', 'invoke:coin.transfer', 'invoke:coin.fetch'].forEach(rule => {
+            d.rules.appendToRule(rule, admin, '|');
+        });
+        let bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
 
-    let td = <TestData> (await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias));
-    td.admin = admin;
-    td.darc = d;
-    return td;
-  }
+        let td = <TestData> (await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias));
+        td.admin = admin;
+        td.darc = d;
+        return td;
+    }
 }
 
 export class cbcUser {
-  constructor(public darcInst: DarcInstance, public coinInst: CoinInstance) {
-  }
+    constructor(public darcInst: DarcInstance, public coinInst: CoinInstance) {
+    }
 }
 
 /**

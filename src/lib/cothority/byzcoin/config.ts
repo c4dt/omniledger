@@ -1,14 +1,14 @@
-import { Message, Properties } from "protobufjs/light";
-import { Roster } from "../network/proto";
-import { registerMessage } from "../protobuf";
-import Proof from "./proof";
+import {Message, Properties} from 'protobufjs/light';
+import {Roster} from '../network/proto';
+import {registerMessage} from '../protobuf';
+import Proof from './proof';
 
 export default class ChainConfig extends Message<ChainConfig> {
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage("byzcoin.ChainConfig", ChainConfig);
+        registerMessage('byzcoin.ChainConfig', ChainConfig);
     }
 
     /**
@@ -28,7 +28,7 @@ export default class ChainConfig extends Message<ChainConfig> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "blockinterval", {
+        Object.defineProperty(this, 'blockinterval', {
             get(): Long {
                 return this.blockInterval;
             },
@@ -37,7 +37,7 @@ export default class ChainConfig extends Message<ChainConfig> {
             },
         });
 
-        Object.defineProperty(this, "maxblocksize", {
+        Object.defineProperty(this, 'maxblocksize', {
             get(): number {
                 return this.maxBlockSize;
             },

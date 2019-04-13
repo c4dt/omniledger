@@ -1,5 +1,5 @@
-import { Message, Properties } from "protobufjs/light";
-import { registerMessage } from "../../protobuf";
+import {Message, Properties} from 'protobufjs/light';
+import {registerMessage} from '../../protobuf';
 
 const EMPTY_BUFFER = Buffer.allocUnsafe(0);
 
@@ -11,7 +11,7 @@ export default class DataHeader extends Message<DataHeader> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("byzcoin.DataHeader", DataHeader);
+        registerMessage('byzcoin.DataHeader', DataHeader);
     }
 
     readonly trieRoot: Buffer;
@@ -28,7 +28,7 @@ export default class DataHeader extends Message<DataHeader> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "trieroot", {
+        Object.defineProperty(this, 'trieroot', {
             get(): Buffer {
                 return this.trieRoot;
             },
@@ -37,7 +37,7 @@ export default class DataHeader extends Message<DataHeader> {
             },
         });
 
-        Object.defineProperty(this, "clienttransactionhash", {
+        Object.defineProperty(this, 'clienttransactionhash', {
             get(): Buffer {
                 return this.clientTransactionHash;
             },
@@ -46,7 +46,7 @@ export default class DataHeader extends Message<DataHeader> {
             },
         });
 
-        Object.defineProperty(this, "statechangehash", {
+        Object.defineProperty(this, 'statechangehash', {
             get(): Buffer {
                 return this.stateChangeHash;
             },

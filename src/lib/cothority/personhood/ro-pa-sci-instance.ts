@@ -1,13 +1,13 @@
-import { Message, Properties } from "protobufjs/light";
-import Signer from "../darc/signer";
-import { EMPTY_BUFFER, registerMessage } from "../protobuf";
-import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "../byzcoin/client-transaction";
-import Instance, { InstanceID } from "../byzcoin/instance";
-import CoinInstance, { Coin } from "../byzcoin/contracts/coin-instance";
+import {Message, Properties} from 'protobufjs/light';
+import Signer from '../darc/signer';
+import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
+import ClientTransaction, {Argument, Instruction} from '../byzcoin/client-transaction';
+import Instance, {InstanceID} from '../byzcoin/instance';
+import CoinInstance, {Coin} from '../byzcoin/contracts/coin-instance';
 
-export default class RoPaSciInstance extends Instance{
-    static readonly contractID = "ropasci";
+export default class RoPaSciInstance extends Instance {
+    static readonly contractID = 'ropasci';
 
     /**
      * Fetch the proof for the given instance and create a
@@ -88,10 +88,10 @@ export default class RoPaSciInstance extends Instance{
      */
     async second(coin: CoinInstance, signer: Signer, choice: number): Promise<void> {
         if (!coin.name.equals(this.struct.stake.name)) {
-            throw new Error("not correct coin-type for player 2");
+            throw new Error('not correct coin-type for player 2');
         }
         if (coin.value.lessThan(this.struct.stake.value)) {
-            throw new Error("don't have enough coins to match stake");
+            throw new Error('don\'t have enough coins to match stake');
         }
 
         const ctx = new ClientTransaction({
@@ -99,18 +99,18 @@ export default class RoPaSciInstance extends Instance{
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    "fetch",
+                    'fetch',
                     [
-                        new Argument({ name: "coins", value: Buffer.from(this.struct.stake.value.toBytesLE()) }),
+                        new Argument({name: 'coins', value: Buffer.from(this.struct.stake.value.toBytesLE())}),
                     ],
                 ),
                 Instruction.createInvoke(
                     this.instance.id,
                     RoPaSciInstance.contractID,
-                    "second",
+                    'second',
                     [
-                        new Argument({ name: "account", value: coin.id }),
-                        new Argument({ name: "choice", value: Buffer.from([choice % 3]) }),
+                        new Argument({name: 'account', value: coin.id}),
+                        new Argument({name: 'choice', value: Buffer.from([choice % 3])}),
                     ],
                 ),
             ],
@@ -130,7 +130,7 @@ export default class RoPaSciInstance extends Instance{
      */
     async confirm(coin: CoinInstance): Promise<void> {
         if (!coin.name.equals(this.struct.stake.name)) {
-            throw new Error("not correct coin-type for player 1");
+            throw new Error('not correct coin-type for player 1');
         }
 
         const preHash = Buffer.alloc(32, 0);
@@ -141,17 +141,17 @@ export default class RoPaSciInstance extends Instance{
                 Instruction.createInvoke(
                     this.instance.id,
                     RoPaSciInstance.contractID,
-                    "confirm",
+                    'confirm',
                     [
-                        new Argument({ name: "prehash", value: preHash }),
-                        new Argument({ name: "account", value: coin.id }),
+                        new Argument({name: 'prehash', value: preHash}),
+                        new Argument({name: 'account', value: coin.id}),
                     ],
                 ),
             ],
         });
 
         await this.rpc.sendTransactionAndWait(ctx);
-        await this.update()
+        await this.update();
     }
 
     /**
@@ -163,7 +163,7 @@ export default class RoPaSciInstance extends Instance{
     async update(): Promise<RoPaSciInstance> {
         const proof = await this.rpc.getProof(this.instance.id);
         if (!proof.exists(this.instance.id)) {
-            throw new Error("fail to get a matching proof");
+            throw new Error('fail to get a matching proof');
         }
 
         this.instance = Instance.fromProof(this.instance.id, proof);
@@ -180,7 +180,7 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("personhood.RoPaSciStruct", RoPaSciStruct);
+        registerMessage('personhood.RoPaSciStruct', RoPaSciStruct);
     }
 
     readonly description: string;
@@ -196,7 +196,7 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
         this.firstPlayerHash = Buffer.from(this.firstPlayerHash || EMPTY_BUFFER);
         this.secondPlayerAccount = Buffer.from(this.secondPlayerAccount || EMPTY_BUFFER);
 
-        Object.defineProperty(this, "firstplayer", {
+        Object.defineProperty(this, 'firstplayer', {
             get(): number {
                 return this.firstPlayer;
             },
@@ -205,7 +205,7 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
             },
         });
 
-        Object.defineProperty(this, "firstplayerhash", {
+        Object.defineProperty(this, 'firstplayerhash', {
             get(): Buffer {
                 return this.firstPlayerHash;
             },
@@ -214,7 +214,7 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
             },
         });
 
-        Object.defineProperty(this, "secondplayer", {
+        Object.defineProperty(this, 'secondplayer', {
             get(): number {
                 return this.secondPlayer;
             },
@@ -223,7 +223,7 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
             },
         });
 
-        Object.defineProperty(this, "secondplayeraccount", {
+        Object.defineProperty(this, 'secondplayeraccount', {
             get(): Buffer {
                 return this.secondPlayerAccount;
             },

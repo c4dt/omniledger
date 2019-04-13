@@ -1,13 +1,12 @@
-import { IConnection, WebSocketConnection } from "../network/connection";
-import { Roster } from "../network/proto";
-import { StatusRequest, StatusResponse } from "./proto";
-import {Log} from "../Log";
+import {IConnection, WebSocketConnection} from '../network/connection';
+import {Roster} from '../network/proto';
+import {StatusRequest, StatusResponse} from './proto';
 
 /**
  * RPC to talk with the status service of the conodes
  */
 export default class StatusRPC {
-    static serviceName = "Status";
+    static serviceName = 'Status';
 
     private conn: IConnection[];
     private timeout: number;
@@ -33,11 +32,11 @@ export default class StatusRPC {
      */
     async getStatus(index: number = 0): Promise<StatusResponse> {
         if (index >= this.conn.length || index < 0) {
-            throw new Error("Index out of bound for the roster");
+            throw new Error('Index out of bound for the roster');
         }
 
         this.conn[index].setTimeout(this.timeout);
 
-        return <StatusResponse>(await this.conn[index].send(new StatusRequest(), StatusResponse));
+        return <StatusResponse> (await this.conn[index].send(new StatusRequest(), StatusResponse));
     }
 }

@@ -1,5 +1,5 @@
-import WebSocket from "isomorphic-ws";
-import {Log} from "../Log";
+import WebSocket from 'isomorphic-ws';
+import {Log} from '../Log';
 
 /**
  * An adapter to use any kind of websocket and interface it with
@@ -60,7 +60,7 @@ export class BrowserWebSocketAdapter extends WebSocketAdapter {
         super(path);
         this.ws = new WebSocket(path);
         // to prevent the browser to use blob
-        this.ws.binaryType = "arraybuffer";
+        this.ws.binaryType = 'arraybuffer';
     }
 
     /** @inheritdoc */
@@ -101,7 +101,7 @@ export class BrowserWebSocketAdapter extends WebSocketAdapter {
     }
 
     /** @inheritdoc */
-    close(code: number, reason = ""): void {
+    close(code: number, reason = ''): void {
         this.ws.close(code, reason);
     }
 }

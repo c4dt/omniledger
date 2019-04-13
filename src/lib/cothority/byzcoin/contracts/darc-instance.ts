@@ -6,139 +6,139 @@ import Instance, {InstanceID} from '../instance';
 import Proof from '../proof';
 
 export default class DarcInstance {
-  static readonly contractID = 'darc';
+    static readonly contractID = 'darc';
 
-  /**
-   * Initializes using an existing coinInstance from ByzCoin
-   * @param bc
-   * @param instID
-   */
-  static async fromByzcoin(bc: ByzCoinRPC, iid: Buffer): Promise<DarcInstance> {
-    return new DarcInstance(bc, await Instance.fromByzCoin(bc, iid));
-  }
-
-  /**
-   * Instantiate a darc using a proof
-   * @param key   Key of the proof
-   * @param p     The proof to use
-   * @returns the darc when compatible
-   */
-  static async fromProof(rpc: ByzCoinRPC, p: Proof): Promise<DarcInstance> {
-    if (!p.matchContract(DarcInstance.contractID)) {
-      throw new Error(`mismatch contract ID: ${DarcInstance.contractID} != ${p.contractID}`);
+    /**
+     * Initializes using an existing coinInstance from ByzCoin
+     * @param bc
+     * @param instID
+     */
+    static async fromByzcoin(bc: ByzCoinRPC, iid: Buffer): Promise<DarcInstance> {
+        return new DarcInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    let inst = await p.getVerifiedInstance(rpc.getGenesis().computeHash(), DarcInstance.contractID);
+    /**
+     * Instantiate a darc using a proof
+     * @param key   Key of the proof
+     * @param p     The proof to use
+     * @returns the darc when compatible
+     */
+    static async fromProof(rpc: ByzCoinRPC, p: Proof): Promise<DarcInstance> {
+        if (!p.matchContract(DarcInstance.contractID)) {
+            throw new Error(`mismatch contract ID: ${DarcInstance.contractID} != ${p.contractID}`);
+        }
 
-    return new DarcInstance(rpc, inst);
-  }
+        let inst = await p.getVerifiedInstance(rpc.getGenesis().computeHash(), DarcInstance.contractID);
 
-
-  private darc: Darc;
-  private instance: Instance;
-  private rpc: ByzCoinRPC;
-
-  constructor(rpc: ByzCoinRPC, instance: Instance) {
-    if (instance.contractID.toString() !== DarcInstance.contractID) {
-      throw new Error(`mismatch contract name: ${instance.contractID} vs ${DarcInstance.contractID}`);
+        return new DarcInstance(rpc, inst);
     }
 
-    this.rpc = rpc;
-    this.instance = instance;
-    this.darc = Darc.decode(instance.data);
-  }
 
-  get iid(): InstanceID {
-    return this.instance.id;
-  }
+    private darc: Darc;
+    private instance: Instance;
+    private rpc: ByzCoinRPC;
 
-  /**
-   * Get the darc of the instance
-   * @returns the darc
-   */
-  getDarc(): Darc {
-    return this.darc;
-  }
+    constructor(rpc: ByzCoinRPC, instance: Instance) {
+        if (instance.contractID.toString() !== DarcInstance.contractID) {
+            throw new Error(`mismatch contract name: ${instance.contractID} vs ${DarcInstance.contractID}`);
+        }
 
-  /**
-   * Update the data of this instance
-   *
-   * @return a promise that resolves once the data is up-to-date
-   */
-  async update(): Promise<DarcInstance> {
-    const proof = await this.rpc.getProof(this.darc.getBaseID());
-    let inst = await proof.getVerifiedInstance(this.rpc.getGenesis().computeHash(), DarcInstance.contractID);
-    this.darc = Darc.decode(inst.data);
-
-    return this;
-  }
-
-  /**
-   * Request to evolve the existing darc using the new darc and wait for
-   * the block inclusion
-   *
-   * @param newDarc The new darc
-   * @param signers Signers for the counters
-   * @param wait Number of blocks to wait for
-   * @returns a promise that resolves with the new darc instance
-   */
-  async evolveDarcAndWait(newDarc: Darc, signers: Signer[], wait: number): Promise<DarcInstance> {
-    if (!newDarc.getBaseID().equals(this.darc.getBaseID())) {
-      throw new Error('not the same base id for the darc');
+        this.rpc = rpc;
+        this.instance = instance;
+        this.darc = Darc.decode(instance.data);
     }
-    if (newDarc.version.compare(this.darc.version.add(1)) != 0) {
-      throw new Error('not the right version');
+
+    get iid(): InstanceID {
+        return this.instance.id;
     }
-    if (!newDarc.prevID.equals(this.darc.id)) {
-      throw new Error('doesn\'t point to the previous darc');
+
+    /**
+     * Get the darc of the instance
+     * @returns the darc
+     */
+    getDarc(): Darc {
+        return this.darc;
     }
-    const args = [new Argument({name: 'darc', value: Buffer.from(Darc.encode(newDarc).finish())})];
-    const instr = Instruction.createInvoke(this.darc.getBaseID(), DarcInstance.contractID, 'evolve', args);
 
-    const ctx = new ClientTransaction({instructions: [instr]});
-    await ctx.updateCounters(this.rpc, [signers]);
-    ctx.signWith([signers]);
+    /**
+     * Update the data of this instance
+     *
+     * @return a promise that resolves once the data is up-to-date
+     */
+    async update(): Promise<DarcInstance> {
+        const proof = await this.rpc.getProof(this.darc.getBaseID());
+        let inst = await proof.getVerifiedInstance(this.rpc.getGenesis().computeHash(), DarcInstance.contractID);
+        this.darc = Darc.decode(inst.data);
 
-    await this.rpc.sendTransactionAndWait(ctx, wait);
+        return this;
+    }
 
-    return this.update();
-  }
+    /**
+     * Request to evolve the existing darc using the new darc and wait for
+     * the block inclusion
+     *
+     * @param newDarc The new darc
+     * @param signers Signers for the counters
+     * @param wait Number of blocks to wait for
+     * @returns a promise that resolves with the new darc instance
+     */
+    async evolveDarcAndWait(newDarc: Darc, signers: Signer[], wait: number): Promise<DarcInstance> {
+        if (!newDarc.getBaseID().equals(this.darc.getBaseID())) {
+            throw new Error('not the same base id for the darc');
+        }
+        if (newDarc.version.compare(this.darc.version.add(1)) != 0) {
+            throw new Error('not the right version');
+        }
+        if (!newDarc.prevID.equals(this.darc.id)) {
+            throw new Error('doesn\'t point to the previous darc');
+        }
+        const args = [new Argument({name: 'darc', value: Buffer.from(Darc.encode(newDarc).finish())})];
+        const instr = Instruction.createInvoke(this.darc.getBaseID(), DarcInstance.contractID, 'evolve', args);
 
-  /**
-   * Request to spawn an instance and wait for the inclusion
-   *
-   * @param d             The darc to spawn
-   * @param signers       Signers for the counters
-   * @param wait          Number of blocks to wait for
-   * @returns a promise that resolves with the new darc instance
-   */
-  async spawnDarcAndWait(d: Darc, signers: Signer[], wait: number = 0): Promise<DarcInstance> {
-    await this.spawnInstanceAndWait(DarcInstance.contractID,
-      [new Argument({
-        name: 'darc',
-        value: Buffer.from(Darc.encode(d).finish()),
-      })], signers, wait);
-    return DarcInstance.fromByzcoin(this.rpc, d.getBaseID());
-  }
+        const ctx = new ClientTransaction({instructions: [instr]});
+        await ctx.updateCounters(this.rpc, [signers]);
+        ctx.signWith([signers]);
 
-  /**
-   * Request to spawn an instance of any contract and wait
-   *
-   * @param contractID    Contract name of the new instance
-   * @param signers       Signers for the counters
-   * @param wait          Number of blocks to wait for
-   * @returns a promise that resolves with the instanceID of the new instance, which is only valid if the
-   *          contract.spawn uses DeriveID.
-   */
-  async spawnInstanceAndWait(contractID: string, args: Argument[], signers: Signer[], wait: number = 0): Promise<InstanceID> {
-    const instr = Instruction.createSpawn(this.darc.getBaseID(), DarcInstance.contractID, args);
+        await this.rpc.sendTransactionAndWait(ctx, wait);
 
-    const ctx = new ClientTransaction({instructions: [instr]});
-    await ctx.updateCounters(this.rpc, [signers]);
-    ctx.signWith([signers]);
+        return this.update();
+    }
 
-    await this.rpc.sendTransactionAndWait(ctx, wait);
+    /**
+     * Request to spawn an instance and wait for the inclusion
+     *
+     * @param d             The darc to spawn
+     * @param signers       Signers for the counters
+     * @param wait          Number of blocks to wait for
+     * @returns a promise that resolves with the new darc instance
+     */
+    async spawnDarcAndWait(d: Darc, signers: Signer[], wait: number = 0): Promise<DarcInstance> {
+        await this.spawnInstanceAndWait(DarcInstance.contractID,
+            [new Argument({
+                name: 'darc',
+                value: Buffer.from(Darc.encode(d).finish()),
+            })], signers, wait);
+        return DarcInstance.fromByzcoin(this.rpc, d.getBaseID());
+    }
 
-    return ctx.instructions[0].deriveId();
-  }
+    /**
+     * Request to spawn an instance of any contract and wait
+     *
+     * @param contractID    Contract name of the new instance
+     * @param signers       Signers for the counters
+     * @param wait          Number of blocks to wait for
+     * @returns a promise that resolves with the instanceID of the new instance, which is only valid if the
+     *          contract.spawn uses DeriveID.
+     */
+    async spawnInstanceAndWait(contractID: string, args: Argument[], signers: Signer[], wait: number = 0): Promise<InstanceID> {
+        const instr = Instruction.createSpawn(this.darc.getBaseID(), DarcInstance.contractID, args);
+
+        const ctx = new ClientTransaction({instructions: [instr]});
+        await ctx.updateCounters(this.rpc, [signers]);
+        ctx.signWith([signers]);
+
+        await this.rpc.sendTransactionAndWait(ctx, wait);
+
+        return ctx.instructions[0].deriveId();
+    }
 }

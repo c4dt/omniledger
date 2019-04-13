@@ -1,6 +1,6 @@
-import { Message, Properties } from "protobufjs/light";
-import { ServerIdentity } from "../network/proto";
-import { registerMessage } from "../protobuf";
+import {Message, Properties} from 'protobufjs/light';
+import {ServerIdentity} from '../network/proto';
+import {registerMessage} from '../protobuf';
 
 /**
  * Status request message
@@ -10,7 +10,7 @@ export class StatusRequest extends Message<StatusRequest> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("Request", StatusRequest);
+        registerMessage('Request', StatusRequest);
     }
 }
 
@@ -22,7 +22,7 @@ export class Status extends Message<Status> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("Status", Status);
+        registerMessage('Status', Status);
     }
 
     readonly field: { [k: string]: string };
@@ -47,7 +47,7 @@ export class Status extends Message<Status> {
      * @returns a string
      */
     toString(): string {
-        return Object.keys(this.field).sort().map((k) => `${k}: ${this.field[k]}`).join("\n");
+        return Object.keys(this.field).sort().map((k) => `${k}: ${this.field[k]}`).join('\n');
     }
 }
 
@@ -59,7 +59,7 @@ export class StatusResponse extends Message<StatusResponse> {
      * @see README#Message classes
      */
     static register() {
-        registerMessage("Response", StatusResponse, Status, ServerIdentity);
+        registerMessage('Response', StatusResponse, Status, ServerIdentity);
     }
 
     readonly status: { [k: string]: Status };
@@ -72,7 +72,7 @@ export class StatusResponse extends Message<StatusResponse> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, "serveridentity", {
+        Object.defineProperty(this, 'serveridentity', {
             get(): ServerIdentity {
                 return this.serverIdentity;
             },
@@ -96,7 +96,7 @@ export class StatusResponse extends Message<StatusResponse> {
      * @returns a string
      */
     toString(): string {
-        return Object.keys(this.status).sort().map((k) => `[${k}]\n${this.status[k].toString()}`).join("\n\n");
+        return Object.keys(this.status).sort().map((k) => `[${k}]\n${this.status[k].toString()}`).join('\n\n');
     }
 }
 

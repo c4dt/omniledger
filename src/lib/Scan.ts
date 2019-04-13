@@ -1,5 +1,4 @@
 // import {BarcodeScanner, ScanResult} from "nativescript-barcodescanner";
-import {Log} from "./Log";
 // import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
 // import {screen} from "tns-core-modules/platform";
 // const ZXing = require("nativescript-zxing");
@@ -36,14 +35,14 @@ import {Log} from "./Log";
 // }
 
 export function parseQRCode(str: string, maxArgs: number): any {
-    let url = str.split("?", 2);
+    let url = str.split('?', 2);
     if (url.length != 2) {
-        return Promise.reject("wrong QRCode");
+        return Promise.reject('wrong QRCode');
     }
-    let parts = url[1].split("&", maxArgs);
+    let parts = url[1].split('&', maxArgs);
     let ret = {url: url[0]};
     parts.forEach(p => {
-        let r = p.split("=", 2);
+        let r = p.split('=', 2);
         ret[r[0]] = r[1];
     });
     return ret;

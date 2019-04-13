@@ -1,4 +1,4 @@
-import { IIdentity } from "./identity-wrapper";
+import {IIdentity} from './identity-wrapper';
 
 export default interface ISigner extends IIdentity {
     /**
