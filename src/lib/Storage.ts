@@ -1,4 +1,4 @@
-import Log from './cothority/log';
+import {Log} from './cothority/Log';
 
 export class Storage{
   static pre = "dyna_";

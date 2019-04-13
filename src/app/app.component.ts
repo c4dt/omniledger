@@ -35,38 +35,13 @@ export class AppComponent {
 
       gData.load().then(() => {
         this.gData = gData;
-        Log.print("Contact is:", gData.contact);
         this.isRegistered = gData.contact.isRegistered();
-        Log.print("isRegistered: ", this.isRegistered);
         this.updateContactForm();
       }).catch(e => {
         Log.catch(e);
       }).finally(() => {
         this.isLoaded = true;
       })
-    }
-  }
-
-  async doTest(){
-    try {
-      // jasmine.DEFAULT_TIMEOUT_INTERVAL = 250000;
-      Log.lvl1('Creating Byzcoin');
-      let tdAdmin = await TestData.init(new Data());
-      for (let i = 0; i < 100; i++){
-        Log.print("reading", i);
-        await tdAdmin.cbc.bc.updateConfig();
-      }
-      Log.print("createAll")
-      await tdAdmin.createAll('admin');
-      Log.print("creating contact");
-      let reg1 = new Contact(null, Public.fromRand());
-      reg1.alias = 'reg1';
-      await tdAdmin.d.registerContact(reg1);
-      let unreg2 = new Contact(null, Public.fromRand());
-      unreg2.alias = 'unreg2';
-    } catch (e){
-      Log.catch(e);
-      throw new Error(e);
     }
   }
 
@@ -92,10 +67,10 @@ export class AppComponent {
         let ek = Private.fromHex(ekStr);
         let did = this.registerForm.controls['darcID'].value;
         if (this.registerForm.controls['darcID'].valid && did.length == 64) {
-          Log.print('creating first identity');
-          gData.contact = await gData.createUser(ek, this.registerForm.controls['alias'].value, Buffer.from(did, 'hex'));
+          let d = await Data.createFirstUser(gData.bc, Buffer.from(did, 'hex'), ek.scalar,
+            this.registerForm.controls['alias'].value);
+          gData.contact = d.contact;
         } else {
-          Log.print('creating follow-up identity');
           await gData.attachAndEvolve(ek);
         }
       }
@@ -105,7 +80,6 @@ export class AppComponent {
     this.isRegistered = gData.contact.isRegistered();
     await gData.save();
     this.updateContactForm();
-    Log.print("done - is registered:", this.isRegistered);
   }
 
   async createContact(){
@@ -130,7 +104,6 @@ export class AppComponent {
   }
 
   async update() {
-    Log.print('updating status of roster');
     this.nodes = [];
     let list = Defaults.Roster.list;
     let srpc = new StatusRPC(Defaults.Roster);

@@ -26,37 +26,37 @@ export const Defaults = {
   Public = "1365232c84fb92f66bc003bff0bfb22250a99d6f3cecad4d6c53a64481486e93"
   Description = "Conode_4"
 `,
-    RosterTOMLLOCAL: `
-[[servers]]
-  Address = "tls://local.c4dt.org:7778"
-  Suite = "Ed25519"
-  Public = "a1104500cb49ddf49fb2dc27646d24ca617436d2ca21d96ba476667561693a35"
-  Description = "Conode_5"
-  [servers.Services]
-    [servers.Services.ByzCoin]
-      Public = "45812414eb3962a34a7f0da1a4bea8d6dd44066b3d1dbd291b57df1a62bf8d6516593c45dcd3dae6bdc4ae8f309f33fe441c1e09904680011ada5772759d6a2615bcb583337019f13c9a6dd67272b9f384402877fa62e644a55cf3056158407e03b2c582956472c5f416d4e9f5173fcfe4d6e6f4da4cbbd4b1fc38544c5ecaf2"
-      Suite = "bn256.adapter"
-    [servers.Services.Skipchain]
-      Public = "2ecf86086e93ebf317af679edd6071f47b9d28e2e8d5cb8c363da35f0c9e6f5f3e721fedd719c77ab7958517ba0b4b73ce450196c8d7d914a0d131ce43281ae38c83bd7ac606cdf441144207928080c28b1c61f6e7daf2f2db12ffd9b27dfe986d9f9d3fdfa7d1dba7acf716616f15e0a8d885312bfce7ee2e03868575b78aee"
-      Suite = "bn256.adapter"
-    [servers.Services.blsCoSiService]
-      Public = "63887d3b06ebee95bca343ee1e3a9010218881fcc4ecc849c6f07764fedddab9381e9881c352c90c96a45aa0399dd8190896464394e19e95bb019b3bd423018e456777f8b17abb5d2e08b6a15157925e8f5114fbee3c9f50865be3b2623c5d066a512099fa2264c3acb75c74040cae0cadb9f49ccae71288fb524262beb228c4"
-      Suite = "bn256.adapter"
-[[servers]]
-  Address = "tls://local.c4dt.org:7776"
-  Suite = "Ed25519"
-  Public = "845a49a5eec9bf0d925cbf409f640056ee666511a17e20976eb471cbcc3d6ec7"
-  Description = "Conode_4"
-  [servers.Services]
-    [servers.Services.ByzCoin]
-      Public = "6e2764bb1960d2feade5882bc5c6b38ea0274ff0cccaad0bba1bbf049fc6544d428b358772e4c2b4587093f0d7cf0cbe651015f8d9f673bc03f8f484a0a21a2e00128ed4fc5c4ed34f1811c3b43e96b1cb136ae0b7652a2e30cdbace9c21d67478fef3c4f3885beb23754a50e460129cc3bc9587b51abc74d85dc293667c4e29"
-      Suite = "bn256.adapter"
-    [servers.Services.Skipchain]
-      Public = "45a9de16964bbd55afc05b1a408c246e69299e3530e418461c94e5bc744e51648914609c5e1744e4093dd0ef555a9fd3827dfc99e6aa4b993c71ff89d6c88de48de20564a3a3d7e09e0203baab45d11dae2ae01c787a28da217e68340663dcde53770f58b82690da786d484c9634421ddd30ee03c82985c4427cc6c88a8cad13"
-      Suite = "bn256.adapter"
-    [servers.Services.blsCoSiService]
-      Public = "24b73271432ded23909a23452f0de4e0f4a3fd70fcf11200dd29f57795ea8d2b5523d3b1c1c8c0f53b75f7e6de1c049c6cba43ea208a708be9440b92fcfe7cf8514b8865fef8d0ebeca3ae2380902081f41e5ec4154b831c508cdce380291d6b3579318141a244049a6c8fe34254dc9d96724d9a9827a3e87a1a24e62cd0c893"
-      Suite = "bn256.adapter"
+// [[servers]]
+//   Address = "tls://local.c4dt.org:7778"
+//   Suite = "Ed25519"
+//   Public = "a1104500cb49ddf49fb2dc27646d24ca617436d2ca21d96ba476667561693a35"
+//   Description = "Conode_5"
+//   [servers.Services]
+//     [servers.Services.ByzCoin]
+//       Public = "45812414eb3962a34a7f0da1a4bea8d6dd44066b3d1dbd291b57df1a62bf8d6516593c45dcd3dae6bdc4ae8f309f33fe441c1e09904680011ada5772759d6a2615bcb583337019f13c9a6dd67272b9f384402877fa62e644a55cf3056158407e03b2c582956472c5f416d4e9f5173fcfe4d6e6f4da4cbbd4b1fc38544c5ecaf2"
+//       Suite = "bn256.adapter"
+//     [servers.Services.Skipchain]
+//       Public = "2ecf86086e93ebf317af679edd6071f47b9d28e2e8d5cb8c363da35f0c9e6f5f3e721fedd719c77ab7958517ba0b4b73ce450196c8d7d914a0d131ce43281ae38c83bd7ac606cdf441144207928080c28b1c61f6e7daf2f2db12ffd9b27dfe986d9f9d3fdfa7d1dba7acf716616f15e0a8d885312bfce7ee2e03868575b78aee"
+//       Suite = "bn256.adapter"
+//     [servers.Services.blsCoSiService]
+//       Public = "63887d3b06ebee95bca343ee1e3a9010218881fcc4ecc849c6f07764fedddab9381e9881c352c90c96a45aa0399dd8190896464394e19e95bb019b3bd423018e456777f8b17abb5d2e08b6a15157925e8f5114fbee3c9f50865be3b2623c5d066a512099fa2264c3acb75c74040cae0cadb9f49ccae71288fb524262beb228c4"
+//       Suite = "bn256.adapter"
+// [[servers]]
+//   Address = "tls://local.c4dt.org:7776"
+//   Suite = "Ed25519"
+//   Public = "845a49a5eec9bf0d925cbf409f640056ee666511a17e20976eb471cbcc3d6ec7"
+//   Description = "Conode_4"
+//   [servers.Services]
+//     [servers.Services.ByzCoin]
+//       Public = "6e2764bb1960d2feade5882bc5c6b38ea0274ff0cccaad0bba1bbf049fc6544d428b358772e4c2b4587093f0d7cf0cbe651015f8d9f673bc03f8f484a0a21a2e00128ed4fc5c4ed34f1811c3b43e96b1cb136ae0b7652a2e30cdbace9c21d67478fef3c4f3885beb23754a50e460129cc3bc9587b51abc74d85dc293667c4e29"
+//       Suite = "bn256.adapter"
+//     [servers.Services.Skipchain]
+//       Public = "45a9de16964bbd55afc05b1a408c246e69299e3530e418461c94e5bc744e51648914609c5e1744e4093dd0ef555a9fd3827dfc99e6aa4b993c71ff89d6c88de48de20564a3a3d7e09e0203baab45d11dae2ae01c787a28da217e68340663dcde53770f58b82690da786d484c9634421ddd30ee03c82985c4427cc6c88a8cad13"
+//       Suite = "bn256.adapter"
+//     [servers.Services.blsCoSiService]
+//       Public = "24b73271432ded23909a23452f0de4e0f4a3fd70fcf11200dd29f57795ea8d2b5523d3b1c1c8c0f53b75f7e6de1c049c6cba43ea208a708be9440b92fcfe7cf8514b8865fef8d0ebeca3ae2380902081f41e5ec4154b831c508cdce380291d6b3579318141a244049a6c8fe34254dc9d96724d9a9827a3e87a1a24e62cd0c893"
+//       Suite = "bn256.adapter"
+  RosterTOMLLOCAL: `
 [[servers]]
   Address = "tls://local.c4dt.org:7774"
   Suite = "Ed25519"
@@ -106,10 +106,6 @@ export const Defaults = {
     Roster: null,
     // ByzCoinID
     ByzCoinID: Buffer.from('aaa5b2db9523c5c66eedac22d878bc3d718d19f60d944004a53a9b977ed88ba3', 'hex'),
-    // SpawnerID is the instance the app can contact to create new instances. Because of circular dependencies, this
-    // cannot be an InstanceID.
-    SpawnerIID: Buffer.from('7dc459097579d6ce91f9a6c4ca3f4af6215036cc1e0e7d1dcf80e9c940b7e6a7', 'hex'),
-    // SpawnerIID: null,
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.

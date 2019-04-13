@@ -11,6 +11,7 @@ import {Log} from '../../../Log';
 
 export default class CoinInstance {
   static readonly contractID = 'coin';
+  static readonly commandMint = 'mint';
 
   /**
    * Generate the coin instance ID for a given darc ID
@@ -144,7 +145,7 @@ export default class CoinInstance {
     const inst = Instruction.createInvoke(
       this.inst.id,
       CoinInstance.contractID,
-      'mint',
+      CoinInstance.commandMint,
       [new Argument({name: 'coins', value: Buffer.from(amount.toBytesLE())})],
     );
     await inst.updateCounters(this.rpc, signers);

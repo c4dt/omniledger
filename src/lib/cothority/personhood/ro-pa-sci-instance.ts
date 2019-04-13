@@ -1,10 +1,10 @@
 import { Message, Properties } from "protobufjs/light";
-import Signer from "../../darc/signer";
-import { EMPTY_BUFFER, registerMessage } from "../../protobuf";
-import ByzCoinRPC from "../byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "../client-transaction";
-import Instance, { InstanceID } from "../instance";
-import CoinInstance, { Coin } from "./coin-instance";
+import Signer from "../darc/signer";
+import { EMPTY_BUFFER, registerMessage } from "../protobuf";
+import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "../byzcoin/client-transaction";
+import Instance, { InstanceID } from "../byzcoin/instance";
+import CoinInstance, { Coin } from "../byzcoin/contracts/coin-instance";
 
 export default class RoPaSciInstance extends Instance{
     static readonly contractID = "ropasci";

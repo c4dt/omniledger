@@ -5,7 +5,6 @@ import IdentityWrapper, {IIdentity} from '../darc/identity-wrapper';
 import Signer from '../darc/signer';
 import {EMPTY_BUFFER, registerMessage} from '../protobuf';
 import {InstanceID} from './instance';
-import {Log} from '../../Log';
 
 export interface ICounterUpdater {
   getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>;
@@ -63,9 +62,7 @@ export default class ClientTransaction extends Message<ClientTransaction> {
     uniqueSigners = uniqueSigners.filter((us, i) =>
       uniqueSigners.findIndex(usf => usf.toString() == us.toString()) == i);
 
-    Log.print("getting counters");
     const counters = await rpc.getSignerCounters(uniqueSigners, 1);
-    Log.print("got counters");
 
     let signerCounters = {};
     uniqueSigners.forEach((us, i) =>{
@@ -80,7 +77,6 @@ export default class ClientTransaction extends Message<ClientTransaction> {
         this.instructions[i].signerCounter.push(signerCounters[signer.toString()]);
         signerCounters[signer.toString()] = signerCounters[signer.toString()].add(1);
       });
-      await this.instructions[0].updateCounters(rpc, signers[i]);
     }
   }
 

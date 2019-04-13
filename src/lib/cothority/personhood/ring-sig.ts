@@ -1,6 +1,6 @@
 "use strict";
 
-import {Private, Public} from "./KeyPair";
+import {Private, Public} from "../../KeyPair";
 
 const Kyber = require("@dedis/kyber");
 const Blake = require("@stablelib/blake2xs").BLAKE2Xs;
@@ -8,7 +8,7 @@ import {cloneDeep} from "lodash";
 
 export const Suite = new Kyber.curve.edwards25519.Curve;
 
-import {Log} from "./Log";
+import {Log} from "../../Log";
 
 /**
  * Sign a message using (un)linkable ring signature. This method is ported from the Kyber Golang version

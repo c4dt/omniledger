@@ -7,7 +7,7 @@ import IdentityDarc from '../../darc/identity-darc';
 import IdentityEd25519 from '../../darc/identity-ed25519';
 import Rules from '../../darc/rules';
 import Signer from '../../darc/signer';
-import Log from '../../log';
+import {Log} from '../../Log';
 import {registerMessage} from '../../protobuf';
 import ByzCoinRPC from '../byzcoin-rpc';
 import ClientTransaction, {Argument, Instruction} from '../client-transaction';
@@ -15,9 +15,9 @@ import Instance, {InstanceID} from '../instance';
 import CoinInstance, {Coin} from './coin-instance';
 import CredentialInstance, {CredentialStruct} from './credentials-instance';
 import DarcInstance from './darc-instance';
-import {PopPartyInstance} from './pop-party/pop-party-instance';
-import {PopDesc} from './pop-party/proto';
-import RoPaSciInstance, {RoPaSciStruct} from './ro-pa-sci-instance';
+import {PopPartyInstance} from '../../Personhood/pop-party-instance';
+import {PopDesc} from '../../Personhood/proto';
+import RoPaSciInstance, {RoPaSciStruct} from '../../Personhood/ro-pa-sci-instance';
 
 export const SPAWNER_COIN = Buffer.alloc(32, 0);
 SPAWNER_COIN.write('SpawnerCoin');
@@ -117,15 +117,15 @@ export default class SpawnerInstance extends Instance {
    * @returns a promise that resolves with the new darc instance
    */
   async createDarc(coin: CoinInstance, signers: Signer[], ...darcs: Darc[]): Promise<DarcInstance[]> {
-    Log.print("CREATE DARC");
     // const d = SpawnerInstance.prepareUserDarc(pubKey, alias);
+    let cost = this.struct.costDarc.value.mul(darcs.length);
     const ctx = new ClientTransaction({
       instructions: [
         Instruction.createInvoke(
           coin.id,
           CoinInstance.contractID,
           'fetch',
-          [new Argument({name: 'coins', value: Buffer.from(this.struct.costDarc.value.toBytesLE())})],
+          [new Argument({name: 'coins', value: Buffer.from(cost.toBytesLE())})],
         )
       ],
     });
@@ -159,17 +159,13 @@ export default class SpawnerInstance extends Instance {
    * @returns a promise that resolves with the new coin instance
    */
   async createCoin(coin: CoinInstance, signers: Signer[], darcID: InstanceID, coinID: Buffer, balance?: Long): Promise<CoinInstance> {
-    Log.print("searching for existing coin");
-
-    // try {
-    //   const ci = await CoinInstance.fromByzcoin(this.rpc, CoinInstance.coinIID(coinID));
-    //   Log.warn('this coin is already registered');
-    //   return ci;
-    // } catch (e) {
-    //   // doesn't exist
-    // }
-
-    Log.print("creating coin");
+    try {
+      const ci = await CoinInstance.fromByzcoin(this.rpc, CoinInstance.coinIID(coinID));
+      Log.warn('this coin is already registered');
+      return ci;
+    } catch (e) {
+      // doesn't exist
+    }
 
     balance = balance || Long.fromNumber(0);
     const valueBuf = this.struct.costCoin.value.add(balance).toBytesLE();
@@ -192,9 +188,7 @@ export default class SpawnerInstance extends Instance {
         ),
       ],
     });
-    await ctx.updateCounters(this.rpc, [signers, []]);
-    ctx.signWith([signers, signers]);
-
+    await ctx.updateCountersAndSign(this.rpc, [signers, []]);
     await this.rpc.sendTransactionAndWait(ctx);
 
     return CoinInstance.fromByzcoin(this.rpc, CoinInstance.coinIID(coinID));
@@ -225,6 +219,7 @@ export default class SpawnerInstance extends Instance {
       // credential doesn't exist
     }
 
+    Log.print("spawning credential at", credID, CredentialInstance.credentialIID(credID));
     const valueBuf = this.struct.costCredential.value.toBytesLE();
     const ctx = new ClientTransaction({
       instructions: [
@@ -249,7 +244,7 @@ export default class SpawnerInstance extends Instance {
 
     await this.rpc.sendTransactionAndWait(ctx);
 
-    return CredentialInstance.fromByzcoin(this.rpc, CredentialInstance.credentialIID(darcID));
+    return CredentialInstance.fromByzcoin(this.rpc, CredentialInstance.credentialIID(credID));
   }
 
   /**

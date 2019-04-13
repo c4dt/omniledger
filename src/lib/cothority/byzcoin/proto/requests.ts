@@ -5,7 +5,7 @@ import { registerMessage } from "../../protobuf";
 import { SkipBlock } from "../../skipchain/skipblock";
 import ClientTransaction from "../client-transaction";
 import Proof from "../proof";
-import Log from "../../log";
+import {Log} from "../../Log";
 
 /**
  * Request to create a byzcoin skipchain
@@ -67,7 +67,6 @@ export class CreateGenesisBlock extends Message<CreateGenesisBlock> {
                 this.darcContractIDs = value;
             },
         });
-        Log.print("done");
     }
 }
 

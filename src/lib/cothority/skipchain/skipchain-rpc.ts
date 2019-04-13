@@ -1,4 +1,4 @@
-import Logger from "../log";
+import {Log} from "../Log";
 import { IConnection, RosterWSConnection, WebSocketConnection } from "../network/connection";
 import { Roster } from "../network/proto";
 import {

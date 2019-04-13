@@ -1,7 +1,7 @@
 import * as Long from "long";
 import {Reader} from "protobufjs/light";
 const protobuf = require("protobufjs/light");
-import Log from "../log";
+import {Log} from "../Log";
 const models = require("./models.json");
 // import models from "./models.json";
 

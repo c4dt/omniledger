@@ -1,17 +1,17 @@
-import {InstanceID} from "./cothority/byzcoin/instance";
-import {Log} from "./Log";
-import ByzCoinRPC from "./cothority/byzcoin/byzcoin-rpc";
+import {InstanceID} from "../byzcoin/instance";
+import {Log} from "../../Log";
+import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
 import {randomBytes} from "crypto";
-import {RingSig, Sign} from "./RingSig";
-import {Party} from "./Party";
-import {Private, Public} from "./KeyPair";
-import CredentialInstance, {CredentialStruct} from "./cothority/byzcoin/contracts/credentials-instance";
+import {RingSig, Sign} from "./ring-sig";
+import {Party} from "../../Party";
+import {Private, Public} from "../../KeyPair";
+import CredentialInstance, {CredentialStruct} from "../byzcoin/contracts/credentials-instance";
 import * as Long from "long";
-import {Contact} from "./Contact";
-import DarcInstance from "./cothority/byzcoin/contracts/darc-instance";
-import {Roster, ServerIdentity} from "./cothority/network";
-import {objToProto, root} from "./cothority/protobuf";
-import {IConnection, RosterWSConnection, WebSocketConnection} from "./cothority/network/connection";
+import {Contact} from "../../Contact";
+import DarcInstance from "../byzcoin/contracts/darc-instance";
+import {Roster, ServerIdentity} from "../network";
+import {objToProto, root} from "../protobuf";
+import {IConnection, RosterWSConnection, WebSocketConnection} from "../network/connection";
 
 const crypto = require("crypto");
 
@@ -407,7 +407,7 @@ export class UserLocation {
                 c.credential = c.credentialInstance.credential.copy();
                 c.darcInstance = await DarcInstance.fromByzcoin(bc, c.credentialInstance.darcID);
             } else {
-                c.unregisteredPub = this.publicKey;
+                c.seedPublic = this.publicKey;
             }
             return c;
         } catch (e) {

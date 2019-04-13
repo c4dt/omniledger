@@ -40,6 +40,7 @@ export class Contact {
   credentialInstance: CredentialsInstance = null;
   darcInstance: DarcInstance = null;
   coinInstance: CoinInstance = null;
+  spawnerInstance: SpawnerInstance = null;
   recover: Recover = null;
 
   /**
@@ -61,16 +62,17 @@ export class Contact {
     return darc;
   }
 
-  static prepareInitialCred(alias: string, pub: Public): CredentialStruct{
+  static prepareInitialCred(alias: string, pub: Public, spawner: InstanceID): CredentialStruct{
     let cred = new CredentialStruct();
     cred.setAttribute("1-public", "alias", Buffer.from(alias));
     cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
     cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
     cred.setAttribute("1-public", "seedPub", pub.toBuffer());
+    cred.setAttribute("1-public", "spawner", spawner);
     return cred;
   }
 
-  constructor(public credential: CredentialStruct = null, public unregisteredPub: Public = null) {
+  constructor(public credential: CredentialStruct = null) {
     if (credential == null) {
       this.credential = new CredentialStruct();
       Contact.setVersion(this.credential, 0);
@@ -87,18 +89,9 @@ export class Contact {
   }
 
   toObject(): object {
-    let o = {
+    return {
       credential: this.credential.toBytes(),
-      credentialIID: null,
-      unregisteredPub: null,
     };
-    if (this.credentialInstance) {
-      o.credentialIID = this.credentialInstance.id;
-    }
-    if (this.unregisteredPub) {
-      o.unregisteredPub = this.unregisteredPub.toBuffer();
-    }
-    return o;
   }
 
   async update(bc: ByzCoinRPC): Promise<Contact> {
@@ -147,13 +140,9 @@ export class Contact {
       Log.error('don\'t have the credentials');
       return;
     }
-    let coinIID = this.credential.getAttribute('1-public', 'coin');
-    Log.print("coinIID is:", coinIID);
-    if (coinIID != null && coinIID.length == 32) {
-      Log.print("found attribute");
-      return coinIID;
+    if (this.coinID != null && this.coinID.length == 32) {
+      return this.coinID;
     }
-    Log.print("calculating from public key:", this.seedPublic.toBuffer());
     return CoinInstance.coinIID(this.seedPublic.toBuffer());
   }
 
@@ -187,8 +176,8 @@ export class Contact {
   // this method sends the current state of the Credentials to ByzCoin.
   async sendUpdate(signer: Signer) {
     if (this.credentialInstance != null) {
-      if (this.coinInstance && !this.credential.getAttribute('coin', 'coinIID')) {
-        this.credential.setAttribute('coin', 'coinIID', this.coinInstance.id);
+      if (this.coinInstance && !this.coinID) {
+        this.coinID = this.coinInstance.id;
         this.version = this.version + 1;
       }
       if (this.version > Contact.getVersion(this.credentialInstance.credential)) {
@@ -197,59 +186,18 @@ export class Contact {
     }
   }
 
-  async addBC(bc: ByzCoinRPC, obj: any) {
-    if (obj.credentialIID) {
-      this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, Buffer.from(obj.credentialIID));
-      this.credential = this.credentialInstance.credential.copy();
-      this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
-      this.coinInstance = await CoinInstance.fromByzcoin(bc, this.credentialInstance.getAttribute('coin', 'coinIID'));
-    } else {
-      await this.verifyRegistration(bc);
-    }
-  }
-
-  async verifyRegistration(bc: ByzCoinRPC) {
+  async connectBC(bc: ByzCoinRPC) {
     Log.lvl1('Verifying user', this.alias,
-      'with public key', this.seedPublic.toHex());
-    let darcIID: InstanceID;
-    if (this.darcInstance) {
-      Log.lvl2('Using existing darc instance:', this.darcInstance.iid);
-      let d = Contact.prepareUserDarc(this.seedPublic.point, this.alias);
-      darcIID = this.darcInstance.iid;
-    } else {
-      let d = Contact.prepareUserDarc(this.seedPublic.point, this.alias);
-      darcIID = d.getBaseID();
-      Log.lvl2('Searching for darcID:', darcIID);
-      // TODO: probably needs to go in a try/catch
-      try {
-        this.darcInstance = await DarcInstance.fromByzcoin(bc, darcIID);
-      } catch (e) {
-        Log.lvl2('couldn\'t fetch darc instance');
-      }
-    }
-
-    if (!this.credentialInstance) {
-      let credIID = CredentialsInstance.credentialIID(darcIID);
-      Log.lvl2('Searching for credIID:', credIID);
-      try {
-        this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, credIID);
-        this.credential = this.credentialInstance.credential.copy();
-      } catch (e) {
-        Log.lvl2('couldn\'t fetch credential instance');
-      }
-    }
-    if (this.credentialInstance) {
-      this.credential.setAttribute('public', 'ed25519', this.seedPublic.toBuffer());
-    }
-
-    if (!this.coinInstance) {
-      let coinIID = CoinInstance.coinIID(darcIID);
-      try {
-        this.coinInstance = await CoinInstance.fromByzcoin(bc, coinIID);
-      } catch (e) {
-        Log.lvl2('didn\'t find coinInstance');
-      }
-    }
+      'with public key', this.seedPublic.toHex(), 'and id', this.credentialIID);
+    this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
+    this.credential = this.credentialInstance.credential.copy();
+    Log.print("getting darc");
+    this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
+    Log.print("getting coin");
+    this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID);
+    Log.print("getting spawner");
+    this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID)
+    Log.print("done for", this.alias);
   }
 
   toString(): string {
@@ -260,13 +208,7 @@ export class Contact {
   }
 
   get credentialIID(): InstanceID {
-    if (!this.credentialInstance) {
-      if (!this.darcInstance) {
-        return null;
-      }
-      return CredentialsInstance.credentialIID(this.darcInstance.iid);
-    }
-    return this.credentialInstance.id;
+    return CredentialsInstance.credentialIID(this.seedPublic.toBuffer());
   }
 
   get alias(): string {
@@ -330,10 +272,36 @@ export class Contact {
   }
 
   get seedPublic(): Public {
-    if (this.unregisteredPub) {
-      return this.unregisteredPub;
-    }
     return Public.fromBuffer(this.credential.getAttribute('1-public', 'seedPub'));
+  }
+
+  set seedPublic(pub: Public){
+    if (pub) {
+      this.credential.setAttribute("1-public", "seedPub", pub.toBuffer());
+      this.version = this.version + 1;
+    }
+  }
+
+  get coinID(): InstanceID{
+    return this.credential.getAttribute("1-public", "coin");
+  }
+
+  set coinID(id: InstanceID){
+    if (id) {
+      this.credential.setAttribute("1-public", "coin", id);
+      this.version = this.version + 1;
+    }
+  }
+
+  get spawnerID(): InstanceID{
+    return this.credential.getAttribute("1-public", "spawner");
+  }
+
+  set spawnerID(id: InstanceID){
+    if (id) {
+      this.credential.setAttribute("1-public", "spawner", id);
+      this.version = this.version + 1;
+    }
   }
 
   static fromObject(obj: any): Contact {
@@ -341,15 +309,12 @@ export class Contact {
     if (obj.credential) {
       u.credential = CredentialStruct.fromData(Buffer.from(obj.credential));
     }
-    if (obj.unregisteredPub) {
-      u.unregisteredPub = Public.fromBuffer(Buffer.from(obj.unregisteredPub));
-    }
     return u;
   }
 
   static async fromObjectBC(bc: ByzCoinRPC, obj: any): Promise<Contact> {
     let u = Contact.fromObject(obj);
-    await u.addBC(bc, obj);
+    await u.connectBC(bc);
     return u;
   }
 
@@ -367,7 +332,7 @@ export class Contact {
         u.alias = qr.alias;
         u.email = qr.email;
         u.phone = qr.phone;
-        u.unregisteredPub = Public.fromHex(qr.public_ed25519);
+        u.seedPublic = Public.fromHex(qr.public_ed25519);
         return u;
       default:
         return Promise.reject('invalid URL');
@@ -376,14 +341,10 @@ export class Contact {
 
   static async fromByzcoin(bc: ByzCoinRPC, credIID: InstanceID): Promise<Contact> {
     let u = new Contact();
-    Log.print('getting cred');
     u.credentialInstance = await CredentialsInstance.fromByzcoin(bc, credIID);
     u.credential = u.credentialInstance.credential.copy();
-    Log.print('getting darc');
     u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
-    Log.print('getting coin', u.getCoinAddress());
     u.coinInstance = await CoinInstance.fromByzcoin(bc, u.getCoinAddress());
-    Log.print("done");
     return u;
   }
 

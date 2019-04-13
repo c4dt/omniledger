@@ -1,7 +1,7 @@
 import { IConnection, WebSocketConnection } from "../network/connection";
 import { Roster } from "../network/proto";
 import { StatusRequest, StatusResponse } from "./proto";
-import Log from "../log";
+import {Log} from "../Log";
 
 /**
  * RPC to talk with the status service of the conodes

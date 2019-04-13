@@ -1,5 +1,5 @@
 import WebSocket from "isomorphic-ws";
-import Logger from "../log";
+import {Log} from "../Log";
 
 /**
  * An adapter to use any kind of websocket and interface it with
@@ -72,12 +72,11 @@ export class BrowserWebSocketAdapter extends WebSocketAdapter {
     onMessage(callback: (data: Buffer) => void): void {
         this.ws.onmessage = (evt: { data: WebSocket.Data }): any => {
             if (evt.data instanceof Buffer || evt.data instanceof ArrayBuffer) {
-                const evtBuffer = Buffer.from(<Buffer>evt.data);
-                callback(evtBuffer);
+                callback(Buffer.from(evt.data));
             } else {
                 // In theory, any type of data could be sent through but we only
                 // allow protobuf encoded messages
-                Logger.lvl2(`got an unknown websocket message type: ${typeof evt.data}`);
+                Log.lvl2(`got an unknown websocket message type: ${typeof evt.data}`);
             }
         };
     }

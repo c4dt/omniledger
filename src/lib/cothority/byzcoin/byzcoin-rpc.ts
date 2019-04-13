@@ -42,12 +42,12 @@ export default class ByzCoinRPC implements ICounterUpdater {
 
     const d = Darc.newDarc(signers, signers, Buffer.from(description || 'Genesis darc'));
     roster.list.forEach((srvid) => {
-      d.addIdentity('view_change', new IdentityEd25519({point: srvid.public}), Rules.OR);
+      d.addIdentity('invoke:config.view_change', new IdentityEd25519({point: srvid.public}), Rules.OR);
     });
 
     signers.forEach((signer) => {
       d.addIdentity('spawn:darc', signer, Rules.OR);
-      d.addIdentity('invoke:update_config', signer, Rules.OR);
+      d.addIdentity('invoke:config.update_config', signer, Rules.OR);
     });
 
     return d;
@@ -94,14 +94,9 @@ export default class ByzCoinRPC implements ICounterUpdater {
       version: currentVersion,
     });
 
-    Log.print('sending createByzcoin');
-
     const ret = await rpc.conn.send<CreateGenesisBlockResponse>(req, CreateGenesisBlockResponse);
-    Log.print('sent create');
     rpc.genesis = ret.skipblock;
-    Log.print('getting update');
     await rpc.updateConfig();
-    Log.print('updated');
 
     return rpc;
   }
@@ -209,19 +204,15 @@ export default class ByzCoinRPC implements ICounterUpdater {
    * @returns the ordered list of counters
    */
   async getSignerCounters(ids: IIdentity[], add: number = 0): Promise<Long[]> {
-    Log.print('gsc');
     const req = new GetSignerCounters({
       signerIDs: ids.map((id) => id.toString()),
       skipchainID: this.genesis.hash,
     });
 
-    Log.print('sending gsc request');
     try {
       const rep = await this.conn.send<GetSignerCountersResponse>(req, GetSignerCountersResponse);
-      Log.print('mapping response', rep.counters);
       return rep.counters.map((c) => c.add(add));
     } catch (e) {
-      Log.print('failure:', e);
       return Log.rcatch(e);
     }
   }

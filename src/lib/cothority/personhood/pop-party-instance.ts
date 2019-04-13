@@ -1,16 +1,16 @@
 import {Point, PointFactory, Scalar, sign} from '@dedis/kyber';
-import Signer from '../../../darc/signer';
-import Log from '../../../log';
-import ByzCoinRPC from '../../byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../../client-transaction';
-import Instance, {InstanceID} from '../../instance';
-import CredentialInstance from '../credentials-instance';
-import DarcInstance from '../darc-instance';
-import SpawnerInstance from '../spawner-instance';
+import Signer from '../darc/signer';
+import {Log} from '../Log';
+import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
+import ClientTransaction, {Argument, Instruction} from '../byzcoin/client-transaction';
+import Instance, {InstanceID} from '../byzcoin/instance';
+import CredentialInstance from '../byzcoin/contracts/credentials-instance';
+import DarcInstance from '../byzcoin/contracts/darc-instance';
+import SpawnerInstance from '../byzcoin/contracts/spawner-instance';
 import {FinalStatement, PopPartyStruct} from './proto';
-import Darc from '../../../darc/darc';
-import IdentityDarc from '../../../darc/identity-darc';
-import Rules from '../../../darc/rules';
+import Darc from '../darc/darc';
+import IdentityDarc from '../darc/identity-darc';
+import Rules from '../darc/rules';
 
 const {anon} = sign;
 

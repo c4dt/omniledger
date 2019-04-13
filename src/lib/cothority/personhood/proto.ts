@@ -2,7 +2,7 @@ import * as Long from "long";
 import { Point, PointFactory } from "@dedis/kyber";
 import * as Moment from "moment";
 import { Message, Properties } from "protobufjs/light";
-import { EMPTY_BUFFER, registerMessage } from "../../../protobuf";
+import { EMPTY_BUFFER, registerMessage } from "../protobuf";
 
 export class PopPartyStruct extends Message<PopPartyStruct> {
     /**
