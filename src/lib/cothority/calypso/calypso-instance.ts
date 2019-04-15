@@ -12,20 +12,17 @@ import OnChainSecretRPC from './calypso-rpc';
 
 const Curve25519 = curve.newCurve('edwards25519');
 
-export class OnChainSecretInstance {
+export class OnChainSecretInstance extends Instance {
     static readonly contractID = 'longTermSecret';
     public write: Write;
 
-    constructor(private rpc: ByzCoinRPC, private inst: Instance) {
-        this.write = Write.decode(inst.data);
-    }
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== OnChainSecretInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${OnChainSecretInstance.contractID}`);
+        }
 
-    /**
-     * Getter for the instance id
-     * @returns the id
-     */
-    get id() {
-        return this.inst.id;
+        this.write = Write.decode(inst.data);
     }
 
     /**
@@ -71,16 +68,13 @@ export class OnChainSecretInstance {
 export class CalypsoWriteInstance extends Instance {
     static readonly contractID = 'calypsoWrite';
     public write: Write;
-    private rpc: ByzCoinRPC;
-    private instance: Instance;
 
-    constructor(bc: ByzCoinRPC, inst: Instance) {
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
-        if (inst.contractID != CalypsoWriteInstance.contractID) {
-            throw new Error('not correct contract');
+        if (inst.contractID.toString() !== CalypsoWriteInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CalypsoWriteInstance.contractID}`);
         }
-        this.rpc = bc;
-        this.instance = inst;
+
         this.write = Write.decode(inst.data);
     }
 
@@ -138,16 +132,13 @@ export class CalypsoWriteInstance extends Instance {
 export class CalypsoReadInstance extends Instance {
     static readonly contractID = 'calypsoRead';
     public read: Read;
-    private rpc: ByzCoinRPC;
-    private instance: Instance;
 
-    constructor(bc: ByzCoinRPC, inst: Instance) {
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
-        if (inst.contractID != CalypsoReadInstance.contractID) {
-            throw new Error('not correct contract');
+        if (inst.contractID.toString() !== CalypsoReadInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CalypsoReadInstance.contractID}`);
         }
-        this.rpc = bc;
-        this.instance = inst;
+
         this.read = Read.decode(inst.data);
     }
 

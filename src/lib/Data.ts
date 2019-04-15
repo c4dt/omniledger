@@ -282,7 +282,7 @@ export class Data {
             progress('Creating Coin', 50);
             Log.lvl2('Registering coin');
             let coinInstance = await this.spawnerInstance.spawnCoin(this.coinInstance,
-                [this.keyIdentitySigner], darcInstances[0].getDarc().getBaseID(), contact.seedPublic.toBuffer());
+                [this.keyIdentitySigner], darcInstances[0].darc.getBaseID(), contact.seedPublic.toBuffer());
             let referral = null;
             if (this.contact.credentialInstance) {
                 referral = this.contact.credentialInstance.id;
@@ -291,10 +291,10 @@ export class Data {
             Log.lvl2('Registering credential');
 
             progress('Creating Credential', 80);
-            let credentialInstance = await this.createUserCredentials(pub, darcInstances[0].iid, coinInstance.id,
+            let credentialInstance = await this.createUserCredentials(pub, darcInstances[0].id, coinInstance.id,
                 referral, contact);
             await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
-            Log.lvl2('Registered user for darc::coin::credential:', darcInstances[0].iid, coinInstance.id,
+            Log.lvl2('Registered user for darc::coin::credential:', darcInstances[0].id, coinInstance.id,
                 credentialInstance.id);
             await contact.update(this.bc);
             progress('Done', 100);
@@ -306,7 +306,7 @@ export class Data {
     }
 
     async createUserCredentials(pub: Public = this.keyIdentity._public,
-                                darcID: Buffer = this.darcInstance.iid,
+                                darcID: Buffer = this.darcInstance.id,
                                 coinIID: Buffer = this.coinInstance.id,
                                 referral: Buffer = null,
                                 orig: Contact = null): Promise<CredentialInstance> {
@@ -388,7 +388,7 @@ export class Data {
         let msg = Buffer.alloc(RecoverySignature.msgBuf);
         user.credentialIID.copy(msg);
         publicKey.copy(msg, RecoverySignature.credIID);
-        msg.writeUInt32LE(user.darcInstance.getDarc().version.toNumber(), RecoverySignature.credIID + RecoverySignature.pub);
+        msg.writeUInt32LE(user.darcInstance.darc.version.toNumber(), RecoverySignature.credIID + RecoverySignature.pub);
 
         let sig = Schnorr.sign(curve, this.keyIdentity._private.scalar, new Uint8Array(msg));
         let sigBuf = Buffer.alloc(RecoverySignature.pubSig);
@@ -443,7 +443,7 @@ export class Data {
         await this.contact.credentialInstance.recoverIdentity(this.keyIdentity._public.point, this.recoverySignatures);
         this.recoverySignatures = [];
         await this.contact.darcInstance.update();
-        let newDarc = this.contact.darcInstance.getDarc().copy();
+        let newDarc = this.contact.darcInstance.darc.copy();
         ['update', 'fetch', 'transfer'].forEach(r => {
             newDarc.rules.appendToRule('invoke:' + r, this.keyIdentitySigner, '&');
         });

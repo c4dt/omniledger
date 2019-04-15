@@ -97,18 +97,15 @@ export default class CredentialsInstance extends Instance {
         return new CredentialsInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    private rpc: ByzCoinRPC;
     private instance: Instance;
     public credential: CredentialStruct;
 
-    constructor(bc: ByzCoinRPC, inst: Instance) {
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
-        if (inst.contractID != CredentialsInstance.contractID) {
-            throw new Error('not correct contract');
+        if (inst.contractID.toString() !== CredentialsInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CredentialsInstance.contractID}`);
         }
-        this.rpc = bc;
-        this.instance = inst;
-        this.credential = CredentialStruct.fromData(inst.data);
+        this.credential = CredentialStruct.decode(inst.data);
     }
 
     /**
@@ -119,7 +116,7 @@ export default class CredentialsInstance extends Instance {
      */
     async update(): Promise<CredentialsInstance> {
         this.instance = await Instance.fromByzCoin(this.rpc, this.instance.id);
-        this.credential = CredentialStruct.fromData(this.instance.data);
+        this.credential = CredentialStruct.decode(this.instance.data);
         return this;
     }
 
@@ -198,14 +195,6 @@ export class CredentialStruct extends Message<CredentialStruct> {
         registerMessage('personhood.CredentialStruct', CredentialStruct, Credential);
     }
 
-    /**
-     * Returns a new CredentialStruct class
-     * @param d
-     */
-    static fromData(d: Buffer): CredentialStruct {
-        return CredentialStruct.decode(d);
-    }
-
     readonly credentials: Credential[];
 
     constructor(properties?: Properties<CredentialStruct>) {
@@ -264,7 +253,7 @@ export class CredentialStruct extends Message<CredentialStruct> {
      * Copy returns a new CredentialStruct with copies of all internal data.
      */
     copy(): CredentialStruct {
-        return CredentialStruct.fromData(this.toBytes());
+        return CredentialStruct.decode(this.toBytes());
     }
 
     /**

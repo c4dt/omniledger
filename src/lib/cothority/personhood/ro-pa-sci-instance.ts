@@ -21,17 +21,17 @@ export default class RoPaSciInstance extends Instance {
         return new RoPaSciInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    private rpc: ByzCoinRPC;
-    private instance: Instance;
     public struct: RoPaSciStruct;
     private fillUp: Buffer;
     private firstMove: number;
 
-    constructor(bc: ByzCoinRPC, inst: Instance) {
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
-        this.rpc = bc;
-        this.instance = inst;
-        this.struct = RoPaSciStruct.decode(this.instance.data);
+        if (inst.contractID.toString() !== RoPaSciInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${RoPaSciInstance.contractID}`);
+        }
+
+        this.struct = RoPaSciStruct.decode(this.data);
     }
 
     get stake(): Coin {
@@ -105,7 +105,7 @@ export default class RoPaSciInstance extends Instance {
                     ],
                 ),
                 Instruction.createInvoke(
-                    this.instance.id,
+                    this.id,
                     RoPaSciInstance.contractID,
                     'second',
                     [
@@ -139,7 +139,7 @@ export default class RoPaSciInstance extends Instance {
         const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(
-                    this.instance.id,
+                    this.id,
                     RoPaSciInstance.contractID,
                     'confirm',
                     [
@@ -161,13 +161,14 @@ export default class RoPaSciInstance extends Instance {
      * or rejects with the error
      */
     async update(): Promise<RoPaSciInstance> {
-        const proof = await this.rpc.getProof(this.instance.id);
-        if (!proof.exists(this.instance.id)) {
+        const proof = await this.rpc.getProof(this.id);
+        if (!proof.exists(this.id)) {
             throw new Error('fail to get a matching proof');
         }
 
-        this.instance = Instance.fromProof(this.instance.id, proof);
-        this.struct = RoPaSciStruct.decode(this.instance.data);
+        let inst = Instance.fromProof(this.id, proof);
+        this.data = inst.data;
+        this.struct = RoPaSciStruct.decode(this.data);
         return this;
     }
 }

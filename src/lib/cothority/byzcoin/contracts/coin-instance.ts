@@ -7,7 +7,7 @@ import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import Instance, {InstanceID} from '../instance';
 import {createHash} from 'crypto';
 
-export default class CoinInstance {
+export default class CoinInstance extends Instance{
     static readonly contractID = 'coin';
     static readonly commandMint = 'mint';
 
@@ -82,16 +82,13 @@ export default class CoinInstance {
 
     public coin: Coin;
 
-    constructor(private rpc: ByzCoinRPC, private inst: Instance) {
-        this.coin = Coin.decode(inst.data);
-    }
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== CoinInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CoinInstance.contractID}`);
+        }
 
-    /**
-     * Getter for the instance id
-     * @returns the id
-     */
-    get id() {
-        return this.inst.id;
+        this.coin = Coin.decode(inst.data);
     }
 
     /**
@@ -123,7 +120,7 @@ export default class CoinInstance {
             new Argument({name: 'destination', value: to}),
         ];
 
-        const inst = Instruction.createInvoke(this.inst.id, CoinInstance.contractID, 'transfer', args);
+        const inst = Instruction.createInvoke(this.id, CoinInstance.contractID, 'transfer', args);
         await inst.updateCounters(this.rpc, signers);
 
         const ctx = new ClientTransaction({instructions: [inst]});
@@ -141,7 +138,7 @@ export default class CoinInstance {
      */
     async mint(signers: Signer[], amount: Long, wait?: number): Promise<void> {
         const inst = Instruction.createInvoke(
-            this.inst.id,
+            this.id,
             CoinInstance.contractID,
             CoinInstance.commandMint,
             [new Argument({name: 'coins', value: Buffer.from(amount.toBytesLE())})],
@@ -160,8 +157,8 @@ export default class CoinInstance {
      * @returns the updated instance
      */
     async update(): Promise<CoinInstance> {
-        const p = await this.rpc.getProof(this.inst.id);
-        if (!p.exists(this.inst.id)) {
+        const p = await this.rpc.getProof(this.id);
+        if (!p.exists(this.id)) {
             throw new Error('fail to get a matching proof');
         }
 

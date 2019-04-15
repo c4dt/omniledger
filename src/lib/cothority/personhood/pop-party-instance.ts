@@ -48,17 +48,16 @@ export class PopPartyInstance extends Instance {
         return new PopPartyInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    private rpc: ByzCoinRPC;
-    private instance: Instance;
     private tmpAttendees: Point[] = [];
     public popPartyStruct: PopPartyStruct;
 
-    constructor(public bc: ByzCoinRPC, inst: Instance) {
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
+        if (inst.contractID.toString() !== PopPartyInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${PopPartyInstance.contractID}`);
+        }
 
-        this.rpc = bc;
-        this.instance = inst;
-        this.popPartyStruct = PopPartyStruct.decode(this.instance.data);
+        this.popPartyStruct = PopPartyStruct.decode(this.data);
     }
 
     /**
@@ -123,7 +122,7 @@ export class PopPartyInstance extends Instance {
         }
 
         const instr = Instruction.createInvoke(
-            this.instance.id,
+            this.id,
             PopPartyInstance.contractID,
             'barrier',
             [],
@@ -132,7 +131,7 @@ export class PopPartyInstance extends Instance {
         const ctx = new ClientTransaction({instructions: [instr]});
         await ctx.updateCountersAndSign(this.rpc, [signers]);
 
-        await this.bc.sendTransactionAndWait(ctx);
+        await this.rpc.sendTransactionAndWait(ctx);
         await this.update();
 
         return this.popPartyStruct.state;
@@ -152,7 +151,7 @@ export class PopPartyInstance extends Instance {
         this.popPartyStruct.updateAttendes(this.tmpAttendees);
 
         const instr = Instruction.createInvoke(
-            this.instance.id,
+            this.id,
             PopPartyInstance.contractID,
             'finalize',
             [new Argument({name: 'attendees', value: this.popPartyStruct.attendees.toBytes()})],
@@ -161,7 +160,7 @@ export class PopPartyInstance extends Instance {
         const ctx = new ClientTransaction({instructions: [instr]});
         await ctx.updateCountersAndSign(this.rpc, [signers]);
 
-        await this.bc.sendTransactionAndWait(ctx);
+        await this.rpc.sendTransactionAndWait(ctx);
         await this.update();
 
         return this.popPartyStruct.state;
@@ -172,8 +171,9 @@ export class PopPartyInstance extends Instance {
      * @returns a promise that resolves with an updaed instance
      */
     async update(): Promise<PopPartyInstance> {
-        this.instance = await Instance.fromByzCoin(this.rpc, this.instance.id);
-        this.popPartyStruct = PopPartyStruct.decode(this.instance.data);
+        let inst = await Instance.fromByzCoin(this.rpc, this.id);
+        this.data = inst.data;
+        this.popPartyStruct = PopPartyStruct.decode(this.data);
 
         if (this.popPartyStruct.state === PopPartyInstance.SCANNING &&
             this.tmpAttendees.length === 0) {
@@ -197,7 +197,7 @@ export class PopPartyInstance extends Instance {
         }
 
         const keys = this.popPartyStruct.attendees.publics;
-        const lrs = await anon.sign(Buffer.from('mine'), keys, secret, this.instance.id);
+        const lrs = await anon.sign(Buffer.from('mine'), keys, secret, this.id);
         const args = [
             new Argument({name: 'lrs', value: lrs.encode()})
         ];
@@ -210,7 +210,7 @@ export class PopPartyInstance extends Instance {
         }
 
         const instr = Instruction.createInvoke(
-            this.instance.id,
+            this.id,
             PopPartyInstance.contractID,
             'mine',
             args,
@@ -220,13 +220,13 @@ export class PopPartyInstance extends Instance {
         // replay attacks server-side
         const ctx = new ClientTransaction({instructions: [instr]});
 
-        await this.bc.sendTransactionAndWait(ctx);
+        await this.rpc.sendTransactionAndWait(ctx);
         await this.update();
     }
 
     async fetchOrgKeys(): Promise<Point[]> {
-        const piDarc = await DarcInstance.fromByzcoin(this.bc, this.instance.darcID);
-        const exprOrgs = piDarc.getDarc().rules.list.find((l) => l.action === 'invoke:popParty.finalize').expr;
+        const piDarc = await DarcInstance.fromByzcoin(this.rpc, this.darcID);
+        const exprOrgs = piDarc.darc.rules.list.find((l) => l.action === 'invoke:popParty.finalize').expr;
         const orgDarcs = exprOrgs.toString().split(' | ');
         const orgPers: Point[] = [];
 
@@ -234,7 +234,7 @@ export class PopPartyInstance extends Instance {
             // Remove leading "darc:" from expression
             orgDarc = orgDarc.substr(5);
             const orgCred = CredentialInstance.credentialIID(Buffer.from(orgDarc, 'hex'));
-            const cred = await CredentialInstance.fromByzcoin(this.bc, orgCred);
+            const cred = await CredentialInstance.fromByzcoin(this.rpc, orgCred);
             const credPers = cred.getAttribute('personhood', 'ed25519');
             if (!credPers) {
                 throw new Error('found organizer without personhood credential');

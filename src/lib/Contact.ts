@@ -209,7 +209,7 @@ export class Contact {
     }
 
     get darcSignIdentity(): IdentityDarc {
-        let signRule = this.darcInstance.getDarc().rules.list.find(r => r.action == '_sign');
+        let signRule = this.darcInstance.darc.rules.list.find(r => r.action == '_sign');
         if (signRule == null) {
             throw new Error('didn\'t find signer darc');
         }
@@ -323,7 +323,7 @@ export class Contact {
     static fromObject(obj: any): Contact {
         let u = new Contact();
         if (obj.credential) {
-            u.credential = CredentialStruct.fromData(Buffer.from(obj.credential));
+            u.credential = CredentialStruct.decode(Buffer.from(obj.credential));
         }
         return u;
     }

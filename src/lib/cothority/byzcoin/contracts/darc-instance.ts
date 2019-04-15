@@ -5,7 +5,7 @@ import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import Instance, {InstanceID} from '../instance';
 import Proof from '../proof';
 
-export default class DarcInstance {
+export default class DarcInstance extends Instance {
     static readonly contractID = 'darc';
 
     /**
@@ -17,47 +17,15 @@ export default class DarcInstance {
         return new DarcInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    /**
-     * Instantiate a darc using a proof
-     * @param key   Key of the proof
-     * @param p     The proof to use
-     * @returns the darc when compatible
-     */
-    static async fromProof(rpc: ByzCoinRPC, p: Proof): Promise<DarcInstance> {
-        if (!p.matchContract(DarcInstance.contractID)) {
-            throw new Error(`mismatch contract ID: ${DarcInstance.contractID} != ${p.contractID}`);
+    public darc: Darc;
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== DarcInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${DarcInstance.contractID}`);
         }
 
-        let inst = await p.getVerifiedInstance(rpc.getGenesis().computeHash(), DarcInstance.contractID);
-
-        return new DarcInstance(rpc, inst);
-    }
-
-
-    private darc: Darc;
-    private instance: Instance;
-    private rpc: ByzCoinRPC;
-
-    constructor(rpc: ByzCoinRPC, instance: Instance) {
-        if (instance.contractID.toString() !== DarcInstance.contractID) {
-            throw new Error(`mismatch contract name: ${instance.contractID} vs ${DarcInstance.contractID}`);
-        }
-
-        this.rpc = rpc;
-        this.instance = instance;
-        this.darc = Darc.decode(instance.data);
-    }
-
-    get iid(): InstanceID {
-        return this.instance.id;
-    }
-
-    /**
-     * Get the darc of the instance
-     * @returns the darc
-     */
-    getDarc(): Darc {
-        return this.darc;
+        this.darc = Darc.decode(inst.data);
     }
 
     /**

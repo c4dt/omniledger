@@ -24,8 +24,8 @@ describe('Testing new signup', () => {
             await user1.coinInstance.transfer(Long.fromNumber(1e5), user2.coinInstance.id, [user1.keyIdentitySigner]);
             await user1.coinInstance.update();
             await user2.coinInstance.update();
-            // -600 is for the spawning cost of a new user
-            expect(user1.coinInstance.coin.value.toNumber()).toBe(1e6 - 1e5 - 600);
+            // -1500 is for the spawning cost of a new user
+            expect(user1.coinInstance.coin.value.toNumber()).toBe(1e6 - 1e5 - 1500);
             expect(user2.coinInstance.coin.value.toNumber()).toBe(1e5);
         });
 
@@ -33,7 +33,6 @@ describe('Testing new signup', () => {
             let user1 = await tdAdmin.createUser(null, 'user1');
             let user2 = await tdAdmin.createUser(null, 'user2');
             let secret = Buffer.from('calypsO for all');
-
         });
     });
 });

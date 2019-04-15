@@ -3,7 +3,7 @@
 import Keccak from 'keccak';
 import {Log} from './Log';
 import {curve} from '@dedis/kyber';
-import {CalypsoReadInstance, CalypsoWriteInstance, Write} from './cothority/calypso/calypso-instance';
+import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from './cothority/calypso/calypso-instance';
 import {TestData} from './Data';
 import {Defaults} from './Defaults';
 import OnChainSecretRPC from './cothority/calypso/calypso-rpc';
@@ -58,9 +58,8 @@ describe('Calypso.createWrite should', () => {
          */
         let ltsID = Buffer.from('4c545320496e7374616e63652049440000000000000000000000000000000000', 'hex');
         let writeDarc = Buffer.from('5772697465204461726320494400000000000000000000000000000000000000', 'hex');
-        // let X = Curve25519.point();
-        // X.unmarshalBinary(Buffer.from('14416767726567617465207075626c6963206b65796445b49ac5ec4c9161e706', 'hex'));
-        let X = Curve25519.point().base();
+        let X = Curve25519.point();
+        X.unmarshalBinary(Buffer.from('14416767726567617465207075626c6963206b65796445b49ac5ec4c9161e706', 'hex'));
         let key = Buffer.from('56657279205365637265742053796d6d6574726963204b6579', 'hex');
 
         let k = new Keccak('shake256');
@@ -99,9 +98,6 @@ describe('In a full byzcoin setting, it should', () => {
             Log.lvl2('Authorizing lts-creation by byzcoin on node', roster.list[i].address);
             await ocs.authorise(roster.list[i], tdAdmin.bc.genesisID);
         }
-    });
-
-    it('', () => {
     });
 
     it('be able to create an LTS', async () => {

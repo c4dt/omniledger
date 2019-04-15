@@ -69,7 +69,7 @@ export default class ByzCoinRPC implements ICounterUpdater {
         rpc.config = ChainConfig.fromProof(ccProof);
 
         let di = await DarcInstance.fromByzcoin(rpc, ccProof.stateChangeBody.darcID);
-        rpc.genesisDarc = di.getDarc();
+        rpc.genesisDarc = di.darc;
 
         return rpc;
     }
@@ -170,7 +170,7 @@ export default class ByzCoinRPC implements ICounterUpdater {
         const darcIID = pr.stateChangeBody.darcID;
         const genesisDarcInstance = await DarcInstance.fromByzcoin(this, darcIID);
 
-        this.genesisDarc = genesisDarcInstance.getDarc();
+        this.genesisDarc = genesisDarcInstance.darc;
     }
 
     /**

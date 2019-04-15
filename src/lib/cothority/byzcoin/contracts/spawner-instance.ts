@@ -69,7 +69,6 @@ export default class SpawnerInstance extends Instance {
             SpawnerInstance.contractID));
     }
 
-    private rpc: ByzCoinRPC;
     private struct: SpawnerStruct;
 
     /**
@@ -78,9 +77,12 @@ export default class SpawnerInstance extends Instance {
      * @param iid       The instance ID
      * @param spawner   Parameters for the spawner: costs and names
      */
-    constructor(bc: ByzCoinRPC, inst: Instance) {
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
-        this.rpc = bc;
+        if (inst.contractID.toString() !== SpawnerInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${SpawnerInstance.contractID}`);
+        }
+
         this.struct = SpawnerStruct.decode(inst.data);
     }
 
@@ -369,7 +371,7 @@ export default class SpawnerInstance extends Instance {
         let d = await this.spawnDarc(coin, signers,
             Darc.newDarc([ident], [ident], Buffer.from('calypso write protection'), ['spawn:calypsoRead']));
 
-        let write = await Write.createWrite(lts.instanceid, d[0].iid, lts.X, key);
+        let write = await Write.createWrite(lts.instanceid, d[0].id, lts.X, key);
         write.cost = this.struct.costCRead;
 
         const ctx = new ClientTransaction({
@@ -379,7 +381,7 @@ export default class SpawnerInstance extends Instance {
                 ]),
                 Instruction.createSpawn(this.id, CalypsoWriteInstance.contractID, [
                     new Argument({name: 'write', value: Buffer.from(Write.encode(write).finish())}),
-                    new Argument({name: 'darcID', value: d[0].iid})
+                    new Argument({name: 'darcID', value: d[0].id})
                 ])
             ]
         });
