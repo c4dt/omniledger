@@ -9,7 +9,18 @@ import {Public} from '../../../KeyPair';
 import {createHash, randomBytes} from 'crypto';
 
 export default class CredentialsInstance extends Instance {
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== CredentialsInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CredentialsInstance.contractID}`);
+        }
+        this.credential = CredentialStruct.decode(inst.data);
+    }
     static readonly contractID = 'credential';
+
+    private instance: Instance;
+    public credential: CredentialStruct;
 
     /**
      * Generate the credential instance ID for a given darc ID
@@ -43,7 +54,7 @@ export default class CredentialsInstance extends Instance {
         pub: Public = null,
         did: InstanceID = null,
     ): Promise<CredentialsInstance> {
-        let args = [new Argument({name: 'credential', value: cred.toBytes()})];
+        const args = [new Argument({name: 'credential', value: cred.toBytes()})];
         if (pub) {
             args.push(new Argument({name: 'public', value: pub.toBuffer()}));
         }
@@ -95,17 +106,6 @@ export default class CredentialsInstance extends Instance {
      */
     static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID): Promise<CredentialsInstance> {
         return new CredentialsInstance(bc, await Instance.fromByzCoin(bc, iid));
-    }
-
-    private instance: Instance;
-    public credential: CredentialStruct;
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== CredentialsInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CredentialsInstance.contractID}`);
-        }
-        this.credential = CredentialStruct.decode(inst.data);
     }
 
     /**
@@ -167,9 +167,9 @@ export default class CredentialsInstance extends Instance {
     }
 
     async recoverIdentity(pubKey: Point, signatures: RecoverySignature[]): Promise<any> {
-        let sigBuf = Buffer.alloc(RecoverySignature.pubSig * signatures.length);
+        const sigBuf = Buffer.alloc(RecoverySignature.pubSig * signatures.length);
         signatures.forEach((s, i) => s.signature.copy(sigBuf, RecoverySignature.pubSig * i));
-        let ctx = new ClientTransaction({
+        const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(
                     this.instance.id,
@@ -188,19 +188,19 @@ export default class CredentialsInstance extends Instance {
  * credentials.
  */
 export class CredentialStruct extends Message<CredentialStruct> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.CredentialStruct', CredentialStruct, Credential);
-    }
-
-    readonly credentials: Credential[];
 
     constructor(properties?: Properties<CredentialStruct>) {
         super(properties);
 
         this.credentials = this.credentials.slice() || [];
+    }
+
+    readonly credentials: Credential[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.CredentialStruct', CredentialStruct, Credential);
     }
 
     /**
@@ -269,6 +269,15 @@ export class CredentialStruct extends Message<CredentialStruct> {
  * A credential has a given name used as a key and one or more attributes
  */
 export class Credential extends Message<Credential> {
+
+    constructor(props?: Properties<Credential>) {
+        super(props);
+
+        this.attributes = this.attributes.slice() || [];
+    }
+
+    readonly name: string;
+    readonly attributes: Attribute[];
     /**
      * @see README#Message classes
      */
@@ -277,16 +286,7 @@ export class Credential extends Message<Credential> {
     }
 
     static fromNameAttr(name: string, key: string, value: Buffer): Credential {
-        return new Credential({name: name, attributes: [new Attribute({name: key, value: value})]});
-    }
-
-    readonly name: string;
-    readonly attributes: Attribute[];
-
-    constructor(props?: Properties<Credential>) {
-        super(props);
-
-        this.attributes = this.attributes.slice() || [];
+        return new Credential({name, attributes: [new Attribute({name: key, value})]});
     }
 }
 
@@ -294,20 +294,20 @@ export class Credential extends Message<Credential> {
  * Attribute of a credential
  */
 export class Attribute extends Message<Attribute> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.Attribute', Attribute);
-    }
-
-    readonly name: string;
-    readonly value: Buffer;
 
     constructor(props?: Properties<Attribute>) {
         super(props);
 
         this.value = Buffer.from(this.value || EMPTY_BUFFER);
+    }
+
+    readonly name: string;
+    readonly value: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.Attribute', Attribute);
     }
 }
 

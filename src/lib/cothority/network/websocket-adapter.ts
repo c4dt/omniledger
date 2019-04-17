@@ -1,5 +1,5 @@
 import WebSocket from 'isomorphic-ws';
-import {Log} from '../log';
+import { Log } from '../log';
 
 /**
  * An adapter to use any kind of websocket and interface it with

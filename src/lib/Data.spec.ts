@@ -16,11 +16,11 @@ describe('Testing new signup', () => {
         });
 
         it('Creating new user from darc', async () => {
-            let kp1 = new KeyPair();
-            let user1 = await tdAdmin.createUser(kp1._private, 'user1');
+            const kp1 = new KeyPair();
+            const user1 = await tdAdmin.createUser(kp1._private, 'user1');
             await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user1.coinInstance.id, [tdAdmin.keyIdentitySigner]);
-            let kp2 = new KeyPair();
-            let user2 = await user1.createUser(kp2._private, 'user2');
+            const kp2 = new KeyPair();
+            const user2 = await user1.createUser(kp2._private, 'user2');
             await user1.coinInstance.transfer(Long.fromNumber(1e5), user2.coinInstance.id, [user1.keyIdentitySigner]);
             await user1.coinInstance.update();
             await user2.coinInstance.update();
@@ -30,9 +30,9 @@ describe('Testing new signup', () => {
         });
 
         it('Spawning a secret and recover it', async () => {
-            let user1 = await tdAdmin.createUser(null, 'user1');
-            let user2 = await tdAdmin.createUser(null, 'user2');
-            let secret = Buffer.from('calypsO for all');
+            const user1 = await tdAdmin.createUser(null, 'user1');
+            const user2 = await tdAdmin.createUser(null, 'user2');
+            const secret = Buffer.from('calypsO for all');
         });
     });
 });

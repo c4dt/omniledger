@@ -10,7 +10,7 @@ describe('Storage', () => {
     });
 
     it('should marshal buffer', async () => {
-        let a = {
+        const a = {
             one: 1,
             two: Buffer.from('two')
         };

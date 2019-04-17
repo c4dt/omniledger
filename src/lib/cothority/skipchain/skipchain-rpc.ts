@@ -1,5 +1,5 @@
-import {IConnection, RosterWSConnection, WebSocketConnection} from '../network/connection';
-import {Roster} from '../network/proto';
+import { IConnection, RosterWSConnection, WebSocketConnection } from '../network/connection';
+import { Roster } from '../network/proto';
 import {
     GetAllSkipChainIDs,
     GetAllSkipChainIDsReply,
@@ -11,7 +11,7 @@ import {
     StoreSkipBlock,
     StoreSkipBlockReply,
 } from './proto';
-import {SkipBlock} from './skipblock';
+import { SkipBlock } from './skipblock';
 
 /**
  * SkipchainRPC provides basic tools to interact with a skipchain

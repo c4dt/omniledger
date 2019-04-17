@@ -7,17 +7,6 @@ const EMPTY_BUFFER = Buffer.allocUnsafe(0);
  * ByzCoin metadata
  */
 export default class DataHeader extends Message<DataHeader> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.DataHeader', DataHeader);
-    }
-
-    readonly trieRoot: Buffer;
-    readonly clientTransactionHash: Buffer;
-    readonly stateChangeHash: Buffer;
-    readonly timestamp: Long;
 
     constructor(props?: Properties<DataHeader>) {
         super(props);
@@ -54,6 +43,17 @@ export default class DataHeader extends Message<DataHeader> {
                 this.stateChangeHash = value;
             },
         });
+    }
+
+    readonly trieRoot: Buffer;
+    readonly clientTransactionHash: Buffer;
+    readonly stateChangeHash: Buffer;
+    readonly timestamp: Long;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.DataHeader', DataHeader);
     }
 }
 

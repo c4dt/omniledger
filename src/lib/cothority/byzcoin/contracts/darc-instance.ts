@@ -5,7 +5,18 @@ import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import Instance, {InstanceID} from '../instance';
 
 export default class DarcInstance extends Instance {
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== DarcInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${DarcInstance.contractID}`);
+        }
+
+        this.darc = Darc.decode(inst.data);
+    }
     static readonly contractID = 'darc';
+
+    public darc: Darc;
 
     /**
      * Initializes using an existing coinInstance from ByzCoin
@@ -16,17 +27,6 @@ export default class DarcInstance extends Instance {
         return new DarcInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    public darc: Darc;
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== DarcInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${DarcInstance.contractID}`);
-        }
-
-        this.darc = Darc.decode(inst.data);
-    }
-
     /**
      * Update the data of this instance
      *
@@ -34,7 +34,7 @@ export default class DarcInstance extends Instance {
      */
     async update(): Promise<DarcInstance> {
         const proof = await this.rpc.getProof(this.darc.getBaseID());
-        let inst = await proof.getVerifiedInstance(this.rpc.getGenesis().computeHash(), DarcInstance.contractID);
+        const inst = await proof.getVerifiedInstance(this.rpc.getGenesis().computeHash(), DarcInstance.contractID);
         this.darc = Darc.decode(inst.data);
 
         return this;

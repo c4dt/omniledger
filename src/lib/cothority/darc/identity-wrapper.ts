@@ -1,5 +1,5 @@
-import {Message} from 'protobufjs/light';
-import {registerMessage} from '../protobuf';
+import { Message } from 'protobufjs/light';
+import { registerMessage } from '../protobuf';
 import IdentityDarc from './identity-darc';
 import IdentityEd25519 from './identity-ed25519';
 
@@ -7,15 +7,15 @@ import IdentityEd25519 from './identity-ed25519';
  * Protobuf representation of an identity
  */
 export default class IdentityWrapper extends Message<IdentityWrapper> {
+
+    readonly ed25519: IdentityEd25519;
+    readonly darc: IdentityDarc;
     /**
      * @see README#Message classes
      */
     static register() {
         registerMessage('Identity', IdentityWrapper, IdentityEd25519, IdentityDarc);
     }
-
-    readonly ed25519: IdentityEd25519;
-    readonly darc: IdentityDarc;
 
     /**
      * Get the inner identity as bytes

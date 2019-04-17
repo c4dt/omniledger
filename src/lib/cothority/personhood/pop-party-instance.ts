@@ -1,22 +1,51 @@
-import {Point, PointFactory, Scalar, sign} from '@dedis/kyber';
-import Signer from '../darc/signer';
+import { Point, PointFactory, Scalar, sign } from '@dedis/kyber';
 import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../byzcoin/client-transaction';
-import Instance, {InstanceID} from '../byzcoin/instance';
+import ClientTransaction, { Argument, Instruction } from '../byzcoin/client-transaction';
 import CredentialInstance from '../byzcoin/contracts/credentials-instance';
 import DarcInstance from '../byzcoin/contracts/darc-instance';
-import {FinalStatement, PopPartyStruct} from './proto';
+import Instance, { InstanceID } from '../byzcoin/instance';
 import Darc from '../darc/darc';
 import IdentityDarc from '../darc/identity-darc';
 import Rules from '../darc/rules';
+import Signer from '../darc/signer';
+import { FinalStatement, PopPartyStruct } from './proto';
 
 const {anon} = sign;
 
 export class PopPartyInstance extends Instance {
+
+    /**
+     * Getter for the final statement. It throws if the party
+     * is not finalized.
+     *
+     * @returns the final statement
+     */
+    get finalStatement(): FinalStatement {
+        if (this.popPartyStruct.state !== PopPartyInstance.FINALIZED) {
+            throw new Error('this party is not finalized yet');
+        }
+
+        return new FinalStatement({
+            attendees: this.popPartyStruct.attendees,
+            desc: this.popPartyStruct.description,
+        });
+    }
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== PopPartyInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${PopPartyInstance.contractID}`);
+        }
+
+        this.popPartyStruct = PopPartyStruct.decode(this.data);
+    }
     static readonly contractID = 'popParty';
     static readonly PRE_BARRIER = 1;
     static readonly SCANNING = 2;
     static readonly FINALIZED = 3;
+    popPartyStruct: PopPartyStruct;
+
+    private tmpAttendees: Point[] = [];
 
     /**
      * Helper to create a PoP party darc
@@ -46,35 +75,6 @@ export class PopPartyInstance extends Instance {
      */
     static async fromByzcoin(bc: ByzCoinRPC, iid: Buffer): Promise<PopPartyInstance> {
         return new PopPartyInstance(bc, await Instance.fromByzCoin(bc, iid));
-    }
-
-    private tmpAttendees: Point[] = [];
-    public popPartyStruct: PopPartyStruct;
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== PopPartyInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${PopPartyInstance.contractID}`);
-        }
-
-        this.popPartyStruct = PopPartyStruct.decode(this.data);
-    }
-
-    /**
-     * Getter for the final statement. It throws if the party
-     * is not finalized.
-     *
-     * @returns the final statement
-     */
-    get finalStatement(): FinalStatement {
-        if (this.popPartyStruct.state !== PopPartyInstance.FINALIZED) {
-            throw new Error('this party is not finalized yet');
-        }
-
-        return new FinalStatement({
-            attendees: this.popPartyStruct.attendees,
-            desc: this.popPartyStruct.description,
-        });
     }
 
     /**
@@ -171,7 +171,7 @@ export class PopPartyInstance extends Instance {
      * @returns a promise that resolves with an updaed instance
      */
     async update(): Promise<PopPartyInstance> {
-        let inst = await Instance.fromByzCoin(this.rpc, this.id);
+        const inst = await Instance.fromByzCoin(this.rpc, this.id);
         this.data = inst.data;
         this.popPartyStruct = PopPartyStruct.decode(this.data);
 
@@ -199,7 +199,7 @@ export class PopPartyInstance extends Instance {
         const keys = this.popPartyStruct.attendees.publics;
         const lrs = await anon.sign(Buffer.from('mine'), keys, secret, this.id);
         const args = [
-            new Argument({name: 'lrs', value: lrs.encode()})
+            new Argument({name: 'lrs', value: lrs.encode()}),
         ];
         if (coinID) {
             args.push(new Argument({name: 'coinIID', value: coinID}));

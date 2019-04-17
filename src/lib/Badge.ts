@@ -8,9 +8,28 @@ import {Contact} from './Contact';
 // const QRGenerator = new ZXing();
 
 export class Badge {
-    public mined: boolean = false;
 
     constructor(public party: Party, public keypair: KeyPair) {
+    }
+    public mined = false;
+
+    // get qrcode(): ImageSource {
+    //     const sideLength = screen.mainScreen.widthPixels / 4;
+    //     const qrcode = QRGenerator.createBarcode({
+    //         encode: this.party.partyInstance.popPartyStruct.description.name,
+    //         format: ZXing.QR_CODE,
+    //         height: sideLength,
+    //         width: sideLength
+    //     });
+    //     return fromNativeSource(qrcode);
+    // }
+
+    static fromObject(bc: ByzCoinRPC, obj: any): Badge {
+        const p = Party.fromObject(bc, obj.party);
+        const kp = KeyPair.fromObject(obj.keypair);
+        const b = new Badge(p, kp);
+        b.mined = obj.mined;
+        return b;
     }
 
     toObject(): any {
@@ -31,24 +50,5 @@ export class Badge {
                 null, Contact.prepareUserDarc(d.keyIdentity._public.point,
                     d.alias));
         }
-    }
-
-    // get qrcode(): ImageSource {
-    //     const sideLength = screen.mainScreen.widthPixels / 4;
-    //     const qrcode = QRGenerator.createBarcode({
-    //         encode: this.party.partyInstance.popPartyStruct.description.name,
-    //         format: ZXing.QR_CODE,
-    //         height: sideLength,
-    //         width: sideLength
-    //     });
-    //     return fromNativeSource(qrcode);
-    // }
-
-    static fromObject(bc: ByzCoinRPC, obj: any): Badge {
-        let p = Party.fromObject(bc, obj.party);
-        let kp = KeyPair.fromObject(obj.keypair);
-        let b = new Badge(p, kp);
-        b.mined = obj.mined;
-        return b;
     }
 }

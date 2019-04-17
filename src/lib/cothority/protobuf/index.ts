@@ -1,11 +1,10 @@
 import * as Long from 'long';
-import {Reader} from 'protobufjs/light';
-import {Log} from '../log';
+import { Reader } from 'protobufjs/light';
+import { Log } from '../log';
 
-const protobuf = require('protobufjs/light');
+import * as protobuf from 'protobufjs/light';
 
-const models = require('./models.json');
-// import models from "./models.json";
+import models from './models.json';
 
 /**
  * ProtobufJS uses Uint8Array for a browser environment but we want the Buffer
@@ -23,6 +22,7 @@ if (!protobuf.util.isNode) {
     protobuf.Reader.prototype._slice = buffer.Buffer.prototype.slice;
     protobuf.Reader.create = (buf) => new Reader(buffer.Buffer.from(buf));
 
+    // @ts-ignore
     protobuf.util.Long = Long;
     protobuf.configure();
 }
@@ -67,7 +67,6 @@ export function registerMessage(
 
     Log.lvl3(`Message registered: ${ctor.name}`);
 }
-
 
 export function objToProto(obj: object, modelName: string): Buffer {
     const requestModel = root.lookup(modelName);

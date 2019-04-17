@@ -10,8 +10,6 @@ const Curve25519 = curve.newCurve('edwards25519');
  * key.
  */
 export class KeyPair {
-    _private: Private;
-    _public: Public;
 
     constructor(privHex: string = '') {
         if (privHex && privHex.length == 64) {
@@ -19,6 +17,16 @@ export class KeyPair {
         } else {
             this.randomize();
         }
+    }
+    _private: Private;
+    _public: Public;
+
+    static fromBuffer(priv: any): KeyPair {
+        return new KeyPair(Buffer.from(priv).toString('hex'));
+    }
+
+    static fromObject(obj: any) {
+        return new KeyPair(Private.fromBuffer(obj.priv).toHex());
     }
 
     setPrivateHex(privHex: string) {
@@ -40,18 +48,36 @@ export class KeyPair {
             priv: this._private.toBuffer(),
         };
     }
-
-    static fromBuffer(priv: any): KeyPair {
-        return new KeyPair(Buffer.from(priv).toString('hex'));
-    }
-
-    static fromObject(obj: any) {
-        return new KeyPair(Private.fromBuffer(obj.priv).toHex());
-    }
 }
 
 export class Private {
     constructor(public scalar: any) {
+    }
+
+    static fromBuffer(buf: Buffer): Private {
+        const p = Curve25519.scalar();
+        p.unmarshalBinary(buf);
+        return new Private(p);
+    }
+
+    static fromHex(hex: string): Private {
+        return Private.fromBuffer(Buffer.from(hex, 'hex'));
+    }
+
+    static zero(): Private {
+        const p = Curve25519.scalar();
+        p.zero();
+        return new Private(p);
+    }
+
+    static one(): Private {
+        const p = Curve25519.scalar();
+        p.one();
+        return new Private(p);
+    }
+
+    static fromRand(): Private {
+        return new Private(Curve25519.scalar().setBytes(randomBytes(32)));
     }
 
     toHex(): string {
@@ -69,36 +95,43 @@ export class Private {
     add(p: Private): Private {
         return new Private(Curve25519.scalar().add(this.scalar, p.scalar));
     }
-
-    static fromBuffer(buf: Buffer): Private {
-        let p = Curve25519.scalar();
-        p.unmarshalBinary(buf);
-        return new Private(p);
-    }
-
-    static fromHex(hex: string): Private {
-        return Private.fromBuffer(Buffer.from(hex, 'hex'));
-    }
-
-    static zero(): Private {
-        let p = Curve25519.scalar();
-        p.zero();
-        return new Private(p);
-    }
-
-    static one(): Private {
-        let p = Curve25519.scalar();
-        p.one();
-        return new Private(p);
-    }
-
-    static fromRand(): Private {
-        return new Private(Curve25519.scalar().setBytes(randomBytes(32)));
-    }
 }
 
 export class Public {
     constructor(public point: Point) {
+    }
+
+    static base(): Public {
+        const p = Curve25519.point();
+        p.base();
+        return new Public(p);
+    }
+
+    static fromBuffer(buf: Buffer): Public {
+        const p = Curve25519.point();
+        p.unmarshalBinary(buf);
+        return new Public(p);
+    }
+
+    static fromProto(buf: Buffer): Public {
+        const p = Curve25519.point();
+        p.unmarshalBinary(Buffer.from(buf.subarray(16)));
+        return new Public(p);
+    }
+
+    static fromHex(hex: string): Public {
+        return Public.fromBuffer(Buffer.from(hex, 'hex'));
+    }
+
+    static zero(): Public {
+        const p = Curve25519.point();
+        p.null();
+        return new Public(p);
+    }
+
+    static fromRand(): Public {
+        const kp = new KeyPair();
+        return kp._public;
     }
 
     equal(p: Public): boolean {
@@ -118,45 +151,12 @@ export class Public {
     }
 
     mul(s: Private): Public {
-        let ret = Curve25519.point();
+        const ret = Curve25519.point();
         ret.mul(s.scalar, this.point);
         return new Public(ret);
     }
 
     add(p: Public): Public {
         return new Public(Curve25519.point().add(this.point, p.point));
-    }
-
-    static base(): Public {
-        let p = Curve25519.point();
-        p.base();
-        return new Public(p);
-    }
-
-    static fromBuffer(buf: Buffer): Public {
-        let p = Curve25519.point();
-        p.unmarshalBinary(buf);
-        return new Public(p);
-    }
-
-    static fromProto(buf: Buffer): Public {
-        let p = Curve25519.point();
-        p.unmarshalBinary(Buffer.from(buf.subarray(16)));
-        return new Public(p);
-    }
-
-    static fromHex(hex: string): Public {
-        return Public.fromBuffer(Buffer.from(hex, 'hex'));
-    }
-
-    static zero(): Public {
-        let p = Curve25519.point();
-        p.null();
-        return new Public(p);
-    }
-
-    static fromRand(): Public {
-        let kp = new KeyPair();
-        return kp._public;
     }
 }

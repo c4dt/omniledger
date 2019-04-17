@@ -1,12 +1,12 @@
-import {createHash} from 'crypto';
+import { createHash } from 'crypto';
 import * as _ from 'lodash';
-import {Message, Properties} from 'protobufjs/light';
-import {registerMessage} from '../protobuf';
-import {SkipchainRPC} from '../skipchain';
-import {ForwardLink, SkipBlock} from '../skipchain/skipblock';
-import Instance, {InstanceID} from './instance';
-import DataHeader from './proto/data-header';
 import * as Long from 'long';
+import { Message, Properties } from 'protobufjs/light';
+import { registerMessage } from '../protobuf';
+import { SkipchainRPC } from '../skipchain';
+import { ForwardLink, SkipBlock } from '../skipchain/skipblock';
+import Instance, { InstanceID } from './instance';
+import DataHeader from './proto/data-header';
 
 /**
  * The proof class represents a proof that a given instance with its data is either present or absent in the global
@@ -20,18 +20,6 @@ import * as Long from 'long';
  * instance data in case it is a proof of existence. For absence proofs, these methods will throw an error.
  */
 export default class Proof extends Message<Proof> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Proof', Proof, InclusionProof, SkipBlock, ForwardLink);
-    }
-
-    readonly inclusionproof: InclusionProof;
-    readonly latest: SkipBlock;
-    readonly links: ForwardLink[];
-
-    protected _state: StateChangeBody;
 
     constructor(props: Properties<Proof>) {
         super(props);
@@ -90,15 +78,27 @@ export default class Proof extends Message<Proof> {
         return this.inclusionproof.key;
     }
 
+    readonly inclusionproof: InclusionProof;
+    readonly latest: SkipBlock;
+    readonly links: ForwardLink[];
+
+    protected _state: StateChangeBody;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Proof', Proof, InclusionProof, SkipBlock, ForwardLink);
+    }
+
     async getVerifiedInstance(genesisID: InstanceID, contractID: string): Promise<Instance> {
-        let err = this.verify(genesisID);
+        const err = this.verify(genesisID);
         if (err != null) {
             return Promise.reject(err);
         }
         if (!this.exists(this.key)) {
             return Promise.reject('cannot return an Instance from a proof of absence');
         }
-        if (this.contractID != contractID) {
+        if (this.contractID !== contractID) {
             return Promise.reject('not of correct contractID');
         }
         return Instance.fromFields(this.key, this.contractID, this.darcID, this.value);
@@ -263,34 +263,34 @@ function boolToBuffer(bits: boolean[]): Buffer {
  * Interior node of an inclusion proof
  */
 class InteriorNode extends Message<InteriorNode> {
+
+    readonly left: Buffer;
+    readonly right: Buffer;
     /**
      * @see README#Message classes
      */
     static register() {
         registerMessage('trie.InteriorNode', InteriorNode);
     }
-
-    readonly left: Buffer;
-    readonly right: Buffer;
 }
 
 /**
  * Empty node of an inclusion proof
  */
 class EmptyNode extends Message<EmptyNode> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('trie.EmptyNode', EmptyNode);
-    }
-
-    readonly prefix: boolean[];
 
     constructor(props?: Properties<EmptyNode>) {
         super(props);
 
         this.prefix = this.prefix || [];
+    }
+
+    readonly prefix: boolean[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('trie.EmptyNode', EmptyNode);
     }
 }
 
@@ -298,21 +298,21 @@ class EmptyNode extends Message<EmptyNode> {
  * Leaf node of an inclusion proof
  */
 class LeafNode extends Message<LeafNode> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('trie.LeafNode', LeafNode);
-    }
-
-    readonly prefix: boolean[];
-    readonly key: Buffer;
-    readonly value: Buffer;
 
     constructor(props?: Properties<LeafNode>) {
         super(props);
 
         this.prefix = this.prefix || [];
+    }
+
+    readonly prefix: boolean[];
+    readonly key: Buffer;
+    readonly value: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('trie.LeafNode', LeafNode);
     }
 }
 
@@ -320,17 +320,6 @@ class LeafNode extends Message<LeafNode> {
  * InclusionProof represents the proof that an instance is present or not in the global state trie.
  */
 class InclusionProof extends Message<InclusionProof> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('trie.Proof', InclusionProof, InteriorNode, LeafNode, EmptyNode);
-    }
-
-    interiors: InteriorNode[];
-    leaf: LeafNode;
-    empty: EmptyNode;
-    nonce: Buffer;
 
     constructor(props?: Properties<InclusionProof>) {
         super(props);
@@ -352,6 +341,17 @@ class InclusionProof extends Message<InclusionProof> {
      */
     get value(): Buffer {
         return this.leaf.value;
+    }
+
+    interiors: InteriorNode[];
+    leaf: LeafNode;
+    empty: EmptyNode;
+    nonce: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('trie.Proof', InclusionProof, InteriorNode, LeafNode, EmptyNode);
     }
 
     /**
@@ -413,22 +413,6 @@ class InclusionProof extends Message<InclusionProof> {
 }
 
 export class StateChangeBody extends Message<StateChangeBody> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('StateChangeBody', StateChangeBody);
-    }
-
-    static fromBytes(b: Buffer): StateChangeBody {
-        return StateChangeBody.decode(b);
-    }
-
-    readonly stateaction: number;
-    readonly contractid: string;
-    readonly value: Buffer;
-    readonly version: Long;
-    readonly darcid: Buffer;
 
     constructor(props?: Properties<StateChangeBody>) {
         super(props);
@@ -440,6 +424,22 @@ export class StateChangeBody extends Message<StateChangeBody> {
 
     get darcID(): Buffer {
         return this.darcid;
+    }
+
+    readonly stateaction: number;
+    readonly contractid: string;
+    readonly value: Buffer;
+    readonly version: Long;
+    readonly darcid: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('StateChangeBody', StateChangeBody);
+    }
+
+    static fromBytes(b: Buffer): StateChangeBody {
+        return StateChangeBody.decode(b);
     }
 
     /**

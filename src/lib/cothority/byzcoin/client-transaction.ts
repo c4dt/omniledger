@@ -1,10 +1,10 @@
-import {createHash} from 'crypto';
+import { createHash } from 'crypto';
 import * as Long from 'long';
-import {Message, Properties} from 'protobufjs/light';
-import IdentityWrapper, {IIdentity} from '../darc/identity-wrapper';
+import { Message, Properties } from 'protobufjs/light';
+import IdentityWrapper, { IIdentity } from '../darc/identity-wrapper';
 import Signer from '../darc/signer';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
-import {InstanceID} from './instance';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
+import { InstanceID } from './instance';
 
 export interface ICounterUpdater {
     getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>;
@@ -14,19 +14,19 @@ export interface ICounterUpdater {
  * List of instructions to send to a byzcoin chain
  */
 export default class ClientTransaction extends Message<ClientTransaction> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.ClientTransaction', ClientTransaction, Instruction);
-    }
-
-    readonly instructions: Instruction[];
 
     constructor(props?: Properties<ClientTransaction>) {
         super(props);
 
         this.instructions = this.instructions || [];
+    }
+
+    readonly instructions: Instruction[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.ClientTransaction', ClientTransaction, Instruction);
     }
 
     /**
@@ -36,7 +36,7 @@ export default class ClientTransaction extends Message<ClientTransaction> {
     signWith(signers: Signer[][]): void {
         const ctxHash = this.hash();
 
-        if (signers.length != this.instructions.length) {
+        if (signers.length !== this.instructions.length) {
             throw new Error('need same number of signers as instructions');
         }
 
@@ -53,18 +53,18 @@ export default class ClientTransaction extends Message<ClientTransaction> {
             return;
         }
 
-        if (signers.length != this.instructions.length) {
+        if (signers.length !== this.instructions.length) {
             return Promise.reject('length of signers and instructions do not match');
         }
 
         // Get all counters from all signers of all instructions and map them into an object.
         let uniqueSigners = signers.reduce((acc, val) => acc.concat(val));
         uniqueSigners = uniqueSigners.filter((us, i) =>
-            uniqueSigners.findIndex(usf => usf.toString() == us.toString()) == i);
+            uniqueSigners.findIndex((usf) => usf.toString() === us.toString()) === i);
 
         const counters = await rpc.getSignerCounters(uniqueSigners, 1);
 
-        let signerCounters = {};
+        const signerCounters: {[key: string]: any} = {};
         uniqueSigners.forEach((us, i) => {
             signerCounters[us.toString()] = counters[i];
         });
@@ -82,7 +82,7 @@ export default class ClientTransaction extends Message<ClientTransaction> {
 
     async updateCountersAndSign(rpc: ICounterUpdater, signers: Signer[][]): Promise<void> {
         // Extend the signers to the number of instructions if there is only one signer.
-        if (signers.length == 1) {
+        if (signers.length === 1) {
             for (let i = 1; i < this.instructions.length; i++) {
                 signers.push(signers[0]);
             }
@@ -106,65 +106,6 @@ export default class ClientTransaction extends Message<ClientTransaction> {
  * An instruction represents one action
  */
 export class Instruction extends Message<Instruction> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Instruction', Instruction, IdentityWrapper, Spawn, Invoke, Delete);
-    }
-
-    /**
-     * Helper to create a spawn instruction
-     * @param iid           The instance ID
-     * @param contractID    The contract name
-     * @param args          Arguments for the instruction
-     * @returns the instruction
-     */
-    static createSpawn(iid: Buffer, contractID: string, args: Argument[]): Instruction {
-        return new Instruction({
-            instanceID: iid,
-            signerCounter: [],
-            spawn: new Spawn({contractID, args}),
-        });
-    }
-
-    /**
-     * Helper to create a invoke instruction
-     * @param iid           The instance ID
-     * @param contractID    The contract name
-     * @param command       The command to invoke
-     * @param args          The list of arguments
-     * @returns the instruction
-     */
-    static createInvoke(iid: Buffer, contractID: string, command: string, args: Argument[]): Instruction {
-        return new Instruction({
-            instanceID: iid,
-            invoke: new Invoke({command, contractID, args}),
-            signerCounter: [],
-        });
-    }
-
-    /**
-     * Helper to create a delete instruction
-     * @param iid           The instance ID
-     * @param contractID    The contract name
-     * @returns the instruction
-     */
-    static createDelete(iid: Buffer, contractID: string): Instruction {
-        return new Instruction({
-            delete: new Delete({contractID}),
-            instanceID: iid,
-            signerCounter: [],
-        });
-    }
-
-    readonly spawn: Spawn;
-    readonly invoke: Invoke;
-    readonly delete: Delete;
-    readonly instanceID: InstanceID;
-    readonly signerCounter: Long[];
-    readonly signerIdentities: IdentityWrapper[];
-    readonly signatures: Buffer[];
 
     constructor(props?: Properties<Instruction>) {
         super(props);
@@ -218,6 +159,65 @@ export class Instruction extends Message<Instruction> {
             return 2;
         }
         throw new Error('instruction without type');
+    }
+
+    readonly spawn: Spawn;
+    readonly invoke: Invoke;
+    readonly delete: Delete;
+    readonly instanceID: InstanceID;
+    readonly signerCounter: Long[];
+    readonly signerIdentities: IdentityWrapper[];
+    readonly signatures: Buffer[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Instruction', Instruction, IdentityWrapper, Spawn, Invoke, Delete);
+    }
+
+    /**
+     * Helper to create a spawn instruction
+     * @param iid           The instance ID
+     * @param contractID    The contract name
+     * @param args          Arguments for the instruction
+     * @returns the instruction
+     */
+    static createSpawn(iid: Buffer, contractID: string, args: Argument[]): Instruction {
+        return new Instruction({
+            instanceID: iid,
+            signerCounter: [],
+            spawn: new Spawn({contractID, args}),
+        });
+    }
+
+    /**
+     * Helper to create a invoke instruction
+     * @param iid           The instance ID
+     * @param contractID    The contract name
+     * @param command       The command to invoke
+     * @param args          The list of arguments
+     * @returns the instruction
+     */
+    static createInvoke(iid: Buffer, contractID: string, command: string, args: Argument[]): Instruction {
+        return new Instruction({
+            instanceID: iid,
+            invoke: new Invoke({command, contractID, args}),
+            signerCounter: [],
+        });
+    }
+
+    /**
+     * Helper to create a delete instruction
+     * @param iid           The instance ID
+     * @param contractID    The contract name
+     * @returns the instruction
+     */
+    static createDelete(iid: Buffer, contractID: string): Instruction {
+        return new Instruction({
+            delete: new Delete({contractID}),
+            instanceID: iid,
+            signerCounter: [],
+        });
     }
 
     /**
@@ -324,20 +324,20 @@ export class Instruction extends Message<Instruction> {
  * Argument of an instruction
  */
 export class Argument extends Message<Argument> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Argument', Argument);
-    }
-
-    readonly name: string;
-    readonly value: Buffer;
 
     constructor(props?: Properties<Argument>) {
         super(props);
 
         this.value = Buffer.from(this.value || EMPTY_BUFFER);
+    }
+
+    readonly name: string;
+    readonly value: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Argument', Argument);
     }
 }
 
@@ -345,15 +345,6 @@ export class Argument extends Message<Argument> {
  * Spawn instruction that will create instances
  */
 export class Spawn extends Message<Spawn> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Spawn', Spawn, Argument);
-    }
-
-    readonly args: Argument[];
-    readonly contractID: string;
 
     constructor(props?: Properties<Spawn>) {
         super(props);
@@ -371,22 +362,21 @@ export class Spawn extends Message<Spawn> {
             },
         });
     }
+
+    readonly args: Argument[];
+    readonly contractID: string;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Spawn', Spawn, Argument);
+    }
 }
 
 /**
  * Invoke instruction that will update an existing instance
  */
 export class Invoke extends Message<Invoke> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Invoke', Invoke, Argument);
-    }
-
-    readonly command: string;
-    readonly args: Argument[];
-    readonly contractID: string;
 
     constructor(props?: Properties<Invoke>) {
         super(props);
@@ -404,20 +394,22 @@ export class Invoke extends Message<Invoke> {
             },
         });
     }
+
+    readonly command: string;
+    readonly args: Argument[];
+    readonly contractID: string;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Invoke', Invoke, Argument);
+    }
 }
 
 /**
  * Delete instruction that will delete an instance
  */
 export class Delete extends Message<Delete> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Delete', Delete);
-    }
-
-    readonly contractID: string;
 
     constructor(props?: Properties<Delete>) {
         super(props);
@@ -430,6 +422,14 @@ export class Delete extends Message<Delete> {
                 this.contractID = value;
             },
         });
+    }
+
+    readonly contractID: string;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Delete', Delete);
     }
 }
 

@@ -1,13 +1,17 @@
+import * as Long from 'long';
 import Darc from '../darc/darc';
 import IdentityEd25519 from '../darc/identity-ed25519';
-import {IIdentity} from '../darc/identity-wrapper';
+import { IIdentity } from '../darc/identity-wrapper';
 import Rules from '../darc/rules';
-import {IConnection, RosterWSConnection, WebSocketConnection} from '../network/connection';
-import {Roster} from '../network/proto';
-import {SkipBlock} from '../skipchain/skipblock';
+import { Log } from '../log';
+import { IConnection, RosterWSConnection, WebSocketConnection } from '../network/connection';
+import { Roster } from '../network/proto';
+import { SkipBlock } from '../skipchain/skipblock';
 import SkipchainRPC from '../skipchain/skipchain-rpc';
-import ClientTransaction, {ICounterUpdater} from './client-transaction';
+import ClientTransaction, { ICounterUpdater } from './client-transaction';
 import ChainConfig from './config';
+import DarcInstance from './contracts/darc-instance';
+import { InstanceID } from './instance';
 import Proof from './proof';
 import {
     AddTxRequest,
@@ -19,16 +23,24 @@ import {
     GetSignerCounters,
     GetSignerCountersResponse,
 } from './proto/requests';
-import {InstanceID} from './instance';
-import * as Long from 'long';
-import DarcInstance from './contracts/darc-instance';
-import {Log} from '../../Log';
 
 export const currentVersion = 1;
 
 const CONFIG_INSTANCE_ID = Buffer.alloc(32, 0);
 
 export default class ByzCoinRPC implements ICounterUpdater {
+
+    protected constructor() {
+    }
+
+    get genesisID(): InstanceID {
+        return this.genesis.computeHash();
+    }
+
+    private genesisDarc: Darc;
+    private config: ChainConfig;
+    private genesis: SkipBlock;
+    private conn: IConnection;
     /**
      * Helper to create a genesis darc
      * @param signers       Authorized signers
@@ -68,7 +80,7 @@ export default class ByzCoinRPC implements ICounterUpdater {
         const ccProof = await rpc.getProof(CONFIG_INSTANCE_ID);
         rpc.config = ChainConfig.fromProof(ccProof);
 
-        let di = await DarcInstance.fromByzcoin(rpc, ccProof.stateChangeBody.darcID);
+        const di = await DarcInstance.fromByzcoin(rpc, ccProof.stateChangeBody.darcID);
         rpc.genesisDarc = di.darc;
 
         return rpc;
@@ -101,14 +113,6 @@ export default class ByzCoinRPC implements ICounterUpdater {
         return rpc;
     }
 
-    private genesisDarc: Darc;
-    private config: ChainConfig;
-    private genesis: SkipBlock;
-    private conn: IConnection;
-
-    protected constructor() {
-    }
-
     /**
      * Getter for the genesis darc
      * @returns the genesis darc
@@ -131,10 +135,6 @@ export default class ByzCoinRPC implements ICounterUpdater {
      */
     getGenesis(): SkipBlock {
         return this.genesis;
-    }
-
-    get genesisID(): InstanceID {
-        return this.genesis.computeHash();
     }
 
     /**

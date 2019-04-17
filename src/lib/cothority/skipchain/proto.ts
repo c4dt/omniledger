@@ -1,6 +1,6 @@
-import {Message, Properties} from 'protobufjs/light';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
-import {ForwardLink, SkipBlock} from './skipblock';
+import { Message, Properties } from 'protobufjs/light';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
+import { ForwardLink, SkipBlock } from './skipblock';
 
 export class GetAllSkipChainIDs extends Message<GetAllSkipChainIDs> {
     /**
@@ -12,33 +12,23 @@ export class GetAllSkipChainIDs extends Message<GetAllSkipChainIDs> {
 }
 
 export class GetAllSkipChainIDsReply extends Message<GetAllSkipChainIDsReply> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('GetAllSkipChainIDsReply', GetAllSkipChainIDsReply);
-    }
-
-    readonly skipChainIDs: Buffer[];
 
     constructor(props?: Properties<GetAllSkipChainIDsReply>) {
         super(props);
 
         this.skipChainIDs = this.skipChainIDs || [];
     }
-}
 
-export class StoreSkipBlock extends Message<StoreSkipBlock> {
+    readonly skipChainIDs: Buffer[];
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage('StoreSkipBlock', StoreSkipBlock, SkipBlock);
+        registerMessage('GetAllSkipChainIDsReply', GetAllSkipChainIDsReply);
     }
+}
 
-    readonly targetSkipChainID: Buffer;
-    readonly newBlock: SkipBlock;
-    readonly signature: Buffer;
+export class StoreSkipBlock extends Message<StoreSkipBlock> {
 
     constructor(properties: Properties<StoreSkipBlock>) {
         super(properties);
@@ -46,104 +36,114 @@ export class StoreSkipBlock extends Message<StoreSkipBlock> {
         this.targetSkipChainID = Buffer.from(this.targetSkipChainID || EMPTY_BUFFER);
         this.signature = Buffer.from(this.signature || EMPTY_BUFFER);
     }
+
+    readonly targetSkipChainID: Buffer;
+    readonly newBlock: SkipBlock;
+    readonly signature: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('StoreSkipBlock', StoreSkipBlock, SkipBlock);
+    }
 }
 
 export class StoreSkipBlockReply extends Message<StoreSkipBlock> {
+
+    readonly latest: SkipBlock;
+    readonly previous: SkipBlock;
     /**
      * @see README#Message classes
      */
     static register() {
         registerMessage('StoreSkipBlockReply', StoreSkipBlockReply, SkipBlock);
     }
-
-    readonly latest: SkipBlock;
-    readonly previous: SkipBlock;
 }
 
 export class GetSingleBlock extends Message<GetSingleBlock> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('GetSingleBlock', GetSingleBlock);
-    }
-
-    readonly id: Buffer;
 
     constructor(props?: Properties<GetSingleBlock>) {
         super(props);
 
         this.id = Buffer.from(this.id || EMPTY_BUFFER);
     }
-}
 
-export class GetSingleBlockByIndex extends Message<GetSingleBlockByIndex> {
+    readonly id: Buffer;
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage('GetSingleBlockByIndex', GetSingleBlockByIndex);
+        registerMessage('GetSingleBlock', GetSingleBlock);
     }
+}
 
-    readonly genesis: Buffer;
-    readonly index: number;
+export class GetSingleBlockByIndex extends Message<GetSingleBlockByIndex> {
 
     constructor(props?: Properties<GetSingleBlockByIndex>) {
         super(props);
 
         this.genesis = Buffer.from(this.genesis || EMPTY_BUFFER);
     }
-}
 
-export class GetSingleBlockByIndexReply extends Message<GetSingleBlockByIndexReply> {
+    readonly genesis: Buffer;
+    readonly index: number;
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage('GetSingleBlockByIndexReply', GetSingleBlockByIndexReply);
+        registerMessage('GetSingleBlockByIndex', GetSingleBlockByIndex);
     }
+}
 
-    readonly skipblock: SkipBlock;
-    readonly links: ForwardLink[];
+export class GetSingleBlockByIndexReply extends Message<GetSingleBlockByIndexReply> {
 
     constructor(props?: Properties<GetSingleBlockByIndexReply>) {
         super(props);
 
         this.links = this.links || [];
     }
-}
 
-export class GetUpdateChain extends Message<GetUpdateChain> {
+    readonly skipblock: SkipBlock;
+    readonly links: ForwardLink[];
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage('GetUpdateChain', GetUpdateChain);
+        registerMessage('GetSingleBlockByIndexReply', GetSingleBlockByIndexReply);
     }
+}
 
-    readonly latestID: Buffer;
+export class GetUpdateChain extends Message<GetUpdateChain> {
 
     constructor(props?: Properties<GetUpdateChain>) {
         super(props);
 
         this.latestID = Buffer.from(this.latestID || EMPTY_BUFFER);
     }
-}
 
-export class GetUpdateChainReply extends Message<GetUpdateChainReply> {
+    readonly latestID: Buffer;
     /**
      * @see README#Message classes
      */
     static register() {
-        registerMessage('GetUpdateChainReply', GetUpdateChainReply, SkipBlock);
+        registerMessage('GetUpdateChain', GetUpdateChain);
     }
+}
 
-    readonly update: SkipBlock[];
+export class GetUpdateChainReply extends Message<GetUpdateChainReply> {
 
     constructor(props: Properties<GetUpdateChainReply>) {
         super(props);
 
         this.update = this.update || [];
+    }
+
+    readonly update: SkipBlock[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('GetUpdateChainReply', GetUpdateChainReply, SkipBlock);
     }
 }
 

@@ -23,36 +23,36 @@ export const Suite = new Kyber.curve.edwards25519.Curve;
 export async function Sign(message: Buffer, anonymitySet: Public[],
                            linkScope: Buffer, privateKey: Private):
     Promise<RingSig> {
-    let hasLS = (linkScope) && (linkScope !== null);
+    const hasLS = (linkScope) && (linkScope !== null);
 
-    let pi = await sortSet(anonymitySet, privateKey);
-    let n = anonymitySet.length;
-    let L = anonymitySet.slice(0);
+    const pi = await sortSet(anonymitySet, privateKey);
+    const n = anonymitySet.length;
+    const L = anonymitySet.slice(0);
 
     let linkBase;
     let linkTag: Public;
     if (hasLS) {
-        let linkStream = new Blake(undefined, {key: linkScope});
+        const linkStream = new Blake(undefined, {key: linkScope});
         linkBase = Suite.point().pick(createStreamFromBlake(linkStream));
         linkTag = new Public(Suite.point().mul(privateKey.scalar, linkBase));
     }
 
-    let H1pre = signH1pre(linkScope, linkTag, message);
+    const H1pre = signH1pre(linkScope, linkTag, message);
 
-    let u = Suite.scalar().pick();
-    let UB = Suite.point().mul(u);
+    const u = Suite.scalar().pick();
+    const UB = Suite.point().mul(u);
     let UL;
     if (hasLS) {
         UL = new Public(Suite.point().mul(u, linkBase));
     }
 
-    let s: any[] = [];
-    let c: Private[] = [];
+    const s: any[] = [];
+    const c: Private[] = [];
 
     c[(pi + 1) % n] = signH1(H1pre, new Public(UB), UL);
 
-    let P = Suite.point();
-    let PG = Suite.point();
+    const P = Suite.point();
+    const PG = Suite.point();
     let PH: Public;
     if (hasLS) {
         PH = new Public(Suite.point());
@@ -93,22 +93,22 @@ export async function Verify(message: Buffer, anonymitySet: Public[], linkScope:
         return Buffer.compare(a.toBuffer(), b.toBuffer());
     });
 
-    let n = anonymitySet.length;
-    let L = anonymitySet.slice(0);
+    const n = anonymitySet.length;
+    const L = anonymitySet.slice(0);
 
     let linkBase, linkTag;
-    let sig = decodeSignature(signatureBuffer, !!linkScope);
+    const sig = decodeSignature(signatureBuffer, !!linkScope);
     if (anonymitySet.length != sig.S.length) {
         return Promise.reject('given anonymity set and signature anonymity set not of equal length');
     }
 
     if (linkScope) {
-        let linkStream = new Blake(undefined, {key: linkScope});
+        const linkStream = new Blake(undefined, {key: linkScope});
         linkBase = Suite.point().pick(createStreamFromBlake(linkStream));
         linkTag = sig.Tag.point;
     }
 
-    let H1pre = signH1pre(linkScope, new Public(linkTag), message);
+    const H1pre = signH1pre(linkScope, new Public(linkTag), message);
 
     let P, PG, PH: Public;
     P = Suite.point();
@@ -116,7 +116,7 @@ export async function Verify(message: Buffer, anonymitySet: Public[], linkScope:
     if (linkScope) {
         PH = new Public(Suite.point());
     }
-    let s = sig.S;
+    const s = sig.S;
     let ci = sig.C0;
     for (let i = 0; i < n; i++) {
         PG.add(PG.mul(s[i].scalar), P.mul(ci.scalar, L[i].point));
@@ -150,16 +150,16 @@ export class SignatureVerification {
  * @return {Uint8Array} - the signature
  */
 export function SignWithBadge(b, message, scope) {
-    let attendees = b.finalStatement.attendees;
+    const attendees = b.finalStatement.attendees;
     attendees.sort((a, b) => {
         return Buffer.compare(Buffer.from(a.marshalBinary()), Buffer.from(b.marshalBinary()));
     });
-    let anonymitySet = new Set();
-    let minePublic = b.keypair.public;
-    let minePrivate = b.keypair.private;
+    const anonymitySet = new Set();
+    const minePublic = b.keypair.public;
+    const minePrivate = b.keypair.private;
     let mine = -1;
     for (let i = 0; i < attendees.length; i++) {
-        let attendee = attendees[i];
+        const attendee = attendees[i];
         anonymitySet.add(attendee);
         if (attendee.equal(minePublic)) {
             mine = i;
@@ -197,7 +197,7 @@ function createStreamFromBlake(blakeInstance) {
         if (!Number.isInteger(count)) {
             return Promise.reject('count must be a integer');
         }
-        let array = new Uint8Array(count);
+        const array = new Uint8Array(count);
         blakeInstance.stream(array);
         return array;
     }
@@ -206,11 +206,11 @@ function createStreamFromBlake(blakeInstance) {
 }
 
 function signH1pre(linkScope: Buffer, linkTag: Public, message: Buffer): any {
-    let H1pre = new Blake(undefined, {key: message});
+    const H1pre = new Blake(undefined, {key: message});
 
     if (linkScope) {
         H1pre.update(linkScope);
-        let tag = linkTag.toBuffer();
+        const tag = linkTag.toBuffer();
         H1pre.update(tag);
     }
 
@@ -218,29 +218,29 @@ function signH1pre(linkScope: Buffer, linkTag: Public, message: Buffer): any {
 }
 
 function signH1(H1pre, PG: Public, PH: Public): Private {
-    let H1 = cloneDeep(H1pre);
+    const H1 = cloneDeep(H1pre);
 
-    let PGb = PG.toBuffer();
+    const PGb = PG.toBuffer();
     H1.update(PGb);
     if (PH) {
-        let PHb = PH.toBuffer();
+        const PHb = PH.toBuffer();
         H1.update(PHb);
     }
     return new Private(Suite.scalar().pick(createStreamFromBlake(H1)));
 }
 
 function decodeSignature(signatureBuffer: Buffer, isLinkableSig: boolean): RingSig {
-    let scalarMarshalSize = Suite.scalar().marshalSize();
-    let pointMarshalSize = Suite.point().marshalSize();
-    let c0 = Private.fromBuffer(signatureBuffer.slice(0, pointMarshalSize));
+    const scalarMarshalSize = Suite.scalar().marshalSize();
+    const pointMarshalSize = Suite.point().marshalSize();
+    const c0 = Private.fromBuffer(signatureBuffer.slice(0, pointMarshalSize));
 
-    let S: Private[] = [];
-    let endIndex = isLinkableSig ? signatureBuffer.length - pointMarshalSize : signatureBuffer.length;
+    const S: Private[] = [];
+    const endIndex = isLinkableSig ? signatureBuffer.length - pointMarshalSize : signatureBuffer.length;
     for (let i = pointMarshalSize; i < endIndex; i += scalarMarshalSize) {
         S.push(Private.fromBuffer(signatureBuffer.slice(i, i + scalarMarshalSize)));
     }
 
-    let fields = new RingSig(c0, S);
+    const fields = new RingSig(c0, S);
 
     if (isLinkableSig) {
         fields.Tag = Public.fromBuffer(signatureBuffer.slice(endIndex));
@@ -254,11 +254,11 @@ export class RingSig {
     }
 
     encode(): Buffer {
-        let array = [];
+        const array = [];
 
         array.push(this.C0.toBuffer());
 
-        for (let scalar of this.S) {
+        for (const scalar of this.S) {
             array.push(scalar.toBuffer());
         }
 
@@ -274,8 +274,8 @@ async function sortSet(anonymitySet: Public[], privateKey: Private): Promise<num
     anonymitySet.sort((a, b) => {
         return Buffer.compare(a.toBuffer(), b.toBuffer());
     });
-    let pubKey = Public.base().mul(privateKey);
-    let pi = anonymitySet.findIndex(pub => pub.equal(pubKey));
+    const pubKey = Public.base().mul(privateKey);
+    const pi = anonymitySet.findIndex(pub => pub.equal(pubKey));
     if (pi < 0) {
         return Promise.reject('didn\'t find public key in anonymity set');
     }

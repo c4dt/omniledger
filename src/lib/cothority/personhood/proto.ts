@@ -1,26 +1,10 @@
+import { Point, PointFactory } from '@dedis/kyber';
 import * as Long from 'long';
-import {Point, PointFactory} from '@dedis/kyber';
 import * as Moment from 'moment';
-import {Message, Properties} from 'protobufjs/light';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import { Message, Properties } from 'protobufjs/light';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
 
 export class PopPartyStruct extends Message<PopPartyStruct> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.PopPartyStruct', PopPartyStruct, PopDesc, Attendees, LRSTag);
-    }
-
-    public state: number;
-    readonly organizers: number;
-    readonly finalizations: string[];
-    readonly description: PopDesc;
-    readonly attendees: Attendees;
-    readonly miners: LRSTag[];
-    readonly miningReward: Long;
-    readonly previous: Buffer;
-    readonly next: Buffer;
 
     constructor(props?: Properties<PopPartyStruct>) {
         super(props);
@@ -42,6 +26,22 @@ export class PopPartyStruct extends Message<PopPartyStruct> {
         });
     }
 
+    state: number;
+    readonly organizers: number;
+    readonly finalizations: string[];
+    readonly description: PopDesc;
+    readonly attendees: Attendees;
+    readonly miners: LRSTag[];
+    readonly miningReward: Long;
+    readonly previous: Buffer;
+    readonly next: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.PopPartyStruct', PopPartyStruct, PopDesc, Attendees, LRSTag);
+    }
+
     /**
      * Replace the current attendees by the new ones and sort them, so that different
      * organizers scanning in a different order get the same result.
@@ -56,29 +56,18 @@ export class PopPartyStruct extends Message<PopPartyStruct> {
 }
 
 export class FinalStatement extends Message<FinalStatement> {
+
+    readonly desc: PopDesc;
+    readonly attendees: Attendees;
     /**
      * @see README#Message classes
      */
     static register() {
         registerMessage('personhood.FinalStatement', FinalStatement, PopDesc, Attendees);
     }
-
-    readonly desc: PopDesc;
-    readonly attendees: Attendees;
 }
 
 export class PopDesc extends Message<PopDesc> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.PopDesc', PopDesc);
-    }
-
-    readonly name: string;
-    readonly purpose: string;
-    readonly datetime: Long; // in seconds
-    readonly location: string;
 
     constructor(props?: Properties<PopDesc>) {
         super(props);
@@ -109,6 +98,17 @@ export class PopDesc extends Message<PopDesc> {
         return Moment(d).format('YY-MM-DD HH:mm');
     }
 
+    readonly name: string;
+    readonly purpose: string;
+    readonly datetime: Long; // in seconds
+    readonly location: string;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.PopDesc', PopDesc);
+    }
+
     /**
      * Helper to encode the statement using protobuf
      * @returns the bytes
@@ -119,14 +119,6 @@ export class PopDesc extends Message<PopDesc> {
 }
 
 export class Attendees extends Message<Attendees> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.Attendees', Attendees);
-    }
-
-    readonly keys: Buffer[];
 
     constructor(properties?: Properties<Attendees>) {
         super(properties);
@@ -142,6 +134,14 @@ export class Attendees extends Message<Attendees> {
         return this.keys.map((k) => PointFactory.fromProto(k));
     }
 
+    readonly keys: Buffer[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.Attendees', Attendees);
+    }
+
     /**
      * Helper to encode the attendees using protobuf
      * @returns the bytes
@@ -152,19 +152,19 @@ export class Attendees extends Message<Attendees> {
 }
 
 export class LRSTag extends Message<LRSTag> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.LRSTag', LRSTag);
-    }
-
-    readonly tag: Buffer;
 
     constructor(props?: Properties<LRSTag>) {
         super(props);
 
         this.tag = Buffer.from(this.tag || EMPTY_BUFFER);
+    }
+
+    readonly tag: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.LRSTag', LRSTag);
     }
 }
 

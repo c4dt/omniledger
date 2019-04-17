@@ -6,14 +6,6 @@ import TxResult from './tx-result';
  * ByzCoin block payload
  */
 export default class DataBody extends Message<DataBody> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.DataBody', DataBody, TxResult);
-    }
-
-    readonly txResults: TxResult[];
 
     constructor(props?: Properties<DataBody>) {
         super(props);
@@ -30,6 +22,14 @@ export default class DataBody extends Message<DataBody> {
                 this.txResults = value;
             },
         });
+    }
+
+    readonly txResults: TxResult[];
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.DataBody', DataBody, TxResult);
     }
 }
 

@@ -1,29 +1,12 @@
-import {Message, Properties} from 'protobufjs/light';
-import Signer from '../darc/signer';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import { Message, Properties } from 'protobufjs/light';
 import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../byzcoin/client-transaction';
-import Instance, {InstanceID} from '../byzcoin/instance';
-import CoinInstance, {Coin} from '../byzcoin/contracts/coin-instance';
+import ClientTransaction, { Argument, Instruction } from '../byzcoin/client-transaction';
+import CoinInstance, { Coin } from '../byzcoin/contracts/coin-instance';
+import Instance, { InstanceID } from '../byzcoin/instance';
+import Signer from '../darc/signer';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
 
 export default class RoPaSciInstance extends Instance {
-    static readonly contractID = 'ropasci';
-
-    /**
-     * Fetch the proof for the given instance and create a
-     * RoPaSciInstance from it
-     *
-     * @param bc    The ByzCoinRPC to use
-     * @param iid   The instance ID
-     * @returns the new instance
-     */
-    static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID): Promise<RoPaSciInstance> {
-        return new RoPaSciInstance(bc, await Instance.fromByzCoin(bc, iid));
-    }
-
-    public struct: RoPaSciStruct;
-    private fillUp: Buffer;
-    private firstMove: number;
 
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
@@ -56,6 +39,23 @@ export default class RoPaSciInstance extends Instance {
      */
     get adversaryChoice(): number {
         return this.struct.secondPlayer;
+    }
+    static readonly contractID = 'ropasci';
+
+    struct: RoPaSciStruct;
+    private fillUp: Buffer;
+    private firstMove: number;
+
+    /**
+     * Fetch the proof for the given instance and create a
+     * RoPaSciInstance from it
+     *
+     * @param bc    The ByzCoinRPC to use
+     * @param iid   The instance ID
+     * @returns the new instance
+     */
+    static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID): Promise<RoPaSciInstance> {
+        return new RoPaSciInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
     /**
@@ -166,7 +166,7 @@ export default class RoPaSciInstance extends Instance {
             throw new Error('fail to get a matching proof');
         }
 
-        let inst = Instance.fromProof(this.id, proof);
+        const inst = Instance.fromProof(this.id, proof);
         this.data = inst.data;
         this.struct = RoPaSciStruct.decode(this.data);
         return this;
@@ -177,19 +177,6 @@ export default class RoPaSciInstance extends Instance {
  * Data hold by a rock-paper-scissors instance
  */
 export class RoPaSciStruct extends Message<RoPaSciStruct> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.RoPaSciStruct', RoPaSciStruct);
-    }
-
-    readonly description: string;
-    readonly stake: Coin;
-    readonly firstPlayerHash: Buffer;
-    readonly firstPlayer: number;
-    readonly secondPlayer: number;
-    readonly secondPlayerAccount: Buffer;
 
     constructor(props?: Properties<RoPaSciStruct>) {
         super(props);
@@ -232,6 +219,19 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
                 this.secondPlayerAccount = value;
             },
         });
+    }
+
+    readonly description: string;
+    readonly stake: Coin;
+    readonly firstPlayerHash: Buffer;
+    readonly firstPlayer: number;
+    readonly secondPlayer: number;
+    readonly secondPlayerAccount: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.RoPaSciStruct', RoPaSciStruct);
     }
 
     /**

@@ -11,7 +11,7 @@ export class TestStoreRPC {
     }
 
     static async save(r: Roster, bcID: Buffer, spawnerIID: InstanceID) {
-        let s = new WebSocketConnection(r.list[0].getWebSocketAddress(), TestStoreRPC.serviceName);
+        const s = new WebSocketConnection(r.list[0].getWebSocketAddress(), TestStoreRPC.serviceName);
         await s.send(new TestStore({
             byzcoinid: bcID,
             spawneriid: spawnerIID,
@@ -19,13 +19,28 @@ export class TestStoreRPC {
     }
 
     static async load(r: Roster): Promise<TestStore> {
-        let s = new WebSocketConnection(r.list[0].getWebSocketAddress(), TestStoreRPC.serviceName);
-        let ts = await s.send(new TestStore({}), TestStore);
+        const s = new WebSocketConnection(r.list[0].getWebSocketAddress(), TestStoreRPC.serviceName);
+        const ts = await s.send(new TestStore({}), TestStore);
         return new TestStore(ts);
     }
 }
 
 export class TestStore extends Message<TestStore> {
+
+    constructor(props?: Properties<TestStore>) {
+        super(props);
+    }
+
+    get byzcoinID(): InstanceID {
+        return this.byzcoinid;
+    }
+
+    get spawnerIID(): InstanceID {
+        return this.spawneriid;
+    }
+
+    readonly byzcoinid: InstanceID;
+    readonly spawneriid: InstanceID;
     /**
      * @see README#Message classes
      */
@@ -37,27 +52,12 @@ export class TestStore extends Message<TestStore> {
         return TestStore.decode(b);
     }
 
-    readonly byzcoinid: InstanceID;
-    readonly spawneriid: InstanceID;
-
-    constructor(props?: Properties<TestStore>) {
-        super(props);
-    }
-
     /**
      * Helper to encode the TestStore using protobuf
      * @returns the bytes
      */
     toBytes(): Buffer {
         return Buffer.from(TestStore.encode(this).finish());
-    }
-
-    get byzcoinID(): InstanceID {
-        return this.byzcoinid;
-    }
-
-    get spawnerIID(): InstanceID {
-        return this.spawneriid;
     }
 }
 

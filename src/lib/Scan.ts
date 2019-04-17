@@ -35,14 +35,14 @@
 // }
 
 export function parseQRCode(str: string, maxArgs: number): any {
-    let url = str.split('?', 2);
+    const url = str.split('?', 2);
     if (url.length != 2) {
         return Promise.reject('wrong QRCode');
     }
-    let parts = url[1].split('&', maxArgs);
-    let ret = {url: url[0]};
+    const parts = url[1].split('&', maxArgs);
+    const ret = {url: url[0]};
     parts.forEach(p => {
-        let r = p.split('=', 2);
+        const r = p.split('=', 2);
         ret[r[0]] = r[1];
     });
     return ret;

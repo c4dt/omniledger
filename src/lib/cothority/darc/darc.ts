@@ -1,8 +1,8 @@
-import {createHash} from 'crypto';
+import { createHash } from 'crypto';
 import * as Long from 'long';
-import {Message, Properties} from 'protobufjs/light';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
-import {IIdentity} from './identity-wrapper';
+import { Message, Properties } from 'protobufjs/light';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
+import { IIdentity } from './identity-wrapper';
 import Rules from './rules';
 
 /**
@@ -24,45 +24,6 @@ function initRules(owners: IIdentity[], signers: IIdentity[]): Rules {
  * Distributed Access Right Controls
  */
 export default class Darc extends Message<Darc> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('Darc', Darc, Rules);
-    }
-
-    /**
-     * Create a genesis darc using the owners and signers to populate the
-     * rules
-     * @param owners    those you can evolve the darc
-     * @param signers   those you can sign
-     * @param desc      the description of the darc
-     * @returns the new darc
-     */
-    static newDarc(owners: IIdentity[], signers: IIdentity[], desc?: Buffer, rules?: string[]): Darc {
-        const darc = new Darc({
-            baseID: Buffer.from([]),
-            description: desc,
-            prevID: createHash('sha256').digest(),
-            rules: initRules(owners, signers),
-            version: Long.fromNumber(0, true),
-        });
-        if (rules) {
-            rules.forEach(r => {
-                signers.forEach(s => {
-                    darc.rules.appendToRule(r, s, '|');
-                });
-            });
-        }
-
-        return darc;
-    }
-
-    readonly version: Long;
-    readonly description: Buffer;
-    readonly baseID: Buffer;
-    readonly prevID: Buffer;
-    readonly rules: Rules;
 
     constructor(properties?: Properties<Darc>) {
         super(properties);
@@ -116,6 +77,45 @@ export default class Darc extends Message<Darc> {
         });
 
         return h.digest();
+    }
+
+    readonly version: Long;
+    readonly description: Buffer;
+    readonly baseID: Buffer;
+    readonly prevID: Buffer;
+    readonly rules: Rules;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('Darc', Darc, Rules);
+    }
+
+    /**
+     * Create a genesis darc using the owners and signers to populate the
+     * rules
+     * @param owners    those you can evolve the darc
+     * @param signers   those you can sign
+     * @param desc      the description of the darc
+     * @returns the new darc
+     */
+    static newDarc(owners: IIdentity[], signers: IIdentity[], desc?: Buffer, rules?: string[]): Darc {
+        const darc = new Darc({
+            baseID: Buffer.from([]),
+            description: desc,
+            prevID: createHash('sha256').digest(),
+            rules: initRules(owners, signers),
+            version: Long.fromNumber(0, true),
+        });
+        if (rules) {
+            rules.forEach((r) => {
+                signers.forEach((s) => {
+                    darc.rules.appendToRule(r, s, '|');
+                });
+            });
+        }
+
+        return darc;
     }
 
     /**

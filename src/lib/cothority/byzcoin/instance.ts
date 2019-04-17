@@ -1,6 +1,6 @@
+import { Properties } from 'protobufjs';
 import ByzCoinRPC from './byzcoin-rpc';
 import Proof from './proof';
-import {Properties} from 'protobufjs';
 
 export type InstanceID = Buffer;
 
@@ -8,6 +8,18 @@ export type InstanceID = Buffer;
  * Instance with basic information
  */
 export default class Instance {
+
+    protected constructor(init: Properties<Instance> | Instance) {
+        this.id = init.id;
+        this.contractID = init.contractID;
+        this.darcID = init.darcID;
+        this.data = init.data;
+    }
+
+    id: InstanceID;
+    contractID: string;
+    darcID: InstanceID;
+    data: Buffer;
     /**
      * Create an instance from a proof
      * @param p The proof
@@ -41,7 +53,7 @@ export default class Instance {
      * @param data
      */
     static fromFields(id: InstanceID, contractID: string, darcID: InstanceID, data: Buffer): Instance {
-        return new Instance({id: id, contractID: contractID, darcID: darcID, data: data});
+        return new Instance({id, contractID, darcID, data});
     }
 
     /**
@@ -49,25 +61,13 @@ export default class Instance {
      * @param buf
      */
     static fromBytes(buf: Buffer): Instance {
-        let obj = JSON.parse(buf.toString());
+        const obj = JSON.parse(buf.toString());
         return new Instance({
-            id: Buffer.from(obj.id),
             contractID: obj.contractID,
             darcID: Buffer.from(obj.darcID),
-            data: Buffer.from(obj.data)
+            data: Buffer.from(obj.data),
+            id: Buffer.from(obj.id),
         });
-    }
-
-    public id: InstanceID;
-    public contractID: string;
-    public darcID: InstanceID;
-    public data: Buffer;
-
-    protected constructor(init: Properties<Instance> | Instance) {
-        this.id = init.id;
-        this.contractID = init.contractID;
-        this.darcID = init.darcID;
-        this.data = init.data;
     }
 
     /**

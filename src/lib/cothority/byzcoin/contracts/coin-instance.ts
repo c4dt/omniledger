@@ -8,8 +8,35 @@ import Instance, {InstanceID} from '../instance';
 import {createHash} from 'crypto';
 
 export default class CoinInstance extends Instance {
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== CoinInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CoinInstance.contractID}`);
+        }
+
+        this.coin = Coin.decode(inst.data);
+    }
+
+    /**
+     * Getter for the coin name
+     * @returns the name
+     */
+    get name(): Buffer {
+        return this.coin.name;
+    }
+
+    /**
+     * Getter for the coin value
+     * @returns the value
+     */
+    get value(): Long {
+        return this.coin.value;
+    }
     static readonly contractID = 'coin';
     static readonly commandMint = 'mint';
+
+    public coin: Coin;
 
     /**
      * Generate the coin instance ID for a given darc ID
@@ -80,33 +107,6 @@ export default class CoinInstance extends Instance {
         return new CoinInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    public coin: Coin;
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== CoinInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CoinInstance.contractID}`);
-        }
-
-        this.coin = Coin.decode(inst.data);
-    }
-
-    /**
-     * Getter for the coin name
-     * @returns the name
-     */
-    get name(): Buffer {
-        return this.coin.name;
-    }
-
-    /**
-     * Getter for the coin value
-     * @returns the value
-     */
-    get value(): Long {
-        return this.coin.value;
-    }
-
     /**
      * Transfer a certain amount of coin to another account.
      *
@@ -168,20 +168,20 @@ export default class CoinInstance extends Instance {
 }
 
 export class Coin extends Message<Coin> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Coin', Coin);
-    }
-
-    name: Buffer;
-    value: Long;
 
     constructor(props?: Properties<Coin>) {
         super(props);
 
         this.name = Buffer.from(this.name || EMPTY_BUFFER);
+    }
+
+    name: Buffer;
+    value: Long;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.Coin', Coin);
     }
 
     toBytes(): Buffer {

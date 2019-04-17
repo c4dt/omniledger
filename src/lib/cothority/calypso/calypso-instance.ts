@@ -1,20 +1,18 @@
-import {Message, Properties} from 'protobufjs/light';
-import Signer from '../darc/signer';
-import {registerMessage} from '../protobuf';
-import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../byzcoin/client-transaction';
-import Instance, {InstanceID} from '../byzcoin/instance';
-import {createHash} from 'crypto';
-import CoinInstance, {Coin} from '../byzcoin/contracts/coin-instance';
+import { curve, Point, Scalar } from '@dedis/kyber';
+import { createHash } from 'crypto';
 import Keccak from 'keccak';
-import {curve, Point, Scalar} from '@dedis/kyber';
+import { Message, Properties } from 'protobufjs/light';
+import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
+import ClientTransaction, { Argument, Instruction } from '../byzcoin/client-transaction';
+import CoinInstance, { Coin } from '../byzcoin/contracts/coin-instance';
+import Instance, { InstanceID } from '../byzcoin/instance';
+import Signer from '../darc/signer';
+import { registerMessage } from '../protobuf';
 import OnChainSecretRPC from './calypso-rpc';
 
-const Curve25519 = curve.newCurve('edwards25519');
+const curve25519 = curve.newCurve('edwards25519');
 
 export class OnChainSecretInstance extends Instance {
-    static readonly contractID = 'longTermSecret';
-    public write: Write;
 
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
@@ -24,6 +22,8 @@ export class OnChainSecretInstance extends Instance {
 
         this.write = Write.decode(inst.data);
     }
+    static readonly contractID = 'longTermSecret';
+    write: Write;
 
     /**
      * Spawn a longTermSecret instance
@@ -66,8 +66,6 @@ export class OnChainSecretInstance extends Instance {
 }
 
 export class CalypsoWriteInstance extends Instance {
-    static readonly contractID = 'calypsoWrite';
-    public write: Write;
 
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
@@ -77,6 +75,8 @@ export class CalypsoWriteInstance extends Instance {
 
         this.write = Write.decode(inst.data);
     }
+    static readonly contractID = 'calypsoWrite';
+    write: Write;
 
     /**
      * Spawn a calypsoWrite instance
@@ -99,8 +99,8 @@ export class CalypsoWriteInstance extends Instance {
                     darcID,
                     CalypsoWriteInstance.contractID,
                     [new Argument({name: 'write', value: Buffer.from(Write.encode(write).finish())})],
-                )
-            ]
+                ),
+            ],
         });
         await ctx.updateCountersAndSign(bc, [signers]);
         await bc.sendTransactionAndWait(ctx, 10);
@@ -118,20 +118,19 @@ export class CalypsoWriteInstance extends Instance {
         return new CalypsoWriteInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
-    async spawnRead(pub: Point, signers: Signer[], coin?: CoinInstance, coinSigners?: Signer[]): Promise<CalypsoReadInstance> {
+    async spawnRead(pub: Point, signers: Signer[], coin?: CoinInstance, coinSigners?: Signer[]):
+        Promise<CalypsoReadInstance> {
         if (this.write.cost && (!coin || !coinSigners)) {
             throw new Error('spawning a read instance costs coins');
         }
-        let pay = Instruction.createInvoke(coin.id, CoinInstance.contractID, 'fetch', [
-            new Argument({name: 'coins', value: Buffer.from(this.write.cost.value.toBytesLE())})
+        const pay = Instruction.createInvoke(coin.id, CoinInstance.contractID, 'fetch', [
+            new Argument({name: 'coins', value: Buffer.from(this.write.cost.value.toBytesLE())}),
         ]);
         return CalypsoReadInstance.spawn(this.rpc, this.id, pub, signers, pay);
     }
 }
 
 export class CalypsoReadInstance extends Instance {
-    static readonly contractID = 'calypsoRead';
-    public read: Read;
 
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
@@ -141,17 +140,20 @@ export class CalypsoReadInstance extends Instance {
 
         this.read = Read.decode(inst.data);
     }
+    static readonly contractID = 'calypsoRead';
+    read: Read;
 
-    static async spawn(bc: ByzCoinRPC, writeId: InstanceID, pub: Point, signers: Signer[], pay?: Instruction): Promise<CalypsoReadInstance> {
-        let read = new Read({write: writeId, xc: pub.marshalBinary()});
-        let ctx = new ClientTransaction({
+    static async spawn(bc: ByzCoinRPC, writeId: InstanceID, pub: Point, signers: Signer[], pay?: Instruction):
+        Promise<CalypsoReadInstance> {
+        const read = new Read({write: writeId, xc: pub.marshalBinary()});
+        const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createSpawn(writeId, CalypsoReadInstance.contractID, [
-                    new Argument({name: 'read', value: Buffer.from(Read.encode(read).finish())})
-                ])
-            ]
+                    new Argument({name: 'read', value: Buffer.from(Read.encode(read).finish())}),
+                ]),
+            ],
         });
-        let ctxSigners = [signers];
+        const ctxSigners = [signers];
         if (pay) {
             ctx.instructions.unshift(pay);
             ctxSigners.unshift(signers);
@@ -173,12 +175,17 @@ export class CalypsoReadInstance extends Instance {
     }
 
     async decrypt(ocs: OnChainSecretRPC, priv: Scalar): Promise<Buffer> {
-        let xhatenc = await ocs.reencryptKey(await this.rpc.getProof(this.read.write), await this.rpc.getProof(this.id));
+        const xhatenc = await ocs.reencryptKey(await this.rpc.getProof(this.read.write),
+            await this.rpc.getProof(this.id));
         return xhatenc.decrypt(priv);
     }
 }
 
 export class Write extends Message<Write> {
+
+    constructor(props?: Properties<Write>) {
+        super(props);
+    }
     // in U and C
     data: Buffer;
     // U is the encrypted random value for the ElGamal encryption
@@ -204,10 +211,6 @@ export class Write extends Message<Write> {
     // Cost reflects how many coins you'll have to pay for a read-request
     cost: Coin;
 
-    constructor(props?: Properties<Write>) {
-        super(props);
-    }
-
     /**
      * @see README#Message classes
      */
@@ -223,40 +226,42 @@ export class Write extends Message<Write> {
      * @param X
      * @param key
      */
-    static async createWrite(ltsid: InstanceID, writeDarc: InstanceID, X: Point, key: Buffer, rand?: (length: number) => Buffer): Promise<Write> {
+    static async createWrite(ltsid: InstanceID, writeDarc: InstanceID, X: Point, key: Buffer,
+                             rand?: (length: number) => Buffer): Promise<Write> {
         // wr := &Write{LTSID: ltsid}
-        let wr = new Write();
+        const wr = new Write();
         // r := suite.Scalar().Pick(suite.RandomStream())
-        let r = Curve25519.scalar().pick(rand);
+        const r = curve25519.scalar().pick(rand);
         // C := suite.Point().Mul(r, X)
-        let C = Curve25519.point().mul(r, X);
+        const C = curve25519.point().mul(r, X);
         // wr.U = suite.Point().Mul(r, nil)
-        wr.u = Curve25519.point().mul(r).marshalBinary();
+        wr.u = curve25519.point().mul(r).marshalBinary();
 
         // Create proof
         // if len(key) > suite.Point().EmbedLen() {
         // 	return nil
         // }
-        if (key.length > Curve25519.point().embedLen()) {
+        if (key.length > curve25519.point().embedLen()) {
             return Promise.reject('key is too long');
         }
         // kp := suite.Point().Embed(key, suite.RandomStream())
-        let kp = Curve25519.point().embed(key, rand);
+        const kp = curve25519.point().embed(key, rand);
         // wr.C = suite.Point().Add(C, kp)
-        wr.c = Curve25519.point().add(C, kp).marshalBinary();
+        wr.c = curve25519.point().add(C, kp).marshalBinary();
 
         // gBar := suite.Point().Embed(ltsid.Slice(), keccak.New(ltsid.Slice()))
-        let k = new Keccak('shake256');
+        const k = new Keccak('shake256');
         k.update(ltsid);
-        let gBar = Curve25519.point().embed(Buffer.from(ltsid.subarray(0, Curve25519.point().embedLen())), l => k.squeeze(l));
+        const gBar = curve25519.point().embed(Buffer.from(ltsid.subarray(0, curve25519.point().embedLen())),
+            (l) => k.squeeze(l));
         // wr.Ubar = suite.Point().Mul(r, gBar)
-        wr.ubar = Curve25519.point().mul(r, gBar).marshalBinary();
+        wr.ubar = curve25519.point().mul(r, gBar).marshalBinary();
         // s := suite.Scalar().Pick(suite.RandomStream())
-        let s = Curve25519.scalar().pick(rand);
+        const s = curve25519.scalar().pick(rand);
         // w := suite.Point().Mul(s, nil)
-        let w = Curve25519.point().mul(s);
+        const w = curve25519.point().mul(s);
         // wBar := suite.Point().Mul(s, gBar)
-        let wBar = Curve25519.point().mul(s, gBar);
+        const wBar = curve25519.point().mul(s, gBar);
 
         // hash := sha256.New()
         const hash = createHash('sha256');
@@ -273,10 +278,10 @@ export class Write extends Message<Write> {
         // hash.Write(writeDarc)
         hash.update(writeDarc);
         // wr.E = suite.Scalar().SetBytes(hash.Sum(nil))
-        let E = Curve25519.scalar().setBytes(hash.digest());
+        const E = curve25519.scalar().setBytes(hash.digest());
         wr.e = E.marshalBinary();
         // wr.F = suite.Scalar().Add(s, suite.Scalar().Mul(wr.E, r))
-        wr.f = Curve25519.scalar().add(s, Curve25519.scalar().mul(E, r)).marshalBinary();
+        wr.f = curve25519.scalar().add(s, curve25519.scalar().mul(E, r)).marshalBinary();
         wr.ltsid = ltsid;
         return wr;
     }
@@ -287,12 +292,12 @@ export class Write extends Message<Write> {
 }
 
 export class Read extends Message<Read> {
-    write: Buffer;
-    xc: Buffer;
 
     constructor(props?: Properties<Read>) {
         super(props);
     }
+    write: Buffer;
+    xc: Buffer;
 
     /**
      * @see README#Message classes
@@ -322,19 +327,20 @@ export class Read extends Message<Read> {
 //   - err - an eventual error when trying to recover the data from the points
 // func DecodeKey(suite kyber.Group, X kyber.Point, C kyber.Point, XhatEnc kyber.Point,
 // 	xc kyber.Scalar) (key []byte, err error) {
+/* tslint:disable: variable-name */
 export async function DecodeKey(X: Point, C: Point, XhatEnc: Point, priv: Scalar): Promise<Buffer> {
     // 	xcInv := suite.Scalar().Neg(xc)
-    let xcInv = Curve25519.scalar().neg(priv);
+    const xcInv = curve25519.scalar().neg(priv);
     // 	XhatDec := suite.Point().Mul(xcInv, X)
-    let XhatDec = Curve25519.point().mul(xcInv, X);
+    const XhatDec = curve25519.point().mul(xcInv, X);
     // 	Xhat := suite.Point().Add(XhatEnc, XhatDec)
-    let Xhat = Curve25519.point().add(XhatEnc, XhatDec);
+    const Xhat = curve25519.point().add(XhatEnc, XhatDec);
     // 	XhatInv := suite.Point().Neg(Xhat)
-    let XhatInv = Curve25519.point().neg(Xhat);
+    const XhatInv = curve25519.point().neg(Xhat);
 
     // Decrypt C to keyPointHat
     // 	keyPointHat := suite.Point().Add(C, XhatInv)
-    let keyPointHat = Curve25519.point().add(C, XhatInv);
+    const keyPointHat = curve25519.point().add(C, XhatInv);
     // 	key, err = keyPointHat.Data()
     return Buffer.from(keyPointHat.data());
 }

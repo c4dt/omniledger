@@ -1,25 +1,25 @@
-import {Message, Properties} from 'protobufjs/light';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
-import {IIdentity} from './identity-wrapper';
+import { Message, Properties } from 'protobufjs/light';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
+import { IIdentity } from './identity-wrapper';
 
 /**
  * A rule will give who is allowed to use a given action
  */
 export class Rule extends Message<Rule> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('Rule', Rule);
-    }
-
-    readonly action: string;
-    readonly expr: Buffer;
 
     constructor(props?: Properties<Rule>) {
         super(props);
 
         this.expr = Buffer.from(this.expr || EMPTY_BUFFER);
+    }
+
+    readonly action: string;
+    readonly expr: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('Rule', Rule);
     }
 
     /**
@@ -47,17 +47,6 @@ export class Rule extends Message<Rule> {
  * the rules
  */
 export default class Rules extends Message<Rules> {
-    static OR = '|';
-    static AND = '&';
-
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('Rules', Rules, Rule);
-    }
-
-    readonly list: Rule[];
 
     constructor(properties?: Properties<Rules>) {
         super(properties);
@@ -65,6 +54,17 @@ export default class Rules extends Message<Rules> {
         if (!properties || !this.list) {
             this.list = [];
         }
+    }
+    static OR = '|';
+    static AND = '&';
+
+    readonly list: Rule[];
+
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('Rules', Rules, Rule);
     }
 
     /**

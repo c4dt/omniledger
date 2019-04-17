@@ -135,7 +135,7 @@ export class LogC {
             errMsg = e.message;
         }
         if (e.stack) {
-            for (let i = 1; i < e.stack.split("\n").length; i++) {
+            for (let i = 1; i < e.stack.split('\n').length; i++) {
                 if (i > 1) {
                     errMsg = '';
                 }
@@ -154,7 +154,7 @@ export class LogC {
             errMsg = e.message;
         }
         if (e.stack) {
-            for (let i = 1; i < e.stack.split("\n").length; i++) {
+            for (let i = 1; i < e.stack.split('\n').length; i++) {
                 if (i > 1) {
                     errMsg = '';
                 }

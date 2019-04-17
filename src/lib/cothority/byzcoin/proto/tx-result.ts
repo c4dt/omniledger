@@ -3,15 +3,6 @@ import {registerMessage} from '../../protobuf';
 import ClientTransaction from '../client-transaction';
 
 export default class TxResult extends Message<TxResult> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.TxResult', TxResult, ClientTransaction);
-    }
-
-    readonly clientTransaction: ClientTransaction;
-    readonly accepted: boolean;
 
     constructor(props?: Properties<TxResult>) {
         super(props);
@@ -26,6 +17,15 @@ export default class TxResult extends Message<TxResult> {
                 this.clientTransaction = value;
             },
         });
+    }
+
+    readonly clientTransaction: ClientTransaction;
+    readonly accepted: boolean;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('byzcoin.TxResult', TxResult, ClientTransaction);
     }
 }
 

@@ -1,4 +1,4 @@
-import {ByzcoinSignature, ForwardLink, SkipBlock} from './skipblock';
+import { ByzcoinSignature, ForwardLink, SkipBlock } from './skipblock';
 import SkipchainRPC from './skipchain-rpc';
 
 export {

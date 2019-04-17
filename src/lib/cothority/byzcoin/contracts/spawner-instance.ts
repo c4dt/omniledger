@@ -22,7 +22,35 @@ export const SPAWNER_COIN = Buffer.alloc(32, 0);
 SPAWNER_COIN.write('SpawnerCoin');
 
 export default class SpawnerInstance extends Instance {
+
+    /**
+     * Creates a new SpawnerInstance
+     * @param bc        The ByzCoinRPC instance
+     * @param iid       The instance ID
+     * @param spawner   Parameters for the spawner: costs and names
+     */
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== SpawnerInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${SpawnerInstance.contractID}`);
+        }
+
+        this.struct = SpawnerStruct.decode(inst.data);
+    }
+
+    /**
+     * Get the total cost required to sign up
+     *
+     * @returns the cost
+     */
+    get signupCost(): Long {
+        return this.struct.costCoin.value
+            .add(this.struct.costDarc.value)
+            .add(this.struct.costCredential.value);
+    }
     static readonly contractID = 'spawner';
+
+    private struct: SpawnerStruct;
 
     /**
      * Spawn a spawner instance
@@ -69,34 +97,6 @@ export default class SpawnerInstance extends Instance {
             SpawnerInstance.contractID));
     }
 
-    private struct: SpawnerStruct;
-
-    /**
-     * Creates a new SpawnerInstance
-     * @param bc        The ByzCoinRPC instance
-     * @param iid       The instance ID
-     * @param spawner   Parameters for the spawner: costs and names
-     */
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== SpawnerInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${SpawnerInstance.contractID}`);
-        }
-
-        this.struct = SpawnerStruct.decode(inst.data);
-    }
-
-    /**
-     * Get the total cost required to sign up
-     *
-     * @returns the cost
-     */
-    get signupCost(): Long {
-        return this.struct.costCoin.value
-            .add(this.struct.costDarc.value)
-            .add(this.struct.costCredential.value);
-    }
-
     /**
      * Update the data of this instance
      *
@@ -119,7 +119,7 @@ export default class SpawnerInstance extends Instance {
      */
     async spawnDarc(coin: CoinInstance, signers: Signer[], ...darcs: Darc[]): Promise<DarcInstance[]> {
         // const d = SpawnerInstance.prepareUserDarc(pubKey, alias);
-        let cost = this.struct.costDarc.value.mul(darcs.length);
+        const cost = this.struct.costDarc.value.mul(darcs.length);
         const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(
@@ -142,7 +142,7 @@ export default class SpawnerInstance extends Instance {
 
         await this.rpc.sendTransactionAndWait(ctx);
 
-        let dis = [];
+        const dis = [];
         for (let i = 0; i < darcs.length; i++) {
             dis.push(await DarcInstance.fromByzcoin(this.rpc, darcs[i].getBaseID()));
         }
@@ -368,10 +368,10 @@ export default class SpawnerInstance extends Instance {
             throw new Error('account balance not high enough for spawning a darc + calypso writer');
         }
 
-        let d = await this.spawnDarc(coin, signers,
+        const d = await this.spawnDarc(coin, signers,
             Darc.newDarc([ident], [ident], Buffer.from('calypso write protection'), ['spawn:calypsoRead']));
 
-        let write = await Write.createWrite(lts.instanceid, d[0].id, lts.X, key);
+        const write = await Write.createWrite(lts.instanceid, d[0].id, lts.X, key);
         write.cost = this.struct.costCRead;
 
         const ctx = new ClientTransaction({
@@ -396,21 +396,6 @@ export default class SpawnerInstance extends Instance {
  * Data of a spawner instance
  */
 export class SpawnerStruct extends Message<SpawnerStruct> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.SpawnerStruct', SpawnerStruct, Coin);
-    }
-
-    readonly costDarc: Coin;
-    readonly costCoin: Coin;
-    readonly costCredential: Coin;
-    readonly costParty: Coin;
-    readonly costRoPaSci: Coin;
-    readonly costCWrite: Coin;
-    readonly costCRead: Coin;
-    readonly beneficiary: InstanceID;
 
     constructor(props?: Properties<SpawnerStruct>) {
         super(props);
@@ -478,6 +463,21 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
                 this.costCWrite = value;
             },
         });
+    }
+
+    readonly costDarc: Coin;
+    readonly costCoin: Coin;
+    readonly costCredential: Coin;
+    readonly costParty: Coin;
+    readonly costRoPaSci: Coin;
+    readonly costCWrite: Coin;
+    readonly costCRead: Coin;
+    readonly beneficiary: InstanceID;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('personhood.SpawnerStruct', SpawnerStruct, Coin);
     }
 }
 

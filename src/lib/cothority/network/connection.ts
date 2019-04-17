@@ -1,8 +1,8 @@
-import {Message, util} from 'protobufjs/light';
+import { Message, util } from 'protobufjs/light';
 import shuffle from 'shuffle-array';
-import {Log} from '../log';
-import {Roster} from './proto';
-import {BrowserWebSocketAdapter, WebSocketAdapter} from './websocket-adapter';
+import { Log } from '../log';
+import { Roster } from './proto';
+import { BrowserWebSocketAdapter, WebSocketAdapter } from './websocket-adapter';
 
 let factory: (path: string) => WebSocketAdapter = (path: string) => new BrowserWebSocketAdapter(path);
 

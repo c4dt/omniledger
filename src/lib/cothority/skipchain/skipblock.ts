@@ -1,9 +1,9 @@
-import {Point, sign} from '@dedis/kyber';
-import {BN256G1Point, BN256G2Point} from '@dedis/kyber/pairing/point';
-import {createHash} from 'crypto';
-import {Message, Properties} from 'protobufjs/light';
-import {Roster} from '../network/proto';
-import {registerMessage} from '../protobuf';
+import { Point, sign } from '@dedis/kyber';
+import { BN256G1Point, BN256G2Point } from '@dedis/kyber/pairing/point';
+import { createHash } from 'crypto';
+import { Message, Properties } from 'protobufjs/light';
+import { Roster } from '../network/proto';
+import { registerMessage } from '../protobuf';
 
 const EMPTY_BUFFER = Buffer.allocUnsafe(0);
 
@@ -23,25 +23,6 @@ function int2buf(v: number): Buffer {
 }
 
 export class SkipBlock extends Message<SkipBlock> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('SkipBlock', SkipBlock, Roster, ForwardLink);
-    }
-
-    readonly hash: Buffer;
-    readonly index: number;
-    readonly height: number;
-    readonly maxHeight: number;
-    readonly baseHeight: number;
-    readonly backlinks: Buffer[];
-    readonly verifiers: Buffer[];
-    readonly genesis: Buffer;
-    readonly data: Buffer;
-    readonly roster: Roster;
-    readonly forward: ForwardLink[];
-    readonly payload: Buffer;
 
     constructor(props?: Properties<SkipBlock>) {
         super(props);
@@ -62,6 +43,25 @@ export class SkipBlock extends Message<SkipBlock> {
      */
     get forwardLinks(): ForwardLink[] {
         return this.forward;
+    }
+
+    readonly hash: Buffer;
+    readonly index: number;
+    readonly height: number;
+    readonly maxHeight: number;
+    readonly baseHeight: number;
+    readonly backlinks: Buffer[];
+    readonly verifiers: Buffer[];
+    readonly genesis: Buffer;
+    readonly data: Buffer;
+    readonly roster: Roster;
+    readonly forward: ForwardLink[];
+    readonly payload: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('SkipBlock', SkipBlock, Roster, ForwardLink);
     }
 
     /**
@@ -98,23 +98,23 @@ export class SkipBlock extends Message<SkipBlock> {
 }
 
 export class ForwardLink extends Message<ForwardLink> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('ForwardLink', ForwardLink, Roster, ByzcoinSignature);
-    }
-
-    readonly from: Buffer;
-    readonly to: Buffer;
-    readonly newRoster: Roster;
-    readonly signature: ByzcoinSignature;
 
     constructor(props?: Properties<ForwardLink>) {
         super(props);
 
         this.from = Buffer.from(this.from || EMPTY_BUFFER);
         this.to = Buffer.from(this.to || EMPTY_BUFFER);
+    }
+
+    readonly from: Buffer;
+    readonly to: Buffer;
+    readonly newRoster: Roster;
+    readonly signature: ByzcoinSignature;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('ForwardLink', ForwardLink, Roster, ByzcoinSignature);
     }
 
     /**
@@ -156,21 +156,21 @@ export class ForwardLink extends Message<ForwardLink> {
 }
 
 export class ByzcoinSignature extends Message<ByzcoinSignature> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('ByzcoinSig', ByzcoinSignature);
-    }
-
-    readonly msg: Buffer;
-    readonly sig: Buffer;
 
     constructor(props?: Properties<ByzcoinSignature>) {
         super(props);
 
         this.msg = Buffer.from(this.msg || EMPTY_BUFFER);
         this.sig = Buffer.from(this.sig || EMPTY_BUFFER);
+    }
+
+    readonly msg: Buffer;
+    readonly sig: Buffer;
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('ByzcoinSig', ByzcoinSignature);
     }
 
     /**

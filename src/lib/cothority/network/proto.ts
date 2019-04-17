@@ -1,9 +1,9 @@
-import {Point, PointFactory} from '@dedis/kyber';
-import {createHash} from 'crypto';
-import {Message, Properties} from 'protobufjs/light';
+import { Point, PointFactory } from '@dedis/kyber';
+import { createHash } from 'crypto';
+import { Message, Properties } from 'protobufjs/light';
 import UUID from 'pure-uuid';
 import * as toml from 'toml';
-import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import { EMPTY_BUFFER, registerMessage } from '../protobuf';
 
 const BASE_URL_WS = 'ws://';
 const BASE_URL_TLS = 'tls://';
@@ -15,10 +15,14 @@ const PORT_MAX = 65535;
  * List of server identities
  */
 export class Roster extends Message<Roster> {
-    readonly id: Buffer;
-    readonly list: ServerIdentity[];
-    readonly aggregate: Buffer;
-    private _agg: Point;
+
+    /**
+     * Get the length of the roster
+     * @returns the length as a number
+     */
+    get length(): number {
+        return this.list.length;
+    }
 
     constructor(properties?: Properties<Roster>) {
         super(properties);
@@ -50,14 +54,10 @@ export class Roster extends Message<Roster> {
             this.id = Buffer.from(new UUID(5, 'ns:URL', h.digest().toString('hex')).export());
         }
     }
-
-    /**
-     * Get the length of the roster
-     * @returns the length as a number
-     */
-    get length(): number {
-        return this.list.length;
-    }
+    readonly id: Buffer;
+    readonly list: ServerIdentity[];
+    readonly aggregate: Buffer;
+    private _agg: Point;
 
     /**
      * @see README#Message classes
@@ -149,13 +149,6 @@ export class Roster extends Message<Roster> {
  * Identity of a conode
  */
 export class ServerIdentity extends Message<ServerIdentity> {
-    readonly public: Buffer;
-    readonly id: Buffer;
-    readonly address: string;
-    readonly description: string;
-    readonly serviceIdentities: ServiceIdentity[];
-    readonly url: string;
-    private _point: Point;
 
     constructor(properties?: Properties<ServerIdentity>) {
         super(properties);
@@ -169,6 +162,13 @@ export class ServerIdentity extends Message<ServerIdentity> {
             this.id = Buffer.from(new UUID(5, 'ns:URL', `https://dedis.epfl.ch/id/${hex}`).export());
         }
     }
+    readonly public: Buffer;
+    readonly id: Buffer;
+    readonly address: string;
+    readonly description: string;
+    readonly serviceIdentities: ServiceIdentity[];
+    readonly url: string;
+    private _point: Point;
 
     /**
      * Converts a HTTP-S URL to a Wesocket URL. It convert 'http' to 'ws' and 'https' to 'wss'.
@@ -278,16 +278,16 @@ export class ServerIdentity extends Message<ServerIdentity> {
  * key pair and don't the default one.
  */
 export class ServiceIdentity extends Message<ServiceIdentity> {
-    readonly name: string;
-    readonly suite: string;
-    readonly public: Buffer;
-    private _point: Point;
 
     constructor(properties: Properties<ServiceIdentity>) {
         super(properties);
 
         this.public = Buffer.from(this.public || EMPTY_BUFFER);
     }
+    readonly name: string;
+    readonly suite: string;
+    readonly public: Buffer;
+    private _point: Point;
 
     /**
      * @see README#Message classes
