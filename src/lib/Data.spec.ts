@@ -1,5 +1,5 @@
-import {Log} from './Log';
-import {TestData} from './Data';
+import {Log} from './cothority/log';
+import {Data, TestData} from './Data';
 import {KeyPair} from './KeyPair';
 import * as Long from 'long';
 import {Defaults} from './Defaults';
@@ -33,6 +33,26 @@ describe('Testing new signup', () => {
             const user1 = await tdAdmin.createUser(null, 'user1');
             const user2 = await tdAdmin.createUser(null, 'user2');
             const secret = Buffer.from('calypsO for all');
+        });
+
+        it('update the credential of the admin', async () => {
+            tdAdmin.contact.email = 'admin@user.com';
+            await tdAdmin.contact.sendUpdate(tdAdmin.keyIdentitySigner);
+        });
+
+        it('change the private key for a new user', async () => {
+            const user1 = await tdAdmin.createUser(null, 'user1');
+            Log.lvl1('creating empty data structure');
+            const user1Copy = new Data();
+            user1Copy.bc = user1.bc;
+            // Log.lvl1('attaching to it');
+            await user1Copy.attachAndEvolve(user1.keyIdentity._private);
+
+            // It should not be possible to attach to it a second time.
+            Log.lvl1('trying to attach again');
+            const user1Copy2 = new Data();
+            user1Copy2.bc = user1.bc;
+            await expectAsync(user1Copy2.attachAndEvolve(user1.keyIdentity._private)).toBeRejected();
         });
     });
 });

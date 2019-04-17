@@ -19,7 +19,7 @@ describe('workspace-project App', () => {
       let tdAdmin = await TestData.init(new Data());
       for (let i = 0; i < 100; i++){
         Log.print("reading", i);
-        await tdAdmin.cbc.bc.updateConfig();
+        await tdAdmin.cbc.rpc.updateConfig();
       }
       Log.print("createAll")
       await tdAdmin.createAll('admin');

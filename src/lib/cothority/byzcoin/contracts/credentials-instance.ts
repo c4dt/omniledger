@@ -19,7 +19,6 @@ export default class CredentialsInstance extends Instance {
     }
     static readonly contractID = 'credential';
 
-    private instance: Instance;
     public credential: CredentialStruct;
 
     /**
@@ -115,8 +114,9 @@ export default class CredentialsInstance extends Instance {
      * the error otherwise
      */
     async update(): Promise<CredentialsInstance> {
-        this.instance = await Instance.fromByzCoin(this.rpc, this.instance.id);
-        this.credential = CredentialStruct.decode(this.instance.data);
+        const inst = await Instance.fromByzCoin(this.rpc, this.id);
+        this.data = inst.data;
+        this.credential = CredentialStruct.decode(this.data);
         return this;
     }
 
@@ -151,7 +151,7 @@ export default class CredentialsInstance extends Instance {
             this.credential = newCred.copy();
         }
         const instr = Instruction.createInvoke(
-            this.instance.id,
+            this.id,
             CredentialsInstance.contractID,
             'update',
             [new Argument({name: 'credential', value: this.credential.toBytes()})],
@@ -172,7 +172,7 @@ export default class CredentialsInstance extends Instance {
         const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(
-                    this.instance.id,
+                    this.id,
                     CredentialsInstance.contractID,
                     'recover',
                     [new Argument({name: 'signatures', value: sigBuf}),

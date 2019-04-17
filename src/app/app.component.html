@@ -1,12 +1,4 @@
-<div *ngIf="testing">
-  <div fxLayout="row" style="margin-top:5%;" fxLayoutAlign="center">
-    <div fxFlex="66" fxFlexOffset="15">
-      <h1 mat>Testing</h1>
-      <button mat-raised-button class="mat-button" (click)="doTest()">Start Test</button>
-    </div>
-  </div>
-</div>
-<div *ngIf="!isLoaded && !testing">
+<div *ngIf="!isLoaded">
   <div fxLayout="row" style="margin-top:5%;" fxLayoutAlign="center">
     <div fxFlex="66" fxFlexOffset="15">
       <h1 mat>Loading</h1>
@@ -52,7 +44,7 @@
                 <input matInput type="text" placeholder="Your Phone" formControlName="phone"/>
               </mat-form-field>
               <br>
-              <button mat-button class="submit-btn" type="submit">Upate</button>
+              <button mat-raised-button color="primary" class="submit-btn" type="submit">Upate</button>
             </form>
           </mat-tab>
 
@@ -63,8 +55,8 @@
                 {{ contact.alias }}
               </li>
             </ul>
-            <button mat-raised-button class="mat-button" (click)="createContact()">Create Contact</button>
-            <button mat-raised-button class="mat-button" (click)="addContact()">Add Contact</button>
+            <button mat-raised-button color="primary" (click)="createContact()">Create Contact</button>
+            <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
           </mat-tab>
 
           <mat-tab label="Secured Data">

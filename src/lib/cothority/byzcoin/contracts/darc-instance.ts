@@ -3,8 +3,12 @@ import Signer from '../../darc/signer';
 import ByzCoinRPC from '../byzcoin-rpc';
 import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import Instance, {InstanceID} from '../instance';
+import {Log} from '../../log';
 
 export default class DarcInstance extends Instance {
+
+    static readonly contractID = 'darc';
+    public darc: Darc;
 
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
@@ -14,14 +18,11 @@ export default class DarcInstance extends Instance {
 
         this.darc = Darc.decode(inst.data);
     }
-    static readonly contractID = 'darc';
-
-    public darc: Darc;
 
     /**
      * Initializes using an existing coinInstance from ByzCoin
-     * @param bc
-     * @param instID
+     * @param bc a working ByzCoin instance
+     * @param iid the instance id of the darc-instance
      */
     static async fromByzcoin(bc: ByzCoinRPC, iid: Buffer): Promise<DarcInstance> {
         return new DarcInstance(bc, await Instance.fromByzCoin(bc, iid));
@@ -40,6 +41,25 @@ export default class DarcInstance extends Instance {
         return this;
     }
 
+    getSignerExpression(): Buffer {
+        for (const rule of this.darc.rules.list) {
+            if (rule.action === '_sign') {
+                return rule.expr;
+            }
+        }
+        throw new Error('This darc doesn\'t have a sign expression');
+    }
+
+    getSignerDarcID(): InstanceID {
+        const expr = this.getSignerExpression();
+        if (expr.length !== 69) {
+            Log.print(expr);
+            throw new Error('The signer expression doesn\'t point to a single darc');
+        }
+        Log.print(expr.subarray(5).toString());
+        return Buffer.from(expr.subarray(5).toString(), 'hex');
+    }
+
     /**
      * Request to evolve the existing darc using the new darc and wait for
      * the block inclusion
@@ -53,7 +73,7 @@ export default class DarcInstance extends Instance {
         if (!newDarc.getBaseID().equals(this.darc.getBaseID())) {
             throw new Error('not the same base id for the darc');
         }
-        if (newDarc.version.compare(this.darc.version.add(1)) != 0) {
+        if (newDarc.version.compare(this.darc.version.add(1)) !== 0) {
             throw new Error('not the right version');
         }
         if (!newDarc.prevID.equals(this.darc.id)) {

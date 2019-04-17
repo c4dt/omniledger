@@ -20,11 +20,6 @@ export const Defaults = {
   Suite = "Ed25519"
   Public = "82961f12d49af09492a44929a88c5e7fb6746c4599a59a99e298e7d3c526746c"
   Description = "Conode_3"
-[[servers]]
-  Address = "tls://pop.dedis.ch:7778"
-  Suite = "Ed25519"
-  Public = "1365232c84fb92f66bc003bff0bfb22250a99d6f3cecad4d6c53a64481486e93"
-  Description = "Conode_4"
 `,
 // [[servers]]
 //   Address = "tls://local.c4dt.org:7778"

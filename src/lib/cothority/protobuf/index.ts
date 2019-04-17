@@ -67,15 +67,3 @@ export function registerMessage(
 
     Log.lvl3(`Message registered: ${ctor.name}`);
 }
-
-export function objToProto(obj: object, modelName: string): Buffer {
-    const requestModel = root.lookup(modelName);
-    const errMsg = requestModel.verify(obj);
-    if (errMsg) {
-        Log.error('couldn\'t verify data:', errMsg);
-        return null;
-    }
-    const message = requestModel.create(obj);
-    const marshal = requestModel.encode(message).finish();
-    return new Buffer(marshal.slice());
-}

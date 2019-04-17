@@ -7,7 +7,7 @@ import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
 import * as Long from 'long';
 import {Defaults} from './Defaults';
 import {Storage} from './Storage';
-import {Log} from './Log';
+import {Log} from './cothority/log';
 import {KeyPair, Private, Public} from './KeyPair';
 import {Buffer} from 'buffer';
 import Instance, {InstanceID} from './cothority/byzcoin/instance';
@@ -26,8 +26,8 @@ import SignerEd25519 from './cothority/darc/signer-ed25519';
 import {Contact} from './Contact';
 import {Badge} from './Badge';
 import {Party} from './Party';
-import {PopPartyInstance} from './cothority/Personhood/pop-party-instance';
-import RoPaSciInstance from './cothority/Personhood/ro-pa-sci-instance';
+import {PopPartyInstance} from './cothority/personhood/pop-party-instance';
+import RoPaSciInstance from './cothority/personhood/ro-pa-sci-instance';
 import {SocialNode} from './SocialNode';
 import {sprintf} from 'sprintf-js';
 import {parseQRCode} from './Scan';
@@ -36,6 +36,7 @@ import {Roster} from './cothority/network';
 import ClientTransaction, {Argument, Instruction} from './cothority/byzcoin/client-transaction';
 import IdentityDarc from './cothority/darc/identity-darc';
 import {Scalar} from '@dedis/kyber';
+import IdentityEd25519 from './cothority/darc/identity-ed25519';
 
 const curve = require('@dedis/kyber').curve.newCurve('edwards25519');
 const Schnorr = require('@dedis/kyber').sign.schnorr;
@@ -45,6 +46,25 @@ const Schnorr = require('@dedis/kyber').sign.schnorr;
  * Data holds the data of the app.
  */
 export class Data {
+
+    static readonly urlRecoveryRequest = 'https://pop.dedis.ch/recoveryReq-1';
+    static readonly urlRecoverySignature = 'https://pop.dedis.ch/recoverySig-1';
+    dataFileName: string;
+    continuousScan: boolean;
+    personhoodPublished: boolean;
+    keyPersonhood: KeyPair;
+    keyIdentity: KeyPair;
+    bc: ByzCoinRPC = null;
+    constructorObj: any;
+    contact: Contact = null;
+    contacts: Contact[] = [];
+    parties: Party[] = [];
+    badges: Badge[] = [];
+    ropascis: RoPaSciInstance[] = [];
+    polls: PollStruct[] = [];
+    meetups: SocialNode[] = [];
+    // Non-stored fields
+    recoverySignatures: RecoverySignature[] = [];
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
@@ -88,35 +108,16 @@ export class Data {
     get uniqueMeetings(): number {
         const meetups = this.meetups.map(m => Contact.sortAlias(m.users));
         const unique = meetups.filter((meetup, i) =>
-            meetups.findIndex(m => m.join() == meetup.join()) == i);
+            meetups.findIndex(m => m.join() === meetup.join()) === i);
         return unique.length;
     }
-
-    static readonly urlRecoveryRequest = 'https://pop.dedis.ch/recoveryReq-1';
-    static readonly urlRecoverySignature = 'https://pop.dedis.ch/recoverySig-1';
-    dataFileName: string;
-    continuousScan: boolean;
-    personhoodPublished: boolean;
-    keyPersonhood: KeyPair;
-    keyIdentity: KeyPair;
-    bc: ByzCoinRPC = null;
-    constructorObj: any;
-    contact: Contact = null;
-    contacts: Contact[] = [];
-    parties: Party[] = [];
-    badges: Badge[] = [];
-    ropascis: RoPaSciInstance[] = [];
-    polls: PollStruct[] = [];
-    meetups: SocialNode[] = [];
-
-    // Non-stored fields
-    recoverySignatures: RecoverySignature[] = [];
 
     // createFirstUser sets up a new user with all the necessary darcs. It does the following:
     // - creates all necessary darcs (four)
     // - creates credential and coin
     // If darcID is given, it will use this darc to create all the instances. If darcID == null,
     // then the gData needs to have enough coins to pay for all the instances when using
+
     // the 'SpawnerInstance'.
     static async createFirstUser(bc: ByzCoinRPC, adminDarc: InstanceID, adminKey: Scalar, alias: string): Promise<Data> {
         const d = new Data({alias, bc});
@@ -156,9 +157,9 @@ export class Data {
         const signers = [adminSigner];
         const ctx = new ClientTransaction({
             instructions:
-                [darcDevice, darcSign, darcCred, darcCoin].map(d => {
+                [darcDevice, darcSign, darcCred, darcCoin].map(dar => {
                         return Instruction.createSpawn(adminDarc, DarcInstance.contractID, [
-                            new Argument({name: 'darc', value: d.toBytes()})
+                            new Argument({name: 'darc', value: dar.toBytes()})
                         ]);
                     }
                 )
@@ -183,10 +184,12 @@ export class Data {
         await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers, [d.keyIdentitySigner]]);
         await bc.sendTransactionAndWait(ctx, 5);
 
+        Log.lvl2('Linking new data to Data-structure');
         d.contact = new Contact(cred);
         d.bc = bc;
         await d.contact.connectBC(bc);
         await d.connectByzcoin();
+        Log.lvl2('done');
         return d;
     }
 
@@ -235,10 +238,10 @@ export class Data {
                 Log.lvl1('Loading data from TestStoreRPC');
                 const ts = await TestStoreRPC.load(Defaults.Roster);
                 Defaults.ByzCoinID = ts.byzcoinID;
-                Log.lvl1('Updated Defaults bcID/spawnerIID:', ts.byzcoinID, ts.spawnerIID);
+                Log.lvl1('Updated Defaults bcID:', ts.byzcoinID);
                 bcID = obj.bcID ? Buffer.from(obj.bcID) : Defaults.ByzCoinID;
                 const roster = obj.roster ? Roster.fromObject(obj.roster) : Defaults.Roster;
-                if (bcID == null || bcID.length == 0) {
+                if (bcID == null || bcID.length === 0) {
                     if (Defaults.Testing) {
                         return;
                     } else {
@@ -255,7 +258,7 @@ export class Data {
             if (obj.badges) {
                 this.badges = obj.badges.map(b => Badge.fromObject(this.bc, b));
                 this.badges = this.badges.filter((badge, i) =>
-                    this.badges.findIndex(b => b.party.uniqueName == badge.party.uniqueName) == i);
+                    this.badges.findIndex(b => b.party.uniqueName === badge.party.uniqueName) === i);
             }
 
             Log.lvl2('Getting rock-paper-scissors and polls');
@@ -277,9 +280,9 @@ export class Data {
             Log.lvl2('Getting contact informations');
             this.contacts = [];
             if (obj.contacts) {
-                const f = obj.contacts.filter(u => u);
-                for (let i = 0; i < f.length; i++) {
-                    this.contacts.push(await Contact.fromObjectBC(this.bc, f[i]));
+                const fs = obj.contacts.filter(u => u);
+                for (const f of fs) {
+                    this.contacts.push(await Contact.fromObjectBC(this.bc, f));
                 }
             }
         } catch (e) {
@@ -377,7 +380,8 @@ export class Data {
         Log.lvl2('Dummyprogress:', text, width);
     }
 
-    async registerContact(contact: Contact, balance: Long = Long.fromNumber(0), progress: Function = this.dummyProgress): Promise<any> {
+    async registerContact(contact: Contact, balance: Long = Long.fromNumber(0),
+                          progress: (text: string, width: number) => void = this.dummyProgress): Promise<any> {
         try {
             progress('Verifying Registration', 10);
             if (contact.isRegistered()) {
@@ -450,7 +454,7 @@ export class Data {
     // setTrustees stores the given contacts in the credential, so that a threshold of these contacts
     // can recover the darc. Only one set of contacts for recovery can be stored.
     setTrustees(threshold: number, cs: Contact[]): Promise<any> {
-        if (cs.filter(c => c.isRegistered()).length != cs.length) {
+        if (cs.filter(c => c.isRegistered()).length !== cs.length) {
             return Promise.reject('not all contacts are registered');
         }
         const recoverBuf = Buffer.alloc(32 * cs.length);
@@ -464,11 +468,11 @@ export class Data {
     // It also updates all contacts by getting proofs from byzcoin.
     async searchRecovery(): Promise<Contact[]> {
         const recoveries: Contact[] = [];
-        for (let i = 0; i < this.contacts.length; i++) {
-            await this.contacts[i].update(this.bc);
-            if (this.contacts[i].recover.trustees.filter(t =>
+        for (const contact of this.contacts) {
+            await contact.update(this.bc);
+            if (contact.recover.trustees.filter(t =>
                 t.equals(this.contact.credentialIID)).length > 0) {
-                recoveries.push(this.contacts[i]);
+                recoveries.push(contact);
             }
         }
         return recoveries;
@@ -483,14 +487,14 @@ export class Data {
     // trustee is OK with recovering a given account.
     async recoverySignature(request: string, user: Contact): Promise<string> {
         const requestObj = parseQRCode(request, 1);
-        if (requestObj.url != Data.urlRecoveryRequest) {
+        if (requestObj.url !== Data.urlRecoveryRequest) {
             return Promise.reject('not a recovery request');
         }
         if (!requestObj.public) {
             return Promise.reject('recovery request is missing public argument');
         }
         const publicKey = Buffer.from(requestObj.public, 'hex');
-        if (publicKey.length != RecoverySignature.pub) {
+        if (publicKey.length !== RecoverySignature.pub) {
             return Promise.reject('got wrong public key length');
         }
 
@@ -521,7 +525,7 @@ export class Data {
      */
     async recoveryStore(signature: string): Promise<string> {
         const sigObj = parseQRCode(signature, 2);
-        if (sigObj.url != Data.urlRecoverySignature) {
+        if (sigObj.url !== Data.urlRecoverySignature) {
             return Promise.reject('not a recovery signature');
         }
         if (!sigObj.credentialIID || !sigObj.pubSig) {
@@ -529,7 +533,7 @@ export class Data {
         }
         const credIID = Buffer.from(sigObj.credentialIID, 'hex');
         const pubSig = Buffer.from(sigObj.pubSig, 'hex');
-        if (pubSig.length != RecoverySignature.pubSig) {
+        if (pubSig.length !== RecoverySignature.pubSig) {
             return Promise.reject('signature should be of length 64');
         }
 
@@ -543,7 +547,7 @@ export class Data {
 
     // recoveryUser returns the user that is currently being recovered.
     async recoveryUser(): Promise<Contact> {
-        if (this.recoverySignatures.length == 0) {
+        if (this.recoverySignatures.length === 0) {
             return Promise.reject('don\'t have any recovery signatures stored yet.');
         }
         return Contact.fromByzcoin(this.bc, this.recoverySignatures[0].credentialIID);
@@ -597,7 +601,7 @@ export class Data {
         // Move all finalized parties into badges
         const parties: Party[] = [];
         this.parties.forEach(p => {
-            if (p.state == Party.Finalized) {
+            if (p.state === Party.Finalized) {
                 if (p.partyInstance.popPartyStruct.attendees.keys.find(k =>
                     k.equals(this.keyPersonhood._public.point.marshalBinary()))) {
                     this.badges.push(new Badge(p, this.keyPersonhood));
@@ -706,13 +710,18 @@ export class Data {
 
         const signers = [this.keyIdentitySigner];
         Log.lvl1('Creating identity from spawner');
+        Log.lvl2('spawning darcs');
         await this.spawnerInstance.spawnDarc(this.coinInstance, signers,
             darcDevice, darcSign, darcCred, darcCoin);
+        Log.lvl2('spawning coin');
         await this.spawnerInstance.spawnCoin(this.coinInstance, signers, darcCoin.getBaseID(), d.keyIdentity._public.toBuffer());
-        await this.spawnerInstance.spawnCredential(this.coinInstance, signers, darcCred.getBaseID(), d.keyIdentity._public.toBuffer(), cred);
+        Log.lvl2('spawning credential');
+        await this.spawnerInstance.spawnCredential(this.coinInstance, signers, darcCred.getBaseID(),
+            d.keyIdentity._public.toBuffer(), cred);
 
         d.contact = new Contact(cred);
         d.bc = this.bc;
+        Log.lvl2('finalizing data');
         await d.connectByzcoin();
         return d;
     }
@@ -720,7 +729,14 @@ export class Data {
     async attachAndEvolve(ephemeral: Private): Promise<void> {
         const pub = Public.base().mul(ephemeral);
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
-        this.keyIdentity = new KeyPair(ephemeral.toHex());
+        // Follow the links from the credential darc-instance to the signer-darc to the device-darc
+        const signerDarcID = this.contact.darcInstance.getSignerDarcID();
+        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
+        const deviceDarcID = signerDarc.getSignerDarcID();
+        const deviceDarc = await DarcInstance.fromByzcoin(this.bc, deviceDarcID);
+        const newDeviceDarc = deviceDarc.darc.evolve();
+        newDeviceDarc.rules.setRule('_sign', new IdentityEd25519({point: pub.toProto()}));
+        await deviceDarc.evolveDarcAndWait(newDeviceDarc, [new SignerEd25519(pub.point, ephemeral.scalar)], 5);
     }
 }
 
@@ -746,11 +762,6 @@ export class TestData extends Data {
         td.admin = admin;
         td.darc = d;
         return td;
-    }
-}
-
-export class cbcUser {
-    constructor(public darcInst: DarcInstance, public coinInst: CoinInstance) {
     }
 }
 

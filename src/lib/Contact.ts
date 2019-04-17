@@ -1,7 +1,7 @@
 import CredentialsInstance, {CredentialStruct} from './cothority/byzcoin/contracts/credentials-instance';
 import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
 import {InstanceID} from './cothority/byzcoin/instance';
-import {Log} from './Log';
+import {Log} from './cothority/log';
 import {Public} from './KeyPair';
 import {Buffer} from 'buffer';
 import SpawnerInstance from './cothority/byzcoin/contracts/spawner-instance';
@@ -54,7 +54,7 @@ export class Contact {
     }
 
     get darcSignIdentity(): IdentityDarc {
-        const signRule = this.darcInstance.darc.rules.list.find(r => r.action == '_sign');
+        const signRule = this.darcInstance.darc.rules.list.find(r => r.action === '_sign');
         if (signRule == null) {
             throw new Error('didn\'t find signer darc');
         }
@@ -259,7 +259,7 @@ export class Contact {
         return b.readUInt32LE(0);
     }
 
-    static sortAlias(cs: hasAlias[]): hasAlias[] {
+    static sortAlias(cs: HasAlias[]): HasAlias[] {
         return cs.sort((a, b) => a.alias.toLocaleLowerCase().localeCompare(b.alias.toLocaleLowerCase()));
     }
 
@@ -307,7 +307,7 @@ export class Contact {
     }
 
     isRegistered(): boolean {
-        return this.credentialIID != null && this.credentialIID.length == 32;
+        return this.credentialIID != null && this.credentialIID.length === 32;
     }
 
     getCoinAddress(): InstanceID {
@@ -315,7 +315,7 @@ export class Contact {
             Log.error('don\'t have the credentials');
             return;
         }
-        if (this.coinID != null && this.coinID.length == 32) {
+        if (this.coinID != null && this.coinID.length === 32) {
             return this.coinID;
         }
         return CoinInstance.coinIID(this.seedPublic.toBuffer());
@@ -345,7 +345,7 @@ export class Contact {
         if (this.credentialIID && u.credentialIID) {
             return this.credentialIID.equals(u.credentialIID);
         }
-        return this.alias == u.alias;
+        return this.alias === u.alias;
     }
 
     // this method sends the current state of the Credentials to ByzCoin.
@@ -383,7 +383,7 @@ export class Contact {
     }
 }
 
-interface hasAlias {
+interface HasAlias {
     alias: string;
 }
 
@@ -431,7 +431,7 @@ class Recover {
     }
 
     findTrustee(trustee: InstanceID | Contact): number {
-        if (this.trusteesBuf == null || this.trusteesBuf.length == 0) {
+        if (this.trusteesBuf == null || this.trusteesBuf.length === 0) {
             return -1;
         }
         const tBuf = this.getBuffer(trustee);

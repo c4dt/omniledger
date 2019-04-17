@@ -88,6 +88,23 @@ export default class Rules extends Message<Rules> {
     }
 
     /**
+     * Sets a rule to correspond to the given identity. If the rule already exists, it will be
+     * replaced.
+     * @param action    the name of the rule
+     * @param identity  the identity to append
+     */
+    setRule(action: string, identity: IIdentity): void {
+        const idx = this.list.findIndex((r) => r.action === action);
+
+        const r = new Rule({action, expr: Buffer.from(identity.toString())});
+        if (idx >= 0) {
+            this.list[idx] = r;
+        } else {
+            this.list.push(r);
+        }
+    }
+
+    /**
      * Get a deep copy of the list of rules
      * @returns the clone
      */

@@ -11,9 +11,9 @@ import Instance, {InstanceID} from '../instance';
 import CoinInstance, {Coin} from './coin-instance';
 import CredentialInstance, {CredentialStruct} from './credentials-instance';
 import DarcInstance from './darc-instance';
-import {PopPartyInstance} from '../../Personhood/pop-party-instance';
-import {PopDesc} from '../../Personhood/proto';
-import RoPaSciInstance, {RoPaSciStruct} from '../../Personhood/ro-pa-sci-instance';
+import {PopPartyInstance} from '../../personhood/pop-party-instance';
+import {PopDesc} from '../../personhood/proto';
+import RoPaSciInstance, {RoPaSciStruct} from '../../personhood/ro-pa-sci-instance';
 import {CalypsoWriteInstance, Write} from '../../calypso/calypso-instance';
 import {IIdentity} from '../../darc';
 import {CreateLTSReply} from '../../calypso/calypso-rpc';
@@ -22,6 +22,9 @@ export const SPAWNER_COIN = Buffer.alloc(32, 0);
 SPAWNER_COIN.write('SpawnerCoin');
 
 export default class SpawnerInstance extends Instance {
+
+    static readonly contractID = 'spawner';
+    private struct: SpawnerStruct;
 
     /**
      * Creates a new SpawnerInstance
@@ -48,9 +51,6 @@ export default class SpawnerInstance extends Instance {
             .add(this.struct.costDarc.value)
             .add(this.struct.costCredential.value);
     }
-    static readonly contractID = 'spawner';
-
-    private struct: SpawnerStruct;
 
     /**
      * Spawn a spawner instance
@@ -84,8 +84,8 @@ export default class SpawnerInstance extends Instance {
     /**
      * Initializes using an existing coinInstance from ByzCoin
      *
-     * @param bc
-     * @param iid
+     * @param bc an initialized byzcoin RPC instance
+     * @param iid the instance-ID of the spawn-instance
      */
     static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID): Promise<SpawnerInstance> {
         const proof = await bc.getProof(iid);
@@ -113,9 +113,9 @@ export default class SpawnerInstance extends Instance {
      *
      * @param coin      The coin instance to take coins from
      * @param signers   The signers for the transaction
-     * @param pubKey    public key of the user
-     * @param alias     Name of the user
-     * @returns a promise that resolves with the new darc instance
+     * @param darcs... All the darcs to spawn using the spawner. The coin instance must have enough
+     * coins to pay for all darcs.
+     * @returns a promise that resolves with the new array of the instantiated darc instances
      */
     async spawnDarc(coin: CoinInstance, signers: Signer[], ...darcs: Darc[]): Promise<DarcInstance[]> {
         // const d = SpawnerInstance.prepareUserDarc(pubKey, alias);
@@ -143,8 +143,15 @@ export default class SpawnerInstance extends Instance {
         await this.rpc.sendTransactionAndWait(ctx);
 
         const dis = [];
-        for (let i = 0; i < darcs.length; i++) {
-            dis.push(await DarcInstance.fromByzcoin(this.rpc, darcs[i].getBaseID()));
+        for (const da of darcs) {
+            for (let i = 0; i < 10; i++) {
+                try {
+                    dis.push(await DarcInstance.fromByzcoin(this.rpc, da.getBaseID()));
+                    break;
+                } catch (e) {
+                    Log.warn('couldn\'t get proof - perhaps still updating?');
+                }
+            }
         }
         return dis;
     }
@@ -221,6 +228,7 @@ export default class SpawnerInstance extends Instance {
         }
 
         Log.print('spawning credential at', credID, CredentialInstance.credentialIID(credID));
+        Log.print('coin-id is:', coin.id);
         const valueBuf = this.struct.costCredential.value.toBytesLE();
         const ctx = new ClientTransaction({
             instructions: [
@@ -362,7 +370,8 @@ export default class SpawnerInstance extends Instance {
         return rpsi;
     }
 
-    async spawnCalypsoWrite(coin: CoinInstance, signers: Signer[], lts: CreateLTSReply, key: Buffer, ident: IIdentity): Promise<CalypsoWriteInstance> {
+    async spawnCalypsoWrite(coin: CoinInstance, signers: Signer[], lts: CreateLTSReply, key: Buffer, ident: IIdentity):
+        Promise<CalypsoWriteInstance> {
 
         if (coin.value.lessThan(this.struct.costDarc.value.add(this.struct.costCWrite.value))) {
             throw new Error('account balance not high enough for spawning a darc + calypso writer');
@@ -396,6 +405,15 @@ export default class SpawnerInstance extends Instance {
  * Data of a spawner instance
  */
 export class SpawnerStruct extends Message<SpawnerStruct> {
+
+    readonly costDarc: Coin;
+    readonly costCoin: Coin;
+    readonly costCredential: Coin;
+    readonly costParty: Coin;
+    readonly costRoPaSci: Coin;
+    readonly costCWrite: Coin;
+    readonly costCRead: Coin;
+    readonly beneficiary: InstanceID;
 
     constructor(props?: Properties<SpawnerStruct>) {
         super(props);
@@ -465,14 +483,6 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
         });
     }
 
-    readonly costDarc: Coin;
-    readonly costCoin: Coin;
-    readonly costCredential: Coin;
-    readonly costParty: Coin;
-    readonly costRoPaSci: Coin;
-    readonly costCWrite: Coin;
-    readonly costCRead: Coin;
-    readonly beneficiary: InstanceID;
     /**
      * @see README#Message classes
      */
@@ -485,65 +495,65 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
  * Fields of the costs of a spawner instance
  */
 interface ICreateCost {
-    [k: string]: Long;
-
     costDarc: Long;
     costCoin: Long;
     costCredential: Long;
     costParty: Long;
+
+    [k: string]: Long;
 }
 
 /**
  * Parameters to create a spawner instance
  */
 interface ICreateSpawner {
-    [k: string]: any;
-
     bc: ByzCoinRPC;
     darcID: InstanceID;
     signers: Signer[];
     costs: ICreateCost;
     beneficiary: InstanceID;
+
+    [k: string]: any;
 }
 
 /**
  * Parameters to create a rock-paper-scisors game
  */
 interface ICreateRoPaSci {
-    [k: string]: any;
-
     desc: string;
     coin: CoinInstance;
     signers: Signer[];
     stake: Long;
     choice: number;
     fillup: Buffer;
+
+    [k: string]: any;
 }
 
 /**
  * Parameters to create a pop party
  */
 interface ICreatePopParty {
-    [k: string]: any;
-
     coin: CoinInstance;
     signers: Signer[];
     orgs: CredentialInstance[];
     desc: PopDesc;
     reward: Long;
+
+    [k: string]: any;
 }
 
 /**
  * Parameters to create a rock-paper-scisors game
  */
 interface ISpawnCalyspoWrite {
-    [k: string]: any;
-
     coin: CoinInstance;
     signers: Signer[];
     write: Write;
     darcID: InstanceID;
     choice: number;
+
+    [k: string]: any;
 }
 
 

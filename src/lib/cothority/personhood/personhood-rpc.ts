@@ -1,5 +1,5 @@
 import {InstanceID} from '../byzcoin/instance';
-import {Log} from '../../Log';
+import {Log} from '../log';
 import ByzCoinRPC from '../byzcoin/byzcoin-rpc';
 import {randomBytes} from 'crypto';
 import {Sign} from './ring-sig';
@@ -10,16 +10,15 @@ import * as Long from 'long';
 import {Contact} from '../../Contact';
 import DarcInstance from '../byzcoin/contracts/darc-instance';
 import {Roster, ServerIdentity} from '../network';
-import {objToProto, root} from '../protobuf';
 import {IConnection, RosterWSConnection, WebSocketConnection} from '../network/connection';
 
 const crypto = require('crypto');
 
 export class PersonhoodRPC {
 
-    constructor(public bc: ByzCoinRPC) {
-        this.socket = new RosterWSConnection(bc.getConfig().roster, PersonhoodRPC.serviceID);
-        this.list = this.bc.getConfig().roster.list;
+    constructor(public rpc: ByzCoinRPC) {
+        this.socket = new RosterWSConnection(rpc.getConfig().roster, PersonhoodRPC.serviceID);
+        this.list = this.rpc.getConfig().roster.list;
     }
     static serviceID = 'Personhood';
     private socket: IConnection;
@@ -30,7 +29,7 @@ export class PersonhoodRPC {
     async listParties(id: InstanceID = null): Promise<PersonhoodParty[]> {
         const party = {newparty: null};
         if (id) {
-            const p = new PersonhoodParty(this.bc.getConfig().roster, this.bc.genesisID, id);
+            const p = new PersonhoodParty(this.rpc.getConfig().roster, this.rpc.genesisID, id);
             party.newparty = p.toObject();
         }
         const parties: PersonhoodParty[] = [];
@@ -39,8 +38,8 @@ export class PersonhoodRPC {
             // let resp = await socket.send("PartyList", "PartyListResponse", party);
             // parties = parties.concat(resp.parties.map(r => PersonhoodParty.fromObject(r)));
         }));
-        return parties.filter((party, i) => {
-            return parties.findIndex(p => p.instanceID.equals(party.instanceID)) == i;
+        return parties.filter((py, i) => {
+            return parties.findIndex(p => p.instanceID.equals(py.instanceID)) === i;
         });
     }
 
@@ -70,7 +69,7 @@ export class PersonhoodRPC {
             // }
         }));
         return uls.filter(m => m != null).filter((userlocation, i) => {
-            return uls.findIndex(ul => ul.toProto().equals(userlocation.toProto())) == i;
+            return uls.findIndex(ul => ul.toProto().equals(userlocation.toProto())) === i;
         });
     }
 
@@ -87,7 +86,7 @@ export class PersonhoodRPC {
     async listRPS(id: InstanceID = null): Promise<RoPaSci[]> {
         const ropasci = {newropasci: null};
         if (id) {
-            ropasci.newropasci = new RoPaSci(this.bc.genesisID, id).toObject();
+            ropasci.newropasci = new RoPaSci(this.rpc.genesisID, id).toObject();
         }
         const ropascis: RoPaSci[] = [];
         await Promise.all(this.list.map(async addr => {
@@ -97,8 +96,8 @@ export class PersonhoodRPC {
             //     ropascis = ropascis.concat(resp.ropascis.map(r => RoPaSci.fromObject(r)));
             // }
         }));
-        return ropascis.filter((ropasci, i) => {
-            return ropascis.findIndex(p => p.instanceID.equals(ropasci.instanceID)) == i;
+        return ropascis.filter((rps, i) => {
+            return ropascis.findIndex(p => p.instanceID.equals(rps.instanceID)) === i;
         });
     }
 
@@ -112,18 +111,18 @@ export class PersonhoodRPC {
 
     async pollNew(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
         const np = new PollStruct(personhood, null, title, description, choices);
-        const ps = await this.callPoll(new Poll(this.bc.genesisID, np, null, null));
+        const ps = await this.callPoll(new Poll(this.rpc.genesisID, np, null, null));
         return ps[0];
     }
 
     async pollList(partyIDs: InstanceID[]): Promise<PollStruct[]> {
-        return this.callPoll(new Poll(this.bc.genesisID, null, new PollList(partyIDs), null));
+        return this.callPoll(new Poll(this.rpc.genesisID, null, new PollList(partyIDs), null));
     }
 
     async pollAnswer(priv: Private, personhood: Party, pollId: Buffer, choice: number): Promise<PollStruct> {
         const context = Buffer.alloc(68);
         context.write('Poll');
-        personhood.partyInstance.bc.genesisID.copy(context, 4);
+        this.rpc.genesisID.copy(context, 4);
         pollId.copy(context, 36);
         const msg = Buffer.alloc(7);
         msg.write('Choice');
@@ -134,12 +133,12 @@ export class PersonhoodRPC {
             new Public(p));
         const lrs = await Sign(msg, points, contextHash.digest(), priv);
         const pa = new PollAnswer(pollId, choice, lrs.encode());
-        const ps = await this.callPoll(new Poll(this.bc.genesisID, null, null, pa));
+        const ps = await this.callPoll(new Poll(this.rpc.genesisID, null, null, pa));
         return ps[0];
     }
 
     async pollWipe() {
-        return this.callPoll(new Poll(this.bc.genesisID, null, null, null));
+        return this.callPoll(new Poll(this.rpc.genesisID, null, null, null));
     }
 
     async callPoll(p: Poll): Promise<PollStruct[]> {
@@ -269,7 +268,7 @@ export class PollStruct {
 
     choiceCount(c: number): number {
         return this.chosen.reduce((prev: number, curr) => {
-            return curr.choice == c ? prev + 1 : prev;
+            return curr.choice === c ? prev + 1 : prev;
         }, 0);
     }
 }
@@ -356,6 +355,7 @@ export class Meetup {
 
 // UserLocation is one user in one location, either a registered one, or an unregistered one.
 export class UserLocation {
+    static readonly protoName = 'UserLocation';
 
     constructor(public credential: CredentialStruct, public location: string,
                 public publicKey: Public = null,
@@ -372,12 +372,11 @@ export class UserLocation {
         }
         return Buffer.from(this.alias);
     }
-    static readonly protoName = 'UserLocation';
 
     static fromObject(o: any): UserLocation {
         let crediid: InstanceID = null;
         let pubkey: Public = null;
-        if (o.credentialiid && o.credentialiid.length == 32) {
+        if (o.credentialiid && o.credentialiid.length === 32) {
             crediid = Buffer.from(o.credentialiid);
         }
         if (o.publickey) {
@@ -388,7 +387,8 @@ export class UserLocation {
     }
 
     static fromProto(p: Buffer): UserLocation {
-        return UserLocation.fromObject(root.lookup(UserLocation.protoName).decode(p));
+        throw new Error('not yet implemented');
+        // return UserLocation.fromObject(root.lookup(UserLocation.protoName).decode(p));
     }
 
     static fromContact(c: Contact): UserLocation {
@@ -413,7 +413,8 @@ export class UserLocation {
     }
 
     toProto(): Buffer {
-        return objToProto(this.toObject(), UserLocation.protoName);
+        throw new Error('not yet implemented');
+        // return objToProto(this.toObject(), UserLocation.protoName);
     }
 
     equals(ul: UserLocation): boolean {

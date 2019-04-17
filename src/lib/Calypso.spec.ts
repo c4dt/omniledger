@@ -1,7 +1,7 @@
 // import Keccak from 'keccak/lib/keccak';
 // import Shake from 'keccak/lib/shake';
 import Keccak from 'keccak';
-import {Log} from './Log';
+import {Log} from './cothority/log';
 import {curve} from '@dedis/kyber';
 import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from './cothority/calypso/calypso-instance';
 import {TestData} from './Data';
@@ -94,9 +94,9 @@ describe('In a full byzcoin setting, it should', () => {
         tdAdmin = await TestData.init(Defaults.Roster, 'admin');
         const roster = tdAdmin.bc.getConfig().roster;
         ocs = new OnChainSecretRPC(tdAdmin.bc);
-        for (let i = 0; i < roster.list.length; i++) {
-            Log.lvl2('Authorizing lts-creation by byzcoin on node', roster.list[i].address);
-            await ocs.authorise(roster.list[i], tdAdmin.bc.genesisID);
+        for (const node of roster.list) {
+            Log.lvl2('Authorizing lts-creation by byzcoin on node', node.address);
+            await ocs.authorise(node, tdAdmin.bc.genesisID);
         }
     });
 
