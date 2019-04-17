@@ -1,6 +1,6 @@
 import * as Long from 'long';
 import {Reader} from 'protobufjs/light';
-import {Log} from '../Log';
+import {Log} from '../log';
 
 const protobuf = require('protobufjs/light');
 

@@ -53,11 +53,6 @@ export class LogC {
             const stack = err.stack.split('\n');
             let method = [];
             method = stack[i].trim().replace(/^at */, '').split('(');
-            // method = stack[i - 1].trim().split('@');
-            // if (method.length === 1) {
-            //   method.push(method[0]);
-            //   method[0] = '?';
-            // }
             let module = 'unknown';
             let file = method[0].replace(/^.*\//g, '');
             if (method.length > 1) {

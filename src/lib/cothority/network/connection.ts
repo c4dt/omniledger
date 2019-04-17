@@ -1,6 +1,6 @@
 import {Message, util} from 'protobufjs/light';
 import shuffle from 'shuffle-array';
-import {Log} from '../Log';
+import {Log} from '../log';
 import {Roster} from './proto';
 import {BrowserWebSocketAdapter, WebSocketAdapter} from './websocket-adapter';
 

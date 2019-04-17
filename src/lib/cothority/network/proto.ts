@@ -15,61 +15,9 @@ const PORT_MAX = 65535;
  * List of server identities
  */
 export class Roster extends Message<Roster> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('Roster', Roster, ServerIdentity);
-    }
-
-    static fromBytes(b: Buffer): Roster {
-        return Roster.decode(b);
-    }
-
-    /**
-     * Parse cothority roster toml string into a Roster object.
-     * @example
-     * // Toml needs to adhere to the following format
-     * // where public has to be a hex-encoded string.
-     *
-     *    [[servers]]
-     *        Address = "tcp://127.0.0.1:7001"
-     *        Public = "4e3008c1a2b6e022fb60b76b834f174911653e9c9b4156cc8845bfb334075655"
-     *        Description = "conode1"
-     *    [[servers]]
-     *        Address = "tcp://127.0.0.1:7003"
-     *        Public = "e5e23e58539a09d3211d8fa0fb3475d48655e0c06d83e93c8e6e7d16aa87c106"
-     *        Description = "conode2"
-     *
-     * @param toml of the above format
-     * @returns the parsed roster
-     */
-    static fromTOML(data: string): Roster {
-        const roster = toml.parse(data);
-        const list = roster.servers.map((server: any) => {
-            const {Public, Suite, Address, Description, Services} = server;
-            const p = PointFactory.fromToml(Suite, Public);
-
-            return new ServerIdentity({
-                address: Address,
-                description: Description,
-                public: p.toProto(),
-                serviceIdentities: Object.keys(Services || {}).map((key) => {
-                    const {Public: pub, Suite: suite} = Services[key];
-                    const point = PointFactory.fromToml(suite, pub);
-
-                    return new ServiceIdentity({name: key, public: point.toProto(), suite});
-                }),
-            });
-        });
-
-        return new Roster({list});
-    }
-
     readonly id: Buffer;
     readonly list: ServerIdentity[];
     readonly aggregate: Buffer;
-
     private _agg: Point;
 
     constructor(properties?: Properties<Roster>) {
@@ -112,6 +60,58 @@ export class Roster extends Message<Roster> {
     }
 
     /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('Roster', Roster, ServerIdentity);
+    }
+
+    static fromBytes(b: Buffer): Roster {
+        return Roster.decode(b);
+    }
+
+    /**
+     * Parse cothority roster toml string into a Roster object.
+     * @example
+     * // Toml needs to adhere to the following format
+     * // where public has to be a hex-encoded string.
+     *
+     *    [[servers]]
+     *        Address = "tcp://127.0.0.1:7001"
+     *        Public = "4e3008c1a2b6e022fb60b76b834f174911653e9c9b4156cc8845bfb334075655"
+     *        Description = "conode1"
+     *    [[servers]]
+     *        Address = "tcp://127.0.0.1:7003"
+     *        Public = "e5e23e58539a09d3211d8fa0fb3475d48655e0c06d83e93c8e6e7d16aa87c106"
+     *        Description = "conode2"
+     *
+     * @param data toml with the above format
+     * @returns the parsed roster
+     */
+    static fromTOML(data: string): Roster {
+        const roster = toml.parse(data);
+        const list = roster.servers.map((server: any) => {
+            const {Public, Suite, Address, Description, Services, Url} = server;
+            const p = PointFactory.fromToml(Suite, Public);
+
+            return new ServerIdentity({
+                address: Address,
+                description: Description,
+                public: p.toProto(),
+                serviceIdentities: Object.keys(Services || {}).map((key) => {
+                    const {Public: pub, Suite: suite} = Services[key];
+                    const point = PointFactory.fromToml(suite, pub);
+
+                    return new ServiceIdentity({name: key, public: point.toProto(), suite});
+                }),
+                url: Url,
+            });
+        });
+
+        return new Roster({list});
+    }
+
+    /**
      * Get the public keys for a given service
      *
      * @param name The name of the service
@@ -149,6 +149,63 @@ export class Roster extends Message<Roster> {
  * Identity of a conode
  */
 export class ServerIdentity extends Message<ServerIdentity> {
+    readonly public: Buffer;
+    readonly id: Buffer;
+    readonly address: string;
+    readonly description: string;
+    readonly serviceIdentities: ServiceIdentity[];
+    readonly url: string;
+    private _point: Point;
+
+    constructor(properties?: Properties<ServerIdentity>) {
+        super(properties);
+
+        if (!properties) {
+            return;
+        }
+
+        if (!properties.id) {
+            const hex = this.getPublic().toString();
+            this.id = Buffer.from(new UUID(5, 'ns:URL', `https://dedis.epfl.ch/id/${hex}`).export());
+        }
+    }
+
+    /**
+     * Converts a HTTP-S URL to a Wesocket URL. It convert 'http' to 'ws' and 'https' to 'wss'.
+     * Any other protocols are forbidden and will raise an error. It also remove any trailing '/'.
+     * Here are some examples:
+     *      http://example.com:77        => ws://example.com:77
+     *      https://example.com/path/    => wss:example.com/path
+     *      https://example.com:443/     => wss:example.com
+     *      tcp://127.0.0.1              => Error
+     * Note: It will NOT include the given port in the case its the default one (for example 80 or 443).
+     * Note: In the case there is many slashes at the end of the url, it will only remove one.
+     * @param url   the given url field
+     * @returns a websocket url
+     */
+    static urlToWebsocket(url: string): string {
+        const urlParser = new URL(url);
+        switch (urlParser.protocol) {
+            case 'http:': {
+                urlParser.protocol = 'ws:';
+                break;
+            }
+            case 'https:': {
+                urlParser.protocol = 'wss:';
+                break;
+            }
+            default : {
+                throw new Error('The url field should use either \'http:\' or \'https:\', but we found '
+                    + urlParser.protocol);
+            }
+        }
+        let result = urlParser.toString();
+        if (result.slice(-1) === '/') {
+            result = result.slice(0, -1);
+        }
+        return result;
+    }
+
     /**
      * @see README#Message classes
      */
@@ -189,28 +246,6 @@ export class ServerIdentity extends Message<ServerIdentity> {
         return BASE_URL_WS + ip + URL_PORT_SPLITTER + port + path;
     }
 
-    readonly public: Buffer;
-    readonly id: Buffer;
-    readonly address: string;
-    readonly description: string;
-    readonly serviceIdentities: ServiceIdentity[];
-    readonly url: string;
-
-    private _point: Point;
-
-    constructor(properties?: Properties<ServerIdentity>) {
-        super(properties);
-
-        if (!properties) {
-            return;
-        }
-
-        if (!properties.id) {
-            const hex = this.getPublic().toString();
-            this.id = Buffer.from(new UUID(5, 'ns:URL', `https://dedis.epfl.ch/id/${hex}`).export());
-        }
-    }
-
     /**
      * Get the public key of the server as a Point
      * @returns the point
@@ -225,11 +260,16 @@ export class ServerIdentity extends Message<ServerIdentity> {
     }
 
     /**
-     * Convert the address of the server to match the websocket format
+     * Returns websocket version of this.url if set, otherwise converts the server
+     * address to match the websocket format.
      * @returns the websocket address
      */
     getWebSocketAddress(): string {
-        return ServerIdentity.addressToWebsocket(this.address);
+        if (this.url) {
+            return ServerIdentity.urlToWebsocket(this.url);
+        } else {
+            return ServerIdentity.addressToWebsocket(this.address);
+        }
     }
 }
 
@@ -238,23 +278,22 @@ export class ServerIdentity extends Message<ServerIdentity> {
  * key pair and don't the default one.
  */
 export class ServiceIdentity extends Message<ServiceIdentity> {
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('ServiceIdentity', ServiceIdentity);
-    }
-
     readonly name: string;
     readonly suite: string;
     readonly public: Buffer;
-
     private _point: Point;
 
     constructor(properties: Properties<ServiceIdentity>) {
         super(properties);
 
         this.public = Buffer.from(this.public || EMPTY_BUFFER);
+    }
+
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage('ServiceIdentity', ServiceIdentity);
     }
 
     /**

@@ -3,7 +3,6 @@ import Signer from '../../darc/signer';
 import ByzCoinRPC from '../byzcoin-rpc';
 import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import Instance, {InstanceID} from '../instance';
-import Proof from '../proof';
 
 export default class DarcInstance extends Instance {
     static readonly contractID = 'darc';

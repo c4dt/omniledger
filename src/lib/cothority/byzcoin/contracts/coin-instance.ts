@@ -7,7 +7,7 @@ import ClientTransaction, {Argument, Instruction} from '../client-transaction';
 import Instance, {InstanceID} from '../instance';
 import {createHash} from 'crypto';
 
-export default class CoinInstance extends Instance{
+export default class CoinInstance extends Instance {
     static readonly contractID = 'coin';
     static readonly commandMint = 'mint';
 

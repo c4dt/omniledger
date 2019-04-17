@@ -3,7 +3,7 @@ import * as Long from 'long';
 import {Message, Properties} from 'protobufjs/light';
 import Darc from '../../darc/darc';
 import Signer from '../../darc/signer';
-import {Log} from '../../Log';
+import {Log} from '../../log';
 import {registerMessage} from '../../protobuf';
 import ByzCoinRPC from '../byzcoin-rpc';
 import ClientTransaction, {Argument, Instruction} from '../client-transaction';
