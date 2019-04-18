@@ -211,6 +211,9 @@ export class Data {
             } else {
                 this.contact = new Contact(Contact.prepareInitialCred('new identity', this.keyIdentity._public, null));
             }
+            if (obj.contacts) {
+                this.contacts = obj.contacts.map(c => Contact.fromObject(c));
+            }
         } catch (e) {
             Log.catch(e);
         }
@@ -225,6 +228,7 @@ export class Data {
         this.badges = [];
         this.ropascis = [];
         this.polls = [];
+        this.contacts = [];
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
@@ -300,6 +304,7 @@ export class Data {
             friends: this.contacts.map(u => u.toObject()),
             meetups: this.meetups.map(m => m.toObject()),
             contact: this.contact.toObject(),
+            contacts: this.contacts.map(c => c.toObject()),
             bcRoster: null,
             bcID: null,
             darcInstance: null,

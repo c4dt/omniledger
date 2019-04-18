@@ -1,11 +1,14 @@
-import { Message, Properties } from 'protobufjs/light';
-import { EMPTY_BUFFER, registerMessage } from '../protobuf';
-import { IIdentity } from './identity-wrapper';
+import {Message, Properties} from 'protobufjs/light';
+import {EMPTY_BUFFER, registerMessage} from '../protobuf';
+import {IIdentity} from './identity-wrapper';
 
 /**
  * A rule will give who is allowed to use a given action
  */
 export class Rule extends Message<Rule> {
+
+    readonly action: string;
+    readonly expr: Buffer;
 
     constructor(props?: Properties<Rule>) {
         super(props);
@@ -13,8 +16,6 @@ export class Rule extends Message<Rule> {
         this.expr = Buffer.from(this.expr || EMPTY_BUFFER);
     }
 
-    readonly action: string;
-    readonly expr: Buffer;
     /**
      * @see README#Message classes
      */
@@ -48,6 +49,10 @@ export class Rule extends Message<Rule> {
  */
 export default class Rules extends Message<Rules> {
 
+    static OR = '|';
+    static AND = '&';
+    readonly list: Rule[];
+
     constructor(properties?: Properties<Rules>) {
         super(properties);
 
@@ -55,10 +60,6 @@ export default class Rules extends Message<Rules> {
             this.list = [];
         }
     }
-    static OR = '|';
-    static AND = '&';
-
-    readonly list: Rule[];
 
     /**
      * @see README#Message classes
@@ -102,6 +103,15 @@ export default class Rules extends Message<Rules> {
         } else {
             this.list.push(r);
         }
+    }
+
+    /**
+     * getRule returns the rule with the given action
+     *
+     * @param action to search in the rules for.
+     */
+    getRule(action: string): Rule {
+        return this.list.find(r => r.action === action);
     }
 
     /**

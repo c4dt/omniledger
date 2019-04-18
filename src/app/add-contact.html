@@ -1,0 +1,10 @@
+<p>Add a contact by entering the userID of the other user:</p>
+<p>
+    <mat-form-field style="width:100%;">
+        <input style="width:100%;" matInput [(ngModel)]="userID" placeholder="Enter userID of your contact">
+    </mat-form-field>
+</p>
+<p>
+    <button mat-raised-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color='primary' [mat-dialog-close]="userID" cdkFocusInitial>Ok</button>
+</p>

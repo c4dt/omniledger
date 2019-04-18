@@ -10,6 +10,9 @@ import {createHash, randomBytes} from 'crypto';
 
 export default class CredentialsInstance extends Instance {
 
+    static readonly contractID = 'credential';
+    public credential: CredentialStruct;
+
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
         if (inst.contractID.toString() !== CredentialsInstance.contractID) {
@@ -17,9 +20,6 @@ export default class CredentialsInstance extends Instance {
         }
         this.credential = CredentialStruct.decode(inst.data);
     }
-    static readonly contractID = 'credential';
-
-    public credential: CredentialStruct;
 
     /**
      * Generate the credential instance ID for a given darc ID
@@ -189,13 +189,14 @@ export default class CredentialsInstance extends Instance {
  */
 export class CredentialStruct extends Message<CredentialStruct> {
 
+    readonly credentials: Credential[];
+
     constructor(properties?: Properties<CredentialStruct>) {
         super(properties);
 
         this.credentials = this.credentials.slice() || [];
     }
 
-    readonly credentials: Credential[];
     /**
      * @see README#Message classes
      */
@@ -220,6 +221,15 @@ export class CredentialStruct extends Message<CredentialStruct> {
             return null;
         }
         return att.value;
+    }
+
+    /**
+     * getCredential returns the credential with the given name, or null if
+     * nothing found.
+     * @param credential name of the credential to return
+     */
+    getCredential(credential: string): Credential {
+        return this.credentials.find((c) => c.name === credential);
     }
 
     /**
@@ -270,14 +280,15 @@ export class CredentialStruct extends Message<CredentialStruct> {
  */
 export class Credential extends Message<Credential> {
 
+    readonly name: string;
+    readonly attributes: Attribute[];
+
     constructor(props?: Properties<Credential>) {
         super(props);
 
         this.attributes = this.attributes.slice() || [];
     }
 
-    readonly name: string;
-    readonly attributes: Attribute[];
     /**
      * @see README#Message classes
      */
@@ -295,14 +306,15 @@ export class Credential extends Message<Credential> {
  */
 export class Attribute extends Message<Attribute> {
 
+    readonly name: string;
+    readonly value: Buffer;
+
     constructor(props?: Properties<Attribute>) {
         super(props);
 
         this.value = Buffer.from(this.value || EMPTY_BUFFER);
     }
 
-    readonly name: string;
-    readonly value: Buffer;
     /**
      * @see README#Message classes
      */

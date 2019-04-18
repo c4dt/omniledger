@@ -1,3 +1,4 @@
+import * as Long from 'long';
 import {Component, Inject} from '@angular/core';
 import {Defaults} from '../lib/Defaults';
 import StatusRPC from '../lib/cothority/status/status-rpc';
@@ -7,6 +8,7 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar, MatTabChangeEvent
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Private} from '../lib/KeyPair';
 import SkipchainRPC from '../lib/cothority/skipchain/skipchain-rpc';
+import {Contact} from '../lib/Contact';
 
 @Component({
     selector: 'app-root',
@@ -105,14 +107,45 @@ export class AppComponent {
         sb.dismiss();
 
         if (newUser) {
-            const dialogRef = this.dialog.open(CreateUserComponent, {
+            this.dialog.open(CreateUserComponent, {
                 width: '250px',
-                data: {ephemeral: newUser.keyIdentity._private.toHex()},
+                data: newUser.keyIdentity._private.toHex(),
             });
         }
     }
 
     async addContact() {
+        const ac = this.dialog.open(AddContactComponent);
+        ac.afterClosed().subscribe(async result => {
+            if (result) {
+                Log.lvl1('Got new contact:', result);
+                const userID = Buffer.from(result, 'hex');
+                if (userID.length === 32) {
+                    const sb = this.snackBar.open('Adding contact');
+                    gData.addContact(await Contact.fromByzcoin(gData.bc, userID));
+                    sb.dismiss();
+                    await gData.save();
+                }
+            }
+        });
+    }
+
+    async transferCoin(c: Contact) {
+        const tc = this.dialog.open(TransferCoinComponent,
+            {
+                data: {alias: c.alias}
+            });
+        tc.afterClosed().subscribe(async result => {
+            if (result) {
+                Log.lvl1('Got coins:', result);
+                const coins = Long.fromString(result);
+                if (coins.greaterThan(0)) {
+                    const sb = this.snackBar.open('Transferring coins');
+                    await gData.coinInstance.transfer(coins, c.coinInstance.id, [gData.keyIdentitySigner]);
+                    sb.dismiss();
+                }
+            }
+        });
     }
 
     tabChanged(tabChangeEvent: MatTabChangeEvent) {
@@ -151,10 +184,6 @@ export class AppComponent {
     }
 }
 
-export interface DialogData {
-    ephemeral: string;
-}
-
 @Component({
     selector: 'app-create-user',
     templateUrl: 'create-user.html',
@@ -163,11 +192,50 @@ export class CreateUserComponent {
 
     constructor(
         public dialogRef: MatDialogRef<CreateUserComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+        @Inject(MAT_DIALOG_DATA) public data: string) {
     }
 
     dismiss(): void {
         this.dialogRef.close();
     }
 
+}
+
+@Component({
+    selector: 'app-add-contact',
+    templateUrl: 'add-contact.html',
+})
+export class AddContactComponent {
+
+    userID: string;
+
+    constructor(
+        public dialogRef: MatDialogRef<AddContactComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: string) {
+    }
+
+    cancel(): void {
+        this.dialogRef.close();
+    }
+}
+
+export interface CoinTransfer {
+    coins: string;
+    alias: string;
+}
+
+@Component({
+    selector: 'app-transfer-coin',
+    templateUrl: 'transfer-coin.html',
+})
+export class TransferCoinComponent {
+
+    constructor(
+        public dialogRef: MatDialogRef<TransferCoinComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: CoinTransfer) {
+    }
+
+    cancel(): void {
+        this.dialogRef.close();
+    }
 }

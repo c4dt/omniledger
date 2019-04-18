@@ -19,6 +19,7 @@ import IdentityEd25519 from './cothority/darc/identity-ed25519';
 import Rules from './cothority/darc/rules';
 import * as Long from 'long';
 import {IdentityDarc} from './cothority/darc';
+import {SecureData} from './SecureData';
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
@@ -37,6 +38,14 @@ import {IdentityDarc} from './cothority/darc';
  */
 export class Contact {
 
+    static readonly urlRegistered = 'https://pop.dedis.ch/qrcode/identity-2';
+    static readonly urlUnregistered = 'https://pop.dedis.ch/qrcode/unregistered-2';
+    credentialInstance: CredentialsInstance = null;
+    darcInstance: DarcInstance = null;
+    coinInstance: CoinInstance = null;
+    spawnerInstance: SpawnerInstance = null;
+    recover: Recover = null;
+
     constructor(public credential: CredentialStruct = null) {
         if (credential == null) {
             this.credential = new CredentialStruct();
@@ -45,12 +54,12 @@ export class Contact {
         this.recover = new Recover(this);
     }
 
-    set version(v: number) {
-        Contact.setVersion(this.credential, v);
-    }
-
     get version(): number {
         return Contact.getVersion(this.credential);
+    }
+
+    set version(v: number) {
+        Contact.setVersion(this.credential, v);
     }
 
     get darcSignIdentity(): IdentityDarc {
@@ -164,13 +173,6 @@ export class Contact {
             this.version = this.version + 1;
         }
     }
-    static readonly urlRegistered = 'https://pop.dedis.ch/qrcode/identity-2';
-    static readonly urlUnregistered = 'https://pop.dedis.ch/qrcode/unregistered-2';
-    credentialInstance: CredentialsInstance = null;
-    darcInstance: DarcInstance = null;
-    coinInstance: CoinInstance = null;
-    spawnerInstance: SpawnerInstance = null;
-    recover: Recover = null;
 
     /**
      * Helper to create a user darc
@@ -373,6 +375,16 @@ export class Contact {
         Log.print('getting spawner');
         this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID);
         Log.print('done for', this.alias);
+    }
+
+    /**
+     * getSecureData returns an array of SecureData of this credential that the
+     * reader is allowed to access.
+     *
+     * @param readerDarc the id of the signer-darc
+     */
+    async getSecureData(readerDarc: InstanceID): Promise<SecureData[]> {
+        return SecureData.fromContact(this, readerDarc);
     }
 
     toString(): string {

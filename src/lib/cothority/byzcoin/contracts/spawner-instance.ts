@@ -16,7 +16,9 @@ import {PopDesc} from '../../personhood/proto';
 import RoPaSciInstance, {RoPaSciStruct} from '../../personhood/ro-pa-sci-instance';
 import {CalypsoWriteInstance, Write} from '../../calypso/calypso-instance';
 import {IIdentity} from '../../darc';
-import {CreateLTSReply} from '../../calypso/calypso-rpc';
+import OnChainSecretRPC, {CreateLTSReply} from '../../calypso/calypso-rpc';
+import {secretbox} from 'tweetnacl-ts';
+import {SecureData} from '../../../SecureData';
 
 export const SPAWNER_COIN = Buffer.alloc(32, 0);
 SPAWNER_COIN.write('SpawnerCoin');

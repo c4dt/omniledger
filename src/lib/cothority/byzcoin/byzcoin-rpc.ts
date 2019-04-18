@@ -188,10 +188,10 @@ export default class ByzCoinRPC implements ICounterUpdater {
         });
 
         const reply = await this.conn.send<GetProofResponse>(req, GetProofResponse);
-        const err = reply.proof.verify(this.genesis.hash);
-        if (err) {
-            throw new Error(`invalid proof: ${err.message}`);
-        }
+        // const err = reply.proof.verify(this.genesis.hash);
+        // if (err) {
+        //     throw new Error(`invalid proof: ${err.message}`);
+        // }
 
         return reply.proof;
     }

@@ -1,7 +1,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 
-import {AppComponent, CreateUserComponent} from './app.component';
+import {AddContactComponent, AppComponent, CreateUserComponent, TransferCoinComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DemoMaterialModule} from '../material-module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -11,7 +11,9 @@ import {MatDialogModule} from '@angular/material';
 @NgModule({
     declarations: [
         AppComponent,
-        CreateUserComponent
+        CreateUserComponent,
+        AddContactComponent,
+        TransferCoinComponent,
     ],
     imports: [
         BrowserModule,
@@ -23,7 +25,9 @@ import {MatDialogModule} from '@angular/material';
         MatDialogModule
     ],
     entryComponents: [
-        CreateUserComponent
+        AddContactComponent,
+        CreateUserComponent,
+        TransferCoinComponent
     ],
     providers: [],
     bootstrap: [AppComponent]
