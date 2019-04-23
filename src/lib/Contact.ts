@@ -13,13 +13,16 @@ import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
 import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
 import Signer from './cothority/darc/signer';
 import {parseQRCode} from './Scan';
-import {Point} from '@dedis/kyber';
+import {Point, PointFactory} from '@dedis/kyber';
 import Darc from './cothority/darc/darc';
 import IdentityEd25519 from './cothority/darc/identity-ed25519';
 import Rules from './cothority/darc/rules';
 import * as Long from 'long';
 import {IdentityDarc} from './cothority/darc';
 import {SecureData} from './SecureData';
+import {OnChainSecretInstance} from './cothority/calypso/calypso-instance';
+import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
+import {Data} from './Data';
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
@@ -45,13 +48,17 @@ export class Contact {
     coinInstance: CoinInstance = null;
     spawnerInstance: SpawnerInstance = null;
     recover: Recover = null;
+    calypso: Calypso = null;
+    bc: ByzCoinRPC = null;
 
-    constructor(public credential: CredentialStruct = null) {
+    constructor(public credential: CredentialStruct = null,
+                public data: Data = null) {
         if (credential == null) {
             this.credential = new CredentialStruct();
             Contact.setVersion(this.credential, 0);
         }
         this.recover = new Recover(this);
+        this.calypso = new Calypso(this);
     }
 
     get version(): number {
@@ -163,13 +170,35 @@ export class Contact {
         }
     }
 
+    get ltsID(): InstanceID {
+        return this.credential.getAttribute('1-config', 'ltsID');
+    }
+
+    set ltsID(id: InstanceID) {
+        if (id) {
+            this.credential.setAttribute('1-config', 'ltsID', id);
+            this.version = this.version + 1;
+        }
+    }
+
+    get ltsX(): Point {
+        return PointFactory.fromProto(this.credential.getAttribute('1-config', 'ltsX'));
+    }
+
+    set ltsX(X: Point) {
+        if (X) {
+            this.credential.setAttribute('1-config', 'ltsX', X.toProto());
+            this.version = this.version + 1;
+        }
+    }
+
     get spawnerID(): InstanceID {
-        return this.credential.getAttribute('1-public', 'spawner');
+        return this.credential.getAttribute('1-config', 'spawner');
     }
 
     set spawnerID(id: InstanceID) {
         if (id) {
-            this.credential.setAttribute('1-public', 'spawner', id);
+            this.credential.setAttribute('1-config', 'spawner', id);
             this.version = this.version + 1;
         }
     }
@@ -193,13 +222,17 @@ export class Contact {
         return darc;
     }
 
-    static prepareInitialCred(alias: string, pub: Public, spawner: InstanceID): CredentialStruct {
+    static prepareInitialCred(alias: string, pub: Public, spawner: InstanceID, lts: LongTermSecret): CredentialStruct {
         const cred = new CredentialStruct();
         cred.setAttribute('1-public', 'alias', Buffer.from(alias));
         cred.setAttribute('1-public', 'coin', CoinInstance.coinIID(pub.toBuffer()));
         cred.setAttribute('1-public', 'version', Buffer.from(Long.fromNumber(0).toBytesLE()));
         cred.setAttribute('1-public', 'seedPub', pub.toBuffer());
-        cred.setAttribute('1-public', 'spawner', spawner);
+        cred.setAttribute('1-config', 'spawner', spawner);
+        if (lts) {
+            cred.setAttribute('1-config', 'ltsID', lts.id);
+            cred.setAttribute('1-config', 'ltsX', lts.X.toProto());
+        }
         return cred;
     }
 
@@ -207,6 +240,9 @@ export class Contact {
         const u = new Contact();
         if (obj.credential) {
             u.credential = CredentialStruct.decode(Buffer.from(obj.credential));
+        }
+        if (obj.calypso) {
+            u.calypso = Calypso.fromObject(u, obj.calypso);
         }
         return u;
     }
@@ -268,6 +304,7 @@ export class Contact {
     toObject(): object {
         return {
             credential: this.credential.toBytes(),
+            calypso: this.calypso.toObject(),
         };
     }
 
@@ -351,14 +388,17 @@ export class Contact {
     }
 
     // this method sends the current state of the Credentials to ByzCoin.
-    async sendUpdate(signer: Signer) {
+    async sendUpdate(signers: Signer[] = null) {
         if (this.credentialInstance != null) {
             if (this.coinInstance && !this.coinID) {
                 this.coinID = this.coinInstance.id;
                 this.version = this.version + 1;
             }
             if (this.version > Contact.getVersion(this.credentialInstance.credential)) {
-                await this.credentialInstance.sendUpdate(signer, this.credential);
+                if (!signers) {
+                    signers = [this.data.keyIdentitySigner];
+                }
+                await this.credentialInstance.sendUpdate(signers, this.credential);
             }
         }
     }
@@ -368,13 +408,14 @@ export class Contact {
             'with public key', this.seedPublic.toHex(), 'and id', this.credentialIID);
         this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
         this.credential = this.credentialInstance.credential.copy();
-        Log.print('getting darc');
+        Log.lvl2('getting darc');
         this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
-        Log.print('getting coin');
+        Log.lvl2('getting coin');
         this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID);
-        Log.print('getting spawner');
+        Log.lvl2('getting spawner');
         this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID);
-        Log.print('done for', this.alias);
+        Log.lvl2('done for', this.alias);
+        this.bc = bc;
     }
 
     /**
@@ -383,9 +424,9 @@ export class Contact {
      *
      * @param readerDarc the id of the signer-darc
      */
-    async getSecureData(readerDarc: InstanceID): Promise<SecureData[]> {
-        return SecureData.fromContact(this, readerDarc);
-    }
+    // async getSecureData(readerDarc: InstanceID): Promise<SecureData[]> {
+    // return SecureData.fromContact(this, readerDarc);
+    // }
 
     toString(): string {
         return sprintf('%s (%d): %s\n%s', this.alias, this.version,
@@ -491,5 +532,95 @@ class Recover {
 
     toString(): string {
         return sprintf('%d: %s', this.threshold, this.trustees.map(t => t.toString('hex')));
+    }
+}
+
+class Calypso {
+    public others: SecureData[];
+    public ours: Map<string, SecureData>;
+
+    constructor(public contact: Contact) {
+        const atts = this.contact.credential.getCredential('1-secret');
+        this.ours = new Map();
+        if (atts) {
+            atts.attributes.forEach(att => {
+                if (att.name === 'others') {
+                    const othersObjs: object[] = JSON.parse(att.value.toString());
+                    othersObjs.forEach(oo => this.others.push(SecureData.fromObject(oo)));
+                } else {
+                    this.ours.set(att.name, SecureData.fromBuffer(att.value));
+                }
+            });
+        }
+    }
+
+    /**
+     * fromObject converts a stored object of Calypso into a new calypso.
+     *
+     * @param c an initialised contact that this calypso instance will point to
+     * @param obj the object from Calypso#toObject.
+     */
+    static fromObject(c: Contact, obj: any): Calypso {
+        const cal = new Calypso(c);
+        if (obj.others) {
+            cal.others = obj.others.map(sd => SecureData.fromObject(sd));
+        }
+        if (obj.ours) {
+            cal.ours = new Map();
+            for (const id of Object.keys(obj.ours)) {
+                cal.ours.set(id, SecureData.fromObject(obj.ours[id]));
+            }
+        }
+        return cal;
+    }
+
+    /**
+     * toObject returns an object that is serializable and can be converted back to a
+     * Calypso object.
+     */
+    toObject(): object {
+        const obj = {};
+        this.ours.forEach((sd, id) => obj[id] = sd.toObject());
+        return obj;
+    }
+
+    /**
+     * addSecureData stores the given secureData in the 'others' field of this class. If the secureData
+     * already exists, it will be overwritten, else it will be appended to the list.
+     *
+     * @param sd a SecureData to add.
+     */
+    addSecureData(sd: SecureData) {
+        const i = this.others.findIndex(o => o.writeInstID.equals(sd.writeInstID));
+        if (i >= 0) {
+            this.others[i] = sd;
+        } else {
+            this.others.push(sd);
+        }
+    }
+
+    async add(data: Buffer, readers: InstanceID[]): Promise<string> {
+        const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.credentialInstance.darcID);
+        readers.push(ourSigner.darc.getBaseID());
+        const sd = await SecureData.spawnFromSpawner(this.contact.bc, this.contact.data.lts, data, readers,
+            this.contact.spawnerInstance,
+            this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
+        // Find a free number - this supposes that values are not deleted, and might give non-1-increasing
+        // numbers in case a non-"value-x" is added in between.
+        const atts = this.contact.credential.getCredential('1-secret');
+        const count = atts ? atts.attributes.length : 0;
+        const id = sprintf('value-%d', count);
+        this.contact.credential.setAttribute('1-secret', id, sd.toBuffer());
+        this.ours.set(id, sd);
+        return id;
+    }
+
+    async read(user: Contact): Promise<SecureData[]> {
+        const signer = await this.contact.darcSignIdentity;
+        const sds = await SecureData.fromContact(this.contact.bc, this.contact.data.lts, user,
+            signer.toWrapper().toString(), [this.contact.data.keyIdentitySigner],
+            this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
+        sds.forEach(sd => this.addSecureData(sd));
+        return sds;
     }
 }

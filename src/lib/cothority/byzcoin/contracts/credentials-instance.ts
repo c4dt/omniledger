@@ -146,7 +146,7 @@ export default class CredentialsInstance extends Instance {
         return this.credential.setAttribute(credential, attribute, value);
     }
 
-    async sendUpdate(owner: Signer, newCred: CredentialStruct = null): Promise<CredentialsInstance> {
+    async sendUpdate(owners: Signer[], newCred: CredentialStruct = null): Promise<CredentialsInstance> {
         if (newCred) {
             this.credential = newCred.copy();
         }
@@ -156,10 +156,8 @@ export default class CredentialsInstance extends Instance {
             'update',
             [new Argument({name: 'credential', value: this.credential.toBytes()})],
         );
-        await instr.updateCounters(this.rpc, [owner]);
-
         const ctx = new ClientTransaction({instructions: [instr]});
-        ctx.signWith([[owner]]);
+        await ctx.updateCountersAndSign(this.rpc, [owners]);
 
         await this.rpc.sendTransactionAndWait(ctx);
 

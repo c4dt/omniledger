@@ -8,7 +8,7 @@ import CoinInstance, { Coin } from '../byzcoin/contracts/coin-instance';
 import Instance, { InstanceID } from '../byzcoin/instance';
 import Signer from '../darc/signer';
 import { registerMessage } from '../protobuf';
-import OnChainSecretRPC from './calypso-rpc';
+import {OnChainSecretRPC} from './calypso-rpc';
 
 const curve25519 = curve.newCurve('edwards25519');
 

@@ -16,7 +16,7 @@ import {PopDesc} from '../../personhood/proto';
 import RoPaSciInstance, {RoPaSciStruct} from '../../personhood/ro-pa-sci-instance';
 import {CalypsoWriteInstance, Write} from '../../calypso/calypso-instance';
 import {IIdentity} from '../../darc';
-import OnChainSecretRPC, {CreateLTSReply} from '../../calypso/calypso-rpc';
+import {OnChainSecretRPC, CreateLTSReply, LongTermSecret} from '../../calypso/calypso-rpc';
 import {secretbox} from 'tweetnacl-ts';
 import {SecureData} from '../../../SecureData';
 
@@ -229,8 +229,6 @@ export default class SpawnerInstance extends Instance {
             // credential doesn't exist
         }
 
-        Log.print('spawning credential at', credID, CredentialInstance.credentialIID(credID));
-        Log.print('coin-id is:', coin.id);
         const valueBuf = this.struct.costCredential.value.toBytesLE();
         const ctx = new ClientTransaction({
             instructions: [
@@ -372,7 +370,8 @@ export default class SpawnerInstance extends Instance {
         return rpsi;
     }
 
-    async spawnCalypsoWrite(coin: CoinInstance, signers: Signer[], lts: CreateLTSReply, key: Buffer, ident: IIdentity):
+    async spawnCalypsoWrite(coin: CoinInstance, signers: Signer[], lts: LongTermSecret, key: Buffer, ident: IIdentity[],
+                            data?: Buffer):
         Promise<CalypsoWriteInstance> {
 
         if (coin.value.lessThan(this.struct.costDarc.value.add(this.struct.costCWrite.value))) {
@@ -380,10 +379,13 @@ export default class SpawnerInstance extends Instance {
         }
 
         const d = await this.spawnDarc(coin, signers,
-            Darc.newDarc([ident], [ident], Buffer.from('calypso write protection'), ['spawn:calypsoRead']));
+            Darc.newDarc([ident[0]], ident, Buffer.from('calypso write protection'), ['spawn:calypsoRead']));
 
-        const write = await Write.createWrite(lts.instanceid, d[0].id, lts.X, key);
+        const write = await Write.createWrite(lts.id, d[0].id, lts.X, key);
         write.cost = this.struct.costCRead;
+        if (data) {
+            write.data = data;
+        }
 
         const ctx = new ClientTransaction({
             instructions: [

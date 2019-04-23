@@ -17,10 +17,10 @@ describe('Testing new signup', () => {
 
         it('Creating new user from darc', async () => {
             const kp1 = new KeyPair();
-            const user1 = await tdAdmin.createUser(kp1._private, 'user1');
+            const user1 = await tdAdmin.createUser('user1', kp1._private);
             await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user1.coinInstance.id, [tdAdmin.keyIdentitySigner]);
             const kp2 = new KeyPair();
-            const user2 = await user1.createUser(kp2._private, 'user2');
+            const user2 = await user1.createUser('user2', kp2._private);
             await user1.coinInstance.transfer(Long.fromNumber(1e5), user2.coinInstance.id, [user1.keyIdentitySigner]);
             await user1.coinInstance.update();
             await user2.coinInstance.update();
@@ -29,19 +29,13 @@ describe('Testing new signup', () => {
             expect(user2.coinInstance.coin.value.toNumber()).toBe(1e5);
         });
 
-        it('Spawning a secret and recover it', async () => {
-            const user1 = await tdAdmin.createUser(null, 'user1');
-            const user2 = await tdAdmin.createUser(null, 'user2');
-            const secret = Buffer.from('calypsO for all');
-        });
-
         it('update the credential of the admin', async () => {
             tdAdmin.contact.email = 'admin@user.com';
-            await tdAdmin.contact.sendUpdate(tdAdmin.keyIdentitySigner);
+            await tdAdmin.contact.sendUpdate();
         });
 
         it('change the private key for a new user', async () => {
-            const user1 = await tdAdmin.createUser(null, 'user1');
+            const user1 = await tdAdmin.createUser('user1');
             Log.lvl1('creating empty data structure');
             const user1Copy = new Data();
             user1Copy.bc = user1.bc;

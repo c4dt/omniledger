@@ -50,14 +50,20 @@ export default class DarcInstance extends Instance {
         throw new Error('This darc doesn\'t have a sign expression');
     }
 
-    getSignerDarcID(): InstanceID {
-        const expr = this.getSignerExpression();
-        if (expr.length !== 69) {
-            Log.print(expr);
-            throw new Error('The signer expression doesn\'t point to a single darc');
+    getSignerDarcIDs(): InstanceID[] {
+        const expr = this.getSignerExpression().toString();
+        if (expr.match(/\(&/)) {
+            throw new Error('Don\'t know what to do with "(" or "&" in expression');
         }
-        Log.print(expr.subarray(5).toString());
-        return Buffer.from(expr.subarray(5).toString(), 'hex');
+        const ret: InstanceID[] = [];
+        expr.split('|').forEach(exp => {
+            if (exp.startsWith('darc:')) {
+                ret.push(Buffer.from(exp.slice(5), 'hex'));
+            } else {
+                Log.warn('Non-darc expression in signer:', exp);
+            }
+        });
+        return ret;
     }
 
     /**

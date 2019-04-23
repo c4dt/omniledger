@@ -6,7 +6,7 @@ import {curve} from '@dedis/kyber';
 import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from './cothority/calypso/calypso-instance';
 import {TestData} from './Data';
 import {Defaults} from './Defaults';
-import OnChainSecretRPC from './cothority/calypso/calypso-rpc';
+import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
 import {KeyPair} from './KeyPair';
 
 const Curve25519 = curve.newCurve('edwards25519');
@@ -92,17 +92,11 @@ describe('In a full byzcoin setting, it should', () => {
 
     beforeAll(async () => {
         tdAdmin = await TestData.init(Defaults.Roster, 'admin');
-        const roster = tdAdmin.bc.getConfig().roster;
-        ocs = new OnChainSecretRPC(tdAdmin.bc);
-        for (const node of roster.list) {
-            Log.lvl2('Authorizing lts-creation by byzcoin on node', node.address);
-            await ocs.authorise(node, tdAdmin.bc.genesisID);
-        }
     });
 
     it('be able to create an LTS', async () => {
         Log.lvl1('Creating new LTS');
-        const lts = await ocs.createLTS(tdAdmin.bc, tdAdmin.bc.getConfig().roster, tdAdmin.darc.getBaseID(),
+        const lts = await ocs.createLTS(tdAdmin.bc.getConfig().roster, tdAdmin.darc.getBaseID(),
             [tdAdmin.admin]);
         const key = Buffer.from('Very Secret Key');
 
@@ -120,13 +114,14 @@ describe('In a full byzcoin setting, it should', () => {
 
     it('create an LTS and a write using the spawner', async () => {
         Log.lvl1('Creating new LTS');
-        const lts = await ocs.createLTS(tdAdmin.bc, tdAdmin.bc.getConfig().roster, tdAdmin.darc.getBaseID(),
-            [tdAdmin.admin]);
+        // const lts = await ocs.createLTS(tdAdmin.bc.getConfig().roster, tdAdmin.darc.getBaseID(),
+        //     [tdAdmin.admin]);
         const key = Buffer.from('Very Secret Key');
 
         Log.lvl2('Creating Write instance');
-        const wrInst = await tdAdmin.spawnerInstance.spawnCalypsoWrite(tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner], lts, key,
-            tdAdmin.contact.darcSignIdentity);
+        const wrInst = await tdAdmin.spawnerInstance.spawnCalypsoWrite(tdAdmin.coinInstance,
+            [tdAdmin.keyIdentitySigner], tdAdmin.lts, key,
+            [tdAdmin.contact.darcSignIdentity]);
 
         Log.lvl2('Creating Read instance');
         const kp = new KeyPair();

@@ -64,7 +64,7 @@ export class AppComponent {
         gData.contact.alias = this.contactForm.controls.alias.value;
         gData.contact.email = this.contactForm.controls.email.value;
         gData.contact.phone = this.contactForm.controls.phone.value;
-        await gData.contact.sendUpdate(gData.keyIdentitySigner);
+        await gData.contact.sendUpdate();
     }
 
     async addID(event: Event) {
@@ -100,7 +100,7 @@ export class AppComponent {
         let newUser: Data;
         try {
             const ek = Private.fromRand();
-            newUser = await gData.createUser(ek, 'test');
+            newUser = await gData.createUser('test', ek);
         } catch (e) {
             Log.catch(e);
         }

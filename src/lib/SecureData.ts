@@ -7,13 +7,24 @@ import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
 import {KeyPair} from './KeyPair';
 import Signer from './cothority/darc/signer';
 import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
-import OnChainSecretRPC from './cothority/calypso/calypso-rpc';
-import {secretbox} from 'tweetnacl-ts';
+import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
+import {secretbox, secretbox_open} from 'tweetnacl-ts';
 import SpawnerInstance from './cothority/byzcoin/contracts/spawner-instance';
-import {Point} from '../../../cothority/external/js/kyber/dist';
+import {Point} from '@dedis/kyber';
+import {Darc, IdentityDarc} from './cothority/darc';
 
 export class SecureData {
-    constructor(public writeInstID: InstanceID, public symKey: Buffer, public encData: Buffer) {
+    constructor(public writeInstID: InstanceID, public symKey: Buffer, public plainData: Buffer) {
+    }
+
+    static fromObject(o: any): SecureData {
+        return new SecureData(Buffer.from(o.writeInstID),
+            Buffer.from(o.symKey),
+            Buffer.from(o.plainData));
+    }
+
+    static fromBuffer(b: Buffer): SecureData {
+        return SecureData.fromObject(JSON.parse(b.toString()));
     }
 
     /**
@@ -23,20 +34,21 @@ export class SecureData {
      * @param bc a valid ByzCoin instance
      * @param ocs a valid OnChainSecrets instance
      * @param c the contact holding the secure credentials
-     * @param reader who is allowed to read
+     * @param reader who is allowed to read, already in "(darc|ed25519):hex_value" expression
      * @param signers signers of a device needed to authenticate as the reader
      * @param coin eventual coin if CalypsoRead has a cost
      * @param coinSigners the signers to spend coins
      */
-    static async fromContact(bc: ByzCoinRPC, ocs: OnChainSecretRPC, c: Contact, reader: InstanceID, signers: Signer[],
+    static async fromContact(bc: ByzCoinRPC, ocs: OnChainSecretRPC, c: Contact, reader: string, signers: Signer[],
                              coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData[]> {
         const sds: SecureData[] = [];
-        const cred = c.credential.getCredential('1-secure');
+        const cred = c.credential.getCredential('1-secret');
         if (cred) {
-            for (const sd of cred.attributes) {
-                Log.lvl2('Checking secure data', sd.name);
+            for (const sdBuf of cred.attributes) {
+                Log.lvl2('Checking secure data', sdBuf.name);
                 try {
-                    const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sd.value);
+                    const sd = SecureData.fromBuffer(sdBuf.value);
+                    const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sd.writeInstID);
                     const cwDarc = await DarcInstance.fromByzcoin(bc, calWrite.darcID);
                     const readersRule = cwDarc.darc.rules.getRule('spawn:' + CalypsoReadInstance.contractID).expr.toString();
                     if (readersRule.indexOf('&') >= 0) {
@@ -44,12 +56,11 @@ export class SecureData {
                         continue;
                     }
                     const readers = readersRule.split('|');
-                    const readerHex = reader.toString('hex');
-                    if (readers.find(r => r.trim() === readerHex)) {
+                    if (readers.find(r => r.trim() === reader)) {
                         sds.push(await SecureData.fromWrite(bc, ocs, calWrite, signers, coin, coinSigners));
                     }
                 } catch (e) {
-                    Log.warn('Couldn\'t read calypso write of', sd.name);
+                    await Log.rcatch(e, 'Couldn\'t read calypso write of', sdBuf.name);
                 }
             }
         }
@@ -68,12 +79,29 @@ export class SecureData {
                            coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData> {
         const ephemeral = new KeyPair();
         const cr = await calypsoWrite.spawnRead(ephemeral._public.point, signers, coin, coinSigners);
-        const symKey = await cr.decrypt(ocs, ephemeral._private.scalar);
-        return new SecureData(calypsoWrite.id, symKey, calypsoWrite.data);
+        const symKeyPart = await cr.decrypt(ocs, ephemeral._private.scalar);
+        const nonce = Buffer.from(calypsoWrite.write.data.subarray(0, 24));
+        const symKey = Buffer.concat([symKeyPart, Buffer.from(calypsoWrite.write.data.subarray(24, 28))]);
+        const data = secretbox_open(Buffer.from(calypsoWrite.write.data.subarray(28)), nonce, symKey);
+        return new SecureData(calypsoWrite.id, symKey, Buffer.from(data));
     }
 
 
-    static async spawnFromSpawner(bc: ByzCoinRPC, ocs: OnChainSecretRPC, data: Buffer, spawner: SpawnerInstance,
+    /**
+     * spawnFromSpawner creates a new CalypsoWrite with the given data. The read-
+     * rights must include the creator of the write instance, else other devices
+     * will not be able to access it.
+     *
+     * @param bc a working ByzCoin instance
+     * @param ocs an OCS instance where the byzcoin-id is accepted
+     * @param data what to store encrypted in ByzCoin
+     * @param readers signer-darc IDs of who is allowed to read - should include the creator
+     * @param spawner which accepts the coins to create new instances
+     * @param coin an account with enough coins to create the darc and writeInstance needed
+     * @param signers to spend the coins
+     */
+    static async spawnFromSpawner(bc: ByzCoinRPC, lts: LongTermSecret, data: Buffer, readers: InstanceID[],
+                                  spawner: SpawnerInstance,
                                   coin: CoinInstance, signers: Signer[]): Promise<SecureData> {
         const symKey = randomBytes(32);
         const nonce = randomBytes(24);
@@ -83,14 +111,21 @@ export class SecureData {
         // we need to put the remaining 4 bytes in clear text! Which reduces the security of the encryption
         // to 28*8 = 208 bits.
         const calypsoData = Buffer.concat([nonce, Buffer.from(symKey.subarray(28)), Buffer.from(encData)]);
-        const darcID = null;
-        let X: Point;
-        const write = Write.createWrite(ocs.id, darcID, X, Buffer.from(symKey.subarray(0, 28)));
-        const calypsoWrite = await CalypsoWriteInstance.spawn(bc, darcID, write, signers);
-        return null;
+        const ids = readers.map(r => new IdentityDarc({id: r}));
+        const calypsoWrite = await spawner.spawnCalypsoWrite(coin, signers, lts,
+            Buffer.from(symKey.subarray(0, 28)), ids, calypsoData);
+        return new SecureData(calypsoWrite.id, symKey, data);
     }
 
     toObject(): object {
-        return {};
+        return {
+            writeInstID: this.writeInstID,
+            symKey: this.symKey,
+            plainData: this.plainData,
+        };
+    }
+
+    toBuffer(): Buffer {
+        return Buffer.from(JSON.stringify(this.toObject()));
     }
 }
