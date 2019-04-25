@@ -743,6 +743,7 @@ export class Data {
         const rules = ['transfer', 'fetch', 'store'].map(inv => sprintf('invoke:%s.%s', CoinInstance.contractID, inv));
         const darcCoin = Darc.newDarc([], [darcSignId], Buffer.from('coin'), rules);
 
+        Log.print('LTS is:', this.lts);
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id, this.lts);
 
         const signers = [this.keyIdentitySigner];
@@ -766,6 +767,9 @@ export class Data {
     async attachAndEvolve(ephemeral: Private): Promise<void> {
         const pub = Public.base().mul(ephemeral);
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
+        this.contact.data = this;
+        await this.contact.connectBC(this.bc);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);

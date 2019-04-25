@@ -2,7 +2,7 @@ import {randomBytes} from 'crypto';
 import {Contact} from './Contact';
 import {ByzCoinRPC, InstanceID} from './cothority/byzcoin';
 import {Log} from './cothority/log';
-import {CalypsoReadInstance, CalypsoWriteInstance, Write} from './cothority/calypso/calypso-instance';
+import {CalypsoReadInstance, CalypsoWriteInstance} from './cothority/calypso/calypso-instance';
 import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
 import {KeyPair} from './KeyPair';
 import Signer from './cothority/darc/signer';
@@ -10,9 +10,14 @@ import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
 import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
 import {secretbox, secretbox_open} from 'tweetnacl-ts';
 import SpawnerInstance from './cothority/byzcoin/contracts/spawner-instance';
-import {Point} from '@dedis/kyber';
-import {Darc, IdentityDarc} from './cothority/darc';
+import {IdentityDarc} from './cothority/darc';
 
+/**
+ * SecureData holds a decrypted secret, together with the writeID and the symmetric key, so that if
+ * the secret is updated, the update can be decrypted, too.
+ * Of course this data is sensible and should only be stored in clear locally. This data is also used
+ * for storing 'other' data, but then it is stored as a secret itself in a CalypsoWriteInstance.
+ */
 export class SecureData {
     constructor(public writeInstID: InstanceID, public symKey: Buffer, public plainData: Buffer) {
     }
@@ -46,22 +51,25 @@ export class SecureData {
         const cred = c.credential.getCredential('1-secret');
         if (cred) {
             for (const sdBuf of cred.attributes) {
-                Log.lvl2('Checking secure data', sdBuf.name);
-                try {
-                    const sd = SecureData.fromBuffer(sdBuf.value);
-                    const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sd.writeInstID);
-                    const cwDarc = await DarcInstance.fromByzcoin(bc, calWrite.darcID);
-                    const readersRule = cwDarc.darc.rules.getRule('spawn:' + CalypsoReadInstance.contractID).expr.toString();
-                    if (readersRule.indexOf('&') >= 0) {
-                        Log.warn('Cannot parse AND rules yet');
-                        continue;
+                if (sdBuf.name !== 'others') {
+                    Log.lvl2('Checking secure data', sdBuf.name);
+                    try {
+                        const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sdBuf.value);
+                        const cwDarc = await DarcInstance.fromByzcoin(bc, calWrite.darcID);
+                        const readersRule = cwDarc.darc.rules.getRule('spawn:' + CalypsoReadInstance.contractID).expr.toString();
+                        if (readersRule.indexOf('&') >= 0) {
+                            Log.warn('Cannot parse AND rules yet');
+                            continue;
+                        }
+                        const readers = readersRule.split('|');
+                        if (readers.find(r => r.trim() === reader)) {
+                            sds.push(await SecureData.fromWrite(bc, ocs, calWrite, signers, coin, coinSigners));
+                        }
+                    } catch (e) {
+                        Log.catch(e, 'Couldn\'t read calypso write of', sdBuf.name);
                     }
-                    const readers = readersRule.split('|');
-                    if (readers.find(r => r.trim() === reader)) {
-                        sds.push(await SecureData.fromWrite(bc, ocs, calWrite, signers, coin, coinSigners));
-                    }
-                } catch (e) {
-                    await Log.rcatch(e, 'Couldn\'t read calypso write of', sdBuf.name);
+                } else {
+                    Log.lvl2('Not checking "others" data');
                 }
             }
         }
@@ -78,6 +86,7 @@ export class SecureData {
      */
     static async fromWrite(bc: ByzCoinRPC, ocs: OnChainSecretRPC, calypsoWrite: CalypsoWriteInstance, signers: Signer[],
                            coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData> {
+        Log.lvl1('Creating calypsoRead for data');
         const ephemeral = new KeyPair();
         const cr = await calypsoWrite.spawnRead(ephemeral._public.point, signers, coin, coinSigners);
         const symKeyPart = await cr.decrypt(ocs, ephemeral._private.scalar);
@@ -129,4 +138,26 @@ export class SecureData {
     toBuffer(): Buffer {
         return Buffer.from(JSON.stringify(this.toObject()));
     }
+}
+
+/**
+ * FileBlob holds one data-structure including meta-data like name, type, date.
+ */
+export class FileBlob {
+    constructor(public name: string, public data: Buffer, public attributes: FBAttribute[] = null) {
+    }
+
+    static fromBuffer(b: Buffer): FileBlob {
+        const fbObj: any = JSON.parse(b.toString());
+        return new FileBlob(fbObj.name, Buffer.from(fbObj.data), fbObj.attributes);
+    }
+
+    toBuffer(): Buffer {
+        return Buffer.from(JSON.stringify(this));
+    }
+}
+
+export interface FBAttribute {
+    name: string;
+    value: string;
 }

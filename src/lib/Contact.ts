@@ -309,7 +309,6 @@ export class Contact {
     }
 
     async update(): Promise<Contact> {
-        return this;
         try {
             if (this.credentialInstance == null) {
                 if (this.credentialIID) {

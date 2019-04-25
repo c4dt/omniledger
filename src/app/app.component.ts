@@ -9,8 +9,8 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Private} from '../lib/KeyPair';
 import SkipchainRPC from '../lib/cothority/skipchain/skipchain-rpc';
 import {Contact} from '../lib/Contact';
-import {ByzCoinRPC, InstanceID} from '../lib/cothority/byzcoin';
-import {SecureData} from '../lib/SecureData';
+import {ByzCoinRPC} from '../lib/cothority/byzcoin';
+import {FileBlob} from '../lib/SecureData';
 
 @Component({
     selector: 'app-root',
@@ -27,40 +27,45 @@ export class AppComponent {
     isLoaded = false;
     blockCount = -1;
 
-    calypsoOurKeys;
-    calypsoOtherKeys;
+    calypsoOurKeys: string[];
+    calypsoOtherKeys: Map<Contact, FileBlob[]>;
 
     constructor(public dialog: MatDialog,
                 private snackBar: MatSnackBar,
                 private cd: ChangeDetectorRef) {
+        this.calypsoOtherKeys = new Map();
         this.registerForm = new FormGroup({
-            ephemeralKey: new FormControl('9f247b0b1fcf1b1fafc8026a2c6d601835c50101715c7995b6599347af92c100',
+            ephemeralKey: new FormControl('051d1ccff952d46c5fcdc500cf73d64bf6bf2f53ee9a7516bf8ad9e1bcb9370b',
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
-            darcID: new FormControl('488371077baf2f18447f606a5d316c7c99a9f7f5ca5b70f48024f9ca6706c94f',
+            darcID: new FormControl('d9d690370b8673da8f834f136da0300ea9af522bd5d8585a7f9072b71e3d0238',
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
             alias: new FormControl('garfield')
         });
 
-        if (true) {
-            gData.load().then(() => {
-                this.gData = gData;
-                this.isRegistered = gData.contact.isRegistered();
-                this.updateContactForm();
-                this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
-                this.calypsoOtherKeys = Array.from(gData.contact.calypso.others.keys());
-            }).catch(e => {
-                Log.catch(e, 'couldnt get user');
-            }).finally(() => {
-                // Log.print('finally');
-                // if (!gData.coinInstance && this.isRegistered) {
-                //     Log.error('don\'t have a coin... Deleting data');
-                //     this.isRegistered = false;
-                // }
-                this.isLoaded = true;
-            });
-        } else {
+        gData.load().then(() => {
+            this.gData = gData;
+            this.isRegistered = gData.contact.isRegistered();
+            this.updateContactForm();
+            this.updateCalypso();
+        }).catch(e => {
+            Log.catch(e, 'couldnt get user');
+        }).finally(() => {
             this.isLoaded = true;
-        }
+        });
+    }
+
+    /**
+     * updateCalypso stores the keys and the FileBlobs in the class-variables so that the UI
+     * can correctly show them.
+     */
+    updateCalypso() {
+        this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
+        Array.from(gData.contact.calypso.others.keys()).forEach(oid => {
+            const other = gData.contacts.find(c => c.credentialIID.equals(oid));
+            const fbs = Array.from(gData.contact.calypso.others.get(oid))
+                .map(sd => FileBlob.fromBuffer(sd.plainData));
+            this.calypsoOtherKeys.set(other, fbs);
+        });
     }
 
     updateContactForm() {
@@ -78,7 +83,7 @@ export class AppComponent {
         await gData.contact.sendUpdate();
     }
 
-    async addID(event: Event) {
+    async addID() {
         try {
             gData.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             this.gData = gData;
@@ -93,13 +98,15 @@ export class AppComponent {
                         this.registerForm.controls.alias.value);
                     gData.contact = d.contact;
                     gData.keyIdentity = d.keyIdentity;
+                    await gData.connectByzcoin();
                 } else {
                     Log.lvl2('attaching to existing user and replacing password');
                     await gData.attachAndEvolve(ek);
+                    this.gData = gData;
                 }
             }
         } catch (e) {
-            Log.catch(e);
+            Log.catch(e, 'while registering');
         }
         Log.lvl1('verifying registration');
         this.isRegistered = gData.contact.isRegistered();
@@ -163,12 +170,21 @@ export class AppComponent {
         });
     }
 
-    async calypsoSearch(c: Contact) {
-        Log.print('getting data of', c.darcSignIdentity.id);
-        const sds = await gData.contact.calypso.read(c);
+    async contactDelete(toDelete: Contact) {
+        gData.contacts = gData.contacts.filter(c => !c.credentialIID.equals(toDelete.credentialIID));
         await gData.save();
-        Log.print('Got new data of others:', sds);
-        this.calypsoOtherKeys = gData.contact.calypso.others.keys();
+    }
+
+    async calypsoSearch(c: Contact) {
+        const sb = this.snackBar.open('Searching new secure data for ' + c.alias.toLocaleUpperCase());
+        try {
+            const sds = await gData.contact.calypso.read(c);
+            await gData.save();
+            this.updateCalypso();
+        } catch (e) {
+            Log.catch(e);
+        }
+        sb.dismiss();
     }
 
     async calypsoAccess(key: string) {
@@ -178,21 +194,31 @@ export class AppComponent {
         const fileDialog = this.dialog.open(CalypsoUploadComponent, {
             width: '250px',
         });
-        fileDialog.afterClosed().subscribe(async result => {
-            const contacts = gData.contacts.map(c => c.darcSignIdentity.id);
-            Log.print('storing file:', result);
-            const key = await gData.contact.calypso.add(result, contacts);
-            await gData.save();
-            Log.print('file stored as', key);
-            this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
-            Log.print('keys are', this.calypsoOurKeys);
+        fileDialog.afterClosed().subscribe(async (result: File) => {
+            if (result) {
+                const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
+                const contacts = gData.contacts.map(c => c.darcSignIdentity.id);
+                const fb = new FileBlob(result.name, data, [{name: 'time', value: result.lastModified.toString()}]);
+                const key = await gData.contact.calypso.add(fb.toBuffer(), contacts);
+                await gData.save();
+                this.updateCalypso();
+            } else {
+                Log.lvl1('Didnt get any data');
+            }
         });
     }
 
-    async calypsoUpdate(c: InstanceID) {
-    }
-
-    async calypsoDownload(c: InstanceID, sd: SecureData) {
+    async calypsoDownload(c: Contact, fb: FileBlob) {
+        const a = document.createElement('a');
+        const file: any = new Blob([fb.data], {
+            type: 'application/octet-stream'
+        });
+        a.href = window.URL.createObjectURL(file);
+        a.target = '_blank';
+        a.download = fb.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     tabChanged(tabChangeEvent: MatTabChangeEvent) {
@@ -228,6 +254,12 @@ export class AppComponent {
         const skiprpc = new SkipchainRPC(gData.bc.getConfig().roster);
         const last = await skiprpc.getLatestBlock(gData.bc.genesisID);
         this.blockCount = last.index;
+    }
+
+    async deleteUser() {
+        gData.delete();
+        await gData.save();
+        location.reload();
     }
 }
 
@@ -292,7 +324,7 @@ export class TransferCoinComponent {
     templateUrl: 'calypso-upload.html',
 })
 export class CalypsoUploadComponent {
-    file: Buffer;
+    file: File;
 
     constructor(
         public dialogRef: MatDialogRef<CalypsoUploadComponent>,
@@ -304,6 +336,6 @@ export class CalypsoUploadComponent {
     }
 
     async handleFileInput(e: Event) {
-        this.file = Buffer.from(await (await new Response(((e.target as any).files[0] as File).slice())).arrayBuffer());
+        this.file = (e.target as any).files[0] as File;
     }
 }

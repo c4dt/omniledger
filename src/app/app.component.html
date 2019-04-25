@@ -9,7 +9,7 @@
     <div *ngIf="!isRegistered">
         You're not yet registered. Please enter an ephemeral key:
 
-        <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addID($event)">
+        <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addID()">
             <mat-form-field class="fullwidth" style="width:100%;">
                 <input matInput type="text" placeholder="Ephemeral Key" formControlName="ephemeralKey"/>
             </mat-form-field>
@@ -29,11 +29,13 @@
             <div fxFlex="66" fxFlexOffset="15">
                 <mat-tab-group (focusChange)="tabChanged($event)">
                     <mat-tab label="Yourself">
-                        <h1>Welcome {{gData.contact.alias}}</h1>
+                        <h1>Welcome {{gData.contact.alias | titlecase}}</h1>
                         <ul>
                             <li>UserID: {{gData.contact.credentialIID.toString('hex')}}</li>
                             <li>Coins: {{gData.coinInstance.coin.value.toNumber()}}
-                                - <button mat-button (click)="gData.coinInstance.update()">Update</button></li>
+                                -
+                                <button mat-button (click)="gData.coinInstance.update()">Update</button>
+                            </li>
                         </ul>
                         <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact($event)">
                             <mat-form-field class="fullwidth" style="width:100%;">
@@ -54,13 +56,17 @@
                     <mat-tab label="Contacts">
                         <ul>
                             <li *ngFor="let contact of gData.contacts">
-                                {{ contact.alias }} - <button mat-button (click)="transferCoin(contact)">Transfer</button>
-                                - <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+                                {{ contact.alias | titlecase }} -
+                                <button mat-button (click)="transferCoin(contact)">Transfer</button>
+                                -
+                                <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+                                -
+                                <button mat-button (click)="contactDelete(contact)">Delete</button>
                             </li>
                         </ul>
                         <div style="padding:10px;">
-                        <button mat-raised-button color="primary" (click)="createContact()">Create Contact</button>
-                        <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
+                            <button mat-raised-button color="primary" (click)="createContact()">Create Contact</button>
+                            <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
                         </div>
                     </mat-tab>
 
@@ -68,20 +74,24 @@
                         <h3>Our secured data</h3>
                         <ul>
                             <li *ngFor="let sd of calypsoOurKeys">
-                                {{ sd }} - <button mat-button (click)="calypsoAccess(sd)">Change Access</button>
+                                {{ sd }} -
+                                <button mat-button (click)="calypsoAccess(sd)">Change Access</button>
                             </li>
                         </ul>
                         <button mat-raised-button color="primary" (click)="calypsoAddData()">Add Data</button>
                         <h3>Access to other data</h3>
                         <ul>
-                            <li *ngFor="let c of calypsoOtherKeys">
-                                {{ c.slice(0, 8).toString('hex') }} - <button mat-button (click)="calypsoUpdate(c)">Update</button>
-                                <ul>
-                                    <li *ngFor="let sd of gData.contact.calypso.others.get(c)">
-                                        {{ sd.writeInstID.slice(0, 8).toString('hex') }} -
-                                        <button mat-button (click)="calypsoDownload(c, sd)">Download</button>
-                                    </li>
-                                </ul>
+                            <li *ngFor="let user of calypsoOtherKeys | keyvalue">
+                                <div *ngIf="user.key">
+                                    {{ user.key.alias | titlecase }} -
+                                    <button mat-button (click)="calypsoSearch(user.key)">Update</button>
+                                    <ul>
+                                        <li *ngFor="let fb of user.value">
+                                            {{ fb.name }} -
+                                            <button mat-button (click)="calypsoDownload(user.key, fb)">Download</button>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
                         </ul>
                     </mat-tab>
@@ -96,6 +106,9 @@
                         <ul>
                             <li>Signer-id: {{ gData.contact.darcSignIdentity.id.toString('hex') }}</li>
                             <li>Skipchain-height: {{ blockCount }}</li>
+                            <li>
+                                <button mat-button (click)="deleteUser()">DELETE USER</button>
+                            </li>
                         </ul>
                     </mat-tab>
                 </mat-tab-group>

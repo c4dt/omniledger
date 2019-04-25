@@ -100,7 +100,7 @@ export const Defaults = {
 `,
     Roster: null,
     // ByzCoinID
-    ByzCoinID: Buffer.from('983a4933ac3ce45c9e84fd485a425f56c3c0fe9602de7a72aa514b644a89099f', 'hex'),
+    ByzCoinID: Buffer.from('07712e38b5e15dadff6610cdd255bbbe4bd93365fba95aa0abcdca900caf206c', 'hex'),
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
