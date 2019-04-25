@@ -1,0 +1,20 @@
+# This file contains your private key.
+# Do not give it away lightly!
+Suite = "Ed25519"
+Public = "2b87ab56c9aed8e7b5512d1b2686253adf48a5c5714ed52eea534a4629a93e2b"
+Private = "34fa2759a33720ca419e11489f001c8c4e5ea8111e32f756b418f0286af02b05"
+Address = "tls://localhost:7770"
+ListenAddress = ""
+Description = "Conode_1"
+WebSocketTLSCertificate = ""
+WebSocketTLSCertificateKey = ""
+
+[Services]
+  [Services.ByzCoin]
+    Suite = "bn256.adapter"
+    Public = "028cf4ab5b7cba8a901d6bae8f6480a959bfacf856a4ac3545bc9167a8a0667c3483e452009ca84ecf31c515b6e21daa83f7add31ac168c23538940d67b5e86752889bfc118b0975ea0b50c0c22257d01f99ab768239454858d4ed4b05f42ac151090658299a3b250cc7d45ccfe744eba445f18538779b9db7f4da2e207a92c2"
+    Private = "18b6633fe5b5d65ef65f28c83f07f33af6de65bf073c527021e474c355453cb4"
+  [Services.Skipchain]
+    Suite = "bn256.adapter"
+    Public = "10b4fcc59a0048ee8b734af42a0b6e8253f3ca67e778d25d39468d1fcb0ed8048985dd1492b16a2ee7a05c035b21ab5c5484c09efb37de00ee6bb1434b3c75674cde478df060e88c33094aef82128461de39b596aba6a885fcdd5d5571be748359454cbfcb16b8bcf251917dec4715f34b77fb538457207d6fecbaba06567089"
+    Private = "88008ac649f01303a06f7549123e8dadf7917dde75b00faeceb58460519c8dfe"

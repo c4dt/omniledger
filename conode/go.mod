@@ -1,4 +1,4 @@
-module github.com/dedis/dynasent
+module github.com/dedis/dynasent/conode
 
 go 1.12
 

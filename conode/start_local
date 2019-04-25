@@ -1,1 +1,0 @@
-go build && COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 3 -d personhood/ $@
