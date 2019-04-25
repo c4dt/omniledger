@@ -1,4 +1,4 @@
-import {createHash} from 'crypto';
+import {createHash, randomBytes} from 'crypto';
 import * as Long from 'long';
 import {Message, Properties} from 'protobufjs/light';
 import Darc from '../../darc/darc';
@@ -378,8 +378,10 @@ export default class SpawnerInstance extends Instance {
             throw new Error('account balance not high enough for spawning a darc + calypso writer');
         }
 
-        const d = await this.spawnDarc(coin, signers,
-            Darc.newDarc([ident[0]], ident, Buffer.from('calypso write protection'), ['spawn:calypsoRead']));
+        const cwDarc = Darc.newDarc([ident[0]], ident,
+            Buffer.from('calypso write protection ' + randomBytes(8).toString('hex')),
+            ['spawn:calypsoRead']);
+        const d = await this.spawnDarc(coin, signers, cwDarc);
 
         const write = await Write.createWrite(lts.id, d[0].id, lts.X, key);
         write.cost = this.struct.costCRead;

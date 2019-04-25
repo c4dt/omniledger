@@ -55,20 +55,35 @@
                         <ul>
                             <li *ngFor="let contact of gData.contacts">
                                 {{ contact.alias }} - <button mat-button (click)="transferCoin(contact)">Transfer</button>
+                                - <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
                             </li>
                         </ul>
+                        <div style="padding:10px;">
                         <button mat-raised-button color="primary" (click)="createContact()">Create Contact</button>
                         <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
+                        </div>
                     </mat-tab>
 
                     <mat-tab label="Secured Data">
+                        <h3>Our secured data</h3>
                         <ul>
-                            <li *ngFor="let sd of gData.secureData">
-<!--                                {{ contact.alias }} - <button mat-button (click)="transferCoin(contact)">Transfer</button>-->
+                            <li *ngFor="let sd of calypsoOurKeys">
+                                {{ sd }} - <button mat-button (click)="calypsoAccess(sd)">Change Access</button>
                             </li>
                         </ul>
-                        <button mat-raised-button color="primary" (click)="createContact()">Create Contact</button>
-                        <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
+                        <button mat-raised-button color="primary" (click)="calypsoAddData()">Add Data</button>
+                        <h3>Access to other data</h3>
+                        <ul>
+                            <li *ngFor="let c of calypsoOtherKeys">
+                                {{ c.slice(0, 8).toString('hex') }} - <button mat-button (click)="calypsoUpdate(c)">Update</button>
+                                <ul>
+                                    <li *ngFor="let sd of gData.contact.calypso.others.get(c)">
+                                        {{ sd.writeInstID.slice(0, 8).toString('hex') }} -
+                                        <button mat-button (click)="calypsoDownload(c, sd)">Download</button>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </mat-tab>
 
 
@@ -79,6 +94,7 @@
                             </li>
                         </ul>
                         <ul>
+                            <li>Signer-id: {{ gData.contact.darcSignIdentity.id.toString('hex') }}</li>
                             <li>Skipchain-height: {{ blockCount }}</li>
                         </ul>
                     </mat-tab>

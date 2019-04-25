@@ -1,7 +1,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 
-import {AddContactComponent, AppComponent, CreateUserComponent, TransferCoinComponent} from './app.component';
+import {AddContactComponent, AppComponent, CalypsoUploadComponent, CreateUserComponent, TransferCoinComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DemoMaterialModule} from '../material-module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -14,6 +14,7 @@ import {MatDialogModule} from '@angular/material';
         CreateUserComponent,
         AddContactComponent,
         TransferCoinComponent,
+        CalypsoUploadComponent,
     ],
     imports: [
         BrowserModule,
@@ -27,7 +28,8 @@ import {MatDialogModule} from '@angular/material';
     entryComponents: [
         AddContactComponent,
         CreateUserComponent,
-        TransferCoinComponent
+        TransferCoinComponent,
+        CalypsoUploadComponent,
     ],
     providers: [],
     bootstrap: [AppComponent]

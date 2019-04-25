@@ -154,7 +154,11 @@ export class Data {
         });
 
         const ocs = new OnChainSecretRPC(bc);
-        await ocs.authoriseRoster();
+        try {
+            await ocs.authoriseRoster();
+        } catch (e) {
+            Log.error('Could not authorize roster', e);
+        }
         const lts = await LongTermSecret.spawn(bc, adminDarc, [adminSigner]);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, lts);
@@ -278,6 +282,8 @@ export class Data {
                     }
                 }
                 this.bc = await ByzCoinRPC.fromByzcoin(roster, bcID);
+            } else if (this.bc == null) {
+                this.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             }
 
             Log.lvl2('getting parties and badges');
@@ -444,7 +450,7 @@ export class Data {
             await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
             Log.lvl2('Registered user for darc::coin::credential:', darcInstances[0].id, coinInstance.id,
                 credentialInstance.id);
-            await contact.update(this.bc);
+            await contact.update();
             progress('Done', 100);
         } catch (e) {
             Log.catch(e);
@@ -500,7 +506,7 @@ export class Data {
     async searchRecovery(): Promise<Contact[]> {
         const recoveries: Contact[] = [];
         for (const contact of this.contacts) {
-            await contact.update(this.bc);
+            await contact.update();
             if (contact.recover.trustees.filter(t =>
                 t.equals(this.contact.credentialIID)).length > 0) {
                 recoveries.push(contact);
@@ -529,7 +535,7 @@ export class Data {
             return Promise.reject('got wrong public key length');
         }
 
-        await user.update(this.bc);
+        await user.update();
 
         // the message to be signed is:
         // credentialIID + newPublicKey + latestDarcVersion

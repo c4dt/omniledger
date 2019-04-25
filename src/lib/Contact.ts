@@ -262,7 +262,7 @@ export class Contact {
                     Buffer.from(qr.credentialIID, 'hex'));
                 u.credential = u.credentialInstance.credential.copy();
                 u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
-                return await u.update(bc);
+                return await u.update();
             case Contact.urlUnregistered:
                 u.alias = qr.alias;
                 u.email = qr.email;
@@ -308,12 +308,12 @@ export class Contact {
         };
     }
 
-    async update(bc: ByzCoinRPC): Promise<Contact> {
+    async update(): Promise<Contact> {
         return this;
         try {
             if (this.credentialInstance == null) {
                 if (this.credentialIID) {
-                    this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
+                    this.credentialInstance = await CredentialsInstance.fromByzcoin(this.bc, this.credentialIID);
                 }
             } else {
                 await this.credentialInstance.update();
@@ -324,7 +324,7 @@ export class Contact {
                 }
 
                 if (this.darcInstance == null) {
-                    this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
+                    this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID);
                     // this.darcInstance = new DarcInstance(bc, SpawnerInstance.prepareUserDarc(this.seedPublic, this.alias));
                 } else {
                     await this.darcInstance.update();
@@ -333,7 +333,7 @@ export class Contact {
                 if (this.coinInstance == null) {
                     const coiniid = this.getCoinAddress();
                     if (coiniid != null) {
-                        this.coinInstance = await CoinInstance.fromByzcoin(bc, coiniid);
+                        this.coinInstance = await CoinInstance.fromByzcoin(this.bc, coiniid);
                     }
                 } else {
                     await this.coinInstance.update();
@@ -536,22 +536,12 @@ class Recover {
 }
 
 class Calypso {
-    public others: SecureData[];
+    public others: Map<InstanceID, SecureData[]>;
     public ours: Map<string, SecureData>;
 
     constructor(public contact: Contact) {
-        const atts = this.contact.credential.getCredential('1-secret');
         this.ours = new Map();
-        if (atts) {
-            atts.attributes.forEach(att => {
-                if (att.name === 'others') {
-                    const othersObjs: object[] = JSON.parse(att.value.toString());
-                    othersObjs.forEach(oo => this.others.push(SecureData.fromObject(oo)));
-                } else {
-                    this.ours.set(att.name, SecureData.fromBuffer(att.value));
-                }
-            });
-        }
+        this.others = new Map();
     }
 
     /**
@@ -563,13 +553,15 @@ class Calypso {
     static fromObject(c: Contact, obj: any): Calypso {
         const cal = new Calypso(c);
         if (obj.others) {
-            cal.others = obj.others.map(sd => SecureData.fromObject(sd));
+            Object.keys(obj.others).forEach(id => {
+                cal.others.set(Buffer.from(id, 'hex'),
+                    obj.others[id].map(sd => SecureData.fromObject(sd))
+                );
+            });
         }
         if (obj.ours) {
-            cal.ours = new Map();
-            for (const id of Object.keys(obj.ours)) {
-                cal.ours.set(id, SecureData.fromObject(obj.ours[id]));
-            }
+            Object.keys(obj.ours).forEach(id =>
+                cal.ours.set(id, SecureData.fromObject(obj.ours[id])));
         }
         return cal;
     }
@@ -578,30 +570,27 @@ class Calypso {
      * toObject returns an object that is serializable and can be converted back to a
      * Calypso object.
      */
-    toObject(): object {
-        const obj = {};
-        this.ours.forEach((sd, id) => obj[id] = sd.toObject());
+    toObject(): any {
+        const obj = {
+            ours: {},
+            others: {},
+        };
+        this.ours.forEach((sd, id) => obj.ours[id] = sd.toObject());
+        this.others.forEach((sds, id) => obj.others[id.toString('hex')] =
+            sds.map(sd => sd.toObject()));
         return obj;
     }
 
     /**
-     * addSecureData stores the given secureData in the 'others' field of this class. If the secureData
-     * already exists, it will be overwritten, else it will be appended to the list.
-     *
-     * @param sd a SecureData to add.
+     * add creates a new calypso-write instance and stores the id in the credential of the user.
+     * @param data the data to be encrypted
+     * @param readers the signer-darc-ids of all the external readers
+     * @return the key-string used to store this secret in the 'secret'-credential
      */
-    addSecureData(sd: SecureData) {
-        const i = this.others.findIndex(o => o.writeInstID.equals(sd.writeInstID));
-        if (i >= 0) {
-            this.others[i] = sd;
-        } else {
-            this.others.push(sd);
-        }
-    }
-
     async add(data: Buffer, readers: InstanceID[]): Promise<string> {
         const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.credentialInstance.darcID);
         readers.push(ourSigner.darc.getBaseID());
+        readers.forEach(r => Log.print('reader', r));
         const sd = await SecureData.spawnFromSpawner(this.contact.bc, this.contact.data.lts, data, readers,
             this.contact.spawnerInstance,
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
@@ -610,17 +599,26 @@ class Calypso {
         const atts = this.contact.credential.getCredential('1-secret');
         const count = atts ? atts.attributes.length : 0;
         const id = sprintf('value-%d', count);
-        this.contact.credential.setAttribute('1-secret', id, sd.toBuffer());
+        this.contact.credential.setAttribute('1-secret', id, sd.writeInstID);
         this.ours.set(id, sd);
+        this.contact.version++;
         return id;
     }
 
+    /**
+     * read verifies if any of the contact's secret data can be read by this user.
+     * @param user the remote contact to check for readable secrets
+     */
     async read(user: Contact): Promise<SecureData[]> {
         const signer = await this.contact.darcSignIdentity;
         const sds = await SecureData.fromContact(this.contact.bc, this.contact.data.lts, user,
             signer.toWrapper().toString(), [this.contact.data.keyIdentitySigner],
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
-        sds.forEach(sd => this.addSecureData(sd));
+        this.others.set(user.credentialIID, sds);
+        const obj = this.toObject();
+        this.contact.credential.setAttribute('1-secret', 'others',
+            Buffer.from(JSON.stringify(obj.others)));
+        this.contact.version++;
         return sds;
     }
 }

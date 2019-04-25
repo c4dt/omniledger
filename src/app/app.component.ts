@@ -1,5 +1,5 @@
 import * as Long from 'long';
-import {Component, Inject} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject} from '@angular/core';
 import {Defaults} from '../lib/Defaults';
 import StatusRPC from '../lib/cothority/status/status-rpc';
 import {Log} from '../lib/cothority/log';
@@ -9,6 +9,8 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Private} from '../lib/KeyPair';
 import SkipchainRPC from '../lib/cothority/skipchain/skipchain-rpc';
 import {Contact} from '../lib/Contact';
+import {ByzCoinRPC, InstanceID} from '../lib/cothority/byzcoin';
+import {SecureData} from '../lib/SecureData';
 
 @Component({
     selector: 'app-root',
@@ -25,31 +27,40 @@ export class AppComponent {
     isLoaded = false;
     blockCount = -1;
 
+    calypsoOurKeys;
+    calypsoOtherKeys;
+
     constructor(public dialog: MatDialog,
-                private snackBar: MatSnackBar) {
+                private snackBar: MatSnackBar,
+                private cd: ChangeDetectorRef) {
         this.registerForm = new FormGroup({
-            ephemeralKey: new FormControl('67e1ed9ba15a13ff5a481bf2ea72e835913b19138241f43870a7d7fd1074aa0d',
+            ephemeralKey: new FormControl('9f247b0b1fcf1b1fafc8026a2c6d601835c50101715c7995b6599347af92c100',
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
-            darcID: new FormControl('80731f51af611a347009e513c89bc84b8883ddbf52c93a1c6a1c24a2715f8daa',
+            darcID: new FormControl('488371077baf2f18447f606a5d316c7c99a9f7f5ca5b70f48024f9ca6706c94f',
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
             alias: new FormControl('garfield')
         });
 
-        gData.load().then(() => {
-            this.gData = gData;
-            this.isRegistered = gData.contact.isRegistered();
-            this.updateContactForm();
-            Log.print('gdata.key is', gData.keyIdentity._public.toHex());
-        }).catch(e => {
-            Log.catch(e);
-        }).finally(() => {
-            Log.print('finally');
-            if (!gData.coinInstance && this.isRegistered) {
-                Log.error('don\'t have a coin... Deleting data');
-                this.isRegistered = false;
-            }
+        if (true) {
+            gData.load().then(() => {
+                this.gData = gData;
+                this.isRegistered = gData.contact.isRegistered();
+                this.updateContactForm();
+                this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
+                this.calypsoOtherKeys = Array.from(gData.contact.calypso.others.keys());
+            }).catch(e => {
+                Log.catch(e, 'couldnt get user');
+            }).finally(() => {
+                // Log.print('finally');
+                // if (!gData.coinInstance && this.isRegistered) {
+                //     Log.error('don\'t have a coin... Deleting data');
+                //     this.isRegistered = false;
+                // }
+                this.isLoaded = true;
+            });
+        } else {
             this.isLoaded = true;
-        });
+        }
     }
 
     updateContactForm() {
@@ -69,6 +80,8 @@ export class AppComponent {
 
     async addID(event: Event) {
         try {
+            gData.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
+            this.gData = gData;
             if (this.registerForm.controls.ephemeralKey.valid) {
                 Log.lvl1('creating user');
                 const ekStr = this.registerForm.controls.ephemeralKey.value as string;
@@ -107,6 +120,8 @@ export class AppComponent {
         sb.dismiss();
 
         if (newUser) {
+            gData.addContact(newUser.contact);
+            await gData.save();
             this.dialog.open(CreateUserComponent, {
                 width: '250px',
                 data: newUser.keyIdentity._private.toHex(),
@@ -146,6 +161,38 @@ export class AppComponent {
                 }
             }
         });
+    }
+
+    async calypsoSearch(c: Contact) {
+        Log.print('getting data of', c.darcSignIdentity.id);
+        const sds = await gData.contact.calypso.read(c);
+        await gData.save();
+        Log.print('Got new data of others:', sds);
+        this.calypsoOtherKeys = gData.contact.calypso.others.keys();
+    }
+
+    async calypsoAccess(key: string) {
+    }
+
+    async calypsoAddData() {
+        const fileDialog = this.dialog.open(CalypsoUploadComponent, {
+            width: '250px',
+        });
+        fileDialog.afterClosed().subscribe(async result => {
+            const contacts = gData.contacts.map(c => c.darcSignIdentity.id);
+            Log.print('storing file:', result);
+            const key = await gData.contact.calypso.add(result, contacts);
+            await gData.save();
+            Log.print('file stored as', key);
+            this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
+            Log.print('keys are', this.calypsoOurKeys);
+        });
+    }
+
+    async calypsoUpdate(c: InstanceID) {
+    }
+
+    async calypsoDownload(c: InstanceID, sd: SecureData) {
     }
 
     tabChanged(tabChangeEvent: MatTabChangeEvent) {
@@ -237,5 +284,26 @@ export class TransferCoinComponent {
 
     cancel(): void {
         this.dialogRef.close();
+    }
+}
+
+@Component({
+    selector: 'app-calypso-upload',
+    templateUrl: 'calypso-upload.html',
+})
+export class CalypsoUploadComponent {
+    file: Buffer;
+
+    constructor(
+        public dialogRef: MatDialogRef<CalypsoUploadComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: Buffer) {
+    }
+
+    cancel(): void {
+        this.dialogRef.close();
+    }
+
+    async handleFileInput(e: Event) {
+        this.file = Buffer.from(await (await new Response(((e.target as any).files[0] as File).slice())).arrayBuffer());
     }
 }

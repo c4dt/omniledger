@@ -42,6 +42,7 @@ export class SecureData {
     static async fromContact(bc: ByzCoinRPC, ocs: OnChainSecretRPC, c: Contact, reader: string, signers: Signer[],
                              coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData[]> {
         const sds: SecureData[] = [];
+        await c.update();
         const cred = c.credential.getCredential('1-secret');
         if (cred) {
             for (const sdBuf of cred.attributes) {
@@ -80,9 +81,9 @@ export class SecureData {
         const ephemeral = new KeyPair();
         const cr = await calypsoWrite.spawnRead(ephemeral._public.point, signers, coin, coinSigners);
         const symKeyPart = await cr.decrypt(ocs, ephemeral._private.scalar);
-        const nonce = Buffer.from(calypsoWrite.write.data.subarray(0, 24));
-        const symKey = Buffer.concat([symKeyPart, Buffer.from(calypsoWrite.write.data.subarray(24, 28))]);
-        const data = secretbox_open(Buffer.from(calypsoWrite.write.data.subarray(28)), nonce, symKey);
+        const nonce = calypsoWrite.write.data.slice(0, 24);
+        const symKey = Buffer.concat([symKeyPart, calypsoWrite.write.data.slice(24, 28)]);
+        const data = secretbox_open(calypsoWrite.write.data.slice(28), nonce, symKey);
         return new SecureData(calypsoWrite.id, symKey, Buffer.from(data));
     }
 
@@ -110,10 +111,10 @@ export class SecureData {
         // This is kind of stupid, but needed: currently we can only encrypt 28 bytes using Calypso, so
         // we need to put the remaining 4 bytes in clear text! Which reduces the security of the encryption
         // to 28*8 = 208 bits.
-        const calypsoData = Buffer.concat([nonce, Buffer.from(symKey.subarray(28)), Buffer.from(encData)]);
+        const calypsoData = Buffer.concat([nonce, symKey.slice(28), Buffer.from(encData)]);
         const ids = readers.map(r => new IdentityDarc({id: r}));
         const calypsoWrite = await spawner.spawnCalypsoWrite(coin, signers, lts,
-            Buffer.from(symKey.subarray(0, 28)), ids, calypsoData);
+            symKey.slice(0, 28), ids, calypsoData);
         return new SecureData(calypsoWrite.id, symKey, data);
     }
 
