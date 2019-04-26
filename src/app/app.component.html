@@ -27,9 +27,9 @@
     <div *ngIf="isRegistered">
         <div fxLayout="row" style="margin-top:5%;">
             <div fxFlex="66" fxFlexOffset="15">
+                <h1>Welcome {{gData.contact.alias | titlecase}}</h1>
                 <mat-tab-group (focusChange)="tabChanged($event)">
                     <mat-tab label="Yourself">
-                        <h1>Welcome {{gData.contact.alias | titlecase}}</h1>
                         <ul>
                             <li>UserID: {{gData.contact.credentialIID.toString('hex')}}</li>
                             <li>Coins: {{gData.coinInstance.coin.value.toNumber()}}

@@ -1,17 +1,17 @@
 import * as Long from 'long';
 import Darc from '../darc/darc';
 import IdentityEd25519 from '../darc/identity-ed25519';
-import { IIdentity } from '../darc/identity-wrapper';
+import {IIdentity} from '../darc/identity-wrapper';
 import Rules from '../darc/rules';
-import { Log } from '../log';
-import { IConnection, RosterWSConnection, WebSocketConnection } from '../network/connection';
-import { Roster } from '../network/proto';
-import { SkipBlock } from '../skipchain/skipblock';
+import {Log} from '../log';
+import {IConnection, RosterWSConnection, WebSocketConnection} from '../network/connection';
+import {Roster} from '../network/proto';
+import {SkipBlock} from '../skipchain/skipblock';
 import SkipchainRPC from '../skipchain/skipchain-rpc';
-import ClientTransaction, { ICounterUpdater } from './client-transaction';
+import ClientTransaction, {ICounterUpdater} from './client-transaction';
 import ChainConfig from './config';
 import DarcInstance from './contracts/darc-instance';
-import { InstanceID } from './instance';
+import {InstanceID} from './instance';
 import Proof from './proof';
 import {
     AddTxRequest,
@@ -30,6 +30,11 @@ const CONFIG_INSTANCE_ID = Buffer.alloc(32, 0);
 
 export default class ByzCoinRPC implements ICounterUpdater {
 
+    private genesisDarc: Darc;
+    private config: ChainConfig;
+    private genesis: SkipBlock;
+    private conn: IConnection;
+
     protected constructor() {
     }
 
@@ -37,10 +42,6 @@ export default class ByzCoinRPC implements ICounterUpdater {
         return this.genesis.computeHash();
     }
 
-    private genesisDarc: Darc;
-    private config: ChainConfig;
-    private genesis: SkipBlock;
-    private conn: IConnection;
     /**
      * Helper to create a genesis darc
      * @param signers       Authorized signers
@@ -178,9 +179,11 @@ export default class ByzCoinRPC implements ICounterUpdater {
      * global state.
      *
      * @param id the instance key
+     * @param waitMatch number of milliseconds to wait if the proof is false
+     * @param interval how long to wait before checking for a match again
      * @return a promise that resolves with the proof, rejecting otherwise
      */
-    async getProof(id: Buffer): Promise<Proof> {
+    async getProof(id: Buffer, waitMatch: number = 0, interval: number = 1000): Promise<Proof> {
         const req = new GetProof({
             id: this.genesis.hash,
             key: id,
@@ -188,10 +191,17 @@ export default class ByzCoinRPC implements ICounterUpdater {
         });
 
         const reply = await this.conn.send<GetProofResponse>(req, GetProofResponse);
-        // const err = reply.proof.verify(this.genesis.hash);
-        // if (err) {
-        //     throw new Error(`invalid proof: ${err.message}`);
-        // }
+        if (waitMatch > 0 && !reply.proof.exists(id)) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    this.getProof(id, waitMatch - interval, interval).then(pr => {
+                        resolve(pr);
+                    }).catch(e => {
+                        reject(e);
+                    });
+                }, interval);
+            });
+        }
 
         return reply.proof;
     }
