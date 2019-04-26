@@ -178,9 +178,11 @@ export default class ByzCoinRPC implements ICounterUpdater {
      * global state.
      *
      * @param id the instance key
+     * @param waitMatch number of milliseconds to wait if the proof is false
+     * @param interval how long to wait before checking for a match again
      * @return a promise that resolves with the proof, rejecting otherwise
      */
-    async getProof(id: Buffer): Promise<Proof> {
+    async getProof(id: Buffer, waitMatch: number = 0, interval: number = 1000): Promise<Proof> {
         const req = new GetProof({
             id: this.genesis.hash,
             key: id,
@@ -188,10 +190,17 @@ export default class ByzCoinRPC implements ICounterUpdater {
         });
 
         const reply = await this.conn.send<GetProofResponse>(req, GetProofResponse);
-        // const err = reply.proof.verify(this.genesis.hash);
-        // if (err) {
-        //     throw new Error(`invalid proof: ${err.message}`);
-        // }
+        if (waitMatch > 0 && !reply.proof.exists(id)) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    this.getProof(id, waitMatch - interval, interval).then((pr) => {
+                        resolve(pr);
+                    }).catch((e) => {
+                        reject(e);
+                    });
+                }, interval);
+            });
+        }
 
         return reply.proof;
     }
