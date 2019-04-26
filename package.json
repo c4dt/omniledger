@@ -1,6 +1,6 @@
 {
-  "name": "dynasent3",
-  "version": "0.0.0",
+  "name": "dynasent",
+  "version": "0.3.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
