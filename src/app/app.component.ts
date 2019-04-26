@@ -95,7 +95,7 @@ export class AppComponent {
                 const ek = Private.fromHex(ekStr);
                 const did = this.registerForm.controls.darcID.value;
                 if (this.registerForm.controls.darcID.valid && did.length === 64) {
-                    Log.lvl2('creating FIRST user', gData.bc);
+                    Log.lvl2('creating FIRST user');
                     const d = await Data.createFirstUser(gData.bc, Buffer.from(did, 'hex'), ek.scalar,
                         this.registerForm.controls.alias.value);
                     gData.contact = d.contact;
