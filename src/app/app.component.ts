@@ -86,6 +86,7 @@ export class AppComponent {
     async addID() {
         try {
             Log.print(Defaults.ByzCoinID);
+            gData.delete();
             gData.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             this.gData = gData;
             if (this.registerForm.controls.ephemeralKey.valid) {

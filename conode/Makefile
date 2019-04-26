@@ -38,7 +38,7 @@ docker_stop:
 	docker stop $(CONTAINER)
 
 docker_start:
-    docker start $(CONTAINER)
+	docker start $(CONTAINER)
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
