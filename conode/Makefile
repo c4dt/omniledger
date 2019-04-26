@@ -10,7 +10,6 @@ all: docker
 
 # Use this target to build from local source
 docker: clean build/Dockerfile build/conode
-	test -d cothority || git clone --depth 1 -b personhood_1904 https://github.com/dedis/cothority
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
@@ -38,7 +37,7 @@ docker_stop:
 	docker stop $(CONTAINER)
 
 docker_start:
-    docker start $(CONTAINER)
+	docker start $(CONTAINER)
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
@@ -48,6 +47,7 @@ docker_clean:
 # so that we can find the right one in the wrapper script.
 # This is in it's own rule because the Docker build needs it also.
 build/conode:
+	test -d cothority || git clone --depth 1 -b personhood_1904 https://github.com/dedis/cothority
 	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="$(ldflags)" -o $@
 
 clean:
