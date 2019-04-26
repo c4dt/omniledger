@@ -1,19 +1,10 @@
 CONTAINER = conode
-IMAGE_NAME = dedis/$(CONTAINER)
-DATA_DIR = $(shell pwd)/conode_data
-GITUNTRACKEDCHANGES := $(shell git status --porcelain --untracked-files=no)
+IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
-GIT_TAG = $(shell git tag -l --points-at HEAD )
-ifneq ($(GIT_TAG),)
-  TAG = $(GIT_TAG)
-endif
-OUTPUT_DIR = conode-$(TAG)
 
 # -s -w are for smaller binaries
 # -X compiles the git tag into the binary
 ldflags=-s -w -X main.gitTag=$(TAG)
-
-.PHONY: docker
 
 all: docker
 
@@ -41,13 +32,13 @@ newdb:
 	@echo; echo "Shutting down conodes"; pkill -f conode; rm build/conodes/running
 
 docker_run:
-	if [ ! -f conode_data/private.toml ]; then make docker_setup; fi
-	mkdir -p $(DATA_DIR)
-	docker run -it --rm -p 7770-7771:7770-7771 --name $(CONTAINER) -v $(DATA_DIR):/conode_data \
-		$(IMAGE_NAME):dev
+	docker run -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_stop:
-	docker rm -f $(CONTAINER)
+	docker stop $(CONTAINER)
+
+docker_start:
+    docker start $(CONTAINER)
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
@@ -60,4 +51,4 @@ build/conode:
 	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="$(ldflags)" -o $@
 
 clean:
-	rm -rf build/conode $(OUTPUT_DIR)
+	rm -rf build/conode

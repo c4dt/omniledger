@@ -35,15 +35,15 @@ export class AppComponent {
                 private cd: ChangeDetectorRef) {
         this.calypsoOtherKeys = new Map();
         this.registerForm = new FormGroup({
-            ephemeralKey: new FormControl('051d1ccff952d46c5fcdc500cf73d64bf6bf2f53ee9a7516bf8ad9e1bcb9370b',
+            ephemeralKey: new FormControl('0d48090866e032e3b4382e728b0fe05e425c7ea31a81ad7dbbda1e67cc287e06',
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
-            darcID: new FormControl('d9d690370b8673da8f834f136da0300ea9af522bd5d8585a7f9072b71e3d0238',
+            darcID: new FormControl('f6ad7701afb93295dfa27d5393d89654b458797bb87767043b8b2932175de605',
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
             alias: new FormControl('garfield')
         });
 
+        this.gData = gData;
         gData.load().then(() => {
-            this.gData = gData;
             this.isRegistered = gData.contact.isRegistered();
             this.updateContactForm();
             this.updateCalypso();
@@ -85,6 +85,7 @@ export class AppComponent {
 
     async addID() {
         try {
+            Log.print(Defaults.ByzCoinID);
             gData.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             this.gData = gData;
             if (this.registerForm.controls.ephemeralKey.valid) {
@@ -104,15 +105,15 @@ export class AppComponent {
                     await gData.attachAndEvolve(ek);
                     this.gData = gData;
                 }
+                Log.lvl1('verifying registration');
+                this.isRegistered = gData.contact.isRegistered();
+                await gData.save();
+                Log.lvl1('done registering');
+                this.updateContactForm();
             }
         } catch (e) {
             Log.catch(e, 'while registering');
         }
-        Log.lvl1('verifying registration');
-        this.isRegistered = gData.contact.isRegistered();
-        await gData.save();
-        Log.lvl1('done registering');
-        this.updateContactForm();
     }
 
     async createContact() {

@@ -1,13 +1,10 @@
 FROM debian:stretch-slim
 WORKDIR /root/
-RUN mkdir /conode_data
-RUN mkdir -p .local/share .config
-RUN ln -s /conode_data .local/share/conode
-RUN ln -s /conode_data .config/conode
+COPY conodes /root/conodes
 RUN apt update; apt install -y procps; apt clean
 COPY run_nodes.sh .
-COPY exe/conode.Linux.x86_64 ./conode
+COPY conode /root/conode
 
-EXPOSE 7770 7771
+EXPOSE 7770 7771 7772 7773 7774 7775 7776 7777
 
-CMD "./run_nodes.sh -n 1"
+CMD COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -n 4 -v 2 -c -d /root/conodes
