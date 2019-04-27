@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import * as _ from "lodash";
-import * as Long from "long";
+import Long from "long";
 import { Message, Properties } from "protobufjs/light";
 import { registerMessage } from "../protobuf";
 import { SkipchainRPC } from "../skipchain";

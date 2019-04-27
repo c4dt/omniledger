@@ -1,4 +1,4 @@
-import * as Long from 'long';
+import Long from 'long';
 import {ChangeDetectorRef, Component, Inject} from '@angular/core';
 import {Defaults} from '../lib/Defaults';
 import StatusRPC from '../lib/src/status/status-rpc';

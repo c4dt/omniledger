@@ -1,4 +1,4 @@
-import * as Long from 'long';
+import Long from 'long';
 import {Message, Properties} from 'protobufjs/light';
 import Signer from '../../darc/signer';
 import {EMPTY_BUFFER, registerMessage} from '../../protobuf';

@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
 import { randomBytes } from "crypto";
-import * as Long from "long";
+import Long from "long";
 import { Contact } from "../../Contact";
 import { Private, Public } from "../../KeyPair";
 import { Party } from "../../Party";

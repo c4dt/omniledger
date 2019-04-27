@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import * as Long from "long";
+import Long from "long";
 import { Message, Properties } from "protobufjs/light";
 import { EMPTY_BUFFER, registerMessage } from "../protobuf";
 import { IIdentity } from "./identity-wrapper";

@@ -1,4 +1,4 @@
-import * as Long from "long";
+import Long from "long";
 import { Reader } from "protobufjs/light";
 import { Log } from "../log";
 

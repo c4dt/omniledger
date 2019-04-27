@@ -1,6 +1,6 @@
 import { Point, PointFactory } from "@dedis/kyber";
-import * as Long from "long";
-import * as Moment from "moment";
+import Long from "long";
+import Moment from "moment";
 import { Message, Properties } from "protobufjs/light";
 import { EMPTY_BUFFER, registerMessage } from "../protobuf";
 

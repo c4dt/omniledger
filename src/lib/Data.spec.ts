@@ -1,7 +1,7 @@
 import {Log} from './src/log';
 import {Data, TestData} from './Data';
 import {KeyPair} from './KeyPair';
-import * as Long from 'long';
+import Long from 'long';
 import {Defaults} from './Defaults';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;

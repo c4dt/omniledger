@@ -5,7 +5,7 @@ import {registerMessage} from '../../protobuf';
 import {SkipBlock} from '../../skipchain/skipblock';
 import ClientTransaction from '../client-transaction';
 import Proof from '../proof';
-import * as Long from 'long';
+import Long from 'long';
 
 /**
  * Request to create a byzcoin skipchain

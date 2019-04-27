@@ -17,7 +17,7 @@ import {Point, PointFactory} from '@dedis/kyber';
 import Darc from './src/darc/darc';
 import IdentityEd25519 from './src/darc/identity-ed25519';
 import Rules from './src/darc/rules';
-import * as Long from 'long';
+import Long from 'long';
 import {IdentityDarc} from './src/darc';
 import {SecureData} from './SecureData';
 import {OnChainSecretInstance} from './src/calypso/calypso-instance';

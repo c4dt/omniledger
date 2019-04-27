@@ -1,4 +1,4 @@
-import * as Long from 'long';
+import Long from 'long';
 import Darc from '../darc/darc';
 import IdentityEd25519 from '../darc/identity-ed25519';
 import {IIdentity} from '../darc/identity-wrapper';

@@ -4,7 +4,7 @@
 import {PersonhoodRPC, PollStruct} from './src/personhood/personhood-rpc';
 import ByzCoinRPC from './src/byzcoin/byzcoin-rpc';
 
-import * as Long from 'long';
+import Long from 'long';
 import {Defaults} from './Defaults';
 import {Storage} from './Storage';
 import {Log} from './src/log';
