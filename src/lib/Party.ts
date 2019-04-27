@@ -1,10 +1,10 @@
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
-import {PopPartyInstance} from './cothority/personhood/pop-party-instance';
-import {PopDesc, PopPartyStruct} from './cothority/personhood/proto';
+import {PopPartyInstance} from './src/personhood/pop-party-instance';
+import {PopDesc, PopPartyStruct} from './src/personhood/proto';
 import * as Long from 'long';
-import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
-import Instance from './cothority/byzcoin/instance';
+import ByzCoinRPC from './src/byzcoin/byzcoin-rpc';
+import Instance from './src/byzcoin/instance';
 // import {screen} from "tns-core-modules/platform";
 // import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
 

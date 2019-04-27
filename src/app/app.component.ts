@@ -1,15 +1,15 @@
 import * as Long from 'long';
 import {ChangeDetectorRef, Component, Inject} from '@angular/core';
 import {Defaults} from '../lib/Defaults';
-import StatusRPC from '../lib/cothority/status/status-rpc';
-import {Log} from '../lib/cothority/log';
+import StatusRPC from '../lib/src/status/status-rpc';
+import {Log} from '../lib/src/log';
 import {Data, gData} from '../lib/Data';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar, MatTabChangeEvent} from '@angular/material';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Private} from '../lib/KeyPair';
-import SkipchainRPC from '../lib/cothority/skipchain/skipchain-rpc';
+import SkipchainRPC from '../lib/src/skipchain/skipchain-rpc';
 import {Contact} from '../lib/Contact';
-import {ByzCoinRPC} from '../lib/cothority/byzcoin';
+import {ByzCoinRPC} from '../lib/src/byzcoin';
 import {FileBlob} from '../lib/SecureData';
 
 @Component({

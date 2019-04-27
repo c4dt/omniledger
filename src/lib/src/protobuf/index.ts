@@ -50,8 +50,7 @@ interface IRegistrationMessage extends protobuf.Constructor<{}> {
 export function registerMessage(
     name: string,
     ctor: protobuf.Constructor<{}>,
-    ...dependencies: IRegistrationMessage[],
-): void {
+    ...dependencies: IRegistrationMessage[]): void {
     // register the messages used inside the new one
     dependencies.forEach((d) => {
         // as we can have cycle dependencies, this will deal with them by retarding

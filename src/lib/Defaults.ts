@@ -1,5 +1,5 @@
 // import { FileIO } from "./FileIO";
-import {Roster} from './cothority/network';
+import {Roster} from './src/network';
 
 export const Defaults = {
     DataDir: 'storage',

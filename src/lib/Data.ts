@@ -1,43 +1,43 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
-import {PersonhoodRPC, PollStruct} from './cothority/personhood/personhood-rpc';
-import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
+import {PersonhoodRPC, PollStruct} from './src/personhood/personhood-rpc';
+import ByzCoinRPC from './src/byzcoin/byzcoin-rpc';
 
 import * as Long from 'long';
 import {Defaults} from './Defaults';
 import {Storage} from './Storage';
-import {Log} from './cothority/log';
+import {Log} from './src/log';
 import {KeyPair, Private, Public} from './KeyPair';
 import {Buffer} from 'buffer';
-import Instance, {InstanceID} from './cothority/byzcoin/instance';
-import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
+import Instance, {InstanceID} from './src/byzcoin/instance';
+import DarcInstance from './src/byzcoin/contracts/darc-instance';
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature
-} from './cothority/byzcoin/contracts/credentials-instance';
-import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
+} from './src/byzcoin/contracts/credentials-instance';
+import CoinInstance from './src/byzcoin/contracts/coin-instance';
 import {TestStoreRPC} from './TestStoreRPC';
-import SpawnerInstance, {SPAWNER_COIN} from './cothority/byzcoin/contracts/spawner-instance';
-import Signer from './cothority/darc/signer';
-import SignerEd25519 from './cothority/darc/signer-ed25519';
+import SpawnerInstance, {SPAWNER_COIN} from './src/byzcoin/contracts/spawner-instance';
+import Signer from './src/darc/signer';
+import SignerEd25519 from './src/darc/signer-ed25519';
 import {Contact} from './Contact';
 import {Badge} from './Badge';
 import {Party} from './Party';
-import {PopPartyInstance} from './cothority/personhood/pop-party-instance';
-import RoPaSciInstance from './cothority/personhood/ro-pa-sci-instance';
+import {PopPartyInstance} from './src/personhood/pop-party-instance';
+import RoPaSciInstance from './src/personhood/ro-pa-sci-instance';
 import {SocialNode} from './SocialNode';
 import {sprintf} from 'sprintf-js';
 import {parseQRCode} from './Scan';
-import Darc from './cothority/darc/darc';
-import {Roster} from './cothority/network';
-import ClientTransaction, {Argument, Instruction} from './cothority/byzcoin/client-transaction';
-import IdentityDarc from './cothority/darc/identity-darc';
+import Darc from './src/darc/darc';
+import {Roster} from './src/network';
+import ClientTransaction, {Argument, Instruction} from './src/byzcoin/client-transaction';
+import IdentityDarc from './src/darc/identity-darc';
 import {Scalar} from '@dedis/kyber';
-import IdentityEd25519 from './cothority/darc/identity-ed25519';
-import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
+import IdentityEd25519 from './src/darc/identity-ed25519';
+import {LongTermSecret, OnChainSecretRPC} from './src/calypso/calypso-rpc';
 
 const curve = require('@dedis/kyber').curve.newCurve('edwards25519');
 const Schnorr = require('@dedis/kyber').sign.schnorr;

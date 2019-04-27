@@ -1,16 +1,16 @@
 import {randomBytes} from 'crypto';
 import {Contact} from './Contact';
-import {ByzCoinRPC, InstanceID} from './cothority/byzcoin';
-import {Log} from './cothority/log';
-import {CalypsoReadInstance, CalypsoWriteInstance} from './cothority/calypso/calypso-instance';
-import DarcInstance from './cothority/byzcoin/contracts/darc-instance';
+import {ByzCoinRPC, InstanceID} from './src/byzcoin';
+import {Log} from './src/log';
+import {CalypsoReadInstance, CalypsoWriteInstance} from './src/calypso/calypso-instance';
+import DarcInstance from './src/byzcoin/contracts/darc-instance';
 import {KeyPair} from './KeyPair';
-import Signer from './cothority/darc/signer';
-import CoinInstance from './cothority/byzcoin/contracts/coin-instance';
-import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
+import Signer from './src/darc/signer';
+import CoinInstance from './src/byzcoin/contracts/coin-instance';
+import {LongTermSecret, OnChainSecretRPC} from './src/calypso/calypso-rpc';
 import {secretbox, secretbox_open} from 'tweetnacl-ts';
-import SpawnerInstance from './cothority/byzcoin/contracts/spawner-instance';
-import {IdentityDarc} from './cothority/darc';
+import SpawnerInstance from './src/byzcoin/contracts/spawner-instance';
+import {IdentityDarc} from './src/darc';
 
 /**
  * SecureData holds a decrypted secret, together with the writeID and the symmetric key, so that if

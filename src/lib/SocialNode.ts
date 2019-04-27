@@ -1,4 +1,4 @@
-import {UserLocation} from './cothority/personhood/personhood-rpc';
+import {UserLocation} from './src/personhood/personhood-rpc';
 
 export class SocialNode {
     constructor(public users: UserLocation[]) {

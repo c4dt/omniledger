@@ -1,4 +1,4 @@
-import {Log} from './cothority/log';
+import {Log} from './src/log';
 import {Data, TestData} from './Data';
 import {KeyPair} from './KeyPair';
 import * as Long from 'long';

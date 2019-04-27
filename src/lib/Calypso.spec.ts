@@ -1,12 +1,12 @@
 // import Keccak from 'keccak/lib/keccak';
 // import Shake from 'keccak/lib/shake';
 import Keccak from 'keccak';
-import {Log} from './cothority/log';
+import {Log} from './src/log';
 import {curve} from '@dedis/kyber';
-import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from './cothority/calypso/calypso-instance';
+import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from './src/calypso/calypso-instance';
 import {TestData} from './Data';
 import {Defaults} from './Defaults';
-import {LongTermSecret, OnChainSecretRPC} from './cothority/calypso/calypso-rpc';
+import {LongTermSecret, OnChainSecretRPC} from './src/calypso/calypso-rpc';
 import {KeyPair} from './KeyPair';
 
 const Curve25519 = curve.newCurve('edwards25519');

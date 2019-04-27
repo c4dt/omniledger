@@ -1,6 +1,6 @@
 import {Party} from './Party';
 import {KeyPair} from './KeyPair';
-import ByzCoinRPC from './cothority/byzcoin/byzcoin-rpc';
+import ByzCoinRPC from './src/byzcoin/byzcoin-rpc';
 import {Data} from './Data';
 import {Contact} from './Contact';
 

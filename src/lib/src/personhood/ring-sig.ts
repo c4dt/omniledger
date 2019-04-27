@@ -237,7 +237,7 @@ function signH1(H1pre, PG: Public, PH: Public): Private {
 
 function decodeSignature(signatureBuffer: Buffer, isLinkableSig: boolean): RingSig {
     // tslint:disable-next-line
-    const scalarMarshalSize = ed25519.scalar().marshalSize();
+    const scalarMarshalSize = 32; // TODO: ed25519.scalar().marshalSize();
     const pointMarshalSize = ed25519.point().marshalSize();
     const c0 = Private.fromBuffer(signatureBuffer.slice(0, pointMarshalSize));
 

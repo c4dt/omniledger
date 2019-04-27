@@ -1,8 +1,8 @@
-import {InstanceID} from './cothority/byzcoin/instance';
-import {Roster} from './cothority/network';
-import {WebSocketConnection} from './cothority/network/connection';
+import {InstanceID} from './src/byzcoin/instance';
+import {Roster} from './src/network';
+import {WebSocketConnection} from './src/network/connection';
 import {Message, Properties} from 'protobufjs';
-import {registerMessage} from './cothority/protobuf';
+import {registerMessage} from './src/protobuf';
 
 export class TestStoreRPC {
     static serviceName = 'TestData';
