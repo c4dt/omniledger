@@ -293,41 +293,43 @@ export class Data {
                 this.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             }
 
-            Log.lvl2("getting parties and badges");
-            if (obj.parties) {
-                this.parties = obj.parties.map((p) => Party.fromObject(this.bc, p));
-            }
-            if (obj.badges) {
-                this.badges = obj.badges.map((b) => Badge.fromObject(this.bc, b));
-                this.badges = this.badges.filter((badge, i) =>
-                    this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
-            }
+            if (obj) {
+                Log.lvl2("getting parties and badges");
+                if (obj.parties) {
+                    this.parties = obj.parties.map((p) => Party.fromObject(this.bc, p));
+                }
+                if (obj.badges) {
+                    this.badges = obj.badges.map((b) => Badge.fromObject(this.bc, b));
+                    this.badges = this.badges.filter((badge, i) =>
+                        this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
+                }
 
-            Log.lvl2("Getting rock-paper-scissors and polls");
-            if (obj.ropascis) {
-                this.ropascis = obj.ropascis.map((rps) =>
-                    new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
-            }
-            if (obj.polls) {
-                this.polls = obj.polls.map((rps) => PollStruct.fromObject(rps));
-            }
+                Log.lvl2("Getting rock-paper-scissors and polls");
+                if (obj.ropascis) {
+                    this.ropascis = obj.ropascis.map((rps) =>
+                        new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
+                }
+                if (obj.polls) {
+                    this.polls = obj.polls.map((rps) => PollStruct.fromObject(rps));
+                }
 
-            if (obj.contact) {
-                this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
-            } else if (this.contact) {
-                await this.contact.connectBC(this.bc);
-            }
-            this.contact.data = this;
-            this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-
-            Log.lvl2("Getting contact informations");
-            this.contacts = [];
-            if (obj.contacts) {
-                const fs = obj.contacts.filter((u) => u);
-                for (const f of fs) {
-                    this.contacts.push(await Contact.fromObjectBC(this.bc, f));
+                if (obj.contact) {
+                    this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
+                } else if (this.contact) {
+                    await this.contact.connectBC(this.bc);
+                }
+                Log.lvl2("Getting contact informations");
+                this.contacts = [];
+                if (obj.contacts) {
+                    const fs = obj.contacts.filter((u) => u);
+                    for (const f of fs) {
+                        this.contacts.push(await Contact.fromObjectBC(this.bc, f));
+                    }
                 }
             }
+
+            this.contact.data = this;
+            this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         } catch (e) {
             await Log.rcatch(e);
         }
