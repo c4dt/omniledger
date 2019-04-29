@@ -2,6 +2,7 @@
  * system.
  */
 import ByzCoinRPC from "./src/byzcoin/byzcoin-rpc";
+import CredentialsInstance from "./src/byzcoin/contracts/credentials-instance";
 import { PersonhoodRPC, PollStruct } from "./src/personhood/personhood-rpc";
 
 import { Scalar } from "@dedis/kyber";
@@ -105,7 +106,8 @@ export class Data {
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
         const darcCred = Darc.newDarc([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
-        const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch, CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s",
+        const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch,
+            CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s",
             CoinInstance.contractID, inv));
         const darcCoin = Darc.newDarc([], [darcSignId], Buffer.from("coin"), rules);
 
@@ -746,8 +748,8 @@ export class Data {
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
         const darcCred = Darc.newDarc([], [darcSignId], Buffer.from("credential"),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
-        const rules = [CoinInstance.commandTransfer, CoinInstance.commandFetch, CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s",
-            CoinInstance.contractID, inv));
+        const rules = [CoinInstance.commandTransfer, CoinInstance.commandFetch,
+            CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s", CoinInstance.contractID, inv));
         const darcCoin = Darc.newDarc([], [darcSignId], Buffer.from("coin"), rules);
 
         Log.print("LTS is:", this.lts);

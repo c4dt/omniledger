@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
+import DarcInstance from "../byzcoin/contracts/darc-instance";
 import { EMPTY_BUFFER, registerMessage } from "../protobuf";
 import { IIdentity } from "./identity-wrapper";
 import Rules from "./rules";

@@ -67,6 +67,7 @@ export class OnChainSecretInstance extends Instance {
 
 export class CalypsoWriteInstance extends Instance {
     static readonly contractID = "calypsoWrite";
+    static readonly argumentWrite = "write";
 
     /**
      * Spawn a calypsoWrite instance
@@ -88,7 +89,8 @@ export class CalypsoWriteInstance extends Instance {
                 Instruction.createSpawn(
                     darcID,
                     CalypsoWriteInstance.contractID,
-                    [new Argument({name: "write", value: Buffer.from(Write.encode(write).finish())})],
+                    [new Argument({name: CalypsoWriteInstance.argumentWrite,
+                        value: Buffer.from(Write.encode(write).finish())})],
                 ),
             ],
         });
@@ -132,6 +134,7 @@ export class CalypsoWriteInstance extends Instance {
 
 export class CalypsoReadInstance extends Instance {
     static readonly contractID = "calypsoRead";
+    static readonly argumentRead = "read";
 
     static async spawn(bc: ByzCoinRPC, writeId: InstanceID, pub: Point, signers: Signer[], pay?: Instruction):
         Promise<CalypsoReadInstance> {
@@ -139,7 +142,8 @@ export class CalypsoReadInstance extends Instance {
         const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createSpawn(writeId, CalypsoReadInstance.contractID, [
-                    new Argument({name: "read", value: Buffer.from(Read.encode(read).finish())}),
+                    new Argument({name: CalypsoReadInstance.argumentRead,
+                        value: Buffer.from(Read.encode(read).finish())}),
                 ]),
             ],
         });

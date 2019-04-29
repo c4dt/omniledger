@@ -387,7 +387,7 @@ export default class SpawnerInstance extends Instance {
                     new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(this.struct.costCWrite.value.toBytesLE())}),
                 ]),
                 Instruction.createSpawn(this.id, CalypsoWriteInstance.contractID, [
-                    new Argument({name: "write", value: Buffer.from(Write.encode(write).finish())}),
+                    new Argument({name: CalypsoWriteInstance.argumentWrite, value: Buffer.from(Write.encode(write).finish())}),
                     new Argument({name: "darcID", value: d[0].id}),
                 ]),
             ],
