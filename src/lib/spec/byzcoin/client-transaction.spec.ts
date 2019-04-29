@@ -1,6 +1,6 @@
 import Long from "long";
 import ClientTransaction, { Argument, Instruction } from "../../src/byzcoin/client-transaction";
-import { IIdentity } from "../../src/darc/identity-wrapper";
+import { IIdentity } from "../../src/darc";
 import { SIGNER } from "../support/conondes";
 
 const updater = new class {
@@ -26,7 +26,7 @@ describe("ClientTransaction Tests", () => {
 
     it("should create an invoke instruction", async () => {
         const args = [new Argument({ name: "a", value: Buffer.from("b") })];
-        const instr = Instruction.createInvoke(IID, "abc", "evolve", args);
+        const instr = Instruction.createInvoke(IID, "abc", DarcInstance.commandEvolve, args);
         await instr.updateCounters(updater, [SIGNER]);
         instr.signWith(instr.hash(), [SIGNER]);
 
@@ -56,13 +56,12 @@ describe("ClientTransaction Tests", () => {
                 Instruction.createDelete(IID, "def"),
             ],
         });
-        await ctx.updateCounters(updater, [SIGNER]);
-        ctx.signWith([SIGNER]);
+        await ctx.updateCountersAndSign(updater, [[SIGNER], [SIGNER]]);
 
         expect(ctx.hash()).toBeDefined();
 
         // update empty instruction list
         const ctx2 = new ClientTransaction({ instructions: [] });
-        await ctx2.updateCounters(updater, [SIGNER]);
+        await ctx2.updateCounters(updater, []);
     });
 });

@@ -15,7 +15,7 @@ function initRules(owners: IIdentity[], signers: IIdentity[]): Rules {
     const rules = new Rules();
 
     owners.forEach((o) => rules.appendToRule("invoke:darc.evolve", o, Rules.AND));
-    signers.forEach((s) => rules.appendToRule("_sign", s, Rules.OR));
+    signers.forEach((s) => rules.appendToRule(DarcInstance.commandSign, s, Rules.OR));
 
     return rules;
 }

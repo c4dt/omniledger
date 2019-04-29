@@ -1,25 +1,19 @@
-import {Message, Properties} from 'protobufjs/light';
-import Signer from '../../darc/signer';
-import {EMPTY_BUFFER, registerMessage} from '../../protobuf';
-import ByzCoinRPC from '../byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../client-transaction';
-import Instance, {InstanceID} from '../instance';
-import {Point} from '@dedis/kyber';
-import {Public} from '../../../KeyPair';
-import {createHash, randomBytes} from 'crypto';
+import { Point } from "@dedis/kyber";
+import { createHash, randomBytes } from "crypto";
+import { Message, Properties } from "protobufjs/light";
+import { Public } from "../../../KeyPair";
+import Signer from "../../darc/signer";
+import { EMPTY_BUFFER, registerMessage } from "../../protobuf";
+import ByzCoinRPC from "../byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "../client-transaction";
+import Instance, { InstanceID } from "../instance";
 
 export default class CredentialsInstance extends Instance {
-
-    static readonly contractID = 'credential';
-    public credential: CredentialStruct;
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== CredentialsInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CredentialsInstance.contractID}`);
-        }
-        this.credential = CredentialStruct.decode(inst.data);
-    }
+    static readonly contractID = "credential";
+    static readonly commandUpdate = "update";
+    static readonly argumentCredential = "credential";
+    static readonly argumentCredID = "credID";
+    static readonly argumentDarcID = "darcID";
 
     /**
      * Generate the credential instance ID for a given darc ID
@@ -28,7 +22,7 @@ export default class CredentialsInstance extends Instance {
      * @returns the id as a buffer
      */
     static credentialIID(buf: Buffer): InstanceID {
-        const h = createHash('sha256');
+        const h = createHash("sha256");
         h.update(Buffer.from(CredentialsInstance.contractID));
         h.update(buf);
         return h.digest();
@@ -41,7 +35,7 @@ export default class CredentialsInstance extends Instance {
      * @param darcID    The darc instance ID
      * @param signers   The list of signers for the transaction
      * @param cred      The credential to store
-     * @param pub       Optional - if given, the instanceID will be sha256("credential" | pub)
+     * @param credID       Optional - if given, the instanceID will be sha256("credential" | pub)
      * @param did       Optional - if given, replaces the responsible darc with the given did
      * @returns a promise that resolves with the new instance
      */
@@ -50,20 +44,20 @@ export default class CredentialsInstance extends Instance {
         darcID: InstanceID,
         signers: Signer[],
         cred: CredentialStruct,
-        pub: Public = null,
+        credID: Public = null,
         did: InstanceID = null,
     ): Promise<CredentialsInstance> {
-        const args = [new Argument({name: 'credential', value: cred.toBytes()})];
-        if (pub) {
-            args.push(new Argument({name: 'public', value: pub.toBuffer()}));
+        const args = [new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()})];
+        if (credID) {
+            args.push(new Argument({name: CredentialsInstance.argumentCredID, value: credID.toBuffer()}));
         }
         if (did) {
-            args.push(new Argument({name: 'darcID', value: did}));
+            args.push(new Argument({name: CredentialsInstance.argumentDarcID, value: did}));
         }
         const inst = Instruction.createSpawn(
             darcID,
             CredentialsInstance.contractID,
-            args
+            args,
         );
         await inst.updateCounters(bc, signers);
 
@@ -88,13 +82,13 @@ export default class CredentialsInstance extends Instance {
         bc: ByzCoinRPC,
         darcID: InstanceID,
         cred: CredentialStruct,
-        credID: Buffer = null
+        credID: Buffer = null,
     ): CredentialsInstance {
         if (!credID) {
             credID = randomBytes(32);
         }
-        return new CredentialsInstance(bc, Instance.fromFields(CredentialsInstance.credentialIID(credID), CredentialsInstance.contractID,
-            darcID, cred.toBytes()));
+        return new CredentialsInstance(bc, Instance.fromFields(CredentialsInstance.credentialIID(credID),
+            CredentialsInstance.contractID, darcID, cred.toBytes()));
     }
 
     /**
@@ -105,6 +99,15 @@ export default class CredentialsInstance extends Instance {
      */
     static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID): Promise<CredentialsInstance> {
         return new CredentialsInstance(bc, await Instance.fromByzCoin(bc, iid));
+    }
+    credential: CredentialStruct;
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== CredentialsInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CredentialsInstance.contractID}`);
+        }
+        this.credential = CredentialStruct.decode(inst.data);
     }
 
     /**
@@ -135,14 +138,13 @@ export default class CredentialsInstance extends Instance {
      * Set or update a credential attribute locally. The new credential is not sent to
      * the blockchain, for this you need to call sendUpdate.
      *
-     * @param owner         Signer to use for the transaction
      * @param credential    Name of the credential
      * @param attribute     Name of the attribute
      * @param value         The value to set
      * @returns a promise resolving when the transaction is in a block, or rejecting
      * for an error
      */
-    async setAttribute(owner: Signer, credential: string, attribute: string, value: Buffer): Promise<any> {
+    async setAttribute(credential: string, attribute: string, value: Buffer): Promise<any> {
         return this.credential.setAttribute(credential, attribute, value);
     }
 
@@ -153,8 +155,8 @@ export default class CredentialsInstance extends Instance {
         const instr = Instruction.createInvoke(
             this.id,
             CredentialsInstance.contractID,
-            'update',
-            [new Argument({name: 'credential', value: this.credential.toBytes()})],
+            CredentialsInstance.commandUpdate,
+            [new Argument({name: CredentialsInstance.argumentCredential, value: this.credential.toBytes()})],
         );
         const ctx = new ClientTransaction({instructions: [instr]});
         await ctx.updateCountersAndSign(this.rpc, [owners]);
@@ -172,10 +174,10 @@ export default class CredentialsInstance extends Instance {
                 Instruction.createInvoke(
                     this.id,
                     CredentialsInstance.contractID,
-                    'recover',
-                    [new Argument({name: 'signatures', value: sigBuf}),
-                        new Argument({name: 'public', value: pubKey.toProto()})])
-            ]
+                    "recover",
+                    [new Argument({name: "signatures", value: sigBuf}),
+                        new Argument({name: "public", value: pubKey.toProto()})]),
+            ],
         });
         await this.rpc.sendTransactionAndWait(ctx);
     }
@@ -187,19 +189,19 @@ export default class CredentialsInstance extends Instance {
  */
 export class CredentialStruct extends Message<CredentialStruct> {
 
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage("personhood.CredentialStruct", CredentialStruct, Credential);
+    }
+
     readonly credentials: Credential[];
 
     constructor(properties?: Properties<CredentialStruct>) {
         super(properties);
 
         this.credentials = this.credentials.slice() || [];
-    }
-
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.CredentialStruct', CredentialStruct, Credential);
     }
 
     /**
@@ -278,6 +280,17 @@ export class CredentialStruct extends Message<CredentialStruct> {
  */
 export class Credential extends Message<Credential> {
 
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage("personhood.Credential", Credential, Attribute);
+    }
+
+    static fromNameAttr(name: string, key: string, value: Buffer): Credential {
+        return new Credential({name, attributes: [new Attribute({name: key, value})]});
+    }
+
     readonly name: string;
     readonly attributes: Attribute[];
 
@@ -286,23 +299,19 @@ export class Credential extends Message<Credential> {
 
         this.attributes = this.attributes.slice() || [];
     }
-
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.Credential', Credential, Attribute);
-    }
-
-    static fromNameAttr(name: string, key: string, value: Buffer): Credential {
-        return new Credential({name, attributes: [new Attribute({name: key, value})]});
-    }
 }
 
 /**
  * Attribute of a credential
  */
 export class Attribute extends Message<Attribute> {
+
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage("personhood.Attribute", Attribute);
+    }
 
     readonly name: string;
     readonly value: Buffer;
@@ -311,13 +320,6 @@ export class Attribute extends Message<Attribute> {
         super(props);
 
         this.value = Buffer.from(this.value || EMPTY_BUFFER);
-    }
-
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.Attribute', Attribute);
     }
 }
 

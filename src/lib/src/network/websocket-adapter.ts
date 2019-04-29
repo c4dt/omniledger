@@ -1,4 +1,3 @@
-// import WebSocket from 'ws';
 import WebSocket from "isomorphic-ws";
 import { Log } from "../log";
 

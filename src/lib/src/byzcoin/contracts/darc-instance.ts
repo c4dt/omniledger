@@ -1,23 +1,15 @@
-import Darc from '../../darc/darc';
-import Signer from '../../darc/signer';
-import ByzCoinRPC from '../byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../client-transaction';
-import Instance, {InstanceID} from '../instance';
-import {Log} from '../../log';
+import Darc from "../../darc/darc";
+import Signer from "../../darc/signer";
+import { Log } from "../../log";
+import ByzCoinRPC from "../byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "../client-transaction";
+import Instance, { InstanceID } from "../instance";
 
 export default class DarcInstance extends Instance {
-
-    static readonly contractID = 'darc';
-    public darc: Darc;
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== DarcInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${DarcInstance.contractID}`);
-        }
-
-        this.darc = Darc.decode(inst.data);
-    }
+    static readonly contractID = "darc";
+    static readonly commandSign = "_sign";
+    static readonly commandEvolve = "evolve";
+    static readonly argumentDarc = "darc";
 
     /**
      * Initializes using an existing coinInstance from ByzCoin
@@ -26,6 +18,16 @@ export default class DarcInstance extends Instance {
      */
     static async fromByzcoin(bc: ByzCoinRPC, iid: Buffer): Promise<DarcInstance> {
         return new DarcInstance(bc, await Instance.fromByzCoin(bc, iid));
+    }
+    darc: Darc;
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== DarcInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${DarcInstance.contractID}`);
+        }
+
+        this.darc = Darc.decode(inst.data);
     }
 
     /**
@@ -43,11 +45,11 @@ export default class DarcInstance extends Instance {
 
     getSignerExpression(): Buffer {
         for (const rule of this.darc.rules.list) {
-            if (rule.action === '_sign') {
+            if (rule.action === DarcInstance.commandSign) {
                 return rule.expr;
             }
         }
-        throw new Error('This darc doesn\'t have a sign expression');
+        throw new Error("This darc doesn't have a sign expression");
     }
 
     getSignerDarcIDs(): InstanceID[] {
@@ -56,11 +58,11 @@ export default class DarcInstance extends Instance {
             throw new Error('Don\'t know what to do with "(" or "&" in expression');
         }
         const ret: InstanceID[] = [];
-        expr.split('|').forEach(exp => {
-            if (exp.startsWith('darc:')) {
-                ret.push(Buffer.from(exp.slice(5), 'hex'));
+        expr.split("|").forEach((exp) => {
+            if (exp.startsWith("darc:")) {
+                ret.push(Buffer.from(exp.slice(5), "hex"));
             } else {
-                Log.warn('Non-darc expression in signer:', exp);
+                Log.warn("Non-darc expression in signer:", exp);
             }
         });
         return ret;
@@ -77,16 +79,16 @@ export default class DarcInstance extends Instance {
      */
     async evolveDarcAndWait(newDarc: Darc, signers: Signer[], wait: number): Promise<DarcInstance> {
         if (!newDarc.getBaseID().equals(this.darc.getBaseID())) {
-            throw new Error('not the same base id for the darc');
+            throw new Error("not the same base id for the darc");
         }
         if (newDarc.version.compare(this.darc.version.add(1)) !== 0) {
-            throw new Error('not the right version');
+            throw new Error("not the right version");
         }
         if (!newDarc.prevID.equals(this.darc.id)) {
-            throw new Error('doesn\'t point to the previous darc');
+            throw new Error("doesn't point to the previous darc");
         }
-        const args = [new Argument({name: 'darc', value: Buffer.from(Darc.encode(newDarc).finish())})];
-        const instr = Instruction.createInvoke(this.darc.getBaseID(), DarcInstance.contractID, 'evolve', args);
+        const args = [new Argument({name: DarcInstance.argumentDarc, value: Buffer.from(Darc.encode(newDarc).finish())})];
+        const instr = Instruction.createInvoke(this.darc.getBaseID(), DarcInstance.contractID, DarcInstance.commandEvolve, args);
 
         const ctx = new ClientTransaction({instructions: [instr]});
         await ctx.updateCounters(this.rpc, [signers]);
@@ -108,7 +110,7 @@ export default class DarcInstance extends Instance {
     async spawnDarcAndWait(d: Darc, signers: Signer[], wait: number = 0): Promise<DarcInstance> {
         await this.spawnInstanceAndWait(DarcInstance.contractID,
             [new Argument({
-                name: 'darc',
+                name: DarcInstance.argumentDarc,
                 value: Buffer.from(Darc.encode(d).finish()),
             })], signers, wait);
         return DarcInstance.fromByzcoin(this.rpc, d.getBaseID());

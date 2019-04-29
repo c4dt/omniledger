@@ -87,10 +87,10 @@ export default class RoPaSciInstance extends Instance {
      * @returns a promise that resolves on success, or rejects with the error
      */
     async second(coin: CoinInstance, signer: Signer, choice: number): Promise<void> {
-        if (!coin.name.equals(this.struct.stake.name)) {
+        if (!coin.coin.name.equals(this.struct.stake.name)) {
             throw new Error("not correct coin-type for player 2");
         }
-        if (coin.value.lessThan(this.struct.stake.value)) {
+        if (coin.coin.value.lessThan(this.struct.stake.value)) {
             throw new Error("don't have enough coins to match stake");
         }
 
@@ -99,9 +99,9 @@ export default class RoPaSciInstance extends Instance {
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    "fetch",
+                    CoinInstance.commandFetch,
                     [
-                        new Argument({name: "coins", value: Buffer.from(this.struct.stake.value.toBytesLE())}),
+                        new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(this.struct.stake.value.toBytesLE())}),
                     ],
                 ),
                 Instruction.createInvoke(
@@ -129,7 +129,7 @@ export default class RoPaSciInstance extends Instance {
      * with the error
      */
     async confirm(coin: CoinInstance): Promise<void> {
-        if (!coin.name.equals(this.struct.stake.name)) {
+        if (!coin.coin.name.equals(this.struct.stake.name)) {
             throw new Error("not correct coin-type for player 1");
         }
 

@@ -15,6 +15,10 @@ export class LogC {
         return this._lvl;
     }
     _lvl: number;
+    out = (...str: string[]) => {
+        // tslint:disable-next-line
+        console.log(str.join(" "));
+    };
 
     constructor(lvl: number) {
         this._lvl = lvl === undefined ? defaultLvl : lvl;
@@ -50,7 +54,7 @@ export class LogC {
                 return "{" + type + "}: " + content;
             } catch (e) {
                 // tslint:disable-next-line
-                this.clog("error while inspecting:", e);
+                this.out("error while inspecting:", e);
 
                 return a;
             }
@@ -80,7 +84,7 @@ export class LogC {
         indent = indent >= 5 ? 0 : indent;
         if (l <= this._lvl) {
             // tslint:disable-next-line
-            this.clog(lvlStr[l + 7] + ": " + this.printCaller(new Error(), 3) +
+            this.out(lvlStr[l + 7] + ": " + this.printCaller(new Error(), 3) +
                 " -> " + " ".repeat(indent * 2) + this.joinArgs(args));
         }
     }
@@ -143,11 +147,11 @@ export class LogC {
                 if (i > 1) {
                     errMsg = "";
                 }
-                this.clog("C : " + this.printCaller(e, i) + " -> (" + errMsg + ") " +
+                this.out("C : " + this.printCaller(e, i) + " -> (" + errMsg + ") " +
                     this.joinArgs(args));
             }
         } else {
-            this.clog("C : " + this.printCaller(e, 1) + " -> (" + errMsg + ") " +
+            this.out("C : " + this.printCaller(e, 1) + " -> (" + errMsg + ") " +
                 this.joinArgs(args));
         }
     }
@@ -162,19 +166,14 @@ export class LogC {
                 if (i > 1) {
                     errMsg = "";
                 }
-                this.clog("C : " + this.printCaller(e, i) + " -> (" + errMsg + ") " +
+                this.out("C : " + this.printCaller(e, i) + " -> (" + errMsg + ") " +
                     this.joinArgs(args));
             }
         } else {
-            this.clog("C : " + this.printCaller(e, 1) + " -> (" + errMsg + ") " +
+            this.out("C : " + this.printCaller(e, 1) + " -> (" + errMsg + ") " +
                 this.joinArgs(args));
         }
         return Promise.reject(errMsg.toString().replace(/Error: /, ""));
-    }
-
-    private clog(...args: any) {
-        // tslint:disable-next-line
-        console.log(...args);
     }
 }
 

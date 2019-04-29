@@ -1,11 +1,12 @@
-// import { WebSocketAdapter } from "./websocket-adapter";
+import * as connection from "./connection";
 import { Roster, ServerIdentity, ServiceIdentity } from "./proto";
-// import * as connection from "./connection";
+import { BrowserWebSocketAdapter, WebSocketAdapter } from "./websocket-adapter";
 
 export {
-    // connection,
+    connection,
     Roster,
     ServerIdentity,
     ServiceIdentity,
-    // WebSocketAdapter,
+    WebSocketAdapter,
+    BrowserWebSocketAdapter,
 };

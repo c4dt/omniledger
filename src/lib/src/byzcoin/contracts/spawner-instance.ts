@@ -1,47 +1,29 @@
-import {createHash, randomBytes} from 'crypto';
-import Long from 'long';
-import {Message, Properties} from 'protobufjs/light';
-import Darc from '../../darc/darc';
-import Signer from '../../darc/signer';
-import {Log} from '../../log';
-import {registerMessage} from '../../protobuf';
-import ByzCoinRPC from '../byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../client-transaction';
-import Instance, {InstanceID} from '../instance';
-import CoinInstance, {Coin} from './coin-instance';
-import CredentialInstance, {CredentialStruct} from './credentials-instance';
-import DarcInstance from './darc-instance';
-import {PopPartyInstance} from '../../personhood/pop-party-instance';
-import {PopDesc} from '../../personhood/proto';
-import RoPaSciInstance, {RoPaSciStruct} from '../../personhood/ro-pa-sci-instance';
-import {CalypsoWriteInstance, Write} from '../../calypso/calypso-instance';
-import {IIdentity} from '../../darc';
-import {OnChainSecretRPC, CreateLTSReply, LongTermSecret} from '../../calypso/calypso-rpc';
-import {secretbox} from 'tweetnacl-ts';
-import {SecureData} from '../../../SecureData';
+import { createHash, randomBytes } from "crypto";
+import Long from "long";
+import { Message, Properties } from "protobufjs/light";
+import { CalypsoWriteInstance, Write } from "../../calypso/calypso-instance";
+import { LongTermSecret } from "../../calypso/calypso-rpc";
+import { IIdentity } from "../../darc";
+import Darc from "../../darc/darc";
+import Signer from "../../darc/signer";
+import ISigner from "../../darc/signer";
+import { Log } from "../../log";
+import { PopPartyInstance } from "../../personhood/pop-party-instance";
+import { PopDesc } from "../../personhood/proto";
+import RoPaSciInstance, { RoPaSciStruct } from "../../personhood/ro-pa-sci-instance";
+import { registerMessage } from "../../protobuf";
+import ByzCoinRPC from "../byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "../client-transaction";
+import Instance, { InstanceID } from "../instance";
+import CoinInstance, { Coin } from "./coin-instance";
+import CredentialInstance from "./credentials-instance";
+import CredentialsInstance, { CredentialStruct } from "./credentials-instance";
+import DarcInstance from "./darc-instance";
 
 export const SPAWNER_COIN = Buffer.alloc(32, 0);
-SPAWNER_COIN.write('SpawnerCoin');
+SPAWNER_COIN.write("SpawnerCoin");
 
 export default class SpawnerInstance extends Instance {
-
-    static readonly contractID = 'spawner';
-    private struct: SpawnerStruct;
-
-    /**
-     * Creates a new SpawnerInstance
-     * @param bc        The ByzCoinRPC instance
-     * @param iid       The instance ID
-     * @param spawner   Parameters for the spawner: costs and names
-     */
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== SpawnerInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${SpawnerInstance.contractID}`);
-        }
-
-        this.struct = SpawnerStruct.decode(inst.data);
-    }
 
     /**
      * Get the total cost required to sign up
@@ -53,6 +35,8 @@ export default class SpawnerInstance extends Instance {
             .add(this.struct.costDarc.value)
             .add(this.struct.costCredential.value);
     }
+
+    static readonly contractID = "spawner";
 
     /**
      * Spawn a spawner instance
@@ -71,7 +55,7 @@ export default class SpawnerInstance extends Instance {
                 const value = new Coin({name: SPAWNER_COIN, value: costs[k]}).toBytes();
                 return new Argument({name: k, value});
             }),
-            new Argument({name: 'beneficiary', value: beneficiary}),
+            new Argument({name: "beneficiary", value: beneficiary}),
         ];
 
         const inst = Instruction.createSpawn(darcID, this.contractID, args);
@@ -92,11 +76,27 @@ export default class SpawnerInstance extends Instance {
     static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID): Promise<SpawnerInstance> {
         const proof = await bc.getProof(iid);
         if (!proof.exists(iid)) {
-            throw new Error('fail to get a matching proof');
+            throw new Error("fail to get a matching proof");
         }
 
         return new SpawnerInstance(bc, await proof.getVerifiedInstance(bc.genesisID,
             SpawnerInstance.contractID));
+    }
+    private struct: SpawnerStruct;
+
+    /**
+     * Creates a new SpawnerInstance
+     * @param bc        The ByzCoinRPC instance
+     * @param iid       The instance ID
+     * @param spawner   Parameters for the spawner: costs and names
+     */
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== SpawnerInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${SpawnerInstance.contractID}`);
+        }
+
+        this.struct = SpawnerStruct.decode(inst.data);
     }
 
     /**
@@ -127,17 +127,17 @@ export default class SpawnerInstance extends Instance {
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    'fetch',
-                    [new Argument({name: 'coins', value: Buffer.from(cost.toBytesLE())})],
-                )
+                    CoinInstance.commandFetch,
+                    [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(cost.toBytesLE())})],
+                ),
             ],
         });
-        darcs.forEach(darc => {
+        darcs.forEach((darc) => {
             ctx.instructions.push(
                 Instruction.createSpawn(
                     this.id,
                     DarcInstance.contractID,
-                    [new Argument({name: 'darc', value: darc.toBytes()})],
+                    [new Argument({name: DarcInstance.argumentDarc, value: darc.toBytes()})],
                 ));
         });
         await ctx.updateCountersAndSign(this.rpc, [signers]);
@@ -151,7 +151,7 @@ export default class SpawnerInstance extends Instance {
                     dis.push(await DarcInstance.fromByzcoin(this.rpc, da.getBaseID()));
                     break;
                 } catch (e) {
-                    Log.warn('couldn\'t get proof - perhaps still updating?');
+                    Log.warn("couldn't get proof - perhaps still updating?");
                 }
             }
         }
@@ -168,14 +168,8 @@ export default class SpawnerInstance extends Instance {
      * @param balance   The starting balance
      * @returns a promise that resolves with the new coin instance
      */
-    async spawnCoin(coin: CoinInstance, signers: Signer[], darcID: InstanceID, coinID: Buffer, balance?: Long): Promise<CoinInstance> {
-        try {
-            const ci = await CoinInstance.fromByzcoin(this.rpc, CoinInstance.coinIID(coinID));
-            Log.warn('this coin is already registered');
-            return ci;
-        } catch (e) {
-            // doesn't exist
-        }
+    async spawnCoin(coin: CoinInstance, signers: Signer[], darcID: InstanceID, coinID: Buffer, balance?: Long):
+        Promise<CoinInstance> {
 
         balance = balance || Long.fromNumber(0);
         const valueBuf = this.struct.costCoin.value.add(balance).toBytesLE();
@@ -184,16 +178,16 @@ export default class SpawnerInstance extends Instance {
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    'fetch',
-                    [new Argument({name: 'coins', value: Buffer.from(valueBuf)})],
+                    CoinInstance.commandFetch,
+                    [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(valueBuf)})],
                 ),
                 Instruction.createSpawn(
                     this.id,
                     CoinInstance.contractID,
                     [
-                        new Argument({name: 'coinName', value: SPAWNER_COIN}),
-                        new Argument({name: 'coinID', value: coinID}),
-                        new Argument({name: 'darcID', value: darcID}),
+                        new Argument({name: "coinName", value: SPAWNER_COIN}),
+                        new Argument({name: "coinID", value: coinID}),
+                        new Argument({name: "darcID", value: darcID}),
                     ],
                 ),
             ],
@@ -210,50 +204,48 @@ export default class SpawnerInstance extends Instance {
      * @param coin      The coin instance to take coins from
      * @param signers   The signers for the transaction
      * @param darcID    The darc instance ID
-     * @param credID    The instance-ID for this credential - will be calculated as sha256("credential" | credID)
      * @param cred      The starting credentials
+     * @param credID    The instance-ID for this credential - will be calculated as sha256("credential" | credID)
      * @returns a promise that resolves with the new credential instance
      */
     async spawnCredential(
         coin: CoinInstance,
-        signers: Signer[],
+        signers: ISigner[],
         darcID: Buffer,
-        credID: Buffer,
         cred: CredentialStruct,
-    ): Promise<CredentialInstance> {
-        try {
-            const c = await CredentialInstance.fromByzcoin(this.rpc, CredentialInstance.credentialIID(credID));
-            Log.warn('this credential is already registerd');
-            return c;
-        } catch (e) {
-            // credential doesn't exist
-        }
-
+        credID: Buffer = null,
+    ): Promise<CredentialsInstance> {
         const valueBuf = this.struct.costCredential.value.toBytesLE();
+        const credArgs = [
+            new Argument({name: CredentialsInstance.argumentDarcID, value: darcID}),
+            new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()}),
+        ];
+        let finalCredID: Buffer;
+        if (credID) {
+            credArgs.push(new Argument({name: CredentialsInstance.argumentCredID, value: credID}));
+            finalCredID = CredentialInstance.credentialIID(credID);
+        } else {
+            finalCredID = CredentialsInstance.credentialIID(darcID);
+        }
         const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    'fetch',
-                    [new Argument({name: 'coins', value: Buffer.from(valueBuf)})],
+                    CoinInstance.commandFetch,
+                    [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(valueBuf)})],
                 ),
                 Instruction.createSpawn(
                     this.id,
                     CredentialInstance.contractID,
-                    [
-                        new Argument({name: 'darcID', value: darcID}),
-                        new Argument({name: 'credID', value: credID}),
-                        new Argument({name: 'credential', value: cred.toBytes()}),
-                    ],
+                    credArgs,
                 ),
             ],
         });
         await ctx.updateCountersAndSign(this.rpc, [signers, []]);
-
         await this.rpc.sendTransactionAndWait(ctx);
 
-        return CredentialInstance.fromByzcoin(this.rpc, CredentialInstance.credentialIID(credID));
+        return CredentialInstance.fromByzcoin(this.rpc, finalCredID);
     }
 
     /**
@@ -271,34 +263,34 @@ export default class SpawnerInstance extends Instance {
 
         // Verify that all organizers have published their personhood public key
         for (const org of orgs) {
-            if (!org.getAttribute('personhood', 'ed25519')) {
+            if (!org.getAttribute("personhood", "ed25519")) {
                 throw new Error(`One of the organisers didn't publish his personhood key`);
             }
         }
 
         const orgDarcIDs = orgs.map((org) => org.darcID);
         const valueBuf = this.struct.costDarc.value.add(this.struct.costParty.value).toBytesLE();
-        const orgDarc = PopPartyInstance.preparePartyDarc(orgDarcIDs, 'party-darc ' + desc.name);
+        const orgDarc = PopPartyInstance.preparePartyDarc(orgDarcIDs, "party-darc " + desc.name);
         const ctx = new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    'fetch',
-                    [new Argument({name: 'coins', value: Buffer.from(valueBuf)})],
+                    CoinInstance.commandFetch,
+                    [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(valueBuf)})],
                 ),
                 Instruction.createSpawn(
                     this.id,
                     DarcInstance.contractID,
-                    [new Argument({name: 'darc', value: orgDarc.toBytes()})],
+                    [new Argument({name: DarcInstance.argumentDarc, value: orgDarc.toBytes()})],
                 ),
                 Instruction.createSpawn(
                     this.id,
                     PopPartyInstance.contractID,
                     [
-                        new Argument({name: 'darcID', value: orgDarc.getBaseID()}),
-                        new Argument({name: 'description', value: desc.toBytes()}),
-                        new Argument({name: 'miningReward', value: Buffer.from(reward.toBytesLE())}),
+                        new Argument({name: "darcID", value: orgDarc.getBaseID()}),
+                        new Argument({name: "description", value: desc.toBytes()}),
+                        new Argument({name: "miningReward", value: Buffer.from(reward.toBytesLE())}),
                     ],
                 ),
             ],
@@ -325,15 +317,15 @@ export default class SpawnerInstance extends Instance {
         const {desc, coin, signers, stake, choice, fillup} = params;
 
         if (fillup.length !== 31) {
-            throw new Error('need exactly 31 bytes for fillUp');
+            throw new Error("need exactly 31 bytes for fillUp");
         }
 
-        const c = new Coin({name: coin.name, value: stake.add(this.struct.costRoPaSci.value)});
-        if (coin.value.lessThan(c.value)) {
-            throw new Error('account balance not high enough for that stake');
+        const c = new Coin({name: coin.coin.name, value: stake.add(this.struct.costRoPaSci.value)});
+        if (coin.coin.value.lessThan(c.value)) {
+            throw new Error("account balance not high enough for that stake");
         }
 
-        const fph = createHash('sha256');
+        const fph = createHash("sha256");
         fph.update(Buffer.from([choice % 3]));
         fph.update(fillup);
         const rps = new RoPaSciStruct({
@@ -350,13 +342,13 @@ export default class SpawnerInstance extends Instance {
                 Instruction.createInvoke(
                     coin.id,
                     CoinInstance.contractID,
-                    'fetch',
-                    [new Argument({name: 'coins', value: Buffer.from(c.value.toBytesLE())})],
+                    CoinInstance.commandFetch,
+                    [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(c.value.toBytesLE())})],
                 ),
                 Instruction.createSpawn(
                     this.id,
                     RoPaSciInstance.contractID,
-                    [new Argument({name: 'struct', value: rps.toBytes()})],
+                    [new Argument({name: "struct", value: rps.toBytes()})],
                 ),
             ],
         });
@@ -374,13 +366,13 @@ export default class SpawnerInstance extends Instance {
                             data?: Buffer):
         Promise<CalypsoWriteInstance> {
 
-        if (coin.value.lessThan(this.struct.costDarc.value.add(this.struct.costCWrite.value))) {
-            throw new Error('account balance not high enough for spawning a darc + calypso writer');
+        if (coin.coin.value.lessThan(this.struct.costDarc.value.add(this.struct.costCWrite.value))) {
+            throw new Error("account balance not high enough for spawning a darc + calypso writer");
         }
 
         const cwDarc = Darc.newDarc([ident[0]], ident,
-            Buffer.from('calypso write protection ' + randomBytes(8).toString('hex')),
-            ['spawn:calypsoRead']);
+            Buffer.from("calypso write protection " + randomBytes(8).toString("hex")),
+            ["spawn:calypsoRead"]);
         const d = await this.spawnDarc(coin, signers, cwDarc);
 
         const write = await Write.createWrite(lts.id, d[0].id, lts.X, key);
@@ -391,14 +383,14 @@ export default class SpawnerInstance extends Instance {
 
         const ctx = new ClientTransaction({
             instructions: [
-                Instruction.createInvoke(coin.id, CoinInstance.contractID, 'fetch', [
-                    new Argument({name: 'coins', value: Buffer.from(this.struct.costCWrite.value.toBytesLE())})
+                Instruction.createInvoke(coin.id, CoinInstance.contractID, CoinInstance.commandFetch, [
+                    new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(this.struct.costCWrite.value.toBytesLE())}),
                 ]),
                 Instruction.createSpawn(this.id, CalypsoWriteInstance.contractID, [
-                    new Argument({name: 'write', value: Buffer.from(Write.encode(write).finish())}),
-                    new Argument({name: 'darcID', value: d[0].id})
-                ])
-            ]
+                    new Argument({name: "write", value: Buffer.from(Write.encode(write).finish())}),
+                    new Argument({name: "darcID", value: d[0].id}),
+                ]),
+            ],
         });
         await ctx.updateCountersAndSign(this.rpc, [signers, []]);
         await this.rpc.sendTransactionAndWait(ctx);
@@ -411,6 +403,13 @@ export default class SpawnerInstance extends Instance {
  * Data of a spawner instance
  */
 export class SpawnerStruct extends Message<SpawnerStruct> {
+
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage("personhood.SpawnerStruct", SpawnerStruct, Coin);
+    }
 
     readonly costDarc: Coin;
     readonly costCoin: Coin;
@@ -426,7 +425,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
 
         /* Protobuf aliases */
 
-        Object.defineProperty(this, 'costdarc', {
+        Object.defineProperty(this, "costdarc", {
             get(): Coin {
                 return this.costDarc;
             },
@@ -435,7 +434,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
             },
         });
 
-        Object.defineProperty(this, 'costcoin', {
+        Object.defineProperty(this, "costcoin", {
             get(): Coin {
                 return this.costCoin;
             },
@@ -444,7 +443,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
             },
         });
 
-        Object.defineProperty(this, 'costcredential', {
+        Object.defineProperty(this, "costcredential", {
             get(): Coin {
                 return this.costCredential;
             },
@@ -453,7 +452,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
             },
         });
 
-        Object.defineProperty(this, 'costparty', {
+        Object.defineProperty(this, "costparty", {
             get(): Coin {
                 return this.costParty;
             },
@@ -462,7 +461,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
             },
         });
 
-        Object.defineProperty(this, 'costropasci', {
+        Object.defineProperty(this, "costropasci", {
             get(): Coin {
                 return this.costRoPaSci;
             },
@@ -471,7 +470,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
             },
         });
 
-        Object.defineProperty(this, 'costcread', {
+        Object.defineProperty(this, "costcread", {
             get(): Coin {
                 return this.costCRead;
             },
@@ -479,7 +478,7 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
                 this.costCRead = value;
             },
         });
-        Object.defineProperty(this, 'costcwrite', {
+        Object.defineProperty(this, "costcwrite", {
             get(): Coin {
                 return this.costCWrite;
             },
@@ -487,13 +486,6 @@ export class SpawnerStruct extends Message<SpawnerStruct> {
                 this.costCWrite = value;
             },
         });
-    }
-
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('personhood.SpawnerStruct', SpawnerStruct, Coin);
     }
 }
 
@@ -561,6 +553,5 @@ interface ISpawnCalyspoWrite {
 
     [k: string]: any;
 }
-
 
 SpawnerStruct.register();

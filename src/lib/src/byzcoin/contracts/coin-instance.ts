@@ -1,42 +1,21 @@
-import Long from 'long';
-import {Message, Properties} from 'protobufjs/light';
-import Signer from '../../darc/signer';
-import {EMPTY_BUFFER, registerMessage} from '../../protobuf';
-import ByzCoinRPC from '../byzcoin-rpc';
-import ClientTransaction, {Argument, Instruction} from '../client-transaction';
-import Instance, {InstanceID} from '../instance';
-import {createHash} from 'crypto';
+import { createHash } from "crypto";
+import Long from "long";
+import { Message, Properties } from "protobufjs/light";
+import Signer from "../../darc/signer";
+import { EMPTY_BUFFER, registerMessage } from "../../protobuf";
+import ByzCoinRPC from "../byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "../client-transaction";
+import Instance, { InstanceID } from "../instance";
 
 export default class CoinInstance extends Instance {
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== CoinInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CoinInstance.contractID}`);
-        }
-
-        this.coin = Coin.decode(inst.data);
-    }
-
-    /**
-     * Getter for the coin name
-     * @returns the name
-     */
-    get name(): Buffer {
-        return this.coin.name;
-    }
-
-    /**
-     * Getter for the coin value
-     * @returns the value
-     */
-    get value(): Long {
-        return this.coin.value;
-    }
-    static readonly contractID = 'coin';
-    static readonly commandMint = 'mint';
-
-    public coin: Coin;
+    static readonly contractID = "coin";
+    static readonly commandMint = "mint";
+    static readonly commandFetch = "fetch";
+    static readonly commandTransfer = "transfer";
+    static readonly commandStore = "store";
+    static readonly argumentType = "type";
+    static readonly argumentCoins = "coins";
+    static readonly argumentDestination = "destination";
 
     /**
      * Generate the coin instance ID for a given darc ID
@@ -45,7 +24,7 @@ export default class CoinInstance extends Instance {
      * @returns the id as a buffer
      */
     static coinIID(buf: Buffer): InstanceID {
-        const h = createHash('sha256');
+        const h = createHash("sha256");
         h.update(Buffer.from(CoinInstance.contractID));
         h.update(buf);
         return h.digest();
@@ -69,7 +48,7 @@ export default class CoinInstance extends Instance {
         const inst = Instruction.createSpawn(
             darcID,
             CoinInstance.contractID,
-            [new Argument({name: 'type', value: type})],
+            [new Argument({name: CoinInstance.argumentType, value: type})],
         );
         await inst.updateCounters(bc, signers);
 
@@ -107,6 +86,17 @@ export default class CoinInstance extends Instance {
         return new CoinInstance(bc, await Instance.fromByzCoin(bc, iid));
     }
 
+    coin: Coin;
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== CoinInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${CoinInstance.contractID}`);
+        }
+
+        this.coin = Coin.decode(inst.data);
+    }
+
     /**
      * Transfer a certain amount of coin to another account.
      *
@@ -116,11 +106,11 @@ export default class CoinInstance extends Instance {
      */
     async transfer(coins: Long, to: Buffer, signers: Signer[]): Promise<void> {
         const args = [
-            new Argument({name: 'coins', value: Buffer.from(coins.toBytesLE())}),
-            new Argument({name: 'destination', value: to}),
+            new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(coins.toBytesLE())}),
+            new Argument({name: CoinInstance.argumentDestination, value: to}),
         ];
 
-        const inst = Instruction.createInvoke(this.id, CoinInstance.contractID, 'transfer', args);
+        const inst = Instruction.createInvoke(this.id, CoinInstance.contractID, CoinInstance.commandTransfer, args);
         await inst.updateCounters(this.rpc, signers);
 
         const ctx = new ClientTransaction({instructions: [inst]});
@@ -141,7 +131,7 @@ export default class CoinInstance extends Instance {
             this.id,
             CoinInstance.contractID,
             CoinInstance.commandMint,
-            [new Argument({name: 'coins', value: Buffer.from(amount.toBytesLE())})],
+            [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(amount.toBytesLE())})],
         );
         await inst.updateCounters(this.rpc, signers);
 
@@ -159,7 +149,7 @@ export default class CoinInstance extends Instance {
     async update(): Promise<CoinInstance> {
         const p = await this.rpc.getProof(this.id);
         if (!p.exists(this.id)) {
-            throw new Error('fail to get a matching proof');
+            throw new Error("fail to get a matching proof");
         }
 
         this.coin = Coin.decode(p.value);
@@ -168,20 +158,20 @@ export default class CoinInstance extends Instance {
 }
 
 export class Coin extends Message<Coin> {
+    /**
+     * @see README#Message classes
+     */
+    static register() {
+        registerMessage("byzcoin.Coin", Coin);
+    }
+
+    name: Buffer;
+    value: Long;
 
     constructor(props?: Properties<Coin>) {
         super(props);
 
         this.name = Buffer.from(this.name || EMPTY_BUFFER);
-    }
-
-    name: Buffer;
-    value: Long;
-    /**
-     * @see README#Message classes
-     */
-    static register() {
-        registerMessage('byzcoin.Coin', Coin);
     }
 
     toBytes(): Buffer {

@@ -123,8 +123,8 @@ export class CalypsoWriteInstance extends Instance {
         if (this.write.cost && (!coin || !coinSigners)) {
             throw new Error("spawning a read instance costs coins");
         }
-        const pay = Instruction.createInvoke(coin.id, CoinInstance.contractID, "fetch", [
-            new Argument({name: "coins", value: Buffer.from(this.write.cost.value.toBytesLE())}),
+        const pay = Instruction.createInvoke(coin.id, CoinInstance.contractID, CoinInstance.commandFetch, [
+            new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(this.write.cost.value.toBytesLE())}),
         ]);
         return CalypsoReadInstance.spawn(this.rpc, this.id, pub, signers, pay);
     }
