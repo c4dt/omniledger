@@ -6,13 +6,14 @@
   </li>
 </ul>
 <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact()">
-  <mat-form-field class="fullwidth" style="width:100%;">
+
+  <mat-form-field class="width100">
     <input matInput type="text" placeholder="Alias" formControlName="alias"/>
   </mat-form-field>
-  <mat-form-field class="fullwidth" style="width:100%;">
+  <mat-form-field class="width100">
     <input matInput type="text" placeholder="Your Email" formControlName="email"/>
   </mat-form-field>
-  <mat-form-field class="fullwidth" style="width:100%;">
+  <mat-form-field class="width100">
     <input matInput type="text" placeholder="Your Phone" formControlName="phone"/>
   </mat-form-field>
   <br>
