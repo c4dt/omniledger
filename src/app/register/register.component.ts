@@ -21,8 +21,8 @@ export class RegisterComponent implements OnInit {
     let ephemeral = "";
     if (true) {
       alias = "garfield";
-      darcID = "05305e3315521816ec92074ba136aa47fca74cf1326aafa66bff2daca6cc54c6";
-      ephemeral = "5f9c83f0b631a4690650f2e80d3d5439c3eb97b0e483690ee038081970d8420c";
+      darcID = "a50e77c4e725c0216e21ef74ee1d7760acdcaa4b998618acf3c4ce54f9f8e20c";
+      ephemeral = "df6bff93b15501726c7442e47988fa78c03cdf549396684f01f05b0df690bb0d";
       activateTesting();
     }
     this.registerForm = new FormGroup({

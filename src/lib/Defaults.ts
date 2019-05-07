@@ -231,7 +231,7 @@ export function activateTesting() {
     Defaults.Confirm = false;
     Defaults.TestButtons = true;
     Defaults.Alias = "testing";
-    Defaults.ByzCoinID = Buffer.from("589774e0da51b8996685a5ee243d6e7867d6e1c13d900fc23abafc55025e2466", "hex");
+    Defaults.ByzCoinID = Buffer.from("e938b98520ffc455751be4628e6c07b1ce5ee9132969e41dab8501143e13e372", "hex");
     Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
     // Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLDEDIS);
     // Defaults.NetRedirect = ["pop.dedis.ch", "192.168.0.1"];
