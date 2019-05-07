@@ -27,7 +27,7 @@ newdb: cothority
 	( ./bcadmin -c . create build/conodes/public.toml --interval 500ms; \
 	  ./bcadmin latest --bc bc-*; \
 	  ./bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee variables.txt
-	@echo; echo "Shutting down conodes"; pkill -f conode; rm build/conodes/running
+	@echo; echo "Shutting down conodes"; pkill -x conode; rm build/conodes/running
 
 docker_run:
 	docker rm -f $(CONTAINER) || echo nothing to stop
