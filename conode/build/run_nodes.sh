@@ -22,6 +22,7 @@ while getopts "h?v:n:p:i:d:qftsc" opt; do
         -h help
         -v verbosity level: none (0) - full (5)
         -t show timestamps on logging
+        -c show logs in color
         -n number of nodes (3)
         -p port base in case of new configuration (7000)
         -i IP in case of new configuration (localhost)
@@ -60,6 +61,11 @@ shift $((OPTIND-1))
 [ "${1:-}" = "--" ] && shift
 
 CONODE_BIN="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/conode
+if [ ! -x $CONODE_BIN ]; then
+	echo "No conode executable found. Use \"go build\" to make it."
+	exit 1
+fi
+
 mkdir -p $data_dir
 cd $data_dir
 export DEBUG_TIME=true

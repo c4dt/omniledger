@@ -20,6 +20,7 @@ newdb: cothority
 		go build -o ../bcadmin ./byzcoin/bcadmin; \
 		go build -o ../phapp ./personhood/phapp
 	@echo "Starting nodes"; \
+	cp cothority/conode/run_nodes.sh build; \
 	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & )
 	@echo "Waiting for nodes to start up"; sleep 10; \
 	echo "Creating new ByzCoin and printing out important variables"; echo; \
