@@ -31,7 +31,6 @@ import (
 	_ "go.dedis.ch/cothority/v3/eventlog"
 	_ "go.dedis.ch/cothority/v3/evoting/service"
 	_ "go.dedis.ch/cothority/v3/personhood"
-	_ "go.dedis.ch/cothority/v3/personhood/testdata"
 	_ "go.dedis.ch/cothority/v3/skipchain"
 	status "go.dedis.ch/cothority/v3/status/service"
 	"go.dedis.ch/kyber/v3/util/encoding"

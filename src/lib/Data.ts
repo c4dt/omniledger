@@ -1,44 +1,42 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
-import ByzCoinRPC from "./src/byzcoin/byzcoin-rpc";
-import CredentialsInstance from "./src/byzcoin/contracts/credentials-instance";
-import { PersonhoodRPC, PollStruct } from "./src/personhood/personhood-rpc";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import CredentialsInstance from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
+import { PersonhoodRPC, PollStruct } from "@c4dt/cothority/personhood/personhood-rpc";
 
 import { Scalar } from "@dedis/kyber";
 import { Buffer } from "buffer";
-import Long from "long";
-import { sprintf } from "sprintf-js";
-import { Badge } from "./Badge";
-import { Contact } from "./Contact";
-import { Defaults } from "./Defaults";
-import { KeyPair, Private, Public } from "./KeyPair";
-import { Party } from "./Party";
-import { parseQRCode } from "./Scan";
-import { SocialNode } from "./SocialNode";
-import ClientTransaction, { Argument, Instruction } from "./src/byzcoin/client-transaction";
-import CoinInstance from "./src/byzcoin/contracts/coin-instance";
+import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "./src/byzcoin/contracts/credentials-instance";
-import DarcInstance from "./src/byzcoin/contracts/darc-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "./src/byzcoin/contracts/spawner-instance";
-import Instance, { InstanceID } from "./src/byzcoin/instance";
-import { LongTermSecret, OnChainSecretRPC } from "./src/calypso/calypso-rpc";
-import Darc from "./src/darc/darc";
-import IdentityDarc from "./src/darc/identity-darc";
-import IdentityEd25519 from "./src/darc/identity-ed25519";
-import Signer from "./src/darc/signer";
-import SignerEd25519 from "./src/darc/signer-ed25519";
-import { Log } from "./src/log";
-import { Roster } from "./src/network";
-import { PopPartyInstance } from "./src/personhood/pop-party-instance";
-import RoPaSciInstance from "./src/personhood/ro-pa-sci-instance";
+} from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
+import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
+import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
+import Signer from "@c4dt/cothority/darc/signer";
+import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
+import { Log } from "@c4dt/cothority/log";
+import { Roster } from "@c4dt/cothority/network";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import Long from "long";
+import { sprintf } from "sprintf-js";
+import { Badge } from "./Badge";
+import { Contact } from "./Contact";
+import { activateTesting, Defaults } from "./Defaults";
+import { KeyPair, Private, Public } from "./KeyPair";
+import { Party } from "./Party";
+import { parseQRCode } from "./Scan";
+import { SocialNode } from "./SocialNode";
 import { Storage } from "./Storage";
-import { TestStoreRPC } from "./TestStoreRPC";
 
 import { curve, sign } from "@dedis/kyber";
 const ed25519 = curve.newCurve("edwards25519");
@@ -93,23 +91,35 @@ export class Data {
     // then the gData needs to have enough coins to pay for all the instances when using
 
     // the 'SpawnerInstance'.
-    static async createFirstUser(bc: ByzCoinRPC, adminDarc: InstanceID, adminKey: Scalar, alias: string):
+    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string):
         Promise<Data> {
-        const d = new Data({alias, bc});
+
+        // Prepare adminDarc to have all necessary rules
         const adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
         const adminSigner = new SignerEd25519(adminPub.point, adminKey);
+        const adminDarcInst = await DarcInstance.fromByzcoin(bc, adminDarcID);
+        const adminRules = ["spawn:spawner", "spawn:coin", "spawn:credential", "coin:mint"];
+        if (adminRules.filter((rule) => !adminDarcInst.darc.rules.getRule(rule))) {
+            const newAdminDarc = adminDarcInst.darc.evolve();
+            adminRules.forEach((rule) => {
+                newAdminDarc.rules.setRule(rule, adminSigner);
+            });
+            await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10);
+        }
 
-        const darcDevice = Darc.newDarc([d.keyIdentitySigner]
+        const d = new Data({alias, bc});
+
+        const darcDevice = newDarc([d.keyIdentitySigner]
             , [d.keyIdentitySigner], Buffer.from("device"));
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
-        const darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
+        const darcSign = newDarc([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = Darc.newDarc([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
+        const darcCred = newDarc([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch,
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s",
             CoinInstance.contractID, inv));
-        const darcCoin = Darc.newDarc([], [darcSignId], Buffer.from("coin"), rules);
+        const darcCoin = newDarc([], [darcSignId], Buffer.from("coin"), rules);
 
         Log.lvl2("Creating spawner");
         const costs = {
@@ -124,17 +134,21 @@ export class Data {
             bc,
             beneficiary: null,
             costs,
-            darcID: adminDarc,
+            darcID: adminDarcID,
             signers: [adminSigner],
         });
 
         const ocs = new OnChainSecretRPC(bc);
-        try {
-            await ocs.authoriseRoster();
-        } catch (e) {
-            Log.error("Could not authorize roster", e);
+        if (Defaults.Testing) {
+            Log.lvl1("Setting authorization for byzcoin in calypso");
+            try {
+                await ocs.authorizeRoster(Defaults.RosterCalypso);
+            } catch (e) {
+                Log.error("Could not authorize roster", e);
+            }
         }
-        const lts = await LongTermSecret.spawn(bc, adminDarc, [adminSigner]);
+        Log.print("spawning lts");
+        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], Defaults.RosterCalypso);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, lts);
 
@@ -143,19 +157,19 @@ export class Data {
         const ctx = new ClientTransaction({
             instructions:
                 [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
-                        return Instruction.createSpawn(adminDarc, DarcInstance.contractID, [
+                        return Instruction.createSpawn(adminDarcID, DarcInstance.contractID, [
                             new Argument({name: DarcInstance.argumentDarc, value: dar.toBytes()}),
                         ]);
                     },
                 ),
         });
         const idBuf = d.keyIdentity._public.toBuffer();
-        ctx.instructions.push(Instruction.createSpawn(adminDarc, CoinInstance.contractID, [
-            new Argument({name: "coinID", value: idBuf}),
-            new Argument({name: "darcID", value: darcCoin.getBaseID()}),
+        ctx.instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
+            new Argument({name: CoinInstance.argumentCoinID, value: idBuf}),
+            new Argument({name: CoinInstance.argumentDarcID, value: darcCoin.getBaseID()}),
             new Argument({name: CoinInstance.argumentType, value: SPAWNER_COIN}),
         ]));
-        ctx.instructions.push(Instruction.createSpawn(adminDarc, CredentialInstance.contractID, [
+        ctx.instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
             new Argument({name: CredentialsInstance.argumentCredID, value: idBuf}),
             new Argument({name: CredentialsInstance.argumentDarcID, value: darcCred.getBaseID()}),
             new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()}),
@@ -173,6 +187,7 @@ export class Data {
         Log.lvl2("Linking new data to Data-structure");
         d.contact = new Contact(cred, d);
         d.bc = bc;
+        Log.lvl2("Credential id should be", CredentialsInstance.credentialIID(idBuf));
         await d.contact.connectBC(bc);
         await d.connectByzcoin();
         Log.lvl2("done");
@@ -270,26 +285,10 @@ export class Data {
     async connectByzcoin(): Promise<ByzCoinRPC> {
         try {
             const obj = this.constructorObj;
-            let bcID: Buffer;
             if (this.bc != null) {
                 Log.lvl2("Not connecting if bc is already initialized");
                 this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-            } else if (Defaults.LoadTestStore && this.bc == null) {
-                Log.lvl1("Loading data from TestStoreRPC");
-                const ts = await TestStoreRPC.load(Defaults.Roster);
-                Defaults.ByzCoinID = ts.byzcoinID;
-                Log.lvl1("Updated Defaults bcID:", ts.byzcoinID);
-                bcID = obj.bcID ? Buffer.from(obj.bcID) : Defaults.ByzCoinID;
-                const roster = obj.roster ? Roster.fromObject(obj.roster) : Defaults.Roster;
-                if (bcID == null || bcID.length === 0) {
-                    if (Defaults.Testing) {
-                        return;
-                    } else {
-                        return Promise.reject("Cannot connect to ByzCoin");
-                    }
-                }
-                this.bc = await ByzCoinRPC.fromByzcoin(roster, bcID);
-            } else if (this.bc == null) {
+            } else {
                 this.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             }
 
@@ -606,11 +605,11 @@ export class Data {
         await this.contact.credentialInstance.recoverIdentity(this.keyIdentity._public.point, this.recoverySignatures);
         this.recoverySignatures = [];
         await this.contact.darcInstance.update();
-        const newDarc = this.contact.darcInstance.darc.copy();
+        const newD = this.contact.darcInstance.darc.copy();
         ["update", CoinInstance.commandFetch, CoinInstance.commandTransfer].forEach((r) => {
-            newDarc.rules.appendToRule("invoke:" + r, this.keyIdentitySigner, "&");
+            newD.rules.appendToRule("invoke:" + r, this.keyIdentitySigner, "&");
         });
-        await this.contact.darcInstance.evolveDarcAndWait(newDarc, [this.keyIdentitySigner], 5);
+        await this.contact.darcInstance.evolveDarcAndWait(newD, [this.keyIdentitySigner], 5);
         await this.verifyRegistration();
     }
 
@@ -744,17 +743,16 @@ export class Data {
         } else {
             d.keyIdentity = new KeyPair(ephemeral.toHex());
         }
-        const darcDevice = Darc.newDarc([d.keyIdentitySigner], [d.keyIdentitySigner], Buffer.from("device"));
+        const darcDevice = newDarc([d.keyIdentitySigner], [d.keyIdentitySigner], Buffer.from("device"));
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
-        const darcSign = Darc.newDarc([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
+        const darcSign = newDarc([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = Darc.newDarc([], [darcSignId], Buffer.from("credential"),
+        const darcCred = newDarc([], [darcSignId], Buffer.from("credential"),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandTransfer, CoinInstance.commandFetch,
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s", CoinInstance.contractID, inv));
-        const darcCoin = Darc.newDarc([], [darcSignId], Buffer.from("coin"), rules);
+        const darcCoin = newDarc([], [darcSignId], Buffer.from("coin"), rules);
 
-        Log.print("LTS is:", this.lts);
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id, this.lts);
 
         const signers = [this.keyIdentitySigner];
@@ -770,6 +768,7 @@ export class Data {
             d.keyIdentity._public.toBuffer());
 
         d.contact = new Contact(cred, d);
+        await d.contact.connectBC(this.bc);
         d.bc = this.bc;
         Log.lvl2("finalizing data");
         await d.connectByzcoin();
@@ -798,16 +797,23 @@ export class Data {
 export class TestData extends Data {
 
     static async init(r: Roster, alias: string): Promise<TestData> {
+        activateTesting();
+        Log.print(10);
         const admin = SignerEd25519.random();
+        Log.print(11);
         const d = ByzCoinRPC.makeGenesisDarc([admin], r, "genesis darc");
+        Log.print(12);
         ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret", "spawn:calypsoWrite",
             "spawn:calypsoRead",
             "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"].forEach((rule) => {
             d.rules.appendToRule(rule, admin, "|");
         });
+        Log.print(13, r);
         const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
+        Log.print(14);
 
         const td = (await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias)) as TestData;
+        Log.print(15);
         td.admin = admin;
         td.darc = d;
         return td;

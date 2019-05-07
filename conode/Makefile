@@ -13,7 +13,7 @@ docker: clean build/Dockerfile build/conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-newdb:
+newdb: cothority
 	@echo "Compiling binaries"; \
 	GO111MODULE=on go build -o build/conode; \
 	cd cothority; \
@@ -25,13 +25,13 @@ newdb:
 	echo "Creating new ByzCoin and printing out important variables"; echo; \
 	rm -f *.cfg; \
 	( ./bcadmin -c . create build/conodes/public.toml --interval 500ms; \
-	  ./phapp spawner bc-* key-*; \
 	  ./bcadmin latest --bc bc-*; \
 	  ./bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee variables.txt
 	@echo; echo "Shutting down conodes"; pkill -f conode; rm build/conodes/running
 
 docker_run:
-	docker run -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+	docker rm -f $(CONTAINER) || echo nothing to stop
+	docker run --rm -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_stop:
 	docker stop $(CONTAINER)
@@ -46,9 +46,12 @@ docker_clean:
 # The suffix on conode exe is the result from: echo `uname -s`.`uname -m`
 # so that we can find the right one in the wrapper script.
 # This is in it's own rule because the Docker build needs it also.
-build/conode:
-	test -d cothority || git clone --depth 1 -b personhood_1904 https://github.com/dedis/cothority
+build/conode: cothority
 	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="$(ldflags)" -o $@
 
 clean:
 	rm -rf build/conode
+
+cothority:
+	test -d cothority || git clone --depth 1 -b personhood_1905 https://github.com/dedis/cothority
+	cd cothority; git pull

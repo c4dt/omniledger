@@ -1,16 +1,16 @@
-import {UserLocation} from './src/personhood/personhood-rpc';
+import { UserLocation } from "@c4dt/cothority/personhood/personhood-rpc";
 
 export class SocialNode {
-    constructor(public users: UserLocation[]) {
-    }
 
     static fromObject(o: any): SocialNode {
-        return new SocialNode(o.users.map(u => UserLocation.fromObject(u)));
+        return new SocialNode(o.users.map((u) => UserLocation.fromObject(u)));
+    }
+    constructor(public users: UserLocation[]) {
     }
 
     toObject(): any {
         return {
-            users: this.users.map(u => u.toObject())
+            users: this.users.map((u) => u.toObject()),
         };
     }
 }

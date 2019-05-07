@@ -8,9 +8,9 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
     "importHelpers": true,
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "target": "es5",
     "typeRoots": [
@@ -20,8 +20,5 @@
       "es2018",
       "dom"
     ]
-  },
-  "include": [
-      "src/**/*"
-  ]
+  }
 }

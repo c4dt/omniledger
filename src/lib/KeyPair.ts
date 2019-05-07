@@ -1,8 +1,8 @@
-import {randomBytes} from 'crypto';
-import {curve, Point} from '@dedis/kyber';
-import {Buffer} from 'buffer';
+import { curve, Point } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
 
-const Curve25519 = curve.newCurve('edwards25519');
+const Curve25519 = curve.newCurve("edwards25519");
 
 /**
  * KeyPair holds the private and public key that go together. It has
@@ -11,22 +11,22 @@ const Curve25519 = curve.newCurve('edwards25519');
  */
 export class KeyPair {
 
-    constructor(privHex: string = '') {
+    static fromBuffer(priv: any): KeyPair {
+        return new KeyPair(Buffer.from(priv).toString("hex"));
+    }
+
+    static fromObject(obj: any) {
+        return new KeyPair(Private.fromBuffer(obj.priv).toHex());
+    }
+    _private: Private;
+    _public: Public;
+
+    constructor(privHex: string = "") {
         if (privHex && privHex.length == 64) {
             this.setPrivateHex(privHex);
         } else {
             this.randomize();
         }
-    }
-    _private: Private;
-    _public: Public;
-
-    static fromBuffer(priv: any): KeyPair {
-        return new KeyPair(Buffer.from(priv).toString('hex'));
-    }
-
-    static fromObject(obj: any) {
-        return new KeyPair(Private.fromBuffer(obj.priv).toHex());
     }
 
     setPrivateHex(privHex: string) {
@@ -51,8 +51,6 @@ export class KeyPair {
 }
 
 export class Private {
-    constructor(public scalar: any) {
-    }
 
     static fromBuffer(buf: Buffer): Private {
         const p = Curve25519.scalar();
@@ -61,7 +59,7 @@ export class Private {
     }
 
     static fromHex(hex: string): Private {
-        return Private.fromBuffer(Buffer.from(hex, 'hex'));
+        return Private.fromBuffer(Buffer.from(hex, "hex"));
     }
 
     static zero(): Private {
@@ -79,9 +77,11 @@ export class Private {
     static fromRand(): Private {
         return new Private(Curve25519.scalar().setBytes(randomBytes(32)));
     }
+    constructor(public scalar: any) {
+    }
 
     toHex(): string {
-        return this.toBuffer().toString('hex');
+        return this.toBuffer().toString("hex");
     }
 
     toBuffer(): Buffer {
@@ -98,8 +98,6 @@ export class Private {
 }
 
 export class Public {
-    constructor(public point: Point) {
-    }
 
     static base(): Public {
         const p = Curve25519.point();
@@ -120,7 +118,7 @@ export class Public {
     }
 
     static fromHex(hex: string): Public {
-        return Public.fromBuffer(Buffer.from(hex, 'hex'));
+        return Public.fromBuffer(Buffer.from(hex, "hex"));
     }
 
     static zero(): Public {
@@ -133,13 +131,15 @@ export class Public {
         const kp = new KeyPair();
         return kp._public;
     }
+    constructor(public point: Point) {
+    }
 
     equal(p: Public): boolean {
         return this.point.equals(p.point);
     }
 
     toHex(): string {
-        return this.toBuffer().toString('hex');
+        return this.toBuffer().toString("hex");
     }
 
     toBuffer(): Buffer {
