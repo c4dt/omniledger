@@ -1,17 +1,14 @@
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
-import {PopPartyInstance} from './src/personhood/pop-party-instance';
-import {PopDesc, PopPartyStruct} from './src/personhood/proto';
-import Long from 'long';
-import ByzCoinRPC from './src/byzcoin/byzcoin-rpc';
-import Instance from './src/byzcoin/instance';
+import Long from "long";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import Instance from "@c4dt/cothority/byzcoin/instance";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import { PopDesc, PopPartyStruct } from "@c4dt/cothority/personhood/proto";
 // import {screen} from "tns-core-modules/platform";
 // import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
 
 export class Party {
-
-    constructor(public partyInstance: PopPartyInstance) {
-    }
 
     get state(): number {
         return this.partyInstance.popPartyStruct.state;
@@ -27,8 +24,7 @@ export class Party {
     static readonly PreBarrier = 1;
     static readonly Scanning = 2;
     static readonly Finalized = 3;
-    static readonly url = 'https://pop.dedis.ch/qrcode/party';
-    isOrganizer = false;
+    static readonly url = "https://pop.dedis.ch/qrcode/party";
 
     static fromObject(bc: ByzCoinRPC, obj: any): Party {
         const p = new Party(new PopPartyInstance(bc, Instance.fromBytes(obj.party)));
@@ -41,7 +37,7 @@ export class Party {
             name,
             purpose,
             datetime: date,
-            location
+            location,
         });
         const pps = new PopPartyStruct({
             state: 1,
@@ -52,11 +48,15 @@ export class Party {
             miners: [],
             miningReward: Long.fromNumber(0),
             previous: null,
-            next: null
+            next: null,
         });
         const ppi = new PopPartyInstance(null, null);
         ppi.popPartyStruct = pps;
         return new Party(ppi);
+    }
+    isOrganizer = false;
+
+    constructor(public partyInstance: PopPartyInstance) {
     }
 
     // qrcode(key: Public): ImageSource {

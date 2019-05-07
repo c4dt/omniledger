@@ -1,3 +1,19 @@
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
+// import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
+// import {screen} from "tns-core-modules/platform";
+import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import SpawnerInstance from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
+import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { LongTermSecret } from "@c4dt/cothority/calypso";
+import { IdentityDarc } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
+import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
+import Rules from "@c4dt/cothority/darc/rules";
+import Signer from "@c4dt/cothority/darc/signer";
+import { Log } from "@c4dt/cothority/log";
 import { Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import Long from "long";
@@ -7,22 +23,6 @@ import { Data } from "./Data";
 import { Public } from "./KeyPair";
 import { parseQRCode } from "./Scan";
 import { SecureData } from "./SecureData";
-import ByzCoinRPC from "./src/byzcoin/byzcoin-rpc";
-import CoinInstance from "./src/byzcoin/contracts/coin-instance";
-import CredentialsInstance, { CredentialStruct } from "./src/byzcoin/contracts/credentials-instance";
-// import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
-// import {screen} from "tns-core-modules/platform";
-import DarcInstance from "./src/byzcoin/contracts/darc-instance";
-import SpawnerInstance from "./src/byzcoin/contracts/spawner-instance";
-import { InstanceID } from "./src/byzcoin/instance";
-import { OnChainSecretInstance } from "./src/calypso/calypso-instance";
-import { LongTermSecret, OnChainSecretRPC } from "./src/calypso/calypso-rpc";
-import { IdentityDarc } from "./src/darc";
-import Darc from "./src/darc/darc";
-import IdentityEd25519 from "./src/darc/identity-ed25519";
-import Rules from "./src/darc/rules";
-import Signer from "./src/darc/signer";
-import { Log } from "./src/log";
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
@@ -195,7 +195,7 @@ export class Contact {
     static prepareUserDarc(pubKey: Point, alias: string): Darc {
         const id = new IdentityEd25519({point: pubKey.toProto()});
 
-        const darc = Darc.newDarc([id], [id], Buffer.from(`user ${alias}`));
+        const darc = newDarc([id], [id], Buffer.from(`user ${alias}`));
         darc.addIdentity("invoke:coin.update", id, Rules.AND);
         darc.addIdentity("invoke:coin.fetch", id, Rules.AND);
         darc.addIdentity("invoke:coin.transfer", id, Rules.AND);
@@ -588,7 +588,7 @@ class Calypso {
     async add(data: Buffer, readers: InstanceID[]): Promise<string> {
         const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.credentialInstance.darcID);
         readers.push(ourSigner.darc.getBaseID());
-        readers.forEach((r) => Log.print("reader", r));
+        readers.forEach((r) => Log.lvl2("reader", r));
         const sd = await SecureData.spawnFromSpawner(this.contact.bc, this.contact.data.lts, data, readers,
             this.contact.spawnerInstance,
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
@@ -610,7 +610,7 @@ class Calypso {
     async read(user: Contact): Promise<SecureData[]> {
         const signer = await this.contact.darcSignIdentity;
         const sds = await SecureData.fromContact(this.contact.bc, this.contact.data.lts, user,
-            signer.toWrapper().toString(), [this.contact.data.keyIdentitySigner],
+            IdentityWrapper.fromIdentity(signer).toString(), [this.contact.data.keyIdentitySigner],
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
         this.others.set(user.credentialIID, sds);
         const obj = this.toObject();

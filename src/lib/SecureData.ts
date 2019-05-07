@@ -1,16 +1,16 @@
-import {randomBytes} from 'crypto';
-import {Contact} from './Contact';
-import {ByzCoinRPC, InstanceID} from './src/byzcoin';
-import {Log} from './src/log';
-import {CalypsoReadInstance, CalypsoWriteInstance} from './src/calypso/calypso-instance';
-import DarcInstance from './src/byzcoin/contracts/darc-instance';
-import {KeyPair} from './KeyPair';
-import Signer from './src/darc/signer';
-import CoinInstance from './src/byzcoin/contracts/coin-instance';
-import {LongTermSecret, OnChainSecretRPC} from './src/calypso/calypso-rpc';
-import {secretbox, secretbox_open} from 'tweetnacl-ts';
-import SpawnerInstance from './src/byzcoin/contracts/spawner-instance';
-import {IdentityDarc} from './src/darc';
+import { randomBytes } from "crypto";
+import { secretbox, secretbox_open } from "tweetnacl-ts";
+import { Contact } from "./Contact";
+import { KeyPair } from "./KeyPair";
+import { ByzCoinRPC, InstanceID } from "@c4dt/cothority/byzcoin";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import SpawnerInstance from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
+import { CalypsoReadInstance, CalypsoWriteInstance } from "@c4dt/cothority/calypso/calypso-instance";
+import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
+import { IdentityDarc } from "@c4dt/cothority/darc";
+import Signer from "@c4dt/cothority/darc/signer";
+import { Log } from "@c4dt/cothority/log";
 
 /**
  * SecureData holds a decrypted secret, together with the writeID and the symmetric key, so that if
@@ -19,8 +19,6 @@ import {IdentityDarc} from './src/darc';
  * for storing 'other' data, but then it is stored as a secret itself in a CalypsoWriteInstance.
  */
 export class SecureData {
-    constructor(public writeInstID: InstanceID, public symKey: Buffer, public plainData: Buffer) {
-    }
 
     static fromObject(o: any): SecureData {
         return new SecureData(Buffer.from(o.writeInstID),
@@ -48,25 +46,25 @@ export class SecureData {
                              coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData[]> {
         const sds: SecureData[] = [];
         await c.update();
-        const cred = c.credential.getCredential('1-secret');
+        const cred = c.credential.getCredential("1-secret");
         if (cred) {
             for (const sdBuf of cred.attributes) {
-                if (sdBuf.name !== 'others') {
-                    Log.lvl2('Checking secure data', sdBuf.name);
+                if (sdBuf.name !== "others") {
+                    Log.lvl2("Checking secure data", sdBuf.name);
                     try {
                         const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sdBuf.value);
                         const cwDarc = await DarcInstance.fromByzcoin(bc, calWrite.darcID);
-                        const readersRule = cwDarc.darc.rules.getRule('spawn:' + CalypsoReadInstance.contractID).expr.toString();
-                        if (readersRule.indexOf('&') >= 0) {
-                            Log.warn('Cannot parse AND rules yet');
+                        const readersRule = cwDarc.darc.rules.getRule("spawn:" + CalypsoReadInstance.contractID).expr.toString();
+                        if (readersRule.indexOf("&") >= 0) {
+                            Log.warn("Cannot parse AND rules yet");
                             continue;
                         }
-                        const readers = readersRule.split('|');
-                        if (readers.find(r => r.trim() === reader)) {
+                        const readers = readersRule.split("|");
+                        if (readers.find((r) => r.trim() === reader)) {
                             sds.push(await SecureData.fromWrite(bc, ocs, calWrite, signers, coin, coinSigners));
                         }
                     } catch (e) {
-                        Log.catch(e, 'Couldn\'t read calypso write of', sdBuf.name);
+                        Log.catch(e, "Couldn't read calypso write of", sdBuf.name);
                     }
                 } else {
                     Log.lvl2('Not checking "others" data');
@@ -86,7 +84,7 @@ export class SecureData {
      */
     static async fromWrite(bc: ByzCoinRPC, ocs: OnChainSecretRPC, calypsoWrite: CalypsoWriteInstance, signers: Signer[],
                            coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData> {
-        Log.lvl1('Creating calypsoRead for data');
+        Log.lvl1("Creating calypsoRead for data");
         const ephemeral = new KeyPair();
         const cr = await calypsoWrite.spawnRead(ephemeral._public.point, signers, coin, coinSigners);
         const symKeyPart = await cr.decrypt(ocs, ephemeral._private.scalar);
@@ -95,7 +93,6 @@ export class SecureData {
         const data = secretbox_open(calypsoWrite.write.data.slice(28), nonce, symKey);
         return new SecureData(calypsoWrite.id, symKey, Buffer.from(data));
     }
-
 
     /**
      * spawnFromSpawner creates a new CalypsoWrite with the given data. The read-
@@ -121,10 +118,12 @@ export class SecureData {
         // we need to put the remaining 4 bytes in clear text! Which reduces the security of the encryption
         // to 28*8 = 208 bits.
         const calypsoData = Buffer.concat([nonce, symKey.slice(28), Buffer.from(encData)]);
-        const ids = readers.map(r => new IdentityDarc({id: r}));
+        const ids = readers.map((r) => new IdentityDarc({id: r}));
         const calypsoWrite = await spawner.spawnCalypsoWrite(coin, signers, lts,
             symKey.slice(0, 28), ids, calypsoData);
         return new SecureData(calypsoWrite.id, symKey, data);
+    }
+    constructor(public writeInstID: InstanceID, public symKey: Buffer, public plainData: Buffer) {
     }
 
     toObject(): object {
@@ -144,12 +143,12 @@ export class SecureData {
  * FileBlob holds one data-structure including meta-data like name, type, date.
  */
 export class FileBlob {
-    constructor(public name: string, public data: Buffer, public attributes: FBAttribute[] = null) {
-    }
 
     static fromBuffer(b: Buffer): FileBlob {
         const fbObj: any = JSON.parse(b.toString());
         return new FileBlob(fbObj.name, Buffer.from(fbObj.data), fbObj.attributes);
+    }
+    constructor(public name: string, public data: Buffer, public attributes: FBAttribute[] = null) {
     }
 
     toBuffer(): Buffer {

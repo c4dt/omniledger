@@ -1,0 +1,12 @@
+<ul>
+  <li *ngFor="let node of nodes">
+    {{ node }}
+  </li>
+</ul>
+<ul>
+  <li>Signer-id: {{ gData.contact.darcSignIdentity.id.toString('hex') }}</li>
+  <li>Skipchain-height: {{ blockCount }}</li>
+  <li>
+    <button mat-button (click)="deleteUser()">DELETE USER</button>
+  </li>
+</ul>

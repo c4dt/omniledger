@@ -1,56 +1,111 @@
 // import { FileIO } from "./FileIO";
-import {Roster} from './src/network';
+import { Roster } from "@c4dt/cothority/network";
 
 export const Defaults = {
-    DataDir: 'storage',
+    DataDir: "storage",
     // Standard Roster for the app
+    // tslint:disable:max-line-length
     RosterTOMLDEDIS: `
 [[servers]]
-  Address = "tls://pop.dedis.ch:7772"
+  Address = "tls://conode.dedis.ch:7000"
+  Url = "https://conode.dedis.ch"
   Suite = "Ed25519"
-  Public = "057923aabaad24d9a5cf75c1c0d257e84e99ba5fd29db541432e4a1914af9ad2"
-  Description = "Conode_1"
+  Public = "ec5c65a3c922d1df32075640e3de606197be24af76059a2ef145501122884bd3"
+  Description = "EPFL Cothority-server"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "6f69dc10dbef8f4d80072aa9d1bee191b0f68b137a9d06d006c39fe6667738fa2d3439caf428a1dcb6f4a5bd2ce6ff6f1462ebb1b7374080d95310bc6e1115e105d7ae38f9fed1585094b0cb13dc3a0f3e74daeaa794ca10058e44ef339055510f4d12a7234779f8db2e093dd8a14a03440a7d5a8ef04cac8fd735f20440b589"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "8f3d081c68394ffa6b6049da3f65ff996549ae4ccf9584a5a0b0ad6b7d6263265b39d9c044b2a58038670d6a8efe57dcc99a0ab7cbbd91dc08febacd4a1ee548142438b5eedca67789ba0bb664b02beea62cf40cde2d2a2f3794e9b3afdbacb322090b653b723ee59ae2d8b6db7281c32f764bc4250d160caab058057e25fa8a"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "32ba0cccec06ac4259b39102dcba13677eb385e0fdce99c93406542c5cbed3ec6ac71a81b01207451346402542923449ecf71fc0d69b1d019df34407b532fb2a09005c801e359afb377cc3255e918a096912bf6f7b7e4040532404996e05f78c408760b57fcf9e04c50eb7bc413438aca9d653dd0b6a8353d128370ebd4bdb10"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "6a62b35ee5ec659625bdcc69b47e14a5b5aad9a0aacb8c6ac1fa301667471be915da15f6fefa2537ee5cc8fdad0d31de01f3f7ab4dda80aa104215f1ee85f1e255cd767d8f353fd5f89815b18a8f0e96e08532a131f221e87d3e19eb07f0e27b55b03977579a30f8ce4aad04449f2ec405c4070cf37786de8322e8109d52b891"
+      Suite = "bn256.adapter"
+
 [[servers]]
-  Address = "tls://pop.dedis.ch:7774"
+  Address = "tls://dedis.nella.org:7770"
+  Url = "https://dedis.nella.org:7771"
   Suite = "Ed25519"
-  Public = "da6e0f39da50185fce5656426adcf4e5bad3c27c1f5182f6ae1006c87173b7c9"
-  Description = "Conode_2"
+  Public = "ad91a87dd89d31e4fc77ee04f1fc684bb6697bcef96720b84422437ff00b79e3"
+  Description = "dedis.nella.org"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "7a989c19ef64ac45d4962fa0e60184c0adaf90082f5ea572de2d241d11ac8e6a53f968928d80a910ed7d883c05d74cf3e3c2c9096dd9fb5b64a03f9e552700388effcd3106e58f4bb99c384afb4b6b2530bfee6fdfb6b4f41a383b2ad31bf03c18d3f43a4a8bacbe5da16c3851c3c8be3607af1bb19b085861d71cd92c8b8406"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "28122b3f4a6d7a17d682859c4a37287d851aba7afd994e7dffbd0f636b21e975614dd3a4a8c45ac56044a045333fcaf9044031dd2d9c46e07847c6078a60740515d1bd01b83c6fffe7a55ff851feeb59dadb82f11bc70a5be65070408fd67da94ab250f6eac2c04f72edf122840ba6c7d76d0906ff20915a1d44a83df19b569f"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "78dd1cfd6e70ad9cf5afb8263811fabe95aedee835567cc5ca7773a6787a03736ee24accb8e00370768aab14dab949584054e255c626d0141182454f8c77794a4e8c69a4dc6082f30f1cf33de45daea63fc52c4a91ed79ca88e4f6d363a46d87017b038da5ca4656f610d77fd91e1aae320d7d399ca7fdf41f5348b63712310f"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "672a542f50329271b0e4832f39f7be95278ff65037ceab0affc485751feffd1089cef346e0a1c503ad48926f73f35849bed634dc7bc3f2c538fea8b186eb2cf8049ff177ae922fa6414c02b28689cc0afe571ff32c5a113b5b64f9651e935b5b5594a528505ff74ad4df7efecbd1b76f52cd3fe69751c6a4c046e75e454e643c"
+      Suite = "bn256.adapter"
+
 [[servers]]
-  Address = "tls://pop.dedis.ch:7776"
+  Address = "tls://fairywren.ch:7770"
+  Url = "https://fairywren.ch:7771"
   Suite = "Ed25519"
-  Public = "82961f12d49af09492a44929a88c5e7fb6746c4599a59a99e298e7d3c526746c"
-  Description = "Conode_3"
+  Public = "0bcdaebde16f50fb65b717a0501e7ede020045286d6ece10fdea1bdd8f37af39"
+  Description = "Gaylor's Conode"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "2754e502579e77f92322458022f6b97ff18471f2e7523028ea6dab720da11ab189f98ef9a0308c7aa656f3339baded992248def25e3e2e1428c1601809579b934bb2aaf66b3d8a68712f68d744661d270278ebcf434204af961c729db6db85a54930dfe6b75184647d0e81138db2a87ccaeccff3500be2bf409827eef5ec150d"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "56f8aff826b48f4ccb60ce5aabf1484d3156533c6de378c8c9c209cf38d3e75249cd1dcc833a50173b59a27dd885683fbc68fabb536f0a55f89167fb7b2c393710564e2f9876dcef0067b68cf695d944e5d116420726cc1e20f48d20dc5dc4f96e5b9a9d35eb7b5a46059fc8aad4ce4ff282b89b6b1fd840eabbf307fe56338c"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "69088f9df0396cfd296eeeb060bc84d807f3f2cf3b02b8eafd953f30e9e979a203fd11035e9f1fca2662383841c3c630ee3554150ec2b5fdb50819a22a2682dd341f0424fec4eafb8a17041b939ef18eabdd8c38e2f057619a541c506bbae5755265ae6b9156690b7a2907ca0ec6394d79363d5492aa2c9512e3fba882aad358"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "753367383700559bc310a2ba7d201b19e00c5bd37fa9fc0c7914757b1d88bfc35b3f00fefb25a6cb2bb0f46f7b5d0439493f0ecb8aae1d6b939a1b0fa38a850b43be80468dc1cd5f81f9f57e22931c4535541c7f5565b5b46c0f26897764322a1aaacb7ad312396c995c3c934b8106fa4bcb4c370ebe6264e2cae376735f715a"
+      Suite = "bn256.adapter"
+
+[[servers]]
+  Address = "tls://conode.c4dt.org:7770"
+  Url = "https://conode.c4dt.org:7771"
+  Suite = "Ed25519"
+  Public = "67e30e168f83c4d4614e277cefba42dbc1fb5886b3945364ea5dae3f4e4fbc0d"
+  Description = "C4DT Conode"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "6bb65e6c3fb7cb9d84c81a21ce4cedf70539452e3e220c0383f087832bbd1d588590eb4fe777a360c3e12b8020a424db20fc00deafb1212bf8a4f70b978adbae093efc9aadff0a97cb0199372d5b55f135793393d94028cac0f432fb144b269f12162dbc163a80e32bea7219c2c51700ae8de5bd849d6d4001dfb2a3a8e2a161"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "842fdff85d9d1b16039c1ae3bde443fe949734080f80a3c1f0beb74ad2d3a43b7218b4f3d99f33da15f4411a0af0230681ced09e0c597b46408bd27a6dbe3aa1821acb39f8ba959da48c2567ed9e4b7ac10857efe771a6fa882b334b9972c9bc645ff507a5761bef61b69f5d4785876cceab29f78762d49b6f603574fb77b985"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "70a1f68fee1a78e621e023ea9ab0eaa042c1fa72e5bc2abd8ed9c039ce9dbdce122306f8b9e3d423757084fc9b4043adcf7b91f04c6fb66577a98f24bcddc248636fe63a69f661cd7e668fc4fa63fc2b55316c9d108d864e6f5461e31b77e03b0bcd6fcfb60b60c8a19ff07e068c43e7b3abad35ffb297710680fb693f5eee72"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "79e01b74993efc47a002c897356620eb0c3616127fcc2059ef87678c1198562e51b97148c9ce95dff439b0453a3a66e5f72baa275acb33591bd63b951b00e7f677f4a1814f4d73c028ad26d96a4c907d433c1189937fab27b2332079267db61a2be2e07ce1c10e52e645400cb998d8bc1f0c57382a13e07658c340f3f63f5e96"
+      Suite = "bn256.adapter"
+
+[[servers]]
+  Address = "tls://gasser.blue:7770"
+  Url = "https://gasser.blue:7771"
+  Suite = "Ed25519"
+  Public = "0e4c620122daca9518cace2a6b11c5c0892fbde7b130d04e8a194fd02906ffc6"
+  Description = "Ineiti's conode"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "00fe956fe1b90332bd7c5182d9f125c0e2108f5178d71b42b5f02582f9f2814281d4f2e0c9bd25f711c7138f9c2fb5fb6578b65aeae8cff1c349df34c497882f86ba36037678275d086b57bd04a9a020a80a47242b08274c696c009f097d3e7a31d0a6fc2b2e01b9d005e8c2ea538f3c581baac918cacb0650f6b3c2082e549f"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "034be6b1ad082df3fa70520e3cbb937e4c51a15aa1e75680bffd01f7fc7d911f38a8c353ebdcdffd47182507415055b1590dfaa0c9fd3b91402b52f3a9701b9d85555409b23882e92393671f9ccb1e2fa380196cde89266ba020cbbab7b077e81a1828b9504c79374611b6c2639784d27194b9c6bc3830b5baeb6046de88f013"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "5878c63855bf0ad9a2575865b18a8e5856ed6c6b1cbfe1bacc0f4e889b9cd79f78b024fdcef448be2ffb292622927595047227f45a361e9094d5bb3ebcfd9bdb60bf179d5c6c3319d4c8bf2e1e149b78c1056814ac581b7c97decd9c58a570d6018712143844e5fd0a31ddb61e2d81bc1f35bfc47e8a884683d9692529119240"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "3fbfc26efa7e39879ef106fc5a5a4da8c2e9e6be5ef4d369ddfad0a134031fe33b4c322c066b681c5b7b28b1ff668e5efecb96c5e0732ee854929dd0ea5f5c5a7837311cf73d2f6170567b1a287a3553ec46324ccf15fbcff84fdd433fe87c185592a79203b89a23a901e905531b7f19f31c8b599464aa0c9c5890e72a121e75"
+      Suite = "bn256.adapter"
 `,
-// [[servers]]
-//   Address = "tls://local.c4dt.org:7778"
-//   Suite = "Ed25519"
-//   Public = "a1104500cb49ddf49fb2dc27646d24ca617436d2ca21d96ba476667561693a35"
-//   Description = "Conode_5"
-//   [servers.Services]
-//     [servers.Services.ByzCoin]
-//       Public = "45812414eb3962a34a7f0da1a4bea8d6dd44066b3d1dbd291b57df1a62bf8d6516593c45dcd3dae6bdc4ae8f309f33fe441c1e09904680011ada5772759d6a2615bcb583337019f13c9a6dd67272b9f384402877fa62e644a55cf3056158407e03b2c582956472c5f416d4e9f5173fcfe4d6e6f4da4cbbd4b1fc38544c5ecaf2"
-//       Suite = "bn256.adapter"
-//     [servers.Services.Skipchain]
-//       Public = "2ecf86086e93ebf317af679edd6071f47b9d28e2e8d5cb8c363da35f0c9e6f5f3e721fedd719c77ab7958517ba0b4b73ce450196c8d7d914a0d131ce43281ae38c83bd7ac606cdf441144207928080c28b1c61f6e7daf2f2db12ffd9b27dfe986d9f9d3fdfa7d1dba7acf716616f15e0a8d885312bfce7ee2e03868575b78aee"
-//       Suite = "bn256.adapter"
-//     [servers.Services.blsCoSiService]
-//       Public = "63887d3b06ebee95bca343ee1e3a9010218881fcc4ecc849c6f07764fedddab9381e9881c352c90c96a45aa0399dd8190896464394e19e95bb019b3bd423018e456777f8b17abb5d2e08b6a15157925e8f5114fbee3c9f50865be3b2623c5d066a512099fa2264c3acb75c74040cae0cadb9f49ccae71288fb524262beb228c4"
-//       Suite = "bn256.adapter"
-// [[servers]]
-//   Address = "tls://local.c4dt.org:7776"
-//   Suite = "Ed25519"
-//   Public = "845a49a5eec9bf0d925cbf409f640056ee666511a17e20976eb471cbcc3d6ec7"
-//   Description = "Conode_4"
-//   [servers.Services]
-//     [servers.Services.ByzCoin]
-//       Public = "6e2764bb1960d2feade5882bc5c6b38ea0274ff0cccaad0bba1bbf049fc6544d428b358772e4c2b4587093f0d7cf0cbe651015f8d9f673bc03f8f484a0a21a2e00128ed4fc5c4ed34f1811c3b43e96b1cb136ae0b7652a2e30cdbace9c21d67478fef3c4f3885beb23754a50e460129cc3bc9587b51abc74d85dc293667c4e29"
-//       Suite = "bn256.adapter"
-//     [servers.Services.Skipchain]
-//       Public = "45a9de16964bbd55afc05b1a408c246e69299e3530e418461c94e5bc744e51648914609c5e1744e4093dd0ef555a9fd3827dfc99e6aa4b993c71ff89d6c88de48de20564a3a3d7e09e0203baab45d11dae2ae01c787a28da217e68340663dcde53770f58b82690da786d484c9634421ddd30ee03c82985c4427cc6c88a8cad13"
-//       Suite = "bn256.adapter"
-//     [servers.Services.blsCoSiService]
-//       Public = "24b73271432ded23909a23452f0de4e0f4a3fd70fcf11200dd29f57795ea8d2b5523d3b1c1c8c0f53b75f7e6de1c049c6cba43ea208a708be9440b92fcfe7cf8514b8865fef8d0ebeca3ae2380902081f41e5ec4154b831c508cdce380291d6b3579318141a244049a6c8fe34254dc9d96724d9a9827a3e87a1a24e62cd0c893"
-//       Suite = "bn256.adapter"
     RosterTOMLLOCAL: `
 [[servers]]
   Address = "tls://localhost:7776"
@@ -88,6 +143,8 @@ export const Defaults = {
     [servers.Services.Skipchain]
       Public = "87c937c5857427866a26fb1cb6e7af99e25d3ec17c490d26178286b322656383147336938f9d6c7f508dd4323b9a33b8d20d1b2284ddb4d680107fd60b3620ec0f645275828eaf10f9d2a1702b55d586bd8831a9f919f3a5aa2ff6089356c02381b0102b4cabc4070e7899fc5618f65842805fe3c26bee22e96bb071dbfa205e"
       Suite = "bn256.adapter"
+`,
+/*
 [[servers]]
   Address = "tls://localhost:7770"
   Suite = "Ed25519"
@@ -100,16 +157,55 @@ export const Defaults = {
     [servers.Services.Skipchain]
       Public = "10b4fcc59a0048ee8b734af42a0b6e8253f3ca67e778d25d39468d1fcb0ed8048985dd1492b16a2ee7a05c035b21ab5c5484c09efb37de00ee6bb1434b3c75674cde478df060e88c33094aef82128461de39b596aba6a885fcdd5d5571be748359454cbfcb16b8bcf251917dec4715f34b77fb538457207d6fecbaba06567089"
       Suite = "bn256.adapter"
+*/
+    RosterTOMLCalypso: `
+[[servers]]
+  Address = "tls://conode.c4dt.org:7776"
+  Suite = "Ed25519"
+  Public = "c2d64d0b6b4ad33eca744f3b1cf09c417b6c1b94be7128ffaba01d118220c294"
+  Description = "Conode_3"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "07e87f17f4ecd8f556f6692da991080e5b554e2bbc2bbd41e45b11e6a52945be7f6e1d411295d813d660fd0c3fdd08d0e9dd8f1af56fc6650fac5bb44b513a0560da91d6d5b85509dfc32d2479092e85abff18ada72e7f0a6c3ff35c7002a27283419957311dbe10786ef0f8611d58ee6d5280ef0cfcd07f3319712b2fd0e695"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "81c12d72c2e9523dead1beb6f954116caaea41d5b8286c8c2958c984c5e79c5b00bf0d4bb5112b7f43b9cf9ebf44f68be0cf84de98d6bee2fc1c120e97ed40b10b8ae75471f4133bfb12f6ed64fa8459c720f3b0348add0e7a14a3ecc833d30681d31b565fde21f3d2961ec4e48afa8767a476e85fb2f0cc37a4519eabc70353"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://conode.c4dt.org:7774"
+  Suite = "Ed25519"
+  Public = "0866448991887684959bd183da8a300558d44ecf31aa9091d31c17e42ec9cb12"
+  Description = "Conode_2"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "73ee09ef3daf9df0d9100390d14a4900937deba4a4dbf140da7e877ed6a1e1038020f90d8c3b2ab425afec04ad1e955b3996cd8d5b71b541d071a524aebd6bfb31033150a1015f034c4b38176613d47e437fc067da4e3304fba9849cbd3a000a6002a1808d35cf34fa11b2ec6abe01b7862268366fbbc9c0ad51c941101ed26f"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "7bfc28c37d77914f65f63ee284462b4e9b5edc3914afb2f188293af88f60b9541b971e401f0df992d83b663b3c0376e1e8e892242f8e84370f984d1dc633384520166e78bf187cde742ed683afa90c0ce540efd38bdcd21a67271c17fe5635953e4d981fa4c26a4fbcefc0fca73908a356ce637a948d9282941743e3bed377ff"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://conode.c4dt.org:7772"
+  Suite = "Ed25519"
+  Public = "7f9d54738f9ba0cb040e12e9304f00404cc5e23bf75ce52c2e0fd4cf533d3834"
+  Description = "Conode_1"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "5f7e8168cdcec8ac358b548362489420b46a1bac1d30cc064d4d14bac16805a74bc6220262a0df06ee8beba24c0d88e64fe4c2af81c9cc14aefa15ea9a238fd5872ce28d7418116d464c634df104c2bca0428fd6c1d43f2ac610646521d222fe64e96e61addd0f43c4d4bade0a023c7af8025c45516edb3f6f637a3cd839c67b"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "53f75cc50ff0c67622ee9df25e488acfd7917af63cbc2350feddf65515fa50fe473082e0fb6c34c850666e28f63673f46299243f1490c312e76b41b6da42fdd425e8d3d7c9310ec7a469b564c41c46bfea0a2fce7f972eba1c9acbf018a17ee323d5e7a0d285b929a73233d38a5c70599037b5c739dc5fdfff10101285b3d1dd"
+      Suite = "bn256.adapter"
 `,
-    Roster: null,
     // ByzCoinID
-    ByzCoinID: Buffer.from('07712e38b5e15dadff6610cdd255bbbe4bd93365fba95aa0abcdca900caf206c', 'hex'),
+    ByzCoinID: Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex"),
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
 
+    Roster: null,
+    RosterCalypso: null,
     // Testing
-    Testing: true,
+    Testing: false,
     // If Confirm is false, there are no security confirmations asked. This is for
     // easier UI testing.
     Confirm: true,
@@ -118,26 +214,25 @@ export const Defaults = {
     // Redirect pop.dedis.ch to another (local) IP
     NetRedirect: null,
     // Alias can be set to a non-"" value to have a default alias
-    Alias: '',
+    Alias: "",
     // TestButtons allow to delete everything
     TestButtons: false,
     // DataFile can be set to a string that will be used to overwrite the Data
     DataFile: null,
-    // LoadTestStore
-    LoadTestStore: false,
 };
 
-if (Defaults.Testing) {
+// Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
+Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLDEDIS);
+Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLCalypso);
+
+export function activateTesting() {
+    Defaults.Testing = true;
     Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
-    // Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLDEDIS);
-    // Defaults.NetRedirect = ["pop.dedis.ch", "192.168.0.1"];
     Defaults.Confirm = false;
     Defaults.TestButtons = true;
-    Defaults.Alias = 'testing';
-    Defaults.ByzCoinID = Buffer.from('c921c1291c7f9e82a0c05b7bcd89ff6a1629b8f8b535d33644ec5ae5161ebd9b', 'hex');
-    // Defaults.Testing = false;
-    // Defaults.LoadTestStore = true;
-} else {
-    Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
+    Defaults.Alias = "testing";
+    Defaults.ByzCoinID = Buffer.from("589774e0da51b8996685a5ee243d6e7867d6e1c13d900fc23abafc55025e2466", "hex");
+    Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
     // Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLDEDIS);
+    // Defaults.NetRedirect = ["pop.dedis.ch", "192.168.0.1"];
 }

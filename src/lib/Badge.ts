@@ -1,17 +1,13 @@
-import {Party} from './Party';
-import {KeyPair} from './KeyPair';
-import ByzCoinRPC from './src/byzcoin/byzcoin-rpc';
-import {Data} from './Data';
-import {Contact} from './Contact';
+import { Contact } from "./Contact";
+import { Data } from "./Data";
+import { KeyPair } from "./KeyPair";
+import { Party } from "./Party";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
 
 export class Badge {
-
-    constructor(public party: Party, public keypair: KeyPair) {
-    }
-    public mined = false;
 
     // get qrcode(): ImageSource {
     //     const sideLength = screen.mainScreen.widthPixels / 4;
@@ -30,6 +26,10 @@ export class Badge {
         const b = new Badge(p, kp);
         b.mined = obj.mined;
         return b;
+    }
+    mined = false;
+
+    constructor(public party: Party, public keypair: KeyPair) {
     }
 
     toObject(): any {

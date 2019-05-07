@@ -1,0 +1,15 @@
+You're not yet registered. Please enter an ephemeral key:
+
+<form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addID()">
+  <mat-form-field class="fullwidth" style="width:100%;">
+    <input matInput type="text" placeholder="Ephemeral Key" formControlName="ephemeralKey"/>
+  </mat-form-field>
+  <mat-form-field class="fullwidth" style="width:100%;">
+    <input matInput type="text" placeholder="DarcID" formControlName="darcID"/>
+  </mat-form-field>
+  <mat-form-field class="fullwidth" style="width:100%;">
+    <input matInput type="text" placeholder="Alias" formControlName="alias"/>
+  </mat-form-field>
+  <br>
+  <button mat-button class="submit-btn" type="submit">Register</button>
+</form>

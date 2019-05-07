@@ -1,5 +1,5 @@
 export class Storage {
-    static pre = 'dyna_';
+    static pre = "dyna_";
 
     static set(key: string, value: string) {
         localStorage.setItem(Storage.pre + key, value);
@@ -15,7 +15,7 @@ export class Storage {
 
     static getObject(key: string): any {
         const obj = JSON.parse(Storage.get(key), (key, value) => {
-            if (value && typeof value === 'object' && value.type == 'Buffer') {
+            if (value && typeof value === "object" && value.type == "Buffer") {
                 return Buffer.from(value);
             }
             return value;

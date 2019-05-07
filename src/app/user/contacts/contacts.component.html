@@ -1,0 +1,15 @@
+<ul>
+  <li *ngFor="let contact of gData.contacts">
+    {{ contact.alias | titlecase }} -
+    <button mat-button (click)="transferCoin(contact)">Transfer</button>
+    -
+    <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+    -
+    <button mat-button (click)="contactDelete(contact)">Delete</button>
+  </li>
+</ul>
+<div style="padding:10px;">
+  <button mat-raised-button color="primary" (click)="createContact()">Create Contact
+  </button>
+  <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
+</div>
