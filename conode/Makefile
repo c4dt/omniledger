@@ -2,6 +2,8 @@ CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
 
+.PHONY: cothority
+
 # -s -w are for smaller binaries
 # -X compiles the git tag into the binary
 ldflags=-s -w -X main.gitTag=$(TAG)

@@ -5,8 +5,6 @@ import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import CredentialsInstance from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
 import { PersonhoodRPC, PollStruct } from "@c4dt/cothority/personhood/personhood-rpc";
 
-import { Scalar } from "@dedis/kyber";
-import { Buffer } from "buffer";
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import CredentialInstance, {
@@ -27,6 +25,8 @@ import { Log } from "@c4dt/cothority/log";
 import { Roster } from "@c4dt/cothority/network";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import { Scalar } from "@dedis/kyber";
+import { Buffer } from "buffer";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
@@ -129,6 +129,7 @@ export class Data {
             costCredential: Long.fromNumber(1000),
             costDarc: Long.fromNumber(100),
             costParty: Long.fromNumber(1000),
+            costRoPaSci: Long.fromNumber(10),
         };
         const spawner = await SpawnerInstance.spawn({
             bc,
@@ -147,7 +148,6 @@ export class Data {
                 Log.error("Could not authorize roster", e);
             }
         }
-        Log.print("spawning lts");
         const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], Defaults.RosterCalypso);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, lts);
@@ -796,24 +796,21 @@ export class Data {
 
 export class TestData extends Data {
 
-    static async init(r: Roster, alias: string): Promise<TestData> {
+    static async init(alias: string = "admin", r: Roster = null): Promise<TestData> {
         activateTesting();
-        Log.print(10);
+        if (!r) {
+            r = Defaults.Roster;
+        }
         const admin = SignerEd25519.random();
-        Log.print(11);
         const d = ByzCoinRPC.makeGenesisDarc([admin], r, "genesis darc");
-        Log.print(12);
         ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret", "spawn:calypsoWrite",
             "spawn:calypsoRead",
             "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"].forEach((rule) => {
             d.rules.appendToRule(rule, admin, "|");
         });
-        Log.print(13, r);
         const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
-        Log.print(14);
 
         const td = (await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias)) as TestData;
-        Log.print(15);
         td.admin = admin;
         td.darc = d;
         return td;
