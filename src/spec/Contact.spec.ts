@@ -1,8 +1,7 @@
 import Long from "long";
-import { Data, TestData } from "../lib/Data";
-import { Defaults } from "../lib/Defaults";
-import { KeyPair } from "../lib/KeyPair";
 import { Log } from "@c4dt/cothority/log";
+import { Data, TestData } from "src/lib/Data";
+import { activateTesting, Defaults } from "src/lib/Defaults";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
@@ -10,11 +9,15 @@ describe("Contact should", async () => {
     let tdAdmin: TestData;
 
     beforeAll(async () => {
-        Log.lvl1("Creating Byzcoin and first instance");
-        tdAdmin = await TestData.init(Defaults.Roster, "admin");
+        try {
+            tdAdmin = await TestData.init();
+        } catch (e) {
+            Log.error("couldn't start byzcoin:", e);
+        }
     });
 
     it("create an ocs and store it correctly in a new user", async () => {
+        Log.lvl1("starting test");
         const user1 = await tdAdmin.createUser("user1");
         expect(user1.contact.ltsID).toEqual(tdAdmin.contact.ltsID);
     });

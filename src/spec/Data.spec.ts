@@ -1,8 +1,8 @@
 import { Log } from "@c4dt/cothority/log";
 import Long from "long";
-import { Data, TestData } from "../lib/Data";
-import { Defaults } from "../lib/Defaults";
-import { KeyPair } from "../lib/KeyPair";
+import { Data, TestData } from "src/lib/Data";
+import { Defaults } from "src/lib/Defaults";
+import { KeyPair } from "src/lib/KeyPair";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
@@ -12,7 +12,7 @@ describe("Testing new signup", () => {
 
         beforeAll(async () => {
             Log.lvl1("Creating Byzcoin and first instance");
-            tdAdmin = await TestData.init(Defaults.Roster, "admin");
+            tdAdmin = await TestData.init();
         });
 
         it("Creating new user from darc", async () => {

@@ -5,9 +5,9 @@ import { OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
 import { Log } from "@c4dt/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
-import { TestData } from "../lib/Data";
-import { Defaults } from "../lib/Defaults";
-import { KeyPair } from "../lib/KeyPair";
+import { TestData } from "src/lib/Data";
+import { Defaults } from "src/lib/Defaults";
+import { KeyPair } from "src/lib/KeyPair";
 
 const curve25519 = curve.newCurve("edwards25519");
 
@@ -91,11 +91,8 @@ describe("In a full byzcoin setting, it should", () => {
     let ocs: OnChainSecretRPC;
 
     beforeAll(async () => {
-        Log.print("one");
-        tdAdmin = await TestData.init(Defaults.Roster, "admin");
-        Log.print("two");
+        tdAdmin = await TestData.init();
         ocs = new OnChainSecretRPC(tdAdmin.bc);
-        Log.print("three");
     });
 
     it("be able to create an LTS", async () => {
