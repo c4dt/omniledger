@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import { Log } from "@c4dt/cothority/log";
 import Long from "long";
+import { Log } from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { Data, gData } from "../../../lib/Data";
 import { Private } from "../../../lib/KeyPair";
@@ -45,8 +45,9 @@ export class ContactsComponent implements OnInit {
       gData.addContact(newUser.contact);
       await gData.save();
       this.dialog.open(CreateUserComponent, {
-        data: newUser.keyIdentity._private.toHex(),
-        width: "250px",
+        data: window.location.protocol + "//" + window.location.host + "/register?ephemeral=" +
+            newUser.keyIdentity._private.toHex(),
+        width: "400px",
       });
     }
   }
