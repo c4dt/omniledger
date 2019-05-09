@@ -1,5 +1,5 @@
-import Long from "long";
 import { Log } from "@c4dt/cothority/log";
+import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
 
@@ -21,6 +21,20 @@ describe("Testing new signup", () => {
             await user1Copy.load();
             expect(user1Copy.contact.credentialIID).toEqual(user1.contact.credentialIID);
             expect(user1Copy.toObject()).toEqual(user1.toObject());
+        });
+
+        it ("Should keep contacts on skipchain", async () => {
+            const user1 = await tdAdmin.createUser("user1");
+            const user2 = await tdAdmin.createUser("user2");
+            user1.addContact(user2.contact);
+            await user1.save();
+            const user1Copy = new Data();
+            user1Copy.dataFileName = user1.dataFileName;
+            await user1Copy.load();
+            expect(user1Copy.contacts.length).toEqual(1);
+            expect(user1Copy.toObject()).toEqual(user1.toObject());
+            Log.print(user1Copy.contacts[0].getDarcSignIdentity());
+            Log.print((await user1Copy.contacts[0].getDarcSignIdentity()).id);
         });
 
         it("Creating new user from darc", async () => {

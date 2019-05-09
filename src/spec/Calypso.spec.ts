@@ -123,7 +123,7 @@ describe("In a full byzcoin setting, it should", () => {
         Log.lvl2("Creating Write instance");
         const wrInst = await tdAdmin.spawnerInstance.spawnCalypsoWrite(tdAdmin.coinInstance,
             [tdAdmin.keyIdentitySigner], tdAdmin.lts, key,
-            [tdAdmin.contact.darcSignIdentity]);
+            [tdAdmin.contact.getDarcSignIdentity()]);
 
         Log.lvl2("Creating Read instance");
         const kp = new KeyPair();

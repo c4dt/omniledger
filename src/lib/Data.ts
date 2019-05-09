@@ -1,10 +1,6 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
-import { curve, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
@@ -28,6 +24,10 @@ import { Roster } from "@c4dt/cothority/network";
 import { PersonhoodRPC, PollStruct } from "@c4dt/cothority/personhood/personhood-rpc";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import { curve, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
@@ -70,6 +70,14 @@ export class Data {
 
     set spawnerInstance(si: SpawnerInstance) {
         this.contact.spawnerInstance = si;
+    }
+
+    get contacts(): Contact[] {
+        return this.contact.contacts;
+    }
+
+    set contacts(cs: Contact[]) {
+        this.contact.contacts = cs;
     }
 
     get uniqueMeetings(): number {
@@ -217,7 +225,6 @@ export class Data {
     // If darcID is given, it will use this darc to create all the instances. If darcID == null,
     // then the gData needs to have enough coins to pay for all the instances when using
     contact: Contact;
-    contacts: Contact[] = [];
     parties: Party[] = [];
     badges: Badge[] = [];
     ropascis: RoPaSciInstance[] = [];
@@ -259,9 +266,6 @@ export class Data {
                     null, null);
                 this.contact = new Contact(cred, this);
             }
-            if (obj.contacts) {
-                this.contacts = obj.contacts.map((c) => Contact.fromObject(c));
-            }
         } catch (e) {
             Log.catch(e);
         }
@@ -276,7 +280,6 @@ export class Data {
         this.badges = [];
         this.ropascis = [];
         this.polls = [];
-        this.contacts = [];
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
@@ -315,13 +318,6 @@ export class Data {
                     await this.contact.connectBC(this.bc);
                 }
                 Log.lvl2("Getting contact informations");
-                this.contacts = [];
-                if (obj.contacts) {
-                    const fs = obj.contacts.filter((u) => u);
-                    for (const f of fs) {
-                        this.contacts.push(await Contact.fromObjectBC(this.bc, f));
-                    }
-                }
             }
 
             this.contact.data = this;
@@ -339,11 +335,9 @@ export class Data {
             bcRoster: null,
             coinInstance: null,
             contact: this.contact.toObject(),
-            contacts: this.contacts.map((c) => c.toObject()),
             continuousScan: this.continuousScan,
             credentialInstance: null,
             darcInstance: null,
-            friends: this.contacts.map((u) => u.toObject()),
             keyIdentity: this.keyIdentity._private.toHex(),
             keyPersonhood: this.keyPersonhood._private.toHex(),
             meetups: this.meetups.map((m) => m.toObject()),
@@ -614,7 +608,8 @@ export class Data {
 
     addContact(nu: Contact) {
         this.rmContact(nu);
-        this.contacts.push(nu);
+        // Cannot use push on setters and getters
+        this.contacts = this.contacts.concat(nu);
     }
 
     rmContact(nu: Contact) {

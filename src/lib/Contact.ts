@@ -48,21 +48,6 @@ export class Contact {
         Contact.setVersion(this.credential, v);
     }
 
-    get darcSignIdentity(): IdentityDarc {
-        const signRule = this.darcInstance.darc.rules.list.find((r) => r.action === DarcInstance.commandSign);
-        if (signRule == null) {
-            throw new Error("didn't find signer darc");
-        }
-        const expr = signRule.expr.toString();
-        if (expr.match(/\|&/)) {
-            throw new Error("don't know what to do with a combined expression");
-        }
-        if (!expr.startsWith("darc:")) {
-            throw new Error("signer is not a darc");
-        }
-        return new IdentityDarc({id: Buffer.from(expr.substr(5), "hex")});
-    }
-
     get credentialIID(): InstanceID {
         return CredentialsInstance.credentialIID(this.seedPublic.toBuffer());
     }
@@ -108,6 +93,32 @@ export class Contact {
     set url(u: string) {
         if (u) {
             this.credential.setAttribute("1-public", "url", Buffer.from(u));
+            this.version = this.version + 1;
+        }
+    }
+
+    get contacts(): Contact[] {
+        if (this.contactsCache) {
+            return this.contactsCache;
+        }
+        this.contactsCache = [];
+        const csBuf = this.credential.getAttribute("1-public", "contacts");
+        if (csBuf) {
+            const csArray: string[] = JSON.parse(csBuf.toString());
+            this.contactsCache = csArray.map((c) => {
+                const cont = Contact.fromObject(c);
+                cont.bc = this.bc;
+                return cont;
+            });
+        }
+        return this.contactsCache;
+    }
+
+    set contacts(cs: Contact[]) {
+        if (cs) {
+            this.contactsCache = cs;
+            const csBuf = Buffer.from(JSON.stringify(cs.map((c) => c.toObject())));
+            this.credential.setAttribute("1-public", "contacts", csBuf);
             this.version = this.version + 1;
         }
     }
@@ -289,6 +300,7 @@ export class Contact {
     recover: Recover = null;
     calypso: Calypso = null;
     bc: ByzCoinRPC = null;
+    contactsCache: Contact[] = null;
 
     constructor(public credential: CredentialStruct = null,
                 public data: Data = null) {
@@ -300,6 +312,24 @@ export class Contact {
         this.calypso = new Calypso(this);
     }
 
+    async getDarcSignIdentity(): Promise<IdentityDarc> {
+        if (!this.darcInstance) {
+            await this.update();
+        }
+        const signRule = this.darcInstance.darc.rules.list.find((r) => r.action === DarcInstance.commandSign);
+        if (signRule == null) {
+            throw new Error("didn't find signer darc");
+        }
+        const expr = signRule.expr.toString();
+        if (expr.match(/\|&/)) {
+            throw new Error("don't know what to do with a combined expression");
+        }
+        if (!expr.startsWith("darc:")) {
+            throw new Error("signer is not a darc");
+        }
+        return new IdentityDarc({id: Buffer.from(expr.substr(5), "hex")});
+    }
+
     toObject(): object {
         return {
             calypso: this.calypso.toObject(),
@@ -309,6 +339,7 @@ export class Contact {
 
     async update(): Promise<Contact> {
         try {
+            this.contactsCache = null;
             if (this.credentialInstance == null) {
                 if (this.credentialIID) {
                     this.credentialInstance = await CredentialsInstance.fromByzcoin(this.bc, this.credentialIID);
@@ -556,6 +587,7 @@ class Calypso {
         }
         return cal;
     }
+
     others: Map<InstanceID, SecureData[]>;
     ours: Map<string, SecureData>;
 
@@ -608,7 +640,7 @@ class Calypso {
      * @param user the remote contact to check for readable secrets
      */
     async read(user: Contact): Promise<SecureData[]> {
-        const signer = await this.contact.darcSignIdentity;
+        const signer = await this.contact.getDarcSignIdentity();
         const sds = await SecureData.fromContact(this.contact.bc, this.contact.data.lts, user,
             IdentityWrapper.fromIdentity(signer).toString(), [this.contact.data.keyIdentitySigner],
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);

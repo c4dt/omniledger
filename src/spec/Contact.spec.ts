@@ -30,7 +30,7 @@ describe("Contact should", async () => {
         await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user2.coinInstance.id, [tdAdmin.keyIdentitySigner]);
         await user2.coinInstance.update();
         const data = Buffer.from("very secure data");
-        await user1.contact.calypso.add(data, [user2.contact.darcSignIdentity.id]);
+        await user1.contact.calypso.add(data, [user2.contact.getDarcSignIdentity().id]);
         const sd = await user2.contact.calypso.read(user1.contact);
         expect(sd.length).toBe(1);
         expect(sd[0].plainData).toEqual(data);

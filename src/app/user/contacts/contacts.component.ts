@@ -49,6 +49,7 @@ export class ContactsComponent implements OnInit {
                     const ek = Private.fromRand();
                     newUser = await gData.createUser(result.alias, ek);
                     newUser.contact.email = result.email;
+                    newUser.addContact(gData.contact);
                     await newUser.contact.sendUpdate([newUser.keyIdentitySigner]);
                     await gData.coinInstance.transfer(Long.fromNumber(100000), newUser.coinInstance.id,
                         [gData.keyIdentitySigner]);
