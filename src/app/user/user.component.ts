@@ -36,14 +36,13 @@ export class UserComponent implements OnInit {
     ];
     if (gData.contact && gData.contact.isRegistered() && gData.coinInstance) {
       Log.lvl1("user is registered");
-      this.router.navigateByUrl("/user/yourself");
-      this.isLoaded = true;
+      this.navigateToSubtab();
     } else {
       gData.load().then((gd: Data) => {
         Log.lvl1("loading user");
         if (gd.contact.isRegistered()) {
           Log.lvl1("user is registered after load");
-          this.router.navigateByUrl("/user/yourself");
+          this.navigateToSubtab();
         } else {
           Log.lvl1("user is not registered after load");
           this.router.navigateByUrl("/register");
@@ -51,9 +50,14 @@ export class UserComponent implements OnInit {
       }).catch((e) => {
         Log.lvl1("error while loading - registering");
         this.router.navigateByUrl("/register");
-      }).finally(() => {
-        this.isLoaded = true;
       });
+    }
+  }
+
+  navigateToSubtab() {
+    this.isLoaded = true;
+    if (window.location.pathname === "/user") {
+      this.router.navigateByUrl("/user/yourself");
     }
   }
 
