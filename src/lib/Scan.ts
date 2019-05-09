@@ -22,8 +22,10 @@
 //             closeCallback: () => {
 //                 console.log("Scanner closed")
 //             }, // invoked when the scanner was closed (success or abort)
-//             // orientation: orientation,     // Android only, default undefined (sensor-driven orientation), other options: portrait|landscape
-//             // openSettingsIfPermissionWasPreviouslyDenied: true // On iOS you can send the user to the settings app if access was previously denied
+// Android only, default undefined (sensor-driven orientation), other options: portrait|landscape
+//             // orientation: orientation,
+// On iOS you can send the user to the settings app if access was previously denied
+//             // openSettingsIfPermissionWasPreviouslyDenied: true
 //         }).then(result => {
 //             Log.lvl2("Got scan result", result);
 //             setTimeout(() => {
@@ -36,7 +38,7 @@
 
 export function parseQRCode(str: string, maxArgs: number): any {
     const url = str.split("?", 2);
-    if (url.length != 2) {
+    if (url.length !== 2) {
         return Promise.reject("wrong QRCode");
     }
     const parts = url[1].split("&", maxArgs);

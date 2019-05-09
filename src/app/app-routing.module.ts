@@ -14,7 +14,7 @@ const routes: Routes = [
   {path: "loading", component: LoadingComponent},
   {path: "register", component: RegisterComponent},
   {
-    // @ts-ignore
+    // tslint:disable-next-line
     path: "user", component: UserComponent, children: [
       {path: "yourself", component: YourselfComponent},
       {path: "contacts", component: ContactsComponent},

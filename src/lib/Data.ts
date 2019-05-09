@@ -640,7 +640,7 @@ export class Data {
         // Move all finalized parties into badges
         const parties: Party[] = [];
         this.parties.forEach((p) => {
-            if (p.state === Party.Finalized) {
+            if (p.state === Party.finalized) {
                 if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
                     k.equals(this.keyPersonhood._public.point.marshalBinary()))) {
                     this.badges.push(new Badge(p, this.keyPersonhood));

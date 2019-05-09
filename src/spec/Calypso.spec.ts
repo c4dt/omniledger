@@ -68,6 +68,7 @@ describe("Calypso.createWrite should", () => {
 
         const U = curve25519.point();
         U.unmarshalBinary(Buffer.from("946de817c1bd2465559ba9c5c0def6feeb6a3b842e9b6ff86d34b638a41f11ed", "hex"));
+        // tslint:disable-next-line
         const Ubar = curve25519.point();
         Ubar.unmarshalBinary(Buffer.from("c47944aacc329efcff490e5b4cf79c4706c6a5eaa1341b0afa54bc9dcaf581f0", "hex"));
         const E = curve25519.scalar();
@@ -123,7 +124,7 @@ describe("In a full byzcoin setting, it should", () => {
         Log.lvl2("Creating Write instance");
         const wrInst = await tdAdmin.spawnerInstance.spawnCalypsoWrite(tdAdmin.coinInstance,
             [tdAdmin.keyIdentitySigner], tdAdmin.lts, key,
-            [tdAdmin.contact.getDarcSignIdentity()]);
+            [await tdAdmin.contact.getDarcSignIdentity()]);
 
         Log.lvl2("Creating Read instance");
         const kp = new KeyPair();

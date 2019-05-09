@@ -1,9 +1,6 @@
 import { Storage } from "../lib/Storage";
 
 describe("Storage", () => {
-    beforeEach(async () => {
-    });
-
     it("should store and load elements", async () => {
         Storage.set("one", "1");
         expect(Storage.get("one")).toBe("1");

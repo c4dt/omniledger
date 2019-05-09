@@ -1,10 +1,10 @@
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
-import Long from "long";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import Instance from "@c4dt/cothority/byzcoin/instance";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import { PopDesc, PopPartyStruct } from "@c4dt/cothority/personhood/proto";
+import Long from "long";
 // import {screen} from "tns-core-modules/platform";
 // import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
 
@@ -21,9 +21,9 @@ export class Party {
     get uniqueName(): string {
         return this.partyInstance.popPartyStruct.description.uniqueName;
     }
-    static readonly PreBarrier = 1;
-    static readonly Scanning = 2;
-    static readonly Finalized = 3;
+    static readonly preBarrier = 1;
+    static readonly scanning = 2;
+    static readonly finalized = 3;
     static readonly url = "https://pop.dedis.ch/qrcode/party";
 
     static fromObject(bc: ByzCoinRPC, obj: any): Party {
@@ -34,21 +34,21 @@ export class Party {
 
     static fromDescription(name: string, purpose: string, location: string, date: Long): Party {
         const pd = new PopDesc({
-            name,
-            purpose,
             datetime: date,
             location,
+            name,
+            purpose,
         });
         const pps = new PopPartyStruct({
-            state: 1,
-            organizers: 1,
-            finalizations: null,
-            description: pd,
             attendees: null,
+            description: pd,
+            finalizations: null,
             miners: [],
             miningReward: Long.fromNumber(0),
-            previous: null,
             next: null,
+            organizers: 1,
+            previous: null,
+            state: 1,
         });
         const ppi = new PopPartyInstance(null, null);
         ppi.popPartyStruct = pps;
@@ -74,8 +74,8 @@ export class Party {
 
     toObject(): any {
         return {
-            party: this.partyInstance.toBytes(),
             isOrganizer: this.isOrganizer,
+            party: this.partyInstance.toBytes(),
         };
     }
 }

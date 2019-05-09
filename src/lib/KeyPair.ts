@@ -2,7 +2,7 @@ import { curve, Point } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import { randomBytes } from "crypto";
 
-const Curve25519 = curve.newCurve("edwards25519");
+const curve25519 = curve.newCurve("edwards25519");
 
 /**
  * KeyPair holds the private and public key that go together. It has
@@ -22,7 +22,7 @@ export class KeyPair {
     _public: Public;
 
     constructor(privHex: string = "") {
-        if (privHex && privHex.length == 64) {
+        if (privHex && privHex.length === 64) {
             this.setPrivateHex(privHex);
         } else {
             this.randomize();
@@ -35,7 +35,7 @@ export class KeyPair {
 
     setPrivate(priv: Private) {
         this._private = priv;
-        this._public = new Public(Curve25519.point().mul(this._private.scalar, null));
+        this._public = new Public(curve25519.point().mul(this._private.scalar, null));
     }
 
     randomize() {
@@ -44,8 +44,8 @@ export class KeyPair {
 
     toObject(): any {
         return {
-            pub: this._public.toBuffer(),
             priv: this._private.toBuffer(),
+            pub: this._public.toBuffer(),
         };
     }
 }
@@ -53,7 +53,7 @@ export class KeyPair {
 export class Private {
 
     static fromBuffer(buf: Buffer): Private {
-        const p = Curve25519.scalar();
+        const p = curve25519.scalar();
         p.unmarshalBinary(buf);
         return new Private(p);
     }
@@ -63,19 +63,19 @@ export class Private {
     }
 
     static zero(): Private {
-        const p = Curve25519.scalar();
+        const p = curve25519.scalar();
         p.zero();
         return new Private(p);
     }
 
     static one(): Private {
-        const p = Curve25519.scalar();
+        const p = curve25519.scalar();
         p.one();
         return new Private(p);
     }
 
     static fromRand(): Private {
-        return new Private(Curve25519.scalar().setBytes(randomBytes(32)));
+        return new Private(curve25519.scalar().setBytes(randomBytes(32)));
     }
     constructor(public scalar: any) {
     }
@@ -93,26 +93,26 @@ export class Private {
     }
 
     add(p: Private): Private {
-        return new Private(Curve25519.scalar().add(this.scalar, p.scalar));
+        return new Private(curve25519.scalar().add(this.scalar, p.scalar));
     }
 }
 
 export class Public {
 
     static base(): Public {
-        const p = Curve25519.point();
+        const p = curve25519.point();
         p.base();
         return new Public(p);
     }
 
     static fromBuffer(buf: Buffer): Public {
-        const p = Curve25519.point();
+        const p = curve25519.point();
         p.unmarshalBinary(buf);
         return new Public(p);
     }
 
     static fromProto(buf: Buffer): Public {
-        const p = Curve25519.point();
+        const p = curve25519.point();
         p.unmarshalBinary(Buffer.from(buf.subarray(16)));
         return new Public(p);
     }
@@ -122,7 +122,7 @@ export class Public {
     }
 
     static zero(): Public {
-        const p = Curve25519.point();
+        const p = curve25519.point();
         p.null();
         return new Public(p);
     }
@@ -151,12 +151,12 @@ export class Public {
     }
 
     mul(s: Private): Public {
-        const ret = Curve25519.point();
+        const ret = curve25519.point();
         ret.mul(s.scalar, this.point);
         return new Public(ret);
     }
 
     add(p: Public): Public {
-        return new Public(Curve25519.point().add(this.point, p.point));
+        return new Public(curve25519.point().add(this.point, p.point));
     }
 }

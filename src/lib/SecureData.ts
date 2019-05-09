@@ -1,7 +1,3 @@
-import { randomBytes } from "crypto";
-import { secretbox, secretbox_open } from "tweetnacl-ts";
-import { Contact } from "./Contact";
-import { KeyPair } from "./KeyPair";
 import { ByzCoinRPC, InstanceID } from "@c4dt/cothority/byzcoin";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
@@ -11,6 +7,10 @@ import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calyps
 import { IdentityDarc } from "@c4dt/cothority/darc";
 import Signer from "@c4dt/cothority/darc/signer";
 import { Log } from "@c4dt/cothority/log";
+import { randomBytes } from "crypto";
+import { secretbox, secretbox_open } from "tweetnacl-ts";
+import { Contact } from "./Contact";
+import { KeyPair } from "./KeyPair";
 
 /**
  * SecureData holds a decrypted secret, together with the writeID and the symmetric key, so that if
@@ -54,7 +54,8 @@ export class SecureData {
                     try {
                         const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sdBuf.value);
                         const cwDarc = await DarcInstance.fromByzcoin(bc, calWrite.darcID);
-                        const readersRule = cwDarc.darc.rules.getRule("spawn:" + CalypsoReadInstance.contractID).expr.toString();
+                        const readersRule = cwDarc.darc.rules.getRule("spawn:" +
+                            CalypsoReadInstance.contractID).expr.toString();
                         if (readersRule.indexOf("&") >= 0) {
                             Log.warn("Cannot parse AND rules yet");
                             continue;
@@ -128,9 +129,9 @@ export class SecureData {
 
     toObject(): object {
         return {
-            writeInstID: this.writeInstID,
-            symKey: this.symKey,
             plainData: this.plainData,
+            symKey: this.symKey,
+            writeInstID: this.writeInstID,
         };
     }
 
@@ -148,7 +149,7 @@ export class FileBlob {
         const fbObj: any = JSON.parse(b.toString());
         return new FileBlob(fbObj.name, Buffer.from(fbObj.data), fbObj.attributes);
     }
-    constructor(public name: string, public data: Buffer, public attributes: FBAttribute[] = null) {
+    constructor(public name: string, public data: Buffer, public attributes: IFBAttribute[] = null) {
     }
 
     toBuffer(): Buffer {
@@ -156,7 +157,7 @@ export class FileBlob {
     }
 }
 
-export interface FBAttribute {
+export interface IFBAttribute {
     name: string;
     value: string;
 }

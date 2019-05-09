@@ -1,6 +1,7 @@
 // import { FileIO } from "./FileIO";
 import { Roster } from "@c4dt/cothority/network";
 
+// tslint:disable-next-line
 export const Defaults = {
     DataDir: "storage",
     // Standard Roster for the app
@@ -170,6 +171,7 @@ export const Defaults = {
       Public = "10b4fcc59a0048ee8b734af42a0b6e8253f3ca67e778d25d39468d1fcb0ed8048985dd1492b16a2ee7a05c035b21ab5c5484c09efb37de00ee6bb1434b3c75674cde478df060e88c33094aef82128461de39b596aba6a885fcdd5d5571be748359454cbfcb16b8bcf251917dec4715f34b77fb538457207d6fecbaba06567089"
       Suite = "bn256.adapter"
 */
+    // tslint:disable-next-line
     RosterTOMLCalypso: `
 [[servers]]
   Address = "tls://conode.c4dt.org:7776"
