@@ -14,9 +14,11 @@ export class StatusComponent implements OnInit {
   nodes = [];
   gData: Data;
   blockCount = -1;
+  signID: string;
 
   constructor() {
     this.gData = gData;
+    gData.contact.getDarcSignIdentity().then((dsi) => this.signID = dsi.toString());
   }
 
   async ngOnInit() {

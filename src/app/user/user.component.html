@@ -1,13 +1,19 @@
-<nav mat-tab-nav-bar>
-  <a mat-tab-link
-     *ngFor="let link of navLinks"
-     [routerLink]="link.link"
-     routerLinkActive #rla="routerLinkActive"
-     [active]="rla.isActive">
-    {{link.label}}
-  </a>
-</nav>
-
+<div *ngIf="!isLoaded">
+    <h1>Loading user</h1>
+</div>
 <div *ngIf="isLoaded">
-  <router-outlet></router-outlet>
+    <mat-tab-group>
+        <mat-tab label="Yourself">
+            <app-yourself></app-yourself>
+        </mat-tab>
+        <mat-tab label="Contacts">
+            <app-contacts></app-contacts>
+        </mat-tab>
+        <mat-tab label="Secure">
+            <app-secure></app-secure>
+        </mat-tab>
+        <mat-tab label="Status">
+            <app-status></app-status>
+        </mat-tab>
+    </mat-tab-group>
 </div>

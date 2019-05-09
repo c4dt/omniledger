@@ -9,31 +9,10 @@ import { Data, gData } from "../../lib/Data";
   templateUrl: "./user.component.html",
 })
 export class UserComponent implements OnInit {
-  navLinks: any[];
-  activeLinkIndex = -1;
   isLoaded = false;
 
   constructor(private router: Router) {
     Log.print("constructing user");
-    this.navLinks = [
-      {
-        index: 0,
-        label: "Yourself",
-        link: "./yourself",
-      }, {
-        index: 1,
-        label: "Contacts",
-        link: "./contacts",
-      }, {
-        index: 2,
-        label: "Secure",
-        link: "./secure",
-      }, {
-        index: 3,
-        label: "Status",
-        link: "./status",
-      },
-    ];
     if (gData.contact && gData.contact.isRegistered() && gData.coinInstance) {
       Log.lvl1("user is registered");
       this.navigateToSubtab();
@@ -55,17 +34,14 @@ export class UserComponent implements OnInit {
   }
 
   navigateToSubtab() {
-    this.isLoaded = true;
     if (window.location.pathname === "/user") {
       this.router.navigateByUrl("/user/yourself");
     }
+    this.isLoaded = true;
   }
 
   ngOnInit() {
-    Log.print("init user");
-    this.router.events.subscribe((res) => {
-      this.activeLinkIndex = this.navLinks.indexOf(this.navLinks.find((tab) => tab.link === "." + this.router.url));
-    });
+    Log.lvl3("init user");
   }
 
 }
