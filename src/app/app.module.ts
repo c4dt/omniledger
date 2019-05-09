@@ -1,9 +1,9 @@
 import { NgModule } from "@angular/core";
-import { BrowserModule } from "@angular/platform-browser";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material";
+import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DemoMaterialModule } from "../material-module";
 import { AppRoutingModule } from "./app-routing.module";
@@ -11,10 +11,11 @@ import { AppComponent } from "./app.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { RegisterComponent } from "./register/register.component";
 import {
-  AddContactComponent,
-  ContactsComponent,
-  CreateUserComponent,
-  TransferCoinComponent,
+    AddContactComponent,
+    ContactsComponent,
+    CreateUserComponent,
+    TransferCoinComponent,
+    UserCredComponent,
 } from "./user/contacts/contacts.component";
 import { CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
 import { StatusComponent } from "./user/status/status.component";
@@ -22,12 +23,13 @@ import { UserComponent } from "./user/user.component";
 import { YourselfComponent } from "./user/yourself/yourself.component";
 
 @NgModule({
-  bootstrap: [AppComponent],
-  declarations: [
+    bootstrap: [AppComponent],
+    declarations: [
         AppComponent,
         CreateUserComponent,
         AddContactComponent,
         TransferCoinComponent,
+        UserCredComponent,
         CalypsoUploadComponent,
         RegisterComponent,
         YourselfComponent,
@@ -37,13 +39,14 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         LoadingComponent,
         UserComponent,
     ],
-  entryComponents: [
-    AddContactComponent,
-    CreateUserComponent,
-    TransferCoinComponent,
-    CalypsoUploadComponent,
-  ],
-  imports: [
+    entryComponents: [
+        AddContactComponent,
+        CreateUserComponent,
+        TransferCoinComponent,
+        UserCredComponent,
+        CalypsoUploadComponent,
+    ],
+    imports: [
         BrowserModule,
         BrowserAnimationsModule,
         DemoMaterialModule,
@@ -53,7 +56,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         MatDialogModule,
         AppRoutingModule,
     ],
-  providers: [],
+    providers: [],
 })
 export class AppModule {
 }

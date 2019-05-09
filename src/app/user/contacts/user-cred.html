@@ -1,0 +1,15 @@
+<div class="mat-body">
+    <h2>Create a new user</h2>
+    <p>
+        <mat-form-field class="width100">
+            <input matInput [(ngModel)]="data.alias" placeholder="Alias for new user">
+        </mat-form-field>
+        <mat-form-field class="width100">
+            <input matInput [(ngModel)]="data.email" placeholder="Email for new user">
+        </mat-form-field>
+    </p>
+    <p>
+        <button mat-raised-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button color='primary' [mat-dialog-close]="data" cdkFocusInitial>Create</button>
+    </p>
+</div>
