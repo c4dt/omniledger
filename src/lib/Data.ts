@@ -1,12 +1,14 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
+import { curve, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import CredentialsInstance from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
-import { PersonhoodRPC, PollStruct } from "@c4dt/cothority/personhood/personhood-rpc";
-
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import CredentialsInstance from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
@@ -23,12 +25,9 @@ import Signer from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
 import { Log } from "@c4dt/cothority/log";
 import { Roster } from "@c4dt/cothority/network";
+import { PersonhoodRPC, PollStruct } from "@c4dt/cothority/personhood/personhood-rpc";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
-import { Scalar } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
@@ -38,7 +37,6 @@ import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
 import { Storage } from "./Storage";
 
-import { curve, sign } from "@dedis/kyber";
 const ed25519 = curve.newCurve("edwards25519");
 
 /**
@@ -83,12 +81,6 @@ export class Data {
 
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
-
-    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
-    // - creates all necessary darcs (four)
-    // - creates credential and coin
-    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
-    // then the gData needs to have enough coins to pay for all the instances when using
 
     // the 'SpawnerInstance'.
     static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string):
@@ -218,6 +210,12 @@ export class Data {
     bc: ByzCoinRPC = null;
     lts: LongTermSecret = null;
     constructorObj: any;
+
+    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
+    // - creates all necessary darcs (four)
+    // - creates credential and coin
+    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
+    // then the gData needs to have enough coins to pay for all the instances when using
     contact: Contact;
     contacts: Contact[] = [];
     parties: Party[] = [];
@@ -234,10 +232,7 @@ export class Data {
      * @param obj (optional) object with all fields for the class.
      */
     constructor(obj: any = {}) {
-        if (Object.keys(obj).length > 0) {
-            this.constructorObj = obj;
-            this.setValues(obj);
-        }
+        this.setValues(obj);
         this.setFileName("data.json");
     }
 
@@ -246,7 +241,9 @@ export class Data {
     }
 
     setValues(obj: any) {
-        this.constructorObj = obj;
+        if (Object.keys(obj).length > 0) {
+            this.constructorObj = obj;
+        }
         try {
             this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
             this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
@@ -385,6 +382,7 @@ export class Data {
      * is not found, it returns an empty data.
      */
     async load(): Promise<Data> {
+        Log.lvl1("Loading data from", this.dataFileName);
         try {
             await this.setValues(Storage.getObject(this.dataFileName));
         } catch (e) {
@@ -396,6 +394,7 @@ export class Data {
     }
 
     async save(): Promise<Data> {
+        Log.lvl1("Saving data to", this.dataFileName);
         Storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
             this.contact.credential.setAttribute("personhood",
@@ -809,17 +808,26 @@ export class TestData extends Data {
             d.rules.appendToRule(rule, admin, "|");
         });
         const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
+        Defaults.ByzCoinID = bc.genesisID;
 
         const td = (await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias)) as TestData;
         td.admin = admin;
         td.darc = d;
         return td;
     }
+
     admin: Signer;
     darc: Darc;
 
     constructor(obj: {}) {
         super(obj);
+    }
+
+    async createUser(alias: string, ephemeral?: Private): Promise<Data> {
+        const d = await super.createUser(alias, ephemeral);
+        d.dataFileName = "user_" + alias;
+        await d.save();
+        return d;
     }
 }
 

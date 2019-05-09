@@ -22,6 +22,7 @@ export class SecureComponent implements OnInit {
 
   ngOnInit() {
     Log.lvl3("init secure");
+    this.updateCalypso();
   }
 
   /**
@@ -63,7 +64,7 @@ export class SecureComponent implements OnInit {
         const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
         const contacts = gData.contacts.map((c) => c.darcSignIdentity.id);
         const fb = new FileBlob(result.name, data, [{name: "time", value: result.lastModified.toString()}]);
-        const key = await gData.contact.calypso.add(fb.toBuffer(), contacts);
+        await gData.contact.calypso.add(fb.toBuffer(), contacts);
         await gData.save();
         this.updateCalypso();
       } else {

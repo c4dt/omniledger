@@ -1,7 +1,6 @@
-import { Log } from "@c4dt/cothority/log";
 import Long from "long";
+import { Log } from "@c4dt/cothority/log";
 import { Data, TestData } from "src/lib/Data";
-import { Defaults } from "src/lib/Defaults";
 import { KeyPair } from "src/lib/KeyPair";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
@@ -13,6 +12,15 @@ describe("Testing new signup", () => {
         beforeAll(async () => {
             Log.lvl1("Creating Byzcoin and first instance");
             tdAdmin = await TestData.init();
+        });
+
+        it ("Should load old user", async () => {
+            const user1 = await tdAdmin.createUser("user1");
+            const user1Copy = new Data();
+            user1Copy.dataFileName = user1.dataFileName;
+            await user1Copy.load();
+            expect(user1Copy.contact.credentialIID).toEqual(user1.contact.credentialIID);
+            expect(user1Copy.toObject()).toEqual(user1.toObject());
         });
 
         it("Creating new user from darc", async () => {
@@ -49,6 +57,24 @@ describe("Testing new signup", () => {
             const user1Copy2 = new Data();
             user1Copy2.bc = user1.bc;
             await expectAsync(user1Copy2.attachAndEvolve(user1.keyIdentity._private)).toBeRejected();
+        });
+
+        it("keep a stored secret in Calypso", async () => {
+            const user = await tdAdmin.createUser("user1");
+            await tdAdmin.coinInstance.transfer(Long.fromNumber(100000), user.coinInstance.id,
+                [tdAdmin.keyIdentitySigner]);
+            await user.coinInstance.update();
+            const secret = Buffer.from("Very Secret Data");
+
+            Log.lvl2("Creating Write instance");
+            await user.contact.calypso.add(secret, []);
+            await user.save();
+            expect(user.contact.calypso.ours.size).toBe(1);
+
+            const userCopy = new Data({alias: "user1"});
+            userCopy.dataFileName = user.dataFileName;
+            await userCopy.load();
+            expect(userCopy.contact.calypso.ours.size).toBe(1);
         });
     });
 });

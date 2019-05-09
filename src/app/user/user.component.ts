@@ -34,7 +34,7 @@ export class UserComponent implements OnInit {
         link: "./status",
       },
     ];
-    if (gData.contact && gData.contact.isRegistered()) {
+    if (gData.contact && gData.contact.isRegistered() && gData.coinInstance) {
       Log.lvl1("user is registered");
       this.router.navigateByUrl("/user/yourself");
       this.isLoaded = true;
