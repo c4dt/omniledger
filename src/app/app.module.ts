@@ -12,11 +12,12 @@ import { LoadingComponent } from "./loading/loading.component";
 import { RegisterComponent } from "./register/register.component";
 import {
     AddContactComponent,
-    ContactsComponent,
+    ContactsComponent, CreateComponent,
     CreateUserComponent,
     TransferCoinComponent,
     UserCredComponent,
 } from "./user/contacts/contacts.component";
+import { ManageDarcComponent } from "./user/manage-darc";
 import { CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
 import { StatusComponent } from "./user/status/status.component";
 import { UserComponent } from "./user/user.component";
@@ -25,8 +26,10 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
 @NgModule({
     bootstrap: [AppComponent],
     declarations: [
+        CreateComponent,
         AppComponent,
         CreateUserComponent,
+        ManageDarcComponent,
         AddContactComponent,
         TransferCoinComponent,
         UserCredComponent,
@@ -40,11 +43,13 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         UserComponent,
     ],
     entryComponents: [
+        ManageDarcComponent,
         AddContactComponent,
         CreateUserComponent,
         TransferCoinComponent,
         UserCredComponent,
         CalypsoUploadComponent,
+        CreateComponent,
     ],
     imports: [
         BrowserModule,

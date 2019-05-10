@@ -1,3 +1,4 @@
+import { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { Log } from "@c4dt/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
@@ -30,9 +31,23 @@ describe("Contact should", async () => {
         await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user2.coinInstance.id, [tdAdmin.keyIdentitySigner]);
         await user2.coinInstance.update();
         const data = Buffer.from("very secure data");
-        await user1.contact.calypso.add(data, [user2.contact.getDarcSignIdentity().id]);
+        await user1.contact.calypso.add(data, [(await user2.contact.getDarcSignIdentity()).id]);
         const sd = await user2.contact.calypso.read(user1.contact);
         expect(sd.length).toBe(1);
         expect(sd[0].plainData).toEqual(data);
+    });
+
+    it("keep actions and groups", async () => {
+        const userCopy = new Data();
+        userCopy.dataFileName = tdAdmin.dataFileName;
+
+        const nd = await newDarc([tdAdmin.keyIdentitySigner], [tdAdmin.keyIdentitySigner],
+            Buffer.from("desc"));
+        const di = await tdAdmin.spawnerInstance.spawnDarc(tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner], nd);
+        tdAdmin.contact.setActions(di);
+        await tdAdmin.save();
+        expect((await tdAdmin.contact.getActions()).length).toBe(1);
+        await userCopy.load();
+        expect((await userCopy.contact.getActions()).length).toBe(1);
     });
 });

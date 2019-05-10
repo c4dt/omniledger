@@ -1,15 +1,41 @@
+<h2>Contacts</h2>
 <ul>
-  <li *ngFor="let contact of gData.contacts">
-    {{ contact.alias | titlecase }} -
-    <button mat-button (click)="transferCoin(contact)">Transfer</button>
-    -
-    <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
-    -
-    <button mat-button (click)="contactDelete(contact)">Delete</button>
-  </li>
+    <li *ngFor="let contact of gData.contacts">
+        {{ contact.alias | titlecase }} -
+        <button mat-button (click)="transferCoin(contact)">Transfer</button>
+        -
+        <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+        -
+        <button mat-button (click)="contactDelete(contact)">Delete</button>
+    </li>
 </ul>
 <div style="padding:10px;">
-  <button mat-raised-button color="primary" (click)="createContact()">Create Contact
-  </button>
-  <button mat-raised-button color="primary" (click)="addContact()">Add Contact</button>
+    <button mat-stroked-button color="primary" (click)="createContact()">Create Contact</button>
+    <button mat-stroked-button color="primary" (click)="addContact()">Add Contact</button>
+</div>
+
+<h2>Actions</h2>
+<ul>
+    <li *ngFor="let action of actions">
+        {{ action.darc.description.toString() | titlecase }} -
+        <button mat-button (click)="changeGroups(action)">Change groups</button>
+        -
+        <button mat-button (click)="actionDelete(action)">Delete action</button>
+    </li>
+</ul>
+<div style="padding:10px;">
+    <button mat-stroked-button color="primary" (click)="actionCreate()">Create Action</button>
+</div>
+
+<h2>Groups</h2>
+<ul>
+    <li *ngFor="let group of groups">
+        {{ group.darc.description.toString() | titlecase }} -
+        <button mat-button (click)="changeGroups(group)">Change users</button>
+        -
+        <button mat-button (click)="groupDelete(group)">Delete group</button>
+    </li>
+</ul>
+<div style="padding:10px;">
+    <button mat-stroked-button color="primary" (click)="groupCreate()">Create Group</button>
 </div>

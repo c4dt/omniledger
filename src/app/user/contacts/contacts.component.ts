@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { Log } from "@c4dt/cothority/log";
 import Long from "long";
 import { Contact } from "../../../lib/Contact";
@@ -7,6 +8,7 @@ import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";
 import { Private } from "../../../lib/KeyPair";
 import { FileBlob } from "../../../lib/SecureData";
+import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
     selector: "app-contacts",
@@ -17,6 +19,8 @@ export class ContactsComponent implements OnInit {
     gData: Data;
     calypsoOurKeys: string[];
     calypsoOtherKeys: Map<Contact, FileBlob[]>;
+    actions: DarcInstance[] = [];
+    groups: DarcInstance[] = [];
 
     constructor(
         private dialog: MatDialog,
@@ -24,11 +28,22 @@ export class ContactsComponent implements OnInit {
     ) {
         this.gData = gData;
         this.calypsoOtherKeys = new Map();
-
+        this.updateActions();
+        this.updateGroups();
     }
 
-    ngOnInit() {
+    async updateActions() {
+        this.actions = await gData.contact.getActions();
+    }
+
+    async updateGroups() {
+        this.groups = await gData.contact.getGroups();
+    }
+
+    async ngOnInit() {
         Log.lvl3("init contacts");
+        await this.updateActions();
+        await this.updateGroups();
     }
 
     async createContact() {
@@ -122,6 +137,76 @@ export class ContactsComponent implements OnInit {
         sb.dismiss();
     }
 
+    async changeGroups(a: DarcInstance) {
+        Log.lvl3("change groups");
+        const tc = this.dialog.open(ManageDarcComponent,
+            {
+                data: {
+                        darc: a.darc,
+                        title: a.darc.description.toString(),
+                    },
+                height: "400px",
+                width: "400px",
+            });
+        tc.afterClosed().subscribe(async (result) => {
+            Log.print("got result:", result);
+        });
+    }
+
+    async actionDelete(a: DarcInstance) {
+        const sb = this.snackBar.open("Deleting action");
+        try {
+            gData.contact.setActions((await gData.contact.getActions()).filter((aDI) => !aDI.id.equals(a.id)));
+            await this.updateActions();
+        } catch (e) {
+            Log.error(e);
+        }
+        sb.dismiss();
+    }
+
+    async actionCreate() {
+        await this.diCreate("Action", async (newDI) => {
+            gData.contact.setActions((await gData.contact.getActions()).concat(newDI));
+            await this.updateActions();
+        });
+    }
+
+    async diCreate(title: string, store: (newDI: DarcInstance) => {}) {
+        const tc = this.dialog.open(CreateComponent, {data: title});
+        tc.afterClosed().subscribe(async (result) => {
+            if (result) {
+                Log.lvl1("Creating new darcInstance with description:", result, title);
+                const sb = this.snackBar.open("Creating new " + title);
+                const di = await gData.contact.getDarcSignIdentity();
+                Log.print("our darcSignId:", di);
+                const nd = newDarc([di], [di], Buffer.from(result));
+                const ndInst = await gData.spawnerInstance.spawnDarc(gData.coinInstance, [gData.keyIdentitySigner], nd);
+                await store(ndInst[0]);
+                await gData.save();
+                sb.dismiss();
+            }
+        });
+    }
+
+    async groupDelete(g: DarcInstance) {
+        const sb = this.snackBar.open("Deleting action");
+        try {
+            gData.contact.setGroups((await gData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
+            await gData.save();
+            await this.updateGroups();
+        } catch (e) {
+            Log.error(e);
+        }
+        sb.dismiss();
+    }
+
+    async groupCreate() {
+        await this.diCreate("Group", async (newDI) => {
+            gData.contact.setGroups((await gData.contact.getGroups()).concat(newDI));
+            await this.updateGroups();
+        });
+    }
+
     /**
      * updateCalypso stores the keys and the FileBlobs in the class-variables so that the UI
      * can correctly show them.
@@ -206,6 +291,21 @@ export class AddContactComponent {
 
     constructor(
         public dialogRef: MatDialogRef<AddContactComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: string) {
+    }
+
+    cancel(): void {
+        this.dialogRef.close();
+    }
+}
+
+@Component({
+    selector: "app-create",
+    templateUrl: "create.html",
+})
+export class CreateComponent {
+    constructor(
+        public dialogRef: MatDialogRef<CreateComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
     }
 

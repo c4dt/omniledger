@@ -301,6 +301,8 @@ export class Contact {
     calypso: Calypso = null;
     bc: ByzCoinRPC = null;
     contactsCache: Contact[] = null;
+    actionsCache: DarcInstance[] = null;
+    groupsCache: DarcInstance[] = null;
 
     constructor(public credential: CredentialStruct = null,
                 public data: Data = null) {
@@ -310,6 +312,54 @@ export class Contact {
         }
         this.recover = new Recover(this);
         this.calypso = new Calypso(this);
+    }
+
+    async getActions(): Promise<DarcInstance[]> {
+        if (this.actionsCache) {
+            return this.actionsCache;
+        }
+        this.actionsCache = [];
+        const acBuf = this.credential.getAttribute("1-public", "actions");
+        if (acBuf) {
+            const acArray: Buffer[] = JSON.parse(acBuf.toString());
+            this.actionsCache = await Promise.all(acArray.map((ac) => {
+                return DarcInstance.fromByzcoin(this.bc, Buffer.from(ac));
+            }));
+        }
+        return this.actionsCache;
+    }
+
+    setActions(acs: DarcInstance[]) {
+        if (acs) {
+            this.actionsCache = acs;
+            const acBuf = Buffer.from(JSON.stringify(acs.map((ac) => ac.id)));
+            this.credential.setAttribute("1-public", "actions", acBuf);
+            this.version = this.version + 1;
+        }
+    }
+
+    async getGroups(): Promise<DarcInstance[]> {
+        if (this.groupsCache) {
+            return this.groupsCache;
+        }
+        this.groupsCache = [];
+        const acBuf = this.credential.getAttribute("1-public", "groups");
+        if (acBuf) {
+            const acArray: Buffer[] = JSON.parse(acBuf.toString());
+            this.groupsCache = await Promise.all(acArray.map((ac) => {
+                return DarcInstance.fromByzcoin(this.bc, Buffer.from(ac));
+            }));
+        }
+        return this.groupsCache;
+    }
+
+    setGroups(acs: DarcInstance[]) {
+        if (acs) {
+            this.groupsCache = acs;
+            const acBuf = Buffer.from(JSON.stringify(acs.map((ac) => ac.id)));
+            this.credential.setAttribute("1-public", "groups", acBuf);
+            this.version = this.version + 1;
+        }
     }
 
     async getDarcSignIdentity(): Promise<IdentityDarc> {

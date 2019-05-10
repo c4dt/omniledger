@@ -378,7 +378,7 @@ export class Data {
     async load(): Promise<Data> {
         Log.lvl1("Loading data from", this.dataFileName);
         try {
-            await this.setValues(Storage.getObject(this.dataFileName));
+            await this.setValues(await Storage.getObject(this.dataFileName));
         } catch (e) {
             Log.catch(e);
         }
@@ -389,12 +389,13 @@ export class Data {
 
     async save(): Promise<Data> {
         Log.lvl1("Saving data to", this.dataFileName);
-        Storage.putObject(this.dataFileName, this.toObject());
+        await Storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
             this.contact.credential.setAttribute("personhood",
                 "ed25519", this.keyPersonhood._public.toBuffer());
         }
         if (this.contact.isRegistered()) {
+            Log.lvl2("Sending update to chain");
             await this.contact.sendUpdate();
         }
         return this;

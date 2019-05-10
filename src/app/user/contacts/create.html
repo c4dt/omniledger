@@ -1,0 +1,12 @@
+<div class="mat-body">
+    <h2>Create a new action</h2>
+    <p>
+        <mat-form-field class="width100">
+            <input matInput [(ngModel)]="data" placeholder="Name for new action">
+        </mat-form-field>
+    </p>
+    <p>
+        <button mat-raised-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button color='primary' [mat-dialog-close]="data" cdkFocusInitial>Create</button>
+    </p>
+</div>

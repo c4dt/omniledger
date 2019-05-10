@@ -1,9 +1,12 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoWriteInstance } from "@c4dt/cothority/calypso";
 import { Log } from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
 import { FileBlob } from "../../../lib/SecureData";
+import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
     selector: "app-secure",
@@ -51,7 +54,22 @@ export class SecureComponent implements OnInit {
     }
 
     async calypsoAccess(key: string) {
-        Log.warn("Not yet implemented");
+        Log.lvl3("change groups");
+        const idWrite = await CalypsoWriteInstance.fromByzcoin(gData.bc,
+            gData.contact.calypso.ours.get(key).writeInstID);
+        const idDarc = await DarcInstance.fromByzcoin(gData.bc, idWrite.darcID);
+        const tc = this.dialog.open(ManageDarcComponent,
+            {
+                data: {
+                    darc: idDarc.darc,
+                    title: "test",
+                },
+                height: "400px",
+                width: "400px",
+            });
+        tc.afterClosed().subscribe(async (result) => {
+            Log.print("got result:", result);
+        });
     }
 
     async calypsoAddData() {
