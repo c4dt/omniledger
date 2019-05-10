@@ -1,5 +1,9 @@
 <div class="mat-body">
     <h2>{{data.title}}</h2>
+    <mat-select [(value)]="rule" (selectionChange)="ruleChange($event)">
+        <mat-option *ngFor="let rule of newDarc.rules.list"
+                    [value]="rule.action">{{rule.action}}</mat-option>
+    </mat-select>
     <table width="100%" height="100%">
         <tr height="20%">
             <td style="border-right: 2px solid dimgray; width: 50%;"><h3 class="center">Available Access</h3></td>
@@ -24,6 +28,6 @@
     </table>
     <p>
         <button mat-raised-button (click)="cancel()">Cancel</button>
-        <button mat-raised-button color='primary' [mat-dialog-close]="createNewDarc()" cdkFocusInitial>Apply</button>
+        <button mat-raised-button color='primary' [mat-dialog-close]="newDarc" cdkFocusInitial>Apply</button>
     </p>
 </div>

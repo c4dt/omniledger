@@ -1,11 +1,11 @@
 import { Component, Inject } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialogRef, MatSelectChange } from "@angular/material";
+import { curve } from "@dedis/kyber";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { Darc, IdentityEd25519, IIdentity, Rules } from "@c4dt/cothority/darc";
 import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
 import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
 import { Log } from "@c4dt/cothority/log";
-import { curve } from "@dedis/kyber";
 import { gData } from "../../lib/Data";
 
 export interface IManageDarc {
@@ -16,6 +16,10 @@ export interface IManageDarc {
 interface IItem {
     label: string;
     identity: IdentityWrapper;
+}
+
+interface INewRule {
+    value: string;
 }
 
 @Component({
@@ -38,17 +42,25 @@ export class ManageDarcComponent {
         this.newDarc = data.darc.evolve();
         this.getItems().then((items) => {
             this.available = items;
-            const sign = this.newDarc.rules.getRule(this.rule).expr.toString();
-            if (sign.indexOf("&") >= 0) {
-                throw new Error("cannot handle darcs with AND");
-            }
-            const identities = sign.split("|");
-            for (const identity of identities) {
-                const idStr = identity.trim();
-                Log.print("adding id", idStr);
-                this.add(IdentityWrapper.fromIdentity(new IdStub(idStr)));
-            }
+            this.ruleChange({value: this.rule});
         });
+    }
+
+    ruleChange(newRule: INewRule) {
+        Log.print("new rule:", newRule.value);
+        this.chosen.forEach((c) => this.remove(c.identity));
+        this.available = this.available.filter((i) => i.label !== "Unknown");
+
+        const expr = this.newDarc.rules.getRule(this.rule).expr.toString();
+        if (expr.indexOf("&") >= 0) {
+            throw new Error("cannot handle darcs with AND");
+        }
+        const identities = expr.split("|");
+        for (const identity of identities) {
+            const idStr = identity.trim();
+            Log.print("adding id", idStr);
+            this.add(IdentityWrapper.fromIdentity(new IdStub(idStr)));
+        }
     }
 
     createItem(label: string, iid: IIdentity): IItem {
@@ -87,8 +99,9 @@ export class ManageDarcComponent {
             this.chosen.push(this.available[index]);
             this.available.splice(index, 1);
         } else {
-            this.chosen.push({label: "original", identity: id});
+            this.chosen.push({label: "Unknown", identity: id});
         }
+        this.updateDarc();
     }
 
     remove(id: IdentityWrapper) {
@@ -97,20 +110,21 @@ export class ManageDarcComponent {
             this.available.push(this.chosen[index]);
             this.chosen.splice(index, 1);
         }
+        this.updateDarc();
     }
 
     cancel(): void {
         this.dialogRef.close();
     }
 
-    async createNewDarc(): Promise<Darc> {
-        this.newDarc.rules.setRule(this.rule, this.idWrapToId(this.chosen[0].identity));
-        this.chosen.slice(1).forEach((item) => {
-            this.newDarc.rules.appendToRule(this.rule, this.idWrapToId(item.identity), Rules.OR);
-        });
-        const di = await DarcInstance.fromByzcoin(gData.bc, this.newDarc.getBaseID());
-        await di.evolveDarcAndWait(this.newDarc, [gData.keyIdentitySigner], 5);
-        return this.newDarc;
+    updateDarc() {
+        Log.print("updateDarc");
+        if (this.chosen.length > 0) {
+            this.newDarc.rules.setRule(this.rule, this.idWrapToId(this.chosen[0].identity));
+            this.chosen.slice(1).forEach((item) => {
+                this.newDarc.rules.appendToRule(this.rule, this.idWrapToId(item.identity), Rules.OR);
+            });
+        }
     }
 
     idWrapToId(idW: IdentityWrapper): IIdentity {
@@ -127,19 +141,27 @@ export class ManageDarcComponent {
 }
 
 class IdStub {
-    constructor(private id: string) {}
-    verify(msg: Buffer, signature: Buffer): boolean {return false; }
+    constructor(private id: string) {
+    }
+
+    verify(msg: Buffer, signature: Buffer): boolean {
+        return false;
+    }
 
     /**
      * Get the byte array representation of the public key of the identity
      * @returns the public key as buffer
      */
-    toBytes(): Buffer {return null; }
+    toBytes(): Buffer {
+        return null;
+    }
 
     /**
      * Get the string representation of the identity
      * @return a string representation
      */
-    toString(): string {return this.id; }
+    toString(): string {
+        return this.id;
+    }
 
 }

@@ -35,7 +35,7 @@ import { KeyPair, Private, Public } from "./KeyPair";
 import { Party } from "./Party";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
-import { Storage } from "./Storage";
+import { StorageDB } from "./StorageDB";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -378,7 +378,7 @@ export class Data {
     async load(): Promise<Data> {
         Log.lvl1("Loading data from", this.dataFileName);
         try {
-            await this.setValues(await Storage.getObject(this.dataFileName));
+            await this.setValues(await StorageDB.getObject(this.dataFileName));
         } catch (e) {
             Log.catch(e);
         }
@@ -389,7 +389,7 @@ export class Data {
 
     async save(): Promise<Data> {
         Log.lvl1("Saving data to", this.dataFileName);
-        await Storage.putObject(this.dataFileName, this.toObject());
+        await StorageDB.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
             this.contact.credential.setAttribute("personhood",
                 "ed25519", this.keyPersonhood._public.toBuffer());

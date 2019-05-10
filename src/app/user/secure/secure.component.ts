@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoWriteInstance } from "@c4dt/cothority/calypso";
+import Darc from "@c4dt/cothority/darc/darc";
 import { Log } from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
@@ -67,8 +68,12 @@ export class SecureComponent implements OnInit {
                 height: "400px",
                 width: "400px",
             });
-        tc.afterClosed().subscribe(async (result) => {
+        tc.afterClosed().subscribe(async (result: Darc) => {
             Log.print("got result:", result);
+            if (result) {
+                result.rules.list.forEach((rule) => Log.print(rule));
+                await idDarc.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
+            }
         });
     }
 

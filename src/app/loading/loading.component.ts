@@ -16,7 +16,7 @@ export class LoadingComponent implements OnInit {
       Log.print("got user");
       return this.router.navigateByUrl("/user");
     }).catch((e) => {
-      Log.catch(e, "couldnt get user");
+      Log.error(e, "couldnt get user");
       return this.router.navigateByUrl("/register");
     });
   }

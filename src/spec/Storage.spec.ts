@@ -1,9 +1,9 @@
-import { Storage } from "../lib/Storage";
+import { StorageDB } from "../lib/StorageDB";
 
-describe("Storage", () => {
+describe("StorageDB", () => {
     it("should store and load elements", async () => {
-        Storage.set("one", "1");
-        expect(await Storage.get("one")).toBe("1");
+        StorageDB.set("one", "1");
+        expect(await StorageDB.get("one")).toBe("1");
     });
 
     it("should marshal buffer", async () => {
@@ -11,7 +11,7 @@ describe("Storage", () => {
             one: 1,
             two: Buffer.from("two"),
         };
-        await Storage.putObject("obj", a);
-        expect(await Storage.getObject("obj")).toEqual(a);
+        await StorageDB.putObject("obj", a);
+        expect(await StorageDB.getObject("obj")).toEqual(a);
     });
 });

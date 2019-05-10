@@ -1,6 +1,7 @@
+import { Log } from "@c4dt/cothority/log";
 import Dexie from "dexie";
 
-export class Storage {
+export class StorageDB {
     static db: Dexie = null;
 
     static async set(key: string, buffer: string) {
@@ -8,15 +9,16 @@ export class Storage {
     }
 
     static async get(key: string): Promise<string> {
-        const entry = this.getDB().where("key").equals(key);
-        if (await entry.count() === 1){
-            return (await entry.first()).buffer;
+        (await this.getDB().toArray()).forEach((ic) => Log.print(ic.key));
+        const entry = await this.getDB().get(key);
+        if (entry) {
+            return entry.buffer;
         }
         return "";
     }
 
     static async putObject(key: string, obj: any) {
-        await Storage.set(key, JSON.stringify(obj));
+        await StorageDB.set(key, JSON.stringify(obj));
     }
 
     static async getObject(entry: string): Promise<any> {
@@ -29,11 +31,11 @@ export class Storage {
         return obj == null ? {} : obj;
     }
 
-    private static getDB(): Dexie.Table<IContact, number> {
+    private static getDB(): Dexie.Table<IContact, string> {
         if (!this.db) {
             this.db = new Dexie("dynasent");
             this.db.version(1).stores({
-                contacts: "++id,key,buffer",
+                contacts: "&key,buffer",
             });
         }
         return this.db.table("contacts");
@@ -41,7 +43,6 @@ export class Storage {
 }
 
 interface IContact {
-    id?: number;
     key: string;
     buffer: string;
 }
@@ -58,7 +59,7 @@ export class StorageLocalStorage {
     }
 
     static putObject(key: string, obj: any) {
-        Storage.set(key, JSON.stringify(obj));
+        StorageDB.set(key, JSON.stringify(obj));
     }
 
     static getObject(entry: string): any {

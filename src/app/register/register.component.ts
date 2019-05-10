@@ -6,6 +6,7 @@ import { Log } from "@c4dt/cothority/log";
 import { Data, gData } from "../../lib/Data";
 import { activateTesting, Defaults } from "../../lib/Defaults";
 import { Private } from "../../lib/KeyPair";
+import { StorageDB } from "../../lib/StorageDB";
 
 @Component({
     selector: "app-register",
@@ -32,9 +33,15 @@ export class RegisterComponent implements OnInit {
 
         const ephemeralParam = route.snapshot.queryParamMap.get("ephemeral");
         if (ephemeralParam && ephemeralParam.length === 64) {
-            this.registering = true;
-            this.addID(ephemeralParam).catch((e) => {
-                this.error = "Registration failed - you can only register once using a registration link!";
+            StorageDB.get(gData.dataFileName).then((buf) => {
+                if (buf.length > 0) {
+                    this.router.navigateByUrl("/user");
+                } else {
+                    this.registering = true;
+                    this.addID(ephemeralParam).catch((e) => {
+                        this.error = "Registration failed - you can only register once using a registration link!";
+                    });
+                }
             });
         }
 

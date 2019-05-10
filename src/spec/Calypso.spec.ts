@@ -1,11 +1,13 @@
 // import Keccak from 'keccak/lib/keccak';
+import Rules from "@c4dt/cothority/darc/rules";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 // import Shake from 'keccak/lib/shake';
 import { CalypsoReadInstance, CalypsoWriteInstance, Write } from "@c4dt/cothority/calypso/calypso-instance";
 import { OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
 import { Log } from "@c4dt/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
-import { TestData } from "src/lib/Data";
+import { gData, TestData } from "src/lib/Data";
 import { Defaults } from "src/lib/Defaults";
 import { KeyPair } from "src/lib/KeyPair";
 
@@ -117,8 +119,6 @@ describe("In a full byzcoin setting, it should", () => {
 
     it("create an LTS and a write using the spawner", async () => {
         Log.lvl1("Creating new LTS");
-        // const lts = await ocs.createLTS(tdAdmin.bc.getConfig().roster, tdAdmin.darc.getBaseID(),
-        //     [tdAdmin.admin]);
         const key = Buffer.from("Very Secret Key");
 
         Log.lvl2("Creating Write instance");
@@ -132,5 +132,21 @@ describe("In a full byzcoin setting, it should", () => {
             tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner]);
         const newKey = await readInst.decrypt(ocs, kp._private.scalar);
         expect(newKey).toEqual(key);
+    });
+
+    it("verify and change access rights", async () => {
+        const key = Buffer.from("Very Secret Key");
+
+        Log.lvl2("Creating Write instance");
+        const wrInst = await tdAdmin.spawnerInstance.spawnCalypsoWrite(tdAdmin.coinInstance,
+            [tdAdmin.keyIdentitySigner], tdAdmin.lts, key,
+            [await tdAdmin.contact.getDarcSignIdentity()]);
+        const wrDarc = await DarcInstance.fromByzcoin(tdAdmin.bc, wrInst.darcID);
+        Log.print(wrDarc.darc.rules.getRule(DarcInstance.commandSign));
+        expect(wrDarc.darc.rules.getRule(DarcInstance.commandSign).expr.toString().includes(" ")).toBeFalsy();
+        const nd = wrDarc.darc.evolve();
+        nd.rules.appendToRule(DarcInstance.commandSign, tdAdmin.keyIdentitySigner, Rules.OR);
+        await wrDarc.evolveDarcAndWait(nd, [tdAdmin.keyIdentitySigner], 5);
+        Log.print("ok");
     });
 });
