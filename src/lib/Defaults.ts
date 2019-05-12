@@ -157,20 +157,70 @@ export const Defaults = {
       Public = "0524681253b82af55c0976e792014707c39405fe215bb1ebf6a3159dcbbb944535619f32ed4a91a4d1fcf4d9aa4ad14a1d349d5354dbbd6fb51907087a09ce7862ee5808a4c3f5b3b23ee631f1ce42b56107acec13fa06817263d1e7f77938f1149249e598fd24207e7e5e33ece750d36fe966faf8fda9c7ace13a6a8b0b9fa4"
       Suite = "bn256.adapter"
 `,
-/*
+    RosterTOMLC4DT: `
 [[servers]]
-  Address = "tls://localhost:7770"
+  Address = "tls://conode.c4dt.org:8886"
   Suite = "Ed25519"
-  Public = "2b87ab56c9aed8e7b5512d1b2686253adf48a5c5714ed52eea534a4629a93e2b"
+  Public = "ed2494dfd826cd2c2ea23adedf564fb19619c6004bff91f08bc76e80bdb4ec7f"
+  Description = "Conode_4"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "01dc5f40cae57758c6e7200106d5784f6bcb668959ddfd2f702f6aed63e47e3a6d90a61899a315b6fccaec991a4f2807d4fedce0b53c125c2005d34e0c1b4a9478cf60c1e5ab24a1e4ab597f596b4e2ba06af19cc3e5589bda58030a0f70f8208abfeeb072e04a87c79f2f814634257be9b0be4f9b8b6a927abcdfab099bc16c"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "3ff215e1755712e28f8f4d60ca412101c60d3707a68f68b37cf6c29437cc315c79ab1190fa941309e50dee30eeb677e6f2b8796f01d99a866c24dd5dd59594840dd387970c6eaaf6b56c8f8055c7c9d65f3a82e1bfc3bb7efb80d5faa9c33ff35099a96c9dbd32e65e3448f78693d00b346400796629229432161e1044b0af5f"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://conode.c4dt.org:8884"
+  Suite = "Ed25519"
+  Public = "0a0bdbb3f4059e9dad2d92b967bde211865f7d00839abd3330d8c9c4423b10bc"
+  Description = "Conode_3"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "6ea7db10d9f93b36045203d4008501f30a80d7c177847a784b483dcf6fdcfbe47e9f0123093ca3d715307662a642c684a3884656fc75c04d16f3cb1db67cd9e12f8c5ea637d124e1824522ce445f2848763bf3962b05ee662eafb78ac8ddd3b8771bccc8e920287857f56eabe094e5962f201a11f1f2c8ab388ff47dcb2e1f7a"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "58eaa4086f9033bb6398a8d4a6e6a7c136aa19e85c452f0ae069eb5a008e220305f726a056451ae0cb2c8deec820d6b5ad6585684122c38199403fa49bafeda06734432240cac370d70a5be9799258d044fb04f6aa634fed5d4c7080b340e08359142bbbd602323924ee97db1dbf6e3fb19b941880156cb98552fbe957115743"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://conode.c4dt.org:8882"
+  Suite = "Ed25519"
+  Public = "5f1a868b2dfa1e799c958a2dd5d850a660e3596a5ceb4fe7ff9dcf9c2efd419b"
+  Description = "Conode_2"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "70208fdcbaa6f3fa539380d5b19d7318a1c8ae46aa8af1d17e2d321afbda46397654fd72432f2050689f3c942801fe9e2e401d73c1accae8b7f683c0a261c57469937eb409864b1d9c0ed5fd012ec0b4fa835b92c12770e5b3cd5b900528fa9b1b6672b9121d68b4f98fd238918c96c31643271d2ac0fdb54af15dabfd772f6c"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "7dafa5bc547beb1ecb26267df3b5294e1a641c356d1039cc5c94acc0048a56fb2e2d6dc7507291cf4fe03418e1e16f0810637a67e9a31edf8d06cca399f0f5c85e3dbe740bd564968467b0cc1792688791bd59a61eb98723ab30ab3f784e2225054437110ea972c43f633dc510fd07d50871ec346ee1c088e5441d415dd9e95e"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://conode.c4dt.org:8880"
+  Suite = "Ed25519"
+  Public = "3de71200e7ecaeb49dc7f824317fb4ef6890e90018c49617139b6e61075f0247"
   Description = "Conode_1"
   [servers.Services]
     [servers.Services.ByzCoin]
-      Public = "028cf4ab5b7cba8a901d6bae8f6480a959bfacf856a4ac3545bc9167a8a0667c3483e452009ca84ecf31c515b6e21daa83f7add31ac168c23538940d67b5e86752889bfc118b0975ea0b50c0c22257d01f99ab768239454858d4ed4b05f42ac151090658299a3b250cc7d45ccfe744eba445f18538779b9db7f4da2e207a92c2"
+      Public = "7ab3a36be090002cf36a82bc606d6b0ef1c4432abae0c432c0ab02c9c0d5b2513c6f18625f847aef2d49a57fe5adaea103ba48dc60e9b4dd51f1beecce2b0a2f763a25ca4e2a460b20fd3e80e0d9d306b760cd9c715ecbc77047e875f32dc8435ee5ceb8910a1290827d4fbf61483aa7758c81f83ab9a8ca58fc8a6b1c0f1d5b"
       Suite = "bn256.adapter"
     [servers.Services.Skipchain]
-      Public = "10b4fcc59a0048ee8b734af42a0b6e8253f3ca67e778d25d39468d1fcb0ed8048985dd1492b16a2ee7a05c035b21ab5c5484c09efb37de00ee6bb1434b3c75674cde478df060e88c33094aef82128461de39b596aba6a885fcdd5d5571be748359454cbfcb16b8bcf251917dec4715f34b77fb538457207d6fecbaba06567089"
+      Public = "0524681253b82af55c0976e792014707c39405fe215bb1ebf6a3159dcbbb944535619f32ed4a91a4d1fcf4d9aa4ad14a1d349d5354dbbd6fb51907087a09ce7862ee5808a4c3f5b3b23ee631f1ce42b56107acec13fa06817263d1e7f77938f1149249e598fd24207e7e5e33ece750d36fe966faf8fda9c7ace13a6a8b0b9fa4"
       Suite = "bn256.adapter"
-*/
+`,
+    /*
+    [[servers]]
+      Address = "tls://localhost:7770"
+      Suite = "Ed25519"
+      Public = "2b87ab56c9aed8e7b5512d1b2686253adf48a5c5714ed52eea534a4629a93e2b"
+      Description = "Conode_1"
+      [servers.Services]
+        [servers.Services.ByzCoin]
+          Public = "028cf4ab5b7cba8a901d6bae8f6480a959bfacf856a4ac3545bc9167a8a0667c3483e452009ca84ecf31c515b6e21daa83f7add31ac168c23538940d67b5e86752889bfc118b0975ea0b50c0c22257d01f99ab768239454858d4ed4b05f42ac151090658299a3b250cc7d45ccfe744eba445f18538779b9db7f4da2e207a92c2"
+          Suite = "bn256.adapter"
+        [servers.Services.Skipchain]
+          Public = "10b4fcc59a0048ee8b734af42a0b6e8253f3ca67e778d25d39468d1fcb0ed8048985dd1492b16a2ee7a05c035b21ab5c5484c09efb37de00ee6bb1434b3c75674cde478df060e88c33094aef82128461de39b596aba6a885fcdd5d5571be748359454cbfcb16b8bcf251917dec4715f34b77fb538457207d6fecbaba06567089"
+          Suite = "bn256.adapter"
+    */
     // tslint:disable-next-line
     RosterTOMLCalypso: `
 [[servers]]
@@ -212,6 +262,8 @@ export const Defaults = {
 `,
     // ByzCoinID
     ByzCoinID: Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex"),
+    AdminDarc: Buffer.from("d025450db8db9f4f5ddb2f6eed83cb3f50dfcf53b005239041458f6984d34ff3", "hex"),
+    Ephemeral: Buffer.from("", "hex"),
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
@@ -244,9 +296,21 @@ export function activateTesting() {
     Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
     Defaults.Confirm = false;
     Defaults.TestButtons = true;
-    Defaults.Alias = "testing";
+    Defaults.Alias = "garfield";
     Defaults.ByzCoinID = Buffer.from("5f78d08a260b6fcc0b492448ec272dc4a59794ddf34a9914fdfe4f3faeba616e", "hex");
     Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLLOCAL);
-    // Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLDEDIS);
-    // Defaults.NetRedirect = ["pop.dedis.ch", "192.168.0.1"];
+    Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
+    Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
 }
+
+export function activateC4DT() {
+    Defaults.ByzCoinID = Buffer.from("5b081e02e38e583085204abfe4553ceb6e0833a530bf8fa476ce2f5c1a9a51ae", "hex");
+    Defaults.AdminDarc = Buffer.from("05e647cbdd220e30e33db4d168bd3ceacd09839ca099ca8ef5ab146c986726f6", "hex");
+    Defaults.Ephemeral = Buffer.from("ed3ebf1be6fbe7496a8a31c4124fe560fa2f1651dbfa851c61cbd48c961ab30c", "hex");
+    Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLC4DT);
+    Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLC4DT);
+    Defaults.Alias = "c4dt";
+}
+
+activateTesting();
+// activateC4DT();

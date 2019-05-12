@@ -285,10 +285,7 @@ export class Data {
     async connectByzcoin(): Promise<ByzCoinRPC> {
         try {
             const obj = this.constructorObj;
-            if (this.bc != null) {
-                Log.lvl2("Not connecting if bc is already initialized");
-                this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-            } else {
+            if (this.bc == null) {
                 this.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
             }
 
@@ -323,7 +320,7 @@ export class Data {
             this.contact.data = this;
             this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         } catch (e) {
-            await Log.rcatch(e);
+            await Log.rcatch(e, "failed to load");
         }
         return this.bc;
     }
@@ -806,7 +803,10 @@ export class TestData extends Data {
         const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
         Defaults.ByzCoinID = bc.genesisID;
 
-        const td = (await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias)) as TestData;
+        const fu = await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias);
+        await fu.save();
+        const td = new TestData({});
+        await td.load();
         td.admin = admin;
         td.darc = d;
         return td;
@@ -819,7 +819,7 @@ export class TestData extends Data {
         super(obj);
     }
 
-    async createUser(alias: string, ephemeral?: Private): Promise<Data> {
+    async createTestUser(alias: string, ephemeral?: Private): Promise<Data> {
         const d = await super.createUser(alias, ephemeral);
         d.dataFileName = "user_" + alias;
         await d.save();

@@ -11,6 +11,8 @@ import { gData } from "../../lib/Data";
 export interface IManageDarc {
     title: string;
     darc: Darc;
+    filter: string;
+    rule: string;
 }
 
 interface IItem {
@@ -39,17 +41,21 @@ export class ManageDarcComponent {
         if (!data.title || data.title === "") {
             data.title = "Manage access rights";
         }
+        if (data.rule && data.rule !== "") {
+            this.rule = data.rule;
+        }
         this.newDarc = data.darc.evolve();
-        this.getItems().then((items) => {
+        this.getItems(data.filter).then((items) => {
             this.available = items;
             this.ruleChange({value: this.rule});
         });
     }
 
     ruleChange(newRule: INewRule) {
-        Log.print("new rule:", newRule.value);
-        this.chosen.forEach((c) => this.remove(c.identity));
+        Log.print("new rule:", newRule.value, this.rule);
+        this.available = this.available.concat(this.chosen);
         this.available = this.available.filter((i) => i.label !== "Unknown");
+        this.chosen = [];
 
         const expr = this.newDarc.rules.getRule(this.rule).expr.toString();
         if (expr.indexOf("&") >= 0) {
@@ -59,7 +65,7 @@ export class ManageDarcComponent {
         for (const identity of identities) {
             const idStr = identity.trim();
             Log.print("adding id", idStr);
-            this.add(IdentityWrapper.fromIdentity(new IdStub(idStr)));
+            this.add(IdentityWrapper.fromIdentity(new IdStub(idStr)), false);
         }
     }
 
@@ -72,28 +78,33 @@ export class ManageDarcComponent {
         };
     }
 
-    async getItems(): Promise<IItem[]> {
+    async getItems(filter: string): Promise<IItem[]> {
         const items: IItem[] = [];
-        items.push(this.createItem("Ourselves: " + gData.contact.alias,
+        if (filter.indexOf("contact") >= 0) {
+            for (const contact of gData.contact.contacts) {
+                items.push(this.createItem("Contact: " + contact.alias,
+                    await contact.getDarcSignIdentity()));
+            }
+        }
+        if (filter.indexOf("action") >= 0) {
+            for (const action of await gData.contact.getActions()) {
+                items.push(this.createItem("Action: " + action.darc.description.toString(),
+                    new IdentityDarc({id: action.id})));
+            }
+        }
+        if (filter.indexOf("group") >= 0) {
+            for (const group of await gData.contact.getGroups()) {
+                items.push(this.createItem("Group: " + group.darc.description.toString(),
+                    new IdentityDarc({id: group.id})));
+            }
+        }
+        items.unshift(this.createItem("Ourselves: " + gData.contact.alias,
             await gData.contact.getDarcSignIdentity()));
-        for (const contact of gData.contact.contacts) {
-            items.push(this.createItem("Contact: " + contact.alias,
-                await contact.getDarcSignIdentity()));
-        }
-        for (const action of await gData.contact.getActions()) {
-            items.push(this.createItem("Action: " + action.darc.description.toString(),
-                new IdentityDarc({id: action.id})));
-        }
-        for (const group of await gData.contact.getGroups()) {
-            items.push(this.createItem("Group: " + group.darc.description.toString(),
-                new IdentityDarc({id: group.id})));
-        }
         return items;
     }
 
-    add(id: IdentityWrapper) {
-        Log.print(id);
-        Log.print(this.available);
+    add(id: IdentityWrapper, update: boolean = true) {
+        Log.print("Adding", id, "currently available:", this.available.map((i) => i.label));
         const index = this.available.findIndex((i) => i.identity.toString() === id.toString());
         if (index >= 0) {
             this.chosen.push(this.available[index]);
@@ -101,15 +112,20 @@ export class ManageDarcComponent {
         } else {
             this.chosen.push({label: "Unknown", identity: id});
         }
-        this.updateDarc();
+        Log.print("Adding", id, "currently available:", this.available.map((i) => i.label));
+        if (update) {
+            this.updateDarc();
+        }
     }
 
     remove(id: IdentityWrapper) {
+        Log.print("Removing", id, "currently chosen:", this.chosen.map((i) => i.label));
         const index = this.chosen.findIndex((i) => i.identity.toString() === id.toString());
         if (index >= 0) {
             this.available.push(this.chosen[index]);
             this.chosen.splice(index, 1);
         }
+        Log.print("Adding", id, "currently available:", this.available.map((i) => i.label));
         this.updateDarc();
     }
 
@@ -118,7 +134,7 @@ export class ManageDarcComponent {
     }
 
     updateDarc() {
-        Log.print("updateDarc");
+        Log.print("updating rule", this.rule, "with chosen", this.chosen.map((i) => i.label));
         if (this.chosen.length > 0) {
             this.newDarc.rules.setRule(this.rule, this.idWrapToId(this.chosen[0].identity));
             this.chosen.slice(1).forEach((item) => {

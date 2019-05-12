@@ -4,7 +4,7 @@ import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import { activateTesting, Defaults } from "src/lib/Defaults";
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
+// jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
 describe("Contact should", async () => {
     let tdAdmin: TestData;
@@ -19,15 +19,15 @@ describe("Contact should", async () => {
 
     it("create an ocs and store it correctly in a new user", async () => {
         Log.lvl1("starting test");
-        const user1 = await tdAdmin.createUser("user1");
+        const user1 = await tdAdmin.createTestUser("user1");
         expect(user1.contact.ltsID).toEqual(tdAdmin.contact.ltsID);
     });
 
     it("create a SecureData and recover it on another user", async () => {
-        const user1 = await tdAdmin.createUser("user1");
+        const user1 = await tdAdmin.createTestUser("user1");
         await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user1.coinInstance.id, [tdAdmin.keyIdentitySigner]);
         await user1.coinInstance.update();
-        const user2 = await tdAdmin.createUser("user2");
+        const user2 = await tdAdmin.createTestUser("user2");
         await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user2.coinInstance.id, [tdAdmin.keyIdentitySigner]);
         await user2.coinInstance.update();
         const data = Buffer.from("very secure data");

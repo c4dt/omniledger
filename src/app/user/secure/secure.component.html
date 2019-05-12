@@ -2,7 +2,8 @@
 <ul>
   <li *ngFor="let sd of calypsoOurKeys">
     {{ sd }} -
-    <button mat-button (click)="calypsoAccess(sd)">Change Access</button>
+    <button mat-button (click)="calypsoAccess(sd)">Change Access</button> -
+    <button mat-button (click)="calypsoDelete(sd)">Delete Data</button>
   </li>
 </ul>
 <button mat-raised-button color="primary" (click)="calypsoAddData()">Add Data</button>

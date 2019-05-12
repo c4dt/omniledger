@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 import { Router } from "@angular/router";
 import { Log } from "@c4dt/cothority/log";
-import { activateTesting } from "../lib/Defaults";
+import { activateC4DT, activateTesting, Defaults } from "../lib/Defaults";
 @Component({
   selector: "app-root",
   styleUrls: ["./app.component.css"],
@@ -14,7 +14,6 @@ export class AppComponent {
 
   constructor() {
     Log.lvl1("app component constructor");
-    activateTesting();
   }
 
   ngOnInit(): void {

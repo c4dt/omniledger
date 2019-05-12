@@ -1,8 +1,11 @@
+import { CalypsoReadInstance, CalypsoWriteInstance } from "@c4dt/cothority/calypso";
+import { Point, PointFactory } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
-// import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
-// import {screen} from "tns-core-modules/platform";
 import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import SpawnerInstance from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
 import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
@@ -14,12 +17,7 @@ import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
 import Rules from "@c4dt/cothority/darc/rules";
 import Signer from "@c4dt/cothority/darc/signer";
 import { Log } from "@c4dt/cothority/log";
-import { Point, PointFactory } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import Long from "long";
-// import {parseQRCode} from ./Scan";
-import { sprintf } from "sprintf-js";
-import { Data } from "./Data";
+import { Data, gData } from "./Data";
 import { Public } from "./KeyPair";
 import { parseQRCode } from "./Scan";
 import { SecureData } from "./SecureData";
@@ -667,9 +665,9 @@ class Calypso {
      * @param readers the signer-darc-ids of all the external readers
      * @return the key-string used to store this secret in the 'secret'-credential
      */
-    async add(data: Buffer, readers: InstanceID[]): Promise<string> {
+    async add(data: Buffer, readers: InstanceID[] = []): Promise<string> {
         const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.credentialInstance.darcID);
-        readers.push(ourSigner.darc.getBaseID());
+        readers.unshift(ourSigner.darc.getBaseID());
         readers.forEach((r) => Log.lvl2("reader", r));
         const sd = await SecureData.spawnFromSpawner(this.contact.bc, this.contact.data.lts, data, readers,
             this.contact.spawnerInstance,
@@ -692,7 +690,7 @@ class Calypso {
     async read(user: Contact): Promise<SecureData[]> {
         const signer = await this.contact.getDarcSignIdentity();
         const sds = await SecureData.fromContact(this.contact.bc, this.contact.data.lts, user,
-            IdentityWrapper.fromIdentity(signer).toString(), [this.contact.data.keyIdentitySigner],
+            signer, [this.contact.data.keyIdentitySigner],
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
         this.others.set(user.credentialIID, sds);
         const obj = this.toObject();
@@ -700,5 +698,19 @@ class Calypso {
             Buffer.from(JSON.stringify(obj.others)));
         this.contact.version++;
         return sds;
+    }
+
+    async remove(key: string) {
+        const sd = this.ours.get(key);
+        if (sd) {
+            const wi = await CalypsoWriteInstance.fromByzcoin(this.contact.bc, sd.writeInstID);
+            const di = await DarcInstance.fromByzcoin(this.contact.bc, wi.darcID);
+            const nDarc = di.darc.evolve();
+            nDarc.rules.removeRule(DarcInstance.commandSign);
+            nDarc.rules.removeRule("spawn:" + CalypsoReadInstance.contractID);
+            await di.evolveDarcAndWait(nDarc, [this.contact.data.keyIdentitySigner], 5);
+            this.ours.delete(key);
+            this.contact.version = this.contact.version + 1;
+        }
     }
 }

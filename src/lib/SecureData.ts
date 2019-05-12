@@ -1,15 +1,16 @@
+import { randomBytes } from "crypto";
 import { ByzCoinRPC, InstanceID } from "@c4dt/cothority/byzcoin";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import SpawnerInstance from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
 import { CalypsoReadInstance, CalypsoWriteInstance } from "@c4dt/cothority/calypso/calypso-instance";
 import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
-import { IdentityDarc } from "@c4dt/cothority/darc";
+import { IdentityDarc, IIdentity } from "@c4dt/cothority/darc";
 import Signer from "@c4dt/cothority/darc/signer";
 import { Log } from "@c4dt/cothority/log";
-import { randomBytes } from "crypto";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
+import IdentityWrapper from "./cothority/darc/identity-wrapper";
 import { KeyPair } from "./KeyPair";
 
 /**
@@ -42,7 +43,7 @@ export class SecureData {
      * @param coin eventual coin if CalypsoRead has a cost
      * @param coinSigners the signers to spend coins
      */
-    static async fromContact(bc: ByzCoinRPC, ocs: OnChainSecretRPC, c: Contact, reader: string, signers: Signer[],
+    static async fromContact(bc: ByzCoinRPC, ocs: OnChainSecretRPC, c: Contact, reader: IIdentity, signers: Signer[],
                              coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData[]> {
         const sds: SecureData[] = [];
         await c.update();
@@ -54,18 +55,11 @@ export class SecureData {
                     try {
                         const calWrite = await CalypsoWriteInstance.fromByzcoin(bc, sdBuf.value);
                         const cwDarc = await DarcInstance.fromByzcoin(bc, calWrite.darcID);
-                        const readersRule = cwDarc.darc.rules.getRule("spawn:" +
-                            CalypsoReadInstance.contractID).expr.toString();
-                        if (readersRule.indexOf("&") >= 0) {
-                            Log.warn("Cannot parse AND rules yet");
-                            continue;
-                        }
-                        const readers = readersRule.split("|");
-                        if (readers.find((r) => r.trim() === reader)) {
+                        if (await cwDarc.ruleMatch("spawn:" + CalypsoReadInstance.contractID, [reader])) {
                             sds.push(await SecureData.fromWrite(bc, ocs, calWrite, signers, coin, coinSigners));
                         }
                     } catch (e) {
-                        Log.catch(e, "Couldn't read calypso write of", sdBuf.name);
+                        Log.catch(e, "Couldn't read calypso read of", sdBuf.name);
                     }
                 } else {
                     Log.lvl2('Not checking "others" data');

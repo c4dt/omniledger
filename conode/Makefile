@@ -17,6 +17,7 @@ docker: clean build/Dockerfile build/conode
 
 newdb: cothority
 	@echo "Compiling binaries"; \
+	rm -f build/conodes/*db; \
 	GO111MODULE=on go build -o build/conode; \
 	cd cothority; \
 		go build -o ../bcadmin ./byzcoin/bcadmin; \

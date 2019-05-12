@@ -1,13 +1,14 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import Long from "long";
 import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { Log } from "@c4dt/cothority/log";
-import Long from "long";
 import { Contact } from "../../../lib/Contact";
 import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";
 import { Private } from "../../../lib/KeyPair";
 import { FileBlob } from "../../../lib/SecureData";
+import { showSnack } from "../../../lib/Ui";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -137,19 +138,24 @@ export class ContactsComponent implements OnInit {
         sb.dismiss();
     }
 
-    async changeGroups(a: DarcInstance) {
+    async changeGroups(a: DarcInstance, filter: string) {
         Log.lvl3("change groups");
         const tc = this.dialog.open(ManageDarcComponent,
             {
                 data: {
-                        darc: a.darc,
-                        title: a.darc.description.toString(),
-                    },
+                    darc: a.darc,
+                    filter,
+                    title: a.darc.description.toString(),
+                },
                 height: "400px",
                 width: "400px",
             });
         tc.afterClosed().subscribe(async (result) => {
-            Log.print("got result:", result);
+            if (result) {
+                await showSnack(this.snackBar, "Updating Darc", async () => {
+                    await a.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
+                });
+            }
         });
     }
 

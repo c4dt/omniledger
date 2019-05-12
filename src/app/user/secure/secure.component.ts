@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import { CalypsoReadInstance } from "@c4dt/cothority/calypso";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoWriteInstance } from "@c4dt/cothority/calypso";
 import Darc from "@c4dt/cothority/darc/darc";
@@ -7,6 +8,7 @@ import { Log } from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
 import { FileBlob } from "../../../lib/SecureData";
+import { showSnack } from "../../../lib/Ui";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -43,15 +45,11 @@ export class SecureComponent implements OnInit {
     }
 
     async calypsoSearch(c: Contact) {
-        const sb = this.snackBar.open("Searching new secure data for " + c.alias.toLocaleUpperCase());
-        try {
-            const sds = await gData.contact.calypso.read(c);
+        await showSnack(this.snackBar, "Searching new secure data for " + c.alias.toLocaleUpperCase(), async () => {
+            await gData.contact.calypso.read(c);
             await gData.save();
             this.updateCalypso();
-        } catch (e) {
-            Log.catch(e);
-        }
-        sb.dismiss();
+        });
     }
 
     async calypsoAccess(key: string) {
@@ -63,18 +61,26 @@ export class SecureComponent implements OnInit {
             {
                 data: {
                     darc: idDarc.darc,
+                    filter: "action",
+                    rule: "spawn:" + CalypsoReadInstance.contractID,
                     title: "test",
                 },
                 height: "400px",
                 width: "400px",
             });
         tc.afterClosed().subscribe(async (result: Darc) => {
-            Log.print("got result:", result);
             if (result) {
-                result.rules.list.forEach((rule) => Log.print(rule));
-                await idDarc.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
+                await showSnack(this.snackBar, "Updating Darc", async () => {
+                    await idDarc.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
+                });
             }
         });
+    }
+
+    async calypsoDelete(key: string) {
+        await gData.contact.calypso.remove(key);
+        await gData.save();
+        this.updateCalypso();
     }
 
     async calypsoAddData() {
@@ -84,12 +90,8 @@ export class SecureComponent implements OnInit {
         fileDialog.afterClosed().subscribe(async (result: File) => {
             if (result) {
                 const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
-                const contacts: Buffer[] = [];
-                for (const c of gData.contacts) {
-                    contacts.push((await c.getDarcSignIdentity()).id);
-                }
                 const fb = new FileBlob(result.name, data, [{name: "time", value: result.lastModified.toString()}]);
-                await gData.contact.calypso.add(fb.toBuffer(), contacts);
+                await gData.contact.calypso.add(fb.toBuffer());
                 await gData.save();
                 this.updateCalypso();
             } else {

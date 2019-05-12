@@ -9,7 +9,7 @@ export class StorageDB {
     }
 
     static async get(key: string): Promise<string> {
-        (await this.getDB().toArray()).forEach((ic) => Log.print(ic.key));
+        // (await this.getDB().toArray()).forEach((ic) => Log.print(ic.key));
         const entry = await this.getDB().get(key);
         if (entry) {
             return entry.buffer;

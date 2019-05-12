@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
 import { Log } from "@c4dt/cothority/log";
 import { Data, gData } from "../../lib/Data";
-import { activateTesting, Defaults } from "../../lib/Defaults";
+import { activateC4DT, activateTesting, Defaults } from "../../lib/Defaults";
 import { Private } from "../../lib/KeyPair";
 import { StorageDB } from "../../lib/StorageDB";
 
@@ -15,21 +15,13 @@ import { StorageDB } from "../../lib/StorageDB";
 })
 export class RegisterComponent implements OnInit {
     registerForm: FormGroup;
-    testing: boolean = true;
     registering: boolean = false;
     error: string;
 
     constructor(private router: Router,
                 private route: ActivatedRoute) {
-        let alias = "ineiti";
-        let darcID = "d025450db8db9f4f5ddb2f6eed83cb3f50dfcf53b005239041458f6984d34ff3";
-        let ephemeral = "";
-        if (this.testing) {
-            activateTesting();
-            alias = "garfield";
-            darcID = "1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a";
-            ephemeral = "2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c";
-        }
+        const darcID = Defaults.AdminDarc.toString("hex");
+        const ephemeral = Defaults.Ephemeral.toString("hex");
 
         const ephemeralParam = route.snapshot.queryParamMap.get("ephemeral");
         if (ephemeralParam && ephemeralParam.length === 64) {
@@ -46,7 +38,7 @@ export class RegisterComponent implements OnInit {
         }
 
         this.registerForm = new FormGroup({
-            alias: new FormControl(alias),
+            alias: new FormControl(Defaults.Alias),
             darcID: new FormControl(darcID,
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
             ephemeralKey: new FormControl(ephemeral,
