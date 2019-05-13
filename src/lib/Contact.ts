@@ -693,10 +693,12 @@ class Calypso {
             signer, [this.contact.data.keyIdentitySigner],
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
         this.others.set(user.credentialIID, sds);
-        const obj = this.toObject();
-        this.contact.credential.setAttribute("1-secret", "others",
-            Buffer.from(JSON.stringify(obj.others)));
-        this.contact.version++;
+        // const obj = this.toObject();
+        // Currently just make sure that previous instances don't carry around too many MBs of
+        // JSONified Buffers...
+        this.contact.credential.setAttribute("1-secret", "others", Buffer.alloc(0));
+        //     Buffer.from(JSON.stringify(obj.others)));
+        // this.contact.version++;
         return sds;
     }
 

@@ -22,6 +22,7 @@ export class YourselfComponent implements OnInit {
   ngOnInit() {
     this.updateContactForm();
     console.log(gData.contact);
+    Log.print("Credential-size is:", gData.contact.credential.toBytes().length);
   }
 
   updateContactForm() {

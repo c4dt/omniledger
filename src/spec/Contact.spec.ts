@@ -37,6 +37,17 @@ describe("Contact should", async () => {
         expect(sd[0].plainData).toEqual(data);
     });
 
+    it("check size of contact", async () => {
+        const user1 = await tdAdmin.createTestUser("user1");
+        const user2 = await tdAdmin.createTestUser("user2");
+        const data = Buffer.alloc(1e5);
+        await user1.contact.calypso.add(data, [(await user2.contact.getDarcSignIdentity()).id]);
+        const sd = await user2.contact.calypso.read(user1.contact);
+        Log.print("contact size is:", user2.contact.credential.toBytes().length);
+        expect(sd.length).toBe(1);
+        expect(sd[0].plainData).toEqual(data);
+    });
+
     it("keep actions and groups", async () => {
         const userCopy = new Data();
         userCopy.dataFileName = tdAdmin.dataFileName;

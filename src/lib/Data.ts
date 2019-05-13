@@ -822,6 +822,11 @@ export class TestData extends Data {
     async createTestUser(alias: string, ephemeral?: Private): Promise<Data> {
         const d = await super.createUser(alias, ephemeral);
         d.dataFileName = "user_" + alias;
+        await this.coinInstance.transfer(Long.fromNumber(1e6), d.coinInstance.id, [this.keyIdentitySigner]);
+        while (d.coinInstance.coin.value.lessThan(1e6)) {
+            await d.coinInstance.update();
+            Log.print(d.coinInstance.coin.value);
+        }
         await d.save();
         return d;
     }
