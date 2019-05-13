@@ -21,6 +21,7 @@ export class YourselfComponent implements OnInit {
 
   ngOnInit() {
     this.updateContactForm();
+    console.log(gData.contact);
   }
 
   updateContactForm() {

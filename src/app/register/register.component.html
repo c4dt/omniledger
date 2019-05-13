@@ -1,7 +1,8 @@
 <div *ngIf="registering"><h1>Registering user - please wait</h1>
 <h2>{{error}}</h2></div>
-<div *ngIf="!registering">
-    You're not yet registered. Please enter an ephemeral key:
+<div *ngIf="register">
+    <h1>You're not yet registered.</h1>
+    <p>Please enter an ephemeral key:</p>
 
     <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addIDButton()">
         <mat-form-field class="width100" >
@@ -14,6 +15,6 @@
             <input matInput type="text" placeholder="Alias" formControlName="alias"/>
         </mat-form-field>
         <br>
-        <button mat-button class="submit-btn" type="submit">Register</button>
+        <button mat-button class="submit-btn mat-primary" type="submit">Register</button>
     </form>
 </div>

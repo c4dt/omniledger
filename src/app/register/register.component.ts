@@ -18,6 +18,7 @@ import { showDialogOKC } from "../../lib/ui/Ui";
 export class RegisterComponent implements OnInit {
     registerForm: FormGroup;
     registering: boolean = false;
+    register: boolean = false;
     error: string;
 
     constructor(private router: Router,
@@ -47,8 +48,10 @@ export class RegisterComponent implements OnInit {
                     });
                 }
             });
+            return;
         }
 
+        this.register = true;
         this.registerForm = new FormGroup({
             alias: new FormControl(Defaults.Alias),
             darcID: new FormControl(darcID,
