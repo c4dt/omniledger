@@ -20,7 +20,7 @@ import {
 import { ManageDarcComponent } from "./user/manage-darc";
 import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
 import { StatusComponent } from "./user/status/status.component";
-import { UserComponent } from "./user/user.component";
+import { RetryLoadComponent, UserComponent } from "./user/user.component";
 import { YourselfComponent } from "./user/yourself/yourself.component";
 
 @NgModule({
@@ -35,6 +35,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         UserCredComponent,
         CalypsoUploadComponent,
         CalypsoShowAccessComponent,
+        RetryLoadComponent,
         RegisterComponent,
         YourselfComponent,
         ContactsComponent,
@@ -51,6 +52,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         UserCredComponent,
         CalypsoUploadComponent,
         CalypsoShowAccessComponent,
+        RetryLoadComponent,
         CreateComponent,
     ],
     imports: [

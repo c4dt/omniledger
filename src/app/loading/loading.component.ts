@@ -11,17 +11,10 @@ import { gData } from "../../lib/Data";
 export class LoadingComponent implements OnInit {
 
   constructor(private router: Router) {
-    Log.print("starting to load");
-    gData.load().then(() => {
-      Log.print("got user");
-      return this.router.navigateByUrl("/user");
-    }).catch((e) => {
-      Log.error(e, "couldnt get user");
-      return this.router.navigateByUrl("/register");
-    });
+    this.router.navigateByUrl("/user");
   }
 
   ngOnInit() {
-    Log.llvl3("init loading");
+    Log.lvl3("init loading");
   }
 }

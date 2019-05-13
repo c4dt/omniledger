@@ -1,0 +1,11 @@
+<div class="mat-body">
+    <h1>Error</h1>
+    <h2>Something went wrong while loading your user</h2>
+    <p>You might have user data stored in this browser, but it is currently not
+    accessible. If you chose <b>try again</b>, the data will be kept. If you chose
+    <b>reset user</b>, all your data will be lost!</p>
+    <p>
+        <button mat-raised-button color='primary' [mat-dialog-close]="true" cdkFocusInitial>Try Again</button>
+        <button mat-raised-button color='primary' [mat-dialog-close]="false" cdkFocusInitial>Reset User</button>
+    </p>
+</div>

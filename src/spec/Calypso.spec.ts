@@ -1,14 +1,12 @@
-// import Keccak from 'keccak/lib/keccak';
-import Rules from "@c4dt/cothority/darc/rules";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-// import Shake from 'keccak/lib/shake';
 import { CalypsoReadInstance, CalypsoWriteInstance, Write } from "@c4dt/cothority/calypso/calypso-instance";
 import { OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
+import Darc from "@c4dt/cothority/darc/darc";
+import Rules from "@c4dt/cothority/darc/rules";
 import { Log } from "@c4dt/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
-import { gData, TestData } from "src/lib/Data";
-import { Defaults } from "src/lib/Defaults";
+import { TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
 
 const curve25519 = curve.newCurve("edwards25519");
@@ -46,7 +44,7 @@ describe("keccak should be a sponge", () => {
 describe("Calypso.createWrite should", () => {
     it("return the same as in go", async () => {
         /* Go-file:
-      ltsid := byzcoin.NewInstanceID([]byte("LTS Instance ID"))
+        ltsid := byzcoin.NewInstanceID([]byte("LTS Instance ID"))
         writeDarc := darc.ID(byzcoin.NewInstanceID([]byte("Write Darc ID")).Slice())
         X := cothority.Suite.Point().Embed([]byte("Aggregate public key"), keccak.New([]byte("public")))
         key := []byte("Very Secret Symmetric Key")
