@@ -8,7 +8,7 @@ import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";
 import { Private } from "../../../lib/KeyPair";
 import { FileBlob } from "../../../lib/SecureData";
-import { showSnack } from "../../../lib/Ui";
+import { showSnack } from "../../../lib/ui/Ui";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -184,7 +184,6 @@ export class ContactsComponent implements OnInit {
                 Log.lvl1("Creating new darcInstance with description:", result, title);
                 const sb = this.snackBar.open("Creating new " + title);
                 const di = await gData.contact.getDarcSignIdentity();
-                Log.print("our darcSignId:", di);
                 const nd = newDarc([di], [di], Buffer.from(result));
                 const ndInst = await gData.spawnerInstance.spawnDarc(gData.coinInstance, [gData.keyIdentitySigner], nd);
                 await store(ndInst[0]);

@@ -8,7 +8,7 @@ import { Log } from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
 import { FileBlob, SecureData } from "../../../lib/SecureData";
-import { showSnack } from "../../../lib/Ui";
+import { showSnack } from "../../../lib/ui/Ui";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({

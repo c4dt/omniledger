@@ -1,4 +1,5 @@
 import { Component, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { Log } from "@c4dt/cothority/log";
 import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
 import StatusRPC from "@c4dt/cothority/status/status-rpc";
@@ -16,7 +17,7 @@ export class StatusComponent implements OnInit {
   blockCount = -1;
   signID: string;
 
-  constructor() {
+  constructor(private router: Router) {
     this.gData = gData;
     gData.contact.getDarcSignIdentity().then((dsi) => this.signID = dsi.toString());
   }
@@ -50,6 +51,6 @@ export class StatusComponent implements OnInit {
   async deleteUser() {
     gData.delete();
     await gData.save();
-    location.reload();
+    await this.router.navigateByUrl("/register");
   }
 }

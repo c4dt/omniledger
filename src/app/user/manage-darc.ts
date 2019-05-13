@@ -52,7 +52,6 @@ export class ManageDarcComponent {
     }
 
     ruleChange(newRule: INewRule) {
-        Log.print("new rule:", newRule.value, this.rule);
         this.available = this.available.concat(this.chosen);
         this.available = this.available.filter((i) => i.label !== "Unknown");
         this.chosen = [];
@@ -64,14 +63,12 @@ export class ManageDarcComponent {
         const identities = expr.split("|");
         for (const identity of identities) {
             const idStr = identity.trim();
-            Log.print("adding id", idStr);
             this.add(IdentityWrapper.fromIdentity(new IdStub(idStr)), false);
         }
     }
 
     createItem(label: string, iid: IIdentity): IItem {
         const idw = IdentityWrapper.fromIdentity(iid);
-        Log.print("creating", label, idw);
         return {
             identity: idw,
             label,
@@ -104,7 +101,6 @@ export class ManageDarcComponent {
     }
 
     add(id: IdentityWrapper, update: boolean = true) {
-        Log.print("Adding", id, "currently available:", this.available.map((i) => i.label));
         const index = this.available.findIndex((i) => i.identity.toString() === id.toString());
         if (index >= 0) {
             this.chosen.push(this.available[index]);
@@ -112,20 +108,17 @@ export class ManageDarcComponent {
         } else {
             this.chosen.push({label: "Unknown", identity: id});
         }
-        Log.print("Adding", id, "currently available:", this.available.map((i) => i.label));
         if (update) {
             this.updateDarc();
         }
     }
 
     remove(id: IdentityWrapper) {
-        Log.print("Removing", id, "currently chosen:", this.chosen.map((i) => i.label));
         const index = this.chosen.findIndex((i) => i.identity.toString() === id.toString());
         if (index >= 0) {
             this.available.push(this.chosen[index]);
             this.chosen.splice(index, 1);
         }
-        Log.print("Adding", id, "currently available:", this.available.map((i) => i.label));
         this.updateDarc();
     }
 
@@ -134,7 +127,6 @@ export class ManageDarcComponent {
     }
 
     updateDarc() {
-        Log.print("updating rule", this.rule, "with chosen", this.chosen.map((i) => i.label));
         if (this.chosen.length > 0) {
             this.newDarc.rules.setRule(this.rule, this.idWrapToId(this.chosen[0].identity));
             this.chosen.slice(1).forEach((item) => {

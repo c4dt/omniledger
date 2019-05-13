@@ -140,11 +140,9 @@ describe("In a full byzcoin setting, it should", () => {
             [tdAdmin.keyIdentitySigner], tdAdmin.lts, key,
             [await tdAdmin.contact.getDarcSignIdentity()]);
         const wrDarc = await DarcInstance.fromByzcoin(tdAdmin.bc, wrInst.darcID);
-        Log.print(wrDarc.darc.rules.getRule(Darc.ruleSign));
         expect(wrDarc.darc.rules.getRule(Darc.ruleSign).expr.toString().includes(" ")).toBeFalsy();
         const nd = wrDarc.darc.evolve();
         nd.rules.appendToRule(Darc.ruleSign, tdAdmin.keyIdentitySigner, Rules.OR);
         await wrDarc.evolveDarcAndWait(nd, [tdAdmin.keyIdentitySigner], 5);
-        Log.print("ok");
     });
 });

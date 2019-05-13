@@ -15,6 +15,6 @@ export class LoadingComponent implements OnInit {
   }
 
   ngOnInit() {
-    Log.lvl3("init loading");
+    Log.llvl3("init loading");
   }
 }

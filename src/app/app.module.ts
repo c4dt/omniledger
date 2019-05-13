@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { DialogOKCancelComponent } from "../lib/ui/Ui";
 import { DemoMaterialModule } from "../material-module";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
@@ -43,6 +44,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         StatusComponent,
         LoadingComponent,
         UserComponent,
+        DialogOKCancelComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
@@ -54,6 +56,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         CalypsoShowAccessComponent,
         RetryLoadComponent,
         CreateComponent,
+        DialogOKCancelComponent,
     ],
     imports: [
         BrowserModule,

@@ -15,7 +15,6 @@ export class UserComponent implements OnInit {
 
   constructor(private dialog: MatDialog,
               private router: Router) {
-    Log.print("constructing user");
     if (gData.contact && gData.contact.isRegistered() && gData.coinInstance) {
       Log.lvl1("user is registered");
       this.navigateToSubtab();
@@ -53,7 +52,7 @@ export class UserComponent implements OnInit {
   }
 
   ngOnInit() {
-    Log.lvl3("init user");
+    Log.llvl3("init user");
   }
 
 }

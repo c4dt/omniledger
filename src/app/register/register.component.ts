@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
+import { MatDialog, MatDialogModule } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
 import { Log } from "@c4dt/cothority/log";
@@ -7,6 +8,7 @@ import { Data, gData } from "../../lib/Data";
 import { Defaults } from "../../lib/Defaults";
 import { Private } from "../../lib/KeyPair";
 import { StorageDB } from "../../lib/StorageDB";
+import { showDialogOKC } from "../../lib/ui/Ui";
 
 @Component({
     selector: "app-register",
@@ -19,6 +21,7 @@ export class RegisterComponent implements OnInit {
     error: string;
 
     constructor(private router: Router,
+                private dialog: MatDialog,
                 private route: ActivatedRoute) {
         const darcID = Defaults.AdminDarc.toString("hex");
         const ephemeral = Defaults.Ephemeral.toString("hex");
@@ -27,7 +30,16 @@ export class RegisterComponent implements OnInit {
         if (ephemeralParam && ephemeralParam.length === 64) {
             StorageDB.get(gData.dataFileName).then((buf) => {
                 if (buf.length > 0) {
-                    this.router.navigateByUrl("/user");
+                    showDialogOKC(this.dialog, "Overwrite user?", "There seems to be a user already " +
+                        "stored in this browser - do you want to overwrite it?", async (overwrite: boolean) => {
+                        if (overwrite) {
+                            Log.lvl1("overwriting existing user");
+                            await StorageDB.set(gData.dataFileName, "");
+                            window.location.reload();
+                        } else {
+                            this.router.navigateByUrl("/user");
+                        }
+                    });
                 } else {
                     this.registering = true;
                     this.addID(ephemeralParam).catch((e) => {
@@ -47,7 +59,7 @@ export class RegisterComponent implements OnInit {
     }
 
     ngOnInit() {
-        Log.lvl3("init");
+        Log.llvl3("init register");
     }
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {

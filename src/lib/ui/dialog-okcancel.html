@@ -1,0 +1,8 @@
+<div class="mat-body">
+    <h1>{{data.Title}}</h1>
+    <p>{{data.Text}}</p>
+    <p>
+        <button mat-raised-button color='primary' [mat-dialog-close]="true" cdkFocusInitial>{{data.Buttons.OKButton}}</button>
+        <button mat-raised-button color='primary' [mat-dialog-close]="false" cdkFocusInitial>{{data.Buttons.CancelButton}}</button>
+    </p>
+</div>

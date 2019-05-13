@@ -32,8 +32,6 @@ describe("Testing new signup", async () => {
         await user1Copy.load();
         expect(user1Copy.contacts.length).toEqual(1);
         expect(user1Copy.toObject()).toEqual(user1.toObject());
-        Log.print(user1Copy.contacts[0].getDarcSignIdentity());
-        Log.print((await user1Copy.contacts[0].getDarcSignIdentity()).id);
     });
 
     it("Creating new user from darc", async () => {
