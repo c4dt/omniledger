@@ -140,7 +140,7 @@ export class Data {
         });
 
         const ocs = new OnChainSecretRPC(bc);
-        if (Defaults.Testing) {
+        if (Defaults.CalypsoRegister) {
             Log.lvl1("Setting authorization for byzcoin in calypso");
             try {
                 await ocs.authorizeRoster(Defaults.RosterCalypso);
@@ -779,7 +779,7 @@ export class Data {
         const deviceDarcID = signerDarc.getSignerDarcIDs()[0];
         const deviceDarc = await DarcInstance.fromByzcoin(this.bc, deviceDarcID);
         const newDeviceDarc = deviceDarc.darc.evolve();
-        newDeviceDarc.rules.setRule(DarcInstance.commandSign, this.keyIdentitySigner);
+        newDeviceDarc.rules.setRule(Darc.ruleSign, this.keyIdentitySigner);
         newDeviceDarc.rules.setRule("invoke:darc.evolve", this.keyIdentitySigner);
         const signer = new SignerEd25519(pub.point, ephemeral.scalar);
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [signer], 5);

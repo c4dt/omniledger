@@ -364,7 +364,7 @@ export class Contact {
         if (!this.darcInstance) {
             await this.update();
         }
-        const signRule = this.darcInstance.darc.rules.list.find((r) => r.action === DarcInstance.commandSign);
+        const signRule = this.darcInstance.darc.rules.list.find((r) => r.action === Darc.ruleSign);
         if (signRule == null) {
             throw new Error("didn't find signer darc");
         }
@@ -706,7 +706,7 @@ class Calypso {
             const wi = await CalypsoWriteInstance.fromByzcoin(this.contact.bc, sd.writeInstID);
             const di = await DarcInstance.fromByzcoin(this.contact.bc, wi.darcID);
             const nDarc = di.darc.evolve();
-            nDarc.rules.removeRule(DarcInstance.commandSign);
+            nDarc.rules.removeRule(Darc.ruleSign);
             nDarc.rules.removeRule("spawn:" + CalypsoReadInstance.contractID);
             await di.evolveDarcAndWait(nDarc, [this.contact.data.keyIdentitySigner], 5);
             this.ours.delete(key);

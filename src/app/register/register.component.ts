@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
 import { Log } from "@c4dt/cothority/log";
 import { Data, gData } from "../../lib/Data";
-import { activateC4DT, activateTesting, Defaults } from "../../lib/Defaults";
+import { Defaults } from "../../lib/Defaults";
 import { Private } from "../../lib/KeyPair";
 import { StorageDB } from "../../lib/StorageDB";
 

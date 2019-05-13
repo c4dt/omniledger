@@ -1,13 +1,13 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import { CalypsoReadInstance } from "@c4dt/cothority/calypso";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoReadInstance } from "@c4dt/cothority/calypso";
 import { CalypsoWriteInstance } from "@c4dt/cothority/calypso";
 import Darc from "@c4dt/cothority/darc/darc";
 import { Log } from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
-import { FileBlob } from "../../../lib/SecureData";
+import { FileBlob, SecureData } from "../../../lib/SecureData";
 import { showSnack } from "../../../lib/Ui";
 import { ManageDarcComponent } from "../manage-darc";
 
@@ -85,7 +85,7 @@ export class SecureComponent implements OnInit {
 
     async calypsoAddData() {
         const fileDialog = this.dialog.open(CalypsoUploadComponent, {
-            width: "250px",
+            width: "300px",
         });
         fileDialog.afterClosed().subscribe(async (result: File) => {
             if (result) {
@@ -113,6 +113,12 @@ export class SecureComponent implements OnInit {
         document.body.removeChild(a);
     }
 
+    async calypsoShowAccess(key: string) {
+        this.dialog.open(CalypsoShowAccessComponent, {
+            data: key,
+            width: "300px",
+        });
+    }
 }
 
 @Component({
@@ -133,5 +139,20 @@ export class CalypsoUploadComponent {
 
     async handleFileInput(e: Event) {
         this.file = (e.target as any).files[0] as File;
+    }
+}
+
+@Component({
+    selector: "app-calypso-show-access",
+    templateUrl: "calypso-show-access.html",
+})
+export class CalypsoShowAccessComponent {
+    constructor(
+        public dialogRef: MatDialogRef<CalypsoShowAccessComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: string) {
+    }
+
+    ok(): void {
+        this.dialogRef.close();
     }
 }

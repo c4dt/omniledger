@@ -10,7 +10,6 @@ import Signer from "@c4dt/cothority/darc/signer";
 import { Log } from "@c4dt/cothority/log";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
-import IdentityWrapper from "./cothority/darc/identity-wrapper";
 import { KeyPair } from "./KeyPair";
 
 /**

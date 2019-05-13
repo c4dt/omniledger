@@ -33,7 +33,7 @@ export class ManageDarcComponent {
     newDarc: Darc;
     available: IItem[] = [];
     chosen: IItem[] = [];
-    rule: string = DarcInstance.commandSign;
+    rule: string = Darc.ruleSign;
 
     constructor(
         public dialogRef: MatDialogRef<ManageDarcComponent>,

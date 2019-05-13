@@ -18,7 +18,7 @@ import {
     UserCredComponent,
 } from "./user/contacts/contacts.component";
 import { ManageDarcComponent } from "./user/manage-darc";
-import { CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
+import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
 import { StatusComponent } from "./user/status/status.component";
 import { UserComponent } from "./user/user.component";
 import { YourselfComponent } from "./user/yourself/yourself.component";
@@ -34,6 +34,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         TransferCoinComponent,
         UserCredComponent,
         CalypsoUploadComponent,
+        CalypsoShowAccessComponent,
         RegisterComponent,
         YourselfComponent,
         ContactsComponent,
@@ -49,6 +50,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         TransferCoinComponent,
         UserCredComponent,
         CalypsoUploadComponent,
+        CalypsoShowAccessComponent,
         CreateComponent,
     ],
     imports: [
