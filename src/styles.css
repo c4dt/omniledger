@@ -8,3 +8,9 @@
 .center {
     text-align: center;
 }
+
+html, body {
+    min-height: 95vh;
+    height: auto;
+    margin: 0;
+}

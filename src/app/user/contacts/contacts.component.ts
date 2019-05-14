@@ -9,6 +9,7 @@ import { Defaults } from "../../../lib/Defaults";
 import { Private } from "../../../lib/KeyPair";
 import { FileBlob } from "../../../lib/SecureData";
 import { showSnack } from "../../../lib/ui/Ui";
+import { BcviewerComponent, BcviewerService } from "../../bcviewer/bcviewer.component";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -26,6 +27,7 @@ export class ContactsComponent implements OnInit {
     constructor(
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
+        private bcvs: BcviewerService,
     ) {
         this.gData = gData;
         this.calypsoOtherKeys = new Map();
@@ -83,6 +85,7 @@ export class ContactsComponent implements OnInit {
                         width: "400px",
                     });
                 }
+                await this.bcvs.updateBlocks();
             }
         });
     }
@@ -99,6 +102,7 @@ export class ContactsComponent implements OnInit {
                     sb.dismiss();
                     await gData.save();
                 }
+                await this.bcvs.updateBlocks();
             }
         });
     }
@@ -117,6 +121,7 @@ export class ContactsComponent implements OnInit {
                     await gData.coinInstance.transfer(coins, c.coinInstance.id, [gData.keyIdentitySigner]);
                     sb.dismiss();
                 }
+                await this.bcvs.updateBlocks();
             }
         });
     }
@@ -124,6 +129,7 @@ export class ContactsComponent implements OnInit {
     async contactDelete(toDelete: Contact) {
         gData.contacts = gData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
         await gData.save();
+        await this.bcvs.updateBlocks();
     }
 
     async calypsoSearch(c: Contact) {
@@ -132,6 +138,7 @@ export class ContactsComponent implements OnInit {
             const sds = await gData.contact.calypso.read(c);
             await gData.save();
             this.updateCalypso();
+            await this.bcvs.updateBlocks();
         } catch (e) {
             Log.catch(e);
         }
@@ -156,6 +163,7 @@ export class ContactsComponent implements OnInit {
                     await a.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
                 });
             }
+            await this.bcvs.updateBlocks();
         });
     }
 
@@ -168,12 +176,14 @@ export class ContactsComponent implements OnInit {
             Log.error(e);
         }
         sb.dismiss();
+        await this.bcvs.updateBlocks();
     }
 
     async actionCreate() {
         await this.diCreate("Action", async (newDI) => {
             gData.contact.setActions((await gData.contact.getActions()).concat(newDI));
             await this.updateActions();
+            await this.bcvs.updateBlocks();
         });
     }
 
@@ -188,6 +198,7 @@ export class ContactsComponent implements OnInit {
                 const ndInst = await gData.spawnerInstance.spawnDarc(gData.coinInstance, [gData.keyIdentitySigner], nd);
                 await store(ndInst[0]);
                 await gData.save();
+                await this.bcvs.updateBlocks();
                 sb.dismiss();
             }
         });
@@ -199,6 +210,7 @@ export class ContactsComponent implements OnInit {
             gData.contact.setGroups((await gData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
             await gData.save();
             await this.updateGroups();
+            await this.bcvs.updateBlocks();
         } catch (e) {
             Log.error(e);
         }
@@ -209,6 +221,7 @@ export class ContactsComponent implements OnInit {
         await this.diCreate("Group", async (newDI) => {
             gData.contact.setGroups((await gData.contact.getGroups()).concat(newDI));
             await this.updateGroups();
+            await this.bcvs.updateBlocks();
         });
     }
 

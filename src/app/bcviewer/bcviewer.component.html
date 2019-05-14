@@ -1,0 +1,12 @@
+<div fxLayout="column">
+    <div fxFlex="auto" fxLayoutAlign="center"><h2>Latest blocks</h2></div>
+    <div fxFlex="auto" fxLayout="row" fxLayoutAlign="center">
+        <div style="border: 1px solid black; margin: 2px; padding: 2px;"
+             *ngFor="let block of blocks"
+             (click)="showBlock(block)" class="link">
+            Block-#: {{block.sb.index}}<br>
+            Time: {{block.timeStr}}<br>
+            TXs: {{block.body.txResults.length}}
+        </div>
+    </div>
+</div>

@@ -4,6 +4,7 @@ import { MatDialog, MatDialogModule, MatSnackBar } from "@angular/material";
 import { Log } from "@c4dt/cothority/log";
 import { Data, gData } from "../../../lib/Data";
 import { showDialogOKC, showSnack } from "../../../lib/ui/Ui";
+import { BcviewerComponent, BcviewerService } from "../../bcviewer/bcviewer.component";
 
 @Component({
   selector: "app-yourself",
@@ -15,13 +16,13 @@ export class YourselfComponent implements OnInit {
   contactForm: FormGroup;
 
   constructor(private snack: MatSnackBar,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,
+              private bcs: BcviewerService) {
     this.gData = gData;
   }
 
   ngOnInit() {
     this.updateContactForm();
-    console.log(gData.contact);
     Log.print("Credential-size is:", gData.contact.credential.toBytes().length);
   }
 
@@ -39,6 +40,7 @@ export class YourselfComponent implements OnInit {
       gData.contact.email = this.contactForm.controls.email.value;
       gData.contact.phone = this.contactForm.controls.phone.value;
       await gData.contact.sendUpdate();
+      this.bcs.updateBlocks();
     });
   }
 }

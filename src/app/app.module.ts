@@ -9,6 +9,7 @@ import { DialogOKCancelComponent } from "../lib/ui/Ui";
 import { DemoMaterialModule } from "../material-module";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
+import { BcviewerComponent, BcviewerService, ShowBlockComponent } from "./bcviewer/bcviewer.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { RegisterComponent } from "./register/register.component";
 import {
@@ -45,6 +46,8 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         LoadingComponent,
         UserComponent,
         DialogOKCancelComponent,
+        BcviewerComponent,
+        ShowBlockComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
@@ -57,6 +60,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         RetryLoadComponent,
         CreateComponent,
         DialogOKCancelComponent,
+        ShowBlockComponent,
     ],
     imports: [
         BrowserModule,

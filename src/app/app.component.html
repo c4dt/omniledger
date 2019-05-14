@@ -1,5 +1,10 @@
-<div fxLayout="row" style="margin-top:5%;" fxLayoutAlign="center">
-  <div fxFlex="66" fxFlexOffset="15" class="mat-body">
-    <router-outlet></router-outlet>
-  </div>
+<div fxLayout="column" style="margin-top:2em; min-height: 95vh;">
+    <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
+        <div fxFlex="90%" fxFlexOffset="0" class="mat-body">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+    <div fxFlex="0 0 9em" class="mat-body">
+        <app-bcviewer></app-bcviewer>
+    </div>
 </div>
