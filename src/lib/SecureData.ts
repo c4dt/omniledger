@@ -1,4 +1,3 @@
-import { randomBytes } from "crypto";
 import { ByzCoinRPC, InstanceID } from "@c4dt/cothority/byzcoin";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
@@ -8,6 +7,7 @@ import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calyps
 import { IdentityDarc, IIdentity } from "@c4dt/cothority/darc";
 import Signer from "@c4dt/cothority/darc/signer";
 import { Log } from "@c4dt/cothority/log";
+import { randomBytes } from "crypto";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
 import { KeyPair } from "./KeyPair";
@@ -45,7 +45,7 @@ export class SecureData {
     static async fromContact(bc: ByzCoinRPC, ocs: OnChainSecretRPC, c: Contact, reader: IIdentity, signers: Signer[],
                              coin?: CoinInstance, coinSigners?: Signer[]): Promise<SecureData[]> {
         const sds: SecureData[] = [];
-        await c.update();
+        await c.updateOrConnect();
         const cred = c.credential.getCredential("1-secret");
         if (cred) {
             for (const sdBuf of cred.attributes) {

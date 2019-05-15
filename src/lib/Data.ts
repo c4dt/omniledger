@@ -188,7 +188,7 @@ export class Data {
         d.contact = new Contact(cred, d);
         d.bc = bc;
         Log.lvl2("Credential id should be", CredentialsInstance.credentialIID(idBuf));
-        await d.contact.connectBC(bc);
+        await d.contact.updateOrConnect(bc);
         await d.connectByzcoin();
         Log.lvl2("done");
         return d;
@@ -311,13 +311,12 @@ export class Data {
 
                 if (obj.contact) {
                     this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
-                } else if (this.contact) {
-                    await this.contact.connectBC(this.bc);
                 }
                 Log.lvl2("Getting contact informations");
             }
 
             this.contact.data = this;
+            await this.contact.updateOrConnect();
             this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         } catch (e) {
             await Log.rcatch(e, "failed to load");
@@ -449,7 +448,7 @@ export class Data {
             await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
             Log.lvl2("Registered user for darc::coin::credential:", darcInstances[0].id, coinInstance.id,
                 credentialInstance.id);
-            await contact.update();
+            await contact.updateOrConnect();
             progress("Done", 100);
         } catch (e) {
             Log.catch(e);
@@ -484,7 +483,7 @@ export class Data {
         if (this.bc == null) {
             return Promise.reject("cannot verify if no byzCoin connection is set");
         }
-        await this.contact.connectBC(this.bc);
+        await this.contact.updateOrConnect(this.bc);
     }
 
     // setTrustees stores the given contacts in the credential, so that a threshold of these contacts
@@ -505,7 +504,7 @@ export class Data {
     async searchRecovery(): Promise<Contact[]> {
         const recoveries: Contact[] = [];
         for (const contact of this.contacts) {
-            await contact.update();
+            await contact.updateOrConnect();
             if (contact.recover.trustees.filter((t) =>
                 t.equals(this.contact.credentialIID)).length > 0) {
                 recoveries.push(contact);
@@ -534,7 +533,7 @@ export class Data {
             return Promise.reject("got wrong public key length");
         }
 
-        await user.update();
+        await user.updateOrConnect();
 
         // the message to be signed is:
         // credentialIID + newPublicKey + latestDarcVersion
@@ -760,7 +759,7 @@ export class Data {
             d.keyIdentity._public.toBuffer());
 
         d.contact = new Contact(cred, d);
-        await d.contact.connectBC(this.bc);
+        await d.contact.updateOrConnect(this.bc);
         d.bc = this.bc;
         Log.lvl2("finalizing data");
         await d.connectByzcoin();
@@ -771,7 +770,7 @@ export class Data {
         const pub = Public.base().mul(ephemeral);
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
         this.contact.data = this;
-        await this.contact.connectBC(this.bc);
+        await this.contact.updateOrConnect(this.bc);
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];

@@ -1,19 +1,20 @@
-import Long from "long";
 import { Log } from "@c4dt/cothority/log";
+import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
+import { Contact } from "../lib/Contact";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
-describe("Testing new signup", async () => {
+describe("Data class should", async () => {
     let tdAdmin: TestData;
 
-    beforeAll(async () =>    {
+    beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         tdAdmin = await TestData.init();
     });
 
-    it("Should load old user", async () => {
+    it("load old user", async () => {
         const user1 = await tdAdmin.createTestUser("user1");
         const user1Copy = new Data();
         user1Copy.dataFileName = user1.dataFileName;
@@ -22,7 +23,7 @@ describe("Testing new signup", async () => {
         expect(user1Copy.toObject()).toEqual(user1.toObject());
     });
 
-    it("Should keep contacts on skipchain", async () => {
+    it("keep contacts on skipchain", async () => {
         const user1 = await tdAdmin.createTestUser("user1");
         const user2 = await tdAdmin.createTestUser("user2");
         user1.addContact(user2.contact);
@@ -32,9 +33,10 @@ describe("Testing new signup", async () => {
         await user1Copy.load();
         expect(user1Copy.contacts.length).toEqual(1);
         expect(user1Copy.toObject()).toEqual(user1.toObject());
+        expect(user1Copy.contacts[0].coinInstance).toBeDefined();
     });
 
-    it("Creating new user from darc", async () => {
+    it("create new user from darc", async () => {
         const kp1 = new KeyPair();
         const user1 = await tdAdmin.createTestUser("user1", kp1._private);
         await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user1.coinInstance.id,
@@ -45,9 +47,27 @@ describe("Testing new signup", async () => {
             [user1.keyIdentitySigner]);
         await user1.coinInstance.update();
         await user2.coinInstance.update();
-        // -1500 is for the spawning cost of a new user
-        expect(user1.coinInstance.coin.value.toNumber()).toBe(1e6 - 1e5 - 1500);
+        // -1500 is for the spawning cost of a new user, each new user get 1e6.
+        expect(user1.coinInstance.coin.value.toNumber()).toBe(2e6 - 1e5 - 1500);
         expect(user2.coinInstance.coin.value.toNumber()).toBe(1e5);
+    });
+
+    it("allow many contacts", async () => {
+        for (let i = 0; i < 10; i++) {
+            Log.lvl1("Adding contact", i);
+            const d = await tdAdmin.createUser("alias" + i);
+            d.contact.email = "test@test.com";
+            d.addContact(tdAdmin.contact);
+            tdAdmin.addContact(d.contact);
+            Log.print("Credential-size is:", tdAdmin.contact.credential.toBytes().length);
+            await tdAdmin.save();
+            // Wait for block to be propagated
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 500);
+            });
+        }
     });
 
     it("update the credential of the admin", async () => {
@@ -57,6 +77,8 @@ describe("Testing new signup", async () => {
 
     it("change the private key for a new user", async () => {
         const user1 = await tdAdmin.createTestUser("user1");
+        user1.addContact(tdAdmin.contact);
+        await user1.save();
         Log.lvl1("creating empty data structure");
         const user1Copy = new Data();
         user1Copy.bc = user1.bc;

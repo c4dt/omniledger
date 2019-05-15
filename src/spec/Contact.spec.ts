@@ -23,6 +23,16 @@ describe("Contact should", async () => {
         expect(user1.contact.ltsID).toEqual(tdAdmin.contact.ltsID);
     });
 
+    it ("correctly load cross-linked users", async () => {
+        const user1 = await tdAdmin.createTestUser("user1");
+        const user2 = await user1.createUser("user2");
+        user2.addContact(user1.contact);
+        await user2.save();
+        user1.addContact(user2.contact);
+        await user1.save();
+        await user1.load();
+    }, 20000);
+
     it("create a SecureData and recover it on another user", async () => {
         const user1 = await tdAdmin.createTestUser("user1");
         await tdAdmin.coinInstance.transfer(Long.fromNumber(1e6), user1.coinInstance.id, [tdAdmin.keyIdentitySigner]);
