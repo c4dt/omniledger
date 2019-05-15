@@ -217,6 +217,10 @@ export class Data {
         }
         return DarcInstance.fromByzcoin(bc, signer[0]);
     }
+
+    static async attachDevice(url: string): Data {
+        return new Data();
+    }
     dataFileName: string;
     continuousScan: boolean;
     personhoodPublished: boolean;
@@ -784,6 +788,10 @@ export class Data {
         newDeviceDarc.rules.setRule("invoke:darc.evolve", this.keyIdentitySigner);
         const signer = new SignerEd25519(pub.point, ephemeral.scalar);
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [signer], 5);
+    }
+
+    createDevice(): string {
+        return "test-url";
     }
 }
 

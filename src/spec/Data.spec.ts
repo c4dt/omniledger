@@ -2,7 +2,6 @@ import Log from "@c4dt/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
-import { Contact } from "../lib/Contact";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
@@ -108,5 +107,22 @@ describe("Data class should", async () => {
         userCopy.dataFileName = user.dataFileName;
         await userCopy.load();
         expect(userCopy.contact.calypso.ours.size).toBe(1);
+    });
+
+    it("spawn to another device correctly", async () => {
+        const device1 = await tdAdmin.createTestUser("user1");
+        
+
+        const deviceURL = device1.createDevice();
+        const device2 = Data.attachDevice(deviceURL);
+        expect(device2.contact.credentialIID).toEqual(device1.contact.credentialIID);
+        expect(device2.contact.credential.toBytes()).toEqual(device1.contact.credential.toBytes());
+        let balance = device2.coinInstance.coin.value;
+        await device2.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
+            [device2.keyIdentitySigner]);
+        balance = balance.sub(1000);
+        expect(device2.coinInstance.coin.value.toNumber()).toBe(balance.toNumber());
+        await device1.coinInstance.update();
+        expect(device1.coinInstance.coin.value.toNumber()).toBe(balance.toNumber());
     });
 });
