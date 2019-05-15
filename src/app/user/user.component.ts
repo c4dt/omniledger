@@ -3,6 +3,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
 import { Router } from "@angular/router";
 import { Log } from "@c4dt/cothority/log";
 import { Data, gData } from "../../lib/Data";
+import { BcviewerService } from "../bcviewer/bcviewer.component";
 import { CalypsoUploadComponent } from "./secure/secure.component";
 
 @Component({
@@ -14,7 +15,8 @@ export class UserComponent implements OnInit {
   isLoaded = false;
 
   constructor(private dialog: MatDialog,
-              private router: Router) {
+              private router: Router,
+              private bcs: BcviewerService) {
     if (gData.contact && gData.contact.isRegistered() && gData.coinInstance) {
       Log.lvl1("user is registered");
       this.navigateToSubtab();
@@ -49,6 +51,7 @@ export class UserComponent implements OnInit {
       this.router.navigateByUrl("/user/yourself");
     }
     this.isLoaded = true;
+    this.bcs.updateBlocks();
   }
 
   ngOnInit() {

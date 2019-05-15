@@ -1,63 +1,66 @@
 <mat-dialog-content>
-<div class="mat-body">
-    <h1>Block {{data.sb.index}}</h1>
-    <mat-accordion multi="true">
-        <mat-expansion-panel expanded="true">
-            <mat-expansion-panel-header>
-                <mat-panel-title>
-                    Block Data
-                </mat-panel-title>
-                <mat-panel-description>
-                    Generic Data of the block
-                </mat-panel-description>
-            </mat-expansion-panel-header>
-            <ul>
-                <li>Index: {{data.sb.index}}</li>
-                <li>Creation: {{data.timeStr}}</li>
-                <li>Leader: {{data.sb.roster.list[0].description}}</li>
-                <li>Roster: {{roster}}</li>
-                <li>BackwardLinks:
-                    <span *ngFor="let backward of data.backwardLinks" (click)="goBlock(backward)"class="link">
-                        {{backward.index}}
-                    </span>
-                </li>
-                <li>ForwardLinks:
-                    <span *ngFor="let forward of data.forwardLinks" (click)="goBlock(forward)" class="link">
-                        {{forward.index}}
-                    </span>
-                </li>
-            </ul>
-        </mat-expansion-panel>
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>
-                    ByzCoin Body
-                </mat-panel-title>
-                <mat-panel-description>
-                    Client Transactions
-                </mat-panel-description>
-            </mat-expansion-panel-header>
-            <ul dense>
-                <div *ngFor="let ctx of ctxs">
-                    <li>Index: {{ctx.index}}</li>
-                    <li>Accepted: {{ctx.accepted}}</li>
-                    <ul>
-                        <div *ngFor="let inst of ctx.instructions">
-                            <li>Instruction: {{inst.index}}</li>
-                            <ul>
-                                <li>Type: {{inst.type}}</li>
-                                <li>ContractID: {{inst.contractID}}</li>
-                                <li *ngIf="inst.command">Command: {{inst.command}}</li>
-                                <li *ngIf="inst.args">Arguments: {{inst.args.join(" - ")}}</li>
-                            </ul>
+    <div class="mat-body">
+        <h1>Block {{data.sb.index}}</h1>
+        <mat-accordion multi="true">
+            <mat-expansion-panel expanded="true">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Block Data
+                    </mat-panel-title>
+                    <mat-panel-description>
+                        Generic Data of the block
+                    </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div fxLayout="column">
+                    <div fxLayout="row">
+                        <div fxFlex="1 1 10em">Index: {{data.sb.index}}</div>
+                        <div fxFlex="1 1 20em">Creation: {{data.timeStr}}</div>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="1 1 10em">Leader: {{data.sb.roster.list[0].description}}</div>
+                        <div fxFlex="1 1 20em">Roster: {{roster}}</div>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="1 1 20em">BackwardLinks:
+                            <span *ngFor="let backward of data.backwardLinks" (click)="goBlock(backward)" class="link">
+                                {{backward.index}}</span>
                         </div>
-                    </ul>
+                        <div fxFlex="1 1 20em">ForwardLinks:
+                            <span *ngFor="let forward of data.forwardLinks" (click)="goBlock(forward)" class="link">
+                                {{forward.index}}</span>
+                        </div>
+                    </div>
                 </div>
-            </ul>
-        </mat-expansion-panel>
-    </mat-accordion>
-    <p>
-        <button mat-raised-button color='primary' [mat-dialog-close]="true" cdkFocusInitial>Dismiss</button>
-    </p>
-</div>
+            </mat-expansion-panel>
+            <mat-expansion-panel expanded="true">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        ByzCoin Body
+                    </mat-panel-title>
+                    <mat-panel-description>
+                        Client Transactions
+                    </mat-panel-description>
+                </mat-expansion-panel-header>
+                <ul>
+                    <div *ngFor="let ctx of ctxs">
+                        <li>Index: {{ctx.index}} :: Accepted: {{ctx.accepted}}</li>
+                        <ul>
+                            <div *ngFor="let inst of ctx.instructions">
+                                <li>Instruction: {{inst.index}}</li>
+                                <ul>
+                                    <li *ngIf="inst.instance">Instance: {{inst.instance.description}}</li>
+                                    <li>ContractID: {{inst.contractID}} :: Type: {{inst.type}}
+                                        <span *ngIf="inst.command">:: Command: {{inst.command}}</span></li>
+                                    <li *ngIf="inst.args">Arguments: {{inst.args.join(" - ")}}</li>
+                                </ul>
+                            </div>
+                        </ul>
+                    </div>
+                </ul>
+            </mat-expansion-panel>
+        </mat-accordion>
+        <p>
+            <button mat-raised-button color='primary' [mat-dialog-close]="true" cdkFocusInitial>Dismiss</button>
+        </p>
+    </div>
 </mat-dialog-content>

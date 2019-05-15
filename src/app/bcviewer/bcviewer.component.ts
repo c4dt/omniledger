@@ -1,9 +1,15 @@
 import { Component, EventEmitter, Inject, Injectable, OnInit, Output } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
 import { Instruction } from "@c4dt/cothority/byzcoin";
-import { DataBody, DataHeader } from "@c4dt/cothority/byzcoin/proto";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
+import Instance from "@c4dt/cothority/byzcoin/instance";
+import Proof from "@c4dt/cothority/byzcoin/proof";
+import DataBody from "@c4dt/cothority/byzcoin/proto/data-body";
+import DataHeader from "@c4dt/cothority/byzcoin/proto/data-header";
 import TxResult from "@c4dt/cothority/byzcoin/proto/tx-result";
-import { ForwardLink, SkipBlock, SkipchainRPC } from "@c4dt/cothority/skipchain";
+import { Log } from "@c4dt/cothority/log";
+import { ForwardLink, SkipBlock } from "@c4dt/cothority/skipchain";
+import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import { gData } from "../../lib/Data";
@@ -32,9 +38,6 @@ export class BcviewerComponent implements OnInit {
 
     constructor(private showBlockService: BcviewerService,
                 private dialog: MatDialog) {
-        setTimeout(() => {
-            this.updateBlocks();
-        }, 2000);
         setInterval(() => {
             this.updateBlocks();
         }, 30000);
@@ -44,10 +47,10 @@ export class BcviewerComponent implements OnInit {
         if (gData.bc) {
             this.scRPC = new SkipchainRPC(gData.bc.getConfig().roster);
             const sbBlocks = await this.scRPC.getUpdateChain(gData.bc.genesisID);
-            this.blocks = sbBlocks.map((sb) => new BCBlock(this.scRPC, sb));
-            if (this.blocks.length > 4) {
-                this.blocks.splice(0, this.blocks.length - 4);
+            if (sbBlocks.length > 4) {
+                sbBlocks.splice(0, sbBlocks.length - 4);
             }
+            this.blocks = sbBlocks.map((sb) => new BCBlock(this.scRPC, sb));
         }
     }
 
@@ -65,13 +68,13 @@ export class BcviewerComponent implements OnInit {
     }
 }
 
-class BCBlock {
+export class BCBlock {
     header: DataHeader;
     body: DataBody;
     time: Date;
     timeStr: string;
-    forwardLinks: Link[] = [];
-    backwardLinks: Link[] = [];
+    forwardLinks: LinkBlock[] = [];
+    backwardLinks: LinkBlock[] = [];
 
     constructor(public scRPC: SkipchainRPC, public sb: SkipBlock) {
         this.sb = sb;
@@ -81,9 +84,12 @@ class BCBlock {
         this.timeStr = sprintf("%02d/%02d/%d %02d:%02d", this.time.getDate(),
             this.time.getMonth() + 1, this.time.getFullYear(),
             this.time.getHours(), this.time.getMinutes());
-        this.forwardLinks = sb.forwardLinks.map((fl) => new Link(scRPC, fl));
-        if (sb.index > 0) {
-            this.backwardLinks = sb.backlinks.map((fl) => new Link(scRPC, fl));
+    }
+
+    async updateLinks() {
+        this.forwardLinks = this.sb.forwardLinks.map((fl) => new LinkBlock(this.scRPC, fl));
+        if (this.sb.index > 0) {
+            this.backwardLinks = this.sb.backlinks.map((fl) => new LinkBlock(this.scRPC, fl));
         }
     }
 }
@@ -101,17 +107,19 @@ export class ShowBlockComponent {
         public dialogRef: MatDialogRef<ShowBlockComponent>,
         @Inject(MAT_DIALOG_DATA) public data: BCBlock) {
         this.updateVars();
+        data.updateLinks();
     }
 
     updateVars() {
-        this.roster = this.data.sb.roster.list.map((l) => l.description);
+        this.roster = this.data.sb.roster.list.slice(1).map((l) => l.description);
         this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(txr, index));
     }
 
-    async goBlock(l: Link) {
+    async goBlock(l: LinkBlock) {
         const sb = await this.data.scRPC.getSkipBlock(l.id);
         this.data = new BCBlock(this.data.scRPC, sb);
         this.updateVars();
+        await this.data.updateLinks();
     }
 }
 
@@ -130,6 +138,7 @@ class InstStr {
     args: string[];
     contractID: string;
     command: string;
+    instance: LinkInstance;
 
     constructor(public inst: Instruction, public index: number) {
         switch (inst.type) {
@@ -149,10 +158,16 @@ class InstStr {
                 this.contractID = inst.delete.contractID;
                 break;
         }
+        this.instance = new LinkInstance(inst, this.contractID);
+    }
+
+    getInstanceStr(inst: Instruction): string {
+
+        return inst.instanceID.toString("hex");
     }
 }
 
-class Link {
+class LinkBlock {
     index: number;
     height: number;
     maxHeight: number;
@@ -168,6 +183,38 @@ class Link {
             this.index = sb.index;
             this.height = sb.forwardLinks.length;
             this.maxHeight = sb.height;
+        });
+    }
+}
+
+class LinkInstance {
+    instanceID: Buffer;
+    description: string;
+    instanceProof: Proof;
+
+    constructor(public inst: Instruction, public contractID: string) {
+        this.instanceID = inst.instanceID;
+        this.description = "loading...";
+        gData.bc.getProof(this.instanceID).then((p) => {
+            this.instanceProof = p;
+            switch (contractID) {
+                case "config":
+                    this.description = "Genesis Configuration";
+                    break;
+                case CredentialsInstance.contractID:
+                    this.description = "Credential -> ";
+                    const i = Instance.fromProof(this.instanceID, this.instanceProof);
+                    const cred = CredentialStruct.decode(i.data);
+                    const aliasBuf = cred.getAttribute("1-public", "alias");
+                    if (aliasBuf) {
+                        this.description += aliasBuf.toString();
+                    } else {
+                        this.description += "unknown";
+                    }
+                    break;
+                default:
+                    this.description = contractID;
+            }
         });
     }
 }
