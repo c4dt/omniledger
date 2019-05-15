@@ -824,7 +824,6 @@ export class TestData extends Data {
         await this.coinInstance.transfer(Long.fromNumber(1e6), d.coinInstance.id, [this.keyIdentitySigner]);
         while (d.coinInstance.coin.value.lessThan(1e6)) {
             await d.coinInstance.update();
-            Log.print(d.coinInstance.coin.value);
         }
         await d.save();
         return d;

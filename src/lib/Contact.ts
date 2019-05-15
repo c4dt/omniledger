@@ -101,7 +101,7 @@ export class Contact {
         if (cs) {
             this.contactsCache = cs;
             const csBuf = Buffer.concat(cs.map((c) => c.credentialIID));
-            this.credential.setAttribute("1-public", "contacts", csBuf);
+            this.credential.setAttribute("1-public", "contactsBuf", csBuf);
             this.version = this.version + 1;
         }
     }
@@ -404,13 +404,35 @@ export class Contact {
 
     async getContacts() {
         Log.lvl2("Reloading contacts of", this.alias);
-        const csBuf = this.credential.getAttribute("1-public", "contacts");
+        const csBufOld = this.credential.getAttribute("1-public", "contacts");
+        if (csBufOld && csBufOld.length > 0) {
+            Log.lvl1("converting old contacts");
+            const csArray: string[] = JSON.parse(csBufOld.toString());
+            this.contactsCache = csArray.map((c) => {
+                const cont = Contact.fromObject(c);
+                cont.bc = this.bc;
+                return cont;
+            });
+            this.credential.setAttribute("1-public", "contacts", Buffer.alloc(0));
+            this.contacts = this.contactsCache;
+            return;
+        }
+        const csBuf = this.credential.getAttribute("1-public", "contactsBuf");
         this.contactsCache = [];
         if (csBuf) {
+            let hasFaulty: boolean = false;
             for (let c = 0; c < csBuf.length; c += 32) {
-                const cont = await Contact.fromByzcoin(this.bc, csBuf.slice(c, c + 32));
-                await cont.updateOrConnect(this.bc, false);
-                this.contactsCache.push(cont);
+                try {
+                    const cont = await Contact.fromByzcoin(this.bc, csBuf.slice(c, c + 32));
+                    await cont.updateOrConnect(this.bc, false);
+                    this.contactsCache.push(cont);
+                } catch (e) {
+                    Log.error("couldn't get contact - deleting");
+                    hasFaulty = false;
+                }
+            }
+            if (hasFaulty) {
+                this.contacts = this.contactsCache;
             }
         }
     }
