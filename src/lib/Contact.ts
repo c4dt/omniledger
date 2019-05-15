@@ -408,11 +408,10 @@ export class Contact {
         if (csBufOld && csBufOld.length > 0) {
             Log.lvl1("converting old contacts");
             const csArray: string[] = JSON.parse(csBufOld.toString());
-            this.contactsCache = csArray.map((c) => {
-                const cont = Contact.fromObject(c);
-                cont.bc = this.bc;
-                return cont;
-            });
+            this.contactsCache = csArray.map((c) => Contact.fromObject(c));
+            for (const c of this.contactsCache) {
+                await c.updateOrConnect(this.bc, false);
+            }
             this.credential.setAttribute("1-public", "contacts", Buffer.alloc(0));
             this.contacts = this.contactsCache;
             return;

@@ -44,6 +44,7 @@ describe("Contact should", async () => {
         await contact1.updateOrConnect();
         expect(contact1.contacts.length).toBe(1);
         expect(contact1.contacts[0].credentialIID).toEqual(tdAdmin.contact.credentialIID);
+        expect(contact1.contacts[0].coinInstance).toBeDefined();
         expect(contact1.credential.getAttribute("1-public", "contacts")).toEqual(Buffer.alloc(0));
         expect(contact1.credential.getAttribute("1-public", "contactsBuf")).not.toEqual(Buffer.alloc(0));
     });
