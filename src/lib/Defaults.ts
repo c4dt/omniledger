@@ -1,5 +1,6 @@
 // import { FileIO } from "./FileIO";
 import { Roster } from "@c4dt/cothority/network";
+import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
 
 // tslint:disable-next-line
 export const Defaults = {
@@ -261,9 +262,9 @@ export const Defaults = {
       Suite = "bn256.adapter"
 `,
     // ByzCoinID
-    ByzCoinID: null,
-    AdminDarc: null,
-    Ephemeral: null,
+    ByzCoinID: Buffer.alloc(0),
+    AdminDarc: Buffer.alloc(0),
+    Ephemeral: Buffer.alloc(0),
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
@@ -305,7 +306,8 @@ export function activateDEDIS() {
     Defaults.Roster = Roster.fromTOML(Defaults.RosterTOMLDEDIS);
     Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLCalypso);
     Defaults.ByzCoinID = Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex");
-    Defaults.AdminDarc = Buffer.from("d025450db8db9f4f5ddb2f6eed83cb3f50dfcf53b005239041458f6984d34ff3", "hex");
+    Defaults.AdminDarc = Buffer.from("d427c78474967d6a2ed108713b858c0195cde97f1516f0113fc75b4e9a6dcb52", "hex");
+    SkipchainRPC.disableSignatureVerification = true;
 }
 
 export function activateC4DT() {
@@ -319,5 +321,5 @@ export function activateC4DT() {
 }
 
 // activateTesting();
-activateC4DT();
-// activateDEDIS();
+// activateC4DT();
+activateDEDIS();

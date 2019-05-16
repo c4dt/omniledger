@@ -60,6 +60,11 @@ export class Data {
         return this.contact.credentialInstance;
     }
 
+    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
+    // - creates all necessary darcs (four)
+    // - creates credential and coin
+    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
+
     get alias(): string {
         return this.contact.alias;
     }
@@ -98,13 +103,15 @@ export class Data {
         const adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
         const adminSigner = new SignerEd25519(adminPub.point, adminKey);
         const adminDarcInst = await DarcInstance.fromByzcoin(bc, adminDarcID);
-        const adminRules = ["spawn:spawner", "spawn:coin", "spawn:credential", "coin:mint"];
+        const adminRules = ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
+            "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
+            "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"];
         if (adminRules.filter((rule) => !adminDarcInst.darc.rules.getRule(rule))) {
             const newAdminDarc = adminDarcInst.darc.evolve();
             adminRules.forEach((rule) => {
                 newAdminDarc.rules.setRule(rule, adminSigner);
             });
-            await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10);
+            await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10, true);
         }
 
         const d = new Data({alias, bc});
@@ -218,11 +225,6 @@ export class Data {
     bc: ByzCoinRPC = null;
     lts: LongTermSecret = null;
     constructorObj: any;
-
-    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
-    // - creates all necessary darcs (four)
-    // - creates credential and coin
-    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
     // then the gData needs to have enough coins to pay for all the instances when using
     contact: Contact;
     parties: Party[] = [];

@@ -1,5 +1,8 @@
 import { Component, EventEmitter, Inject, Injectable, OnInit, Output } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
+import { Log } from "@c4dt/cothority/log";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import { Instruction } from "@c4dt/cothority/byzcoin";
 import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
 import Instance from "@c4dt/cothority/byzcoin/instance";
@@ -7,11 +10,8 @@ import Proof from "@c4dt/cothority/byzcoin/proof";
 import DataBody from "@c4dt/cothority/byzcoin/proto/data-body";
 import DataHeader from "@c4dt/cothority/byzcoin/proto/data-header";
 import TxResult from "@c4dt/cothority/byzcoin/proto/tx-result";
-import { Log } from "@c4dt/cothority/log";
 import { ForwardLink, SkipBlock } from "@c4dt/cothority/skipchain";
 import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import { gData } from "../../lib/Data";
 
 @Injectable({
@@ -34,7 +34,7 @@ export class BcviewerService {
 })
 export class BcviewerComponent implements OnInit {
     scRPC: SkipchainRPC;
-    blocks: BCBlock[];
+    blocks: BCBlock[] = [];
 
     constructor(private showBlockService: BcviewerService,
                 private dialog: MatDialog) {
@@ -45,12 +45,22 @@ export class BcviewerComponent implements OnInit {
 
     async updateBlocks() {
         if (gData.bc) {
-            this.scRPC = new SkipchainRPC(gData.bc.getConfig().roster);
-            const sbBlocks = await this.scRPC.getUpdateChain(gData.bc.genesisID);
-            if (sbBlocks.length > 4) {
-                sbBlocks.splice(0, sbBlocks.length - 4);
+            if (!this.scRPC) {
+                this.scRPC = new SkipchainRPC(gData.bc.getConfig().roster);
             }
-            this.blocks = sbBlocks.map((sb) => new BCBlock(this.scRPC, sb));
+            let latest = gData.bc.genesisID;
+            if (this.blocks && this.blocks.length > 0) {
+                latest = this.blocks[this.blocks.length - 1].sb.hash;
+            }
+            const sbBlocks = await this.scRPC.getUpdateChain(latest);
+            sbBlocks.forEach((sbB) => {
+                if (!this.blocks.find((b) => b.sb.hash.equals(sbB.hash))) {
+                    this.blocks.push(new BCBlock(this.scRPC, sbB));
+                }
+            });
+            if (this.blocks.length > 4) {
+                this.blocks.splice(0, this.blocks.length - 4);
+            }
         }
     }
 
@@ -203,13 +213,29 @@ class LinkInstance {
                     break;
                 case CredentialsInstance.contractID:
                     this.description = "Credential -> ";
-                    const i = Instance.fromProof(this.instanceID, this.instanceProof);
-                    const cred = CredentialStruct.decode(i.data);
-                    const aliasBuf = cred.getAttribute("1-public", "alias");
-                    if (aliasBuf) {
-                        this.description += aliasBuf.toString();
-                    } else {
-                        this.description += "unknown";
+                    let cred: CredentialStruct;
+                    switch (inst.type) {
+                        case 0:
+                            const credBuf = inst.spawn.args.find((arg) => {
+                                return arg.name === CredentialsInstance.argumentCredential;
+                            });
+                            if (credBuf) {
+                                cred = CredentialStruct.decode(credBuf.value);
+                            }
+                            break;
+                        case 1:
+                        case 2:
+                            const i = Instance.fromProof(this.instanceID, this.instanceProof);
+                            cred = CredentialStruct.decode(i.data);
+                            break;
+                    }
+                    if (cred) {
+                        const aliasBuf = cred.getAttribute("1-public", "alias");
+                        if (aliasBuf) {
+                            this.description += aliasBuf.toString();
+                        } else {
+                            this.description += "unknown";
+                        }
                     }
                     break;
                 default:

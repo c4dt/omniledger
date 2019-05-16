@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog, MatDialogModule } from "@angular/material";
+import { MatDialog } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
 import { Log } from "@c4dt/cothority/log";
@@ -9,6 +9,7 @@ import { Defaults } from "../../lib/Defaults";
 import { Private } from "../../lib/KeyPair";
 import { StorageDB } from "../../lib/StorageDB";
 import { showDialogOKC } from "../../lib/ui/Ui";
+import { BcviewerService } from "../bcviewer/bcviewer.component";
 
 @Component({
     selector: "app-register",
@@ -23,7 +24,8 @@ export class RegisterComponent implements OnInit {
 
     constructor(private router: Router,
                 private dialog: MatDialog,
-                private route: ActivatedRoute) {
+                private route: ActivatedRoute,
+                private bcs: BcviewerService) {
         const darcID = Defaults.AdminDarc.toString("hex");
         const ephemeral = Defaults.Ephemeral.toString("hex");
 
@@ -48,7 +50,6 @@ export class RegisterComponent implements OnInit {
                     });
                 }
             });
-            return;
         }
 
         this.register = true;
@@ -59,6 +60,11 @@ export class RegisterComponent implements OnInit {
             ephemeralKey: new FormControl(ephemeral,
                 Validators.pattern(/[0-9a-fA-F]{64}/)),
         });
+        gData.load().finally(() => {
+            Log.print("finally");
+            bcs.updateBlocks();
+        });
+        return;
     }
 
     ngOnInit() {

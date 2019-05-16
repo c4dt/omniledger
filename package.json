@@ -24,7 +24,7 @@
     "@angular/platform-browser": "^7.2.15",
     "@angular/platform-browser-dynamic": "^7.2.15",
     "@angular/router": "^7.2.15",
-    "@c4dt/cothority": "^3.1.11",
+    "@c4dt/cothority": "^3.1.12",
     "@dedis/kyber": "^3.0.2",
     "core-js": "^2.5.4",
     "crypto-browserify": "^3.12.0",

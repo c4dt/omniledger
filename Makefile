@@ -13,6 +13,8 @@ cothority_npm:
 		echo "there is no cothority-source present, aborting"; \
 		exit 1; \
 	fi
+	@diff -Naurq cothority-ts/external/js/cothority/src/ src/lib/cothority/ || \
+	    ( echo "Moving changes to cothority-ts"; cp -a src/lib/cothority/ cothority-ts/external/js/cothority/src )
 	@rm -rf src/lib/cothority
 	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@c4dt/cothority:"
 
