@@ -1,4 +1,4 @@
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";

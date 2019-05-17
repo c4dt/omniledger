@@ -24,6 +24,7 @@ import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } f
 import { StatusComponent } from "./user/status/status.component";
 import { RetryLoadComponent, UserComponent } from "./user/user.component";
 import { YourselfComponent } from "./user/yourself/yourself.component";
+import { DevicesComponent } from './user/devices/devices.component';
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -48,6 +49,7 @@ import { YourselfComponent } from "./user/yourself/yourself.component";
         DialogOKCancelComponent,
         BcviewerComponent,
         ShowBlockComponent,
+        DevicesComponent,
     ],
     entryComponents: [
         ManageDarcComponent,

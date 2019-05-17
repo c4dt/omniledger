@@ -6,31 +6,31 @@ import { Buffer } from "buffer";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { sprintf } from "sprintf-js";
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@c4dt/cothority/personhood/credentials-instance";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
-import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
-import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
-import Darc from "@c4dt/cothority/darc/darc";
-import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
-import Rules from "@c4dt/cothority/darc/rules";
-import Signer from "@c4dt/cothority/darc/signer";
-import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
-import Log from "@c4dt/cothority/log";
-import { Roster } from "@c4dt/cothority/network";
+} from "@dedis/cothority/personhood/credentials-instance";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
+import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
+import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
+import Darc from "@dedis/cothority/darc/darc";
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
+import Rules from "@dedis/cothority/darc/rules";
+import Signer from "@dedis/cothority/darc/signer";
+import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
+import Log from "@dedis/cothority/log";
+import { Roster } from "@dedis/cothority/network";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
-import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
@@ -100,7 +100,8 @@ export class Data {
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
 
     // the 'SpawnerInstance'.
-    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string):
+    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string,
+                                 unrestricted: boolean = false):
         Promise<Data> {
 
         // Prepare adminDarc to have all necessary rules
@@ -115,7 +116,7 @@ export class Data {
             adminRules.forEach((rule) => {
                 newAdminDarc.rules.setRule(rule, adminSigner);
             });
-            await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10, true);
+            await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10, unrestricted);
         }
 
         const d = new Data({alias, bc});
@@ -854,8 +855,8 @@ export class Data {
         const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
-        const dDarc = newDarc([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
-        const deviceDarc = (await this.spawnerInstance.spawnDarc(this.coinInstance, [this.keyIdentitySigner],
+        const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
+        const deviceDarc = (await this.spawnerInstance.spawnDarcs(this.coinInstance, [this.keyIdentitySigner],
             dDarc))[0];
         const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
         const newSigner = signerDarc.darc.evolve();

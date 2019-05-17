@@ -1,6 +1,5 @@
-import { ed25519 } from "@dedis/cothority/personhood/ring-sig";
-import Log from "@dedis/cothority/log";
 import Long from "long";
+import Log from "@dedis/cothority/log";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
 
@@ -13,7 +12,7 @@ describe("Data class should", async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
             tdAdmin = await TestData.init();
-        } catch(e){
+        } catch (e) {
             return Log.rcatch(e);
         }
         Log.lvl2("Done creating instance");
@@ -53,8 +52,8 @@ describe("Data class should", async () => {
         await user1.coinInstance.update();
         await user2.coinInstance.update();
         // -1500 is for the spawning cost of a new user, each new user get 1e6.
-        expect(user1.coinInstance.coin.value.toNumber()).toBe(2e6 - 1e5 - 1500);
-        expect(user2.coinInstance.coin.value.toNumber()).toBe(1e5);
+        expect(user1.coinInstance.value.toNumber()).toBe(2e6 - 1e5 - 1500);
+        expect(user2.coinInstance.value.toNumber()).toBe(1e5);
     });
 
     it("allow many contacts", async () => {
@@ -122,20 +121,19 @@ describe("Data class should", async () => {
         const device2 = await Data.attachDevice(deviceURL);
         expect(device2.contact.credentialIID).toEqual(device1.contact.credentialIID);
         expect(device2.contact.credential.toBytes()).toEqual(device1.contact.credential.toBytes());
-        let balance = device2.coinInstance.coin.value;
+        let balance = device2.coinInstance.value;
         await device2.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
             [device2.keyIdentitySigner]);
         balance = balance.sub(1000);
         await device2.coinInstance.update();
-        expect(device2.coinInstance.coin.value.toNumber()).toBe(balance.toNumber());
+        expect(device2.coinInstance.value.toNumber()).toBe(balance.toNumber());
         await device1.coinInstance.update();
-        expect(device1.coinInstance.coin.value.toNumber()).toBe(balance.toNumber());
+        expect(device1.coinInstance.value.toNumber()).toBe(balance.toNumber());
 
-        const secretData = Buffer.from("very secret data");
-        const userSecret = await tdAdmin.createTestUser("secret");
-        const device1Signer = await device1.contact.getDarcSignIdentity();
-        await userSecret.contact.calypso.add(secretData, [device1Signer.id]);
-        await device1.contact.calypso.read(userSecret.contact);
-
+        // const secretData = Buffer.from("very secret data");
+        // const userSecret = await tdAdmin.createTestUser("secret");
+        // const device1Signer = await device1.contact.getDarcSignIdentity();
+        // await userSecret.contact.calypso.add(secretData, [device1Signer.id]);
+        // await device1.contact.calypso.read(userSecret.contact);
     });
 });

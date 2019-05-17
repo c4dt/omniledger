@@ -1,7 +1,7 @@
-import { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
+import Darc from "../lib/cothority/darc/darc";
 
 // jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
@@ -78,9 +78,9 @@ describe("Contact should", async () => {
         const userCopy = new Data();
         userCopy.dataFileName = tdAdmin.dataFileName;
 
-        const nd = await newDarc([tdAdmin.keyIdentitySigner], [tdAdmin.keyIdentitySigner],
+        const nd = await Darc.createBasic([tdAdmin.keyIdentitySigner], [tdAdmin.keyIdentitySigner],
             Buffer.from("desc"));
-        const di = await tdAdmin.spawnerInstance.spawnDarc(tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner], nd);
+        const di = await tdAdmin.spawnerInstance.spawnDarcs(tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner], nd);
         tdAdmin.contact.setActions(di);
         await tdAdmin.save();
         expect((await tdAdmin.contact.getActions()).length).toBe(1);

@@ -4,6 +4,7 @@ import { RouterModule, Routes } from "@angular/router";
 import { LoadingComponent } from "./loading/loading.component";
 import { RegisterComponent } from "./register/register.component";
 import { ContactsComponent } from "./user/contacts/contacts.component";
+import { DevicesComponent } from "./user/devices/devices.component";
 import { SecureComponent } from "./user/secure/secure.component";
 import { StatusComponent } from "./user/status/status.component";
 import { UserComponent } from "./user/user.component";
@@ -20,6 +21,7 @@ const routes: Routes = [
       {path: "contacts", component: ContactsComponent},
       {path: "secure", component: SecureComponent},
       {path: "status", component: StatusComponent},
+      {path: "devices", component: DevicesComponent},
       {path: "", redirectTo: "yourself", pathMatch: "full"},
     ],
   },

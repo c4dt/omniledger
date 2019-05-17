@@ -1,0 +1,6 @@
+<ul>
+  <li *ngFor="let device of devices">
+    {{device.name}} - <button mat-button (click)="delete(device)">Delete</button>
+  </li>
+  <button mat-button (click)="add()">Add Device</button>
+</ul>

@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatDialogModule, MatSnackBar } from "@angular/material";
-import Log from "@c4dt/cothority/log";
-import { SkipchainRPC } from "@c4dt/cothority/skipchain";
+import Log from "@dedis/cothority/log";
+import { SkipchainRPC } from "@dedis/cothority/skipchain";
 import { Data, gData } from "../../../lib/Data";
 import { showDialogOKC, showSnack } from "../../../lib/ui/Ui";
 import { BCBlock, BcviewerComponent, BcviewerService, ShowBlockComponent } from "../../bcviewer/bcviewer.component";

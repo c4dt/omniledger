@@ -1,9 +1,9 @@
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { CalypsoReadInstance, CalypsoWriteInstance, Write } from "@c4dt/cothority/calypso/calypso-instance";
-import { OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
-import Darc from "@c4dt/cothority/darc/darc";
-import Rules from "@c4dt/cothority/darc/rules";
-import Log from "@c4dt/cothority/log";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoReadInstance, CalypsoWriteInstance, Write } from "@dedis/cothority/calypso/calypso-instance";
+import { OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
+import Darc from "@dedis/cothority/darc/darc";
+import Rules from "@dedis/cothority/darc/rules";
+import Log from "@dedis/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
 import { TestData } from "src/lib/Data";

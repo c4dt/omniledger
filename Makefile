@@ -5,7 +5,7 @@ cothority_src: cothority src/lib/cothority
 
 src/lib/cothority: cothority-ts/external/js/cothority/src
 	@cp -a $< $@
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/cothority:src/lib/cothority:"
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/cothority:src/lib/cothority:"
 
 cothority_npm:
 	@echo "Using cothority-npm libraries"
@@ -16,7 +16,7 @@ cothority_npm:
 	@diff -Naurq cothority-ts/external/js/cothority/src/ src/lib/cothority/ || \
 	    ( echo "Moving changes to cothority-ts"; cp -a src/lib/cothority/ cothority-ts/external/js/cothority/src )
 	@rm -rf src/lib/cothority
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@c4dt/cothority:"
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@dedis/cothority:"
 
 cothority: cothority-ts-pull
 	@echo done

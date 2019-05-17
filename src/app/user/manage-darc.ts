@@ -1,11 +1,11 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef, MatSelectChange } from "@angular/material";
 import { curve } from "@dedis/kyber";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Darc, IdentityEd25519, IIdentity, Rules } from "@c4dt/cothority/darc";
-import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
-import Log from "@c4dt/cothority/log";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { Darc, IdentityEd25519, IIdentity, Rules } from "@dedis/cothority/darc";
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
+import Log from "@dedis/cothority/log";
 import { gData } from "../../lib/Data";
 
 export interface IManageDarc {

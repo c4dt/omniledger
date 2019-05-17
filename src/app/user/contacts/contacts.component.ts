@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import Darc from "@c4dt/cothority/darc/darc";
+import Darc from "@dedis/cothority/darc/darc";
 import Long from "long";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import Log from "@c4dt/cothority/log";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import Log from "@dedis/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";

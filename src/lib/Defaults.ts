@@ -1,6 +1,6 @@
 // import { FileIO } from "./FileIO";
-import { Roster } from "@c4dt/cothority/network";
-import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
+import { Roster } from "@dedis/cothority/network";
+import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
 
 // tslint:disable-next-line
 export const Defaults = {
@@ -319,6 +319,6 @@ export function activateC4DT() {
     Defaults.Alias = "c4dt";
 }
 
-// activateTesting();
+activateTesting();
 // activateC4DT();
-activateDEDIS();
+// activateDEDIS();
