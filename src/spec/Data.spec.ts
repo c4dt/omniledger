@@ -1,4 +1,5 @@
-import Log from "@c4dt/cothority/log";
+import { ed25519 } from "@dedis/cothority/personhood/ring-sig";
+import Log from "@dedis/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
@@ -10,7 +11,12 @@ describe("Data class should", async () => {
 
     beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
-        tdAdmin = await TestData.init();
+        try {
+            tdAdmin = await TestData.init();
+        } catch(e){
+            return Log.rcatch(e);
+        }
+        Log.lvl2("Done creating instance");
     });
 
     it("load old user", async () => {
@@ -111,18 +117,25 @@ describe("Data class should", async () => {
 
     it("spawn to another device correctly", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
-        
 
-        const deviceURL = device1.createDevice();
-        const device2 = Data.attachDevice(deviceURL);
+        const deviceURL = await device1.createDevice();
+        const device2 = await Data.attachDevice(deviceURL);
         expect(device2.contact.credentialIID).toEqual(device1.contact.credentialIID);
         expect(device2.contact.credential.toBytes()).toEqual(device1.contact.credential.toBytes());
         let balance = device2.coinInstance.coin.value;
         await device2.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
             [device2.keyIdentitySigner]);
         balance = balance.sub(1000);
+        await device2.coinInstance.update();
         expect(device2.coinInstance.coin.value.toNumber()).toBe(balance.toNumber());
         await device1.coinInstance.update();
         expect(device1.coinInstance.coin.value.toNumber()).toBe(balance.toNumber());
+
+        const secretData = Buffer.from("very secret data");
+        const userSecret = await tdAdmin.createTestUser("secret");
+        const device1Signer = await device1.contact.getDarcSignIdentity();
+        await userSecret.contact.calypso.add(secretData, [device1Signer.id]);
+        await device1.contact.calypso.read(userSecret.contact);
+
     });
 });

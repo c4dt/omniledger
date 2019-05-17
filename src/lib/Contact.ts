@@ -187,7 +187,7 @@ export class Contact {
      * @returns the new darc
      */
     static prepareUserDarc(pubKey: Point, alias: string): Darc {
-        const id = new IdentityEd25519({point: pubKey.toProto()});
+        const id = new IdentityEd25519({point: pubKey.marshalBinary()});
 
         const darc = Darc.createBasic([id], [id], Buffer.from(`user ${alias}`));
         darc.addIdentity("invoke:coin.update", id, Rules.AND);

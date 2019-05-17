@@ -1,6 +1,11 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
+import { curve, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
@@ -17,6 +22,8 @@ import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
 import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
 import Darc from "@c4dt/cothority/darc/darc";
 import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
+import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
+import Rules from "@c4dt/cothority/darc/rules";
 import Signer from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
 import Log from "@c4dt/cothority/log";
@@ -24,10 +31,6 @@ import { Roster } from "@c4dt/cothority/network";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
-import { curve, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
@@ -92,6 +95,7 @@ export class Data {
         return unique.length;
     }
 
+    static readonly urlNewDevice = "/register/device";
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
 
@@ -218,11 +222,67 @@ export class Data {
         return DarcInstance.fromByzcoin(bc, signer[0]);
     }
 
-    static async attachDevice(url: string): Data {
-        return new Data();
+    static async attachDevice(url: string): Promise<Data> {
+        const a = document.createElement("a");
+        a.href = url;
+        if (a.pathname !== this.urlNewDevice) {
+            throw new Error("not a newDevice url");
+        }
+        // Remove the leading "?"
+        const args = a.search.substring(1).split("+");
+        if (args.length !== 2) {
+            throw new Error("need two arguments");
+        }
+        if (!args[0].startsWith("credentialIID=") ||
+            !args[1].startsWith("ephemeral=")) {
+            throw new Error("need credentialIID and ephemeral");
+        }
+        const credentialIID = Buffer.from(args[0].substring(14), "hex");
+        const ephemeral = Buffer.from(args[1].substring(10), "hex");
+        if (credentialIID.length !== 32 || ephemeral.length !== 32) {
+            throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
+        }
+        const d = new Data();
+        d.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
+        d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
+        d.contact.data = d;
+        await d.contact.updateOrConnect(d.bc);
+        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX);
+
+        // Follow the links from the credential darc-instance to the signer-darc to the device-darc
+        const signerDarcID = d.contact.darcInstance.getSignerDarcIDs()[0];
+        const signerDarc = await DarcInstance.fromByzcoin(d.bc, signerDarcID);
+        let deviceDarc: DarcInstance;
+        const ephemeralSigner = SignerEd25519.fromBytes(ephemeral);
+        for (const ddID of signerDarc.getSignerDarcIDs()) {
+            const dd = await DarcInstance.fromByzcoin(d.bc, ddID);
+            try {
+                const ids = await dd.darc.ruleMatch(Darc.ruleSign, [ephemeralSigner], () => null);
+                if (ids.length > 0) {
+                    deviceDarc = dd;
+                    break;
+                }
+            } catch (e) {
+                Log.lvl2("This darc doesn't match", e);
+            }
+        }
+        if (!deviceDarc) {
+            throw new Error("didn't find this ephemeral key in device darcs");
+        }
+        const newDeviceDarc = deviceDarc.darc.evolve();
+        newDeviceDarc.rules.setRule(Darc.ruleSign, d.keyIdentitySigner);
+        newDeviceDarc.rules.setRule("invoke:darc.evolve", d.keyIdentitySigner);
+        await deviceDarc.evolveDarcAndWait(newDeviceDarc, [ephemeralSigner], 5);
+        return d;
     }
+
     dataFileName: string;
     continuousScan: boolean;
+
+    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
+    // - creates all necessary darcs (four)
+    // - creates credential and coin
+    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;
     keyIdentity: KeyPair;
@@ -790,35 +850,51 @@ export class Data {
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [signer], 5);
     }
 
-    createDevice(): string {
-        return "test-url";
+    async createDevice(): Promise<string> {
+        const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
+        const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
+        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
+        const dDarc = newDarc([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
+        const deviceDarc = (await this.spawnerInstance.spawnDarc(this.coinInstance, [this.keyIdentitySigner],
+            dDarc))[0];
+        const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
+        const newSigner = signerDarc.darc.evolve();
+        newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rules.OR);
+        await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
+        return sprintf("%s?credentialIID=%s+ephemeral=%s", Data.urlNewDevice,
+            this.contact.credentialIID.toString("hex"),
+            ephemeralIdentity.secret.marshalBinary().toString("hex"));
     }
 }
 
 export class TestData extends Data {
 
     static async init(alias: string = "admin", r: Roster = null): Promise<TestData> {
-        activateTesting();
-        if (!r) {
-            r = Defaults.Roster;
-        }
-        const admin = SignerEd25519.random();
-        const d = ByzCoinRPC.makeGenesisDarc([admin], r, "genesis darc");
-        ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret", "spawn:calypsoWrite",
-            "spawn:calypsoRead",
-            "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"].forEach((rule) => {
-            d.rules.appendToRule(rule, admin, "|");
-        });
-        const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
-        Defaults.ByzCoinID = bc.genesisID;
+        try {
+            activateTesting();
+            if (!r) {
+                r = Defaults.Roster;
+            }
+            const admin = SignerEd25519.random();
+            const d = ByzCoinRPC.makeGenesisDarc([admin], r, "genesis darc");
+            ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret", "spawn:calypsoWrite",
+                "spawn:calypsoRead",
+                "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"].forEach((rule) => {
+                d.rules.appendToRule(rule, admin, "|");
+            });
+            const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
+            Defaults.ByzCoinID = bc.genesisID;
 
-        const fu = await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias);
-        await fu.save();
-        const td = new TestData({});
-        await td.load();
-        td.admin = admin;
-        td.darc = d;
-        return td;
+            const fu = await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias);
+            await fu.save();
+            const td = new TestData({});
+            await td.load();
+            td.admin = admin;
+            td.darc = d;
+            return td;
+        } catch (e) {
+            return Log.rcatch(e, "couldn't initialize ByzCoin");
+        }
     }
 
     admin: Signer;
