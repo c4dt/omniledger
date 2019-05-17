@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
 import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Data, gData } from "../../../lib/Data";

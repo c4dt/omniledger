@@ -1,4 +1,4 @@
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";

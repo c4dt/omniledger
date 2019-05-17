@@ -1,8 +1,9 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import Darc from "@c4dt/cothority/darc/darc";
 import Long from "long";
-import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Log } from "@c4dt/cothority/log";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import Log from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";
@@ -194,8 +195,8 @@ export class ContactsComponent implements OnInit {
                 Log.lvl1("Creating new darcInstance with description:", result, title);
                 const sb = this.snackBar.open("Creating new " + title);
                 const di = await gData.contact.getDarcSignIdentity();
-                const nd = newDarc([di], [di], Buffer.from(result));
-                const ndInst = await gData.spawnerInstance.spawnDarc(gData.coinInstance, [gData.keyIdentitySigner], nd);
+                const nd = Darc.createBasic([di], [di], Buffer.from(result));
+                const ndInst = await gData.spawnerInstance.spawnDarcs(gData.coinInstance, [gData.keyIdentitySigner], nd);
                 await store(ndInst[0]);
                 await gData.save();
                 await this.bcvs.updateBlocks();

@@ -1,4 +1,4 @@
-import { UserLocation } from "@c4dt/cothority/personhood/personhood-rpc";
+import { UserLocation } from "./personhood-rpc";
 
 export class SocialNode {
 

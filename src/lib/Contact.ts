@@ -1,8 +1,8 @@
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
-import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import SpawnerInstance from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
 import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@c4dt/cothority/calypso";
 import { IdentityDarc } from "@c4dt/cothority/darc";
@@ -10,7 +10,7 @@ import Darc from "@c4dt/cothority/darc/darc";
 import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
 import Rules from "@c4dt/cothority/darc/rules";
 import Signer from "@c4dt/cothority/darc/signer";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import Long from "long";
@@ -189,7 +189,7 @@ export class Contact {
     static prepareUserDarc(pubKey: Point, alias: string): Darc {
         const id = new IdentityEd25519({point: pubKey.toProto()});
 
-        const darc = newDarc([id], [id], Buffer.from(`user ${alias}`));
+        const darc = Darc.createBasic([id], [id], Buffer.from(`user ${alias}`));
         darc.addIdentity("invoke:coin.update", id, Rules.AND);
         darc.addIdentity("invoke:coin.fetch", id, Rules.AND);
         darc.addIdentity("invoke:coin.transfer", id, Rules.AND);

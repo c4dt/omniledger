@@ -1,12 +1,12 @@
 import { ByzCoinRPC, InstanceID } from "@c4dt/cothority/byzcoin";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import SpawnerInstance from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
+import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
 import { CalypsoReadInstance, CalypsoWriteInstance } from "@c4dt/cothority/calypso/calypso-instance";
 import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
 import { IdentityDarc, IIdentity } from "@c4dt/cothority/darc";
 import Signer from "@c4dt/cothority/darc/signer";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { randomBytes } from "crypto";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";

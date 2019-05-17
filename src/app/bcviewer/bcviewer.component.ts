@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Inject, Injectable, OnInit, Output } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import { Instruction } from "@c4dt/cothority/byzcoin";
-import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
 import Instance from "@c4dt/cothority/byzcoin/instance";
 import Proof from "@c4dt/cothority/byzcoin/proof";
 import DataBody from "@c4dt/cothority/byzcoin/proto/data-body";
@@ -43,7 +43,7 @@ export class BcviewerComponent implements OnInit {
         }, 30000);
     }
 
-    async updateBlocks() {
+    async updateBlocks(): Promise<any> {
         if (gData.bc) {
             if (!this.scRPC) {
                 this.scRPC = new SkipchainRPC(gData.bc.getConfig().roster);

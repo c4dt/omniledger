@@ -1,5 +1,5 @@
 import { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 

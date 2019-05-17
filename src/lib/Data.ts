@@ -4,24 +4,24 @@
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import CredentialsInstance from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@c4dt/cothority/byzcoin/contracts/credentials-instance";
-import DarcInstance, { newDarc } from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/byzcoin/contracts/spawner-instance";
+} from "@c4dt/cothority/personhood/credentials-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
 import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
 import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
 import Darc from "@c4dt/cothority/darc/darc";
 import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
 import Signer from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { Roster } from "@c4dt/cothority/network";
-import { PersonhoodRPC, PollStruct } from "@c4dt/cothority/personhood/personhood-rpc";
+import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
 import { curve, Scalar, sign } from "@dedis/kyber";
@@ -116,17 +116,17 @@ export class Data {
 
         const d = new Data({alias, bc});
 
-        const darcDevice = newDarc([d.keyIdentitySigner]
+        const darcDevice = Darc.createBasic([d.keyIdentitySigner]
             , [d.keyIdentitySigner], Buffer.from("device"));
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
-        const darcSign = newDarc([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
+        const darcSign = Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = newDarc([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
+        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch,
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s",
             CoinInstance.contractID, inv));
-        const darcCoin = newDarc([], [darcSignId], Buffer.from("coin"), rules);
+        const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
 
         Log.lvl2("Creating spawner");
         const costs = {
@@ -407,8 +407,8 @@ export class Data {
         if (amount.lessThanOrEqual(0)) {
             return Promise.reject("Cannot send 0 or less coins");
         }
-        if (amount.greaterThanOrEqual(this.coinInstance.coin.value)) {
-            return Promise.reject("You only have " + this.coinInstance.coin.value.toString() + " coins.");
+        if (amount.greaterThanOrEqual(this.coinInstance.value)) {
+            return Promise.reject("You only have " + this.coinInstance.value.toString() + " coins.");
         }
         return true;
     }
@@ -430,7 +430,7 @@ export class Data {
             Log.lvl2("Registering darc");
             progress("Creating Darc", 20);
             const d = Contact.prepareUserDarc(pub.point, contact.alias);
-            const darcInstances = await this.spawnerInstance.spawnDarc(this.coinInstance,
+            const darcInstances = await this.spawnerInstance.spawnDarcs(this.coinInstance,
                 [this.keyIdentitySigner], d);
 
             progress("Creating Coin", 50);
@@ -736,22 +736,22 @@ export class Data {
         } else {
             d.keyIdentity = new KeyPair(ephemeral.toHex());
         }
-        const darcDevice = newDarc([d.keyIdentitySigner], [d.keyIdentitySigner], Buffer.from("device"));
+        const darcDevice = Darc.createBasic([d.keyIdentitySigner], [d.keyIdentitySigner], Buffer.from("device"));
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
-        const darcSign = newDarc([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
+        const darcSign = Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = newDarc([], [darcSignId], Buffer.from("credential"),
+        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from("credential"),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandTransfer, CoinInstance.commandFetch,
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s", CoinInstance.contractID, inv));
-        const darcCoin = newDarc([], [darcSignId], Buffer.from("coin"), rules);
+        const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id, this.lts);
 
         const signers = [this.keyIdentitySigner];
         Log.lvl1("Creating identity from spawner");
         Log.lvl2("spawning darcs");
-        await this.spawnerInstance.spawnDarc(this.coinInstance, signers,
+        await this.spawnerInstance.spawnDarcs(this.coinInstance, signers,
             darcDevice, darcSign, darcCred, darcCoin);
         Log.lvl2("spawning coin");
         await this.spawnerInstance.spawnCoin(this.coinInstance, signers, darcCoin.getBaseID(),
@@ -824,7 +824,7 @@ export class TestData extends Data {
         const d = await super.createUser(alias, ephemeral);
         d.dataFileName = "user_" + alias;
         await this.coinInstance.transfer(Long.fromNumber(1e6), d.coinInstance.id, [this.keyIdentitySigner]);
-        while (d.coinInstance.coin.value.lessThan(1e6)) {
+        while (d.coinInstance.value.lessThan(1e6)) {
             await d.coinInstance.update();
         }
         await d.save();

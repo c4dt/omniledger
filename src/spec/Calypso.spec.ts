@@ -3,7 +3,7 @@ import { CalypsoReadInstance, CalypsoWriteInstance, Write } from "@c4dt/cothorit
 import { OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
 import Darc from "@c4dt/cothority/darc/darc";
 import Rules from "@c4dt/cothority/darc/rules";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
 import { TestData } from "src/lib/Data";

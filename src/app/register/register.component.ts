@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { Data, gData } from "../../lib/Data";
 import { Defaults } from "../../lib/Defaults";
 import { Private } from "../../lib/KeyPair";

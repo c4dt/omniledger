@@ -307,7 +307,6 @@ export function activateDEDIS() {
     Defaults.RosterCalypso = Roster.fromTOML(Defaults.RosterTOMLCalypso);
     Defaults.ByzCoinID = Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex");
     Defaults.AdminDarc = Buffer.from("d427c78474967d6a2ed108713b858c0195cde97f1516f0113fc75b4e9a6dcb52", "hex");
-    SkipchainRPC.disableSignatureVerification = true;
 }
 
 export function activateC4DT() {

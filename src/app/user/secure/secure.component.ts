@@ -4,7 +4,7 @@ import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoReadInstance } from "@c4dt/cothority/calypso";
 import { CalypsoWriteInstance } from "@c4dt/cothority/calypso";
 import Darc from "@c4dt/cothority/darc/darc";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
 import { FileBlob, SecureData } from "../../../lib/SecureData";

@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 import { Router } from "@angular/router";
-import { Log } from "@c4dt/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { activateC4DT, activateTesting, Defaults } from "../lib/Defaults";
 @Component({
   selector: "app-root",
