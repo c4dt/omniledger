@@ -2,8 +2,6 @@ CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
 
-.PHONY: cothority
-
 # -s -w are for smaller binaries
 # -X compiles the git tag into the binary
 ldflags=-s -w -X main.gitTag=$(TAG)
@@ -15,15 +13,16 @@ docker: clean build/Dockerfile build/conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-newdb: cothority
+newdb:
+	make -C .. cothority-pull
 	@echo "Compiling binaries"; \
 	rm -f build/conodes/*db; \
 	GO111MODULE=on go build -o build/conode; \
-	cd cothority; \
-		go build -o ../bcadmin ./byzcoin/bcadmin; \
-		go build -o ../phapp ./personhood/phapp
+	cd ../cothority; \
+		go build -o conode/bcadmin ./byzcoin/bcadmin; \
+		go build -o conode/phapp ./personhood/phapp
 	@echo "Starting nodes"; \
-	cp cothority/conode/run_nodes.sh build; \
+	cp ../cothority/conode/run_nodes.sh build; \
 	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & )
 	@echo "Waiting for nodes to start up"; sleep 10; \
 	echo "Creating new ByzCoin and printing out important variables"; echo; \
@@ -50,12 +49,9 @@ docker_clean:
 # The suffix on conode exe is the result from: echo `uname -s`.`uname -m`
 # so that we can find the right one in the wrapper script.
 # This is in it's own rule because the Docker build needs it also.
-build/conode: cothority
+build/conode:
+	make -C .. cothority-pull
 	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="$(ldflags)" -o $@
 
 clean:
 	rm -rf build/conode
-
-cothority:
-	test -d cothority || git clone --depth 1 -b personhood_1905 https://github.com/dedis/cothority
-	cd cothority; git pull
