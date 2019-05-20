@@ -148,7 +148,9 @@ describe("Data class should", async () => {
         await device1.coinInstance.update();
         expect(device1.coinInstance.value.toNumber()).toBe(balance.toNumber());
         await device2.save();
+    });
 
+    it("keep calypso-data decoded", async () => {
         // const secretData = Buffer.from("very secret data");
         // const userSecret = await tdAdmin.createTestUser("secret");
         // const device1Signer = await device1.contact.getDarcSignIdentity();
@@ -161,5 +163,19 @@ describe("Data class should", async () => {
         const device2 = await Data.attachDevice(await device1.createDevice("newdevice"));
         const device3 = await Data.attachDevice(await device2.createDevice("newdevice2"));
         expect(device3.contact.credentialIID).toEqual(device1.contact.credentialIID);
+    });
+
+    it("remove a device", async () => {
+        const device1 = await tdAdmin.createTestUser("user1");
+        const device2 = await Data.attachDevice(await device1.createDevice("newdevice"));
+        await device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
+            [device1.keyIdentitySigner]);
+        await device1.coinInstance.update();
+        Log.print(device1.coinInstance.value);
+        await device2.deleteDevice("initial");
+        await expectAsync(device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
+            [device1.keyIdentitySigner])).toBeRejected();
+        await device1.coinInstance.update();
+        Log.print(device1.coinInstance.value);
     });
 });

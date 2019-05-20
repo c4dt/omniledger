@@ -1,16 +1,21 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
+import { curve, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
 import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
+import { Rule } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
-import Rules from "@dedis/cothority/darc/rules";
 import Signer from "@dedis/cothority/darc/signer";
 import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
 import Log from "@dedis/cothority/log";
@@ -25,11 +30,6 @@ import CredentialInstance, {
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
-import { curve, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
@@ -63,11 +63,6 @@ export class Data {
         return this.contact.credentialInstance;
     }
 
-    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
-    // - creates all necessary darcs (four)
-    // - creates credential and coin
-    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
-
     get alias(): string {
         return this.contact.alias;
     }
@@ -99,7 +94,19 @@ export class Data {
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
 
-    // the 'SpawnerInstance'.
+    /**
+     * createFirstUser sets up a new user with all the necessary darcs. It does the following:
+     * - creates all necessary darcs (four)
+     * - creates credential and coin
+     * If darcID is given, it will use this darc to create all the instances. If darcID == null,
+     * the 'SpawnerInstance'.
+     *
+     * @param bc an initialized ByzCoinRPC
+     * @param adminDarcID id of the darc allowed to spawn darcs and credentials
+     * @param adminKey private key allowed to evolve the adminDarc
+     * @param alias for the new user
+     * @param unrestricted whether the adminDarcID needs evolve_unrestricted
+     */
     static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string,
                                  unrestricted: boolean = false):
         Promise<Data> {
@@ -162,7 +169,7 @@ export class Data {
         }
         const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], Defaults.RosterCalypso);
 
-        const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, lts);
+        const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);
 
         Log.lvl1("Creating coin from darc");
         const signers = [adminSigner];
@@ -344,7 +351,7 @@ export class Data {
                 this.contact.data = this;
             } else {
                 const cred = Contact.prepareInitialCred("new identity", this.keyIdentity._public,
-                    null, null);
+                    null, null, null);
                 this.contact = new Contact(cred, this);
             }
         } catch (e) {
@@ -825,7 +832,8 @@ export class Data {
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s", CoinInstance.contractID, inv));
         const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
 
-        const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id, this.lts);
+        const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id,
+            darcDevice.getBaseID(), this.lts);
 
         const signers = [this.keyIdentitySigner];
         Log.lvl1("Creating identity from spawner");
@@ -840,6 +848,7 @@ export class Data {
             d.keyIdentity._public.toBuffer());
 
         d.contact = new Contact(cred, d);
+        Log.lvl2("updating contact");
         await d.contact.updateOrConnect(this.bc);
         d.bc = this.bc;
         Log.lvl2("finalizing data");
@@ -847,6 +856,13 @@ export class Data {
         return d;
     }
 
+    /**
+     * Attaches to an existing darc using an ephemeral private key. As soon as the darc
+     * is found, a new random key is generated and used to replace the ephemeral key.
+     *
+     * @param ephemeral the private key that is used to calculate the public key and
+     * the credentialIID.
+     */
     async attachAndEvolve(ephemeral: Private): Promise<void> {
         const pub = Public.base().mul(ephemeral);
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
@@ -884,11 +900,9 @@ export class Data {
             dDarc))[0];
         const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
         const newSigner = signerDarc.darc.evolve();
-        Log.print(signerDarc.darc);
-        Log.print(signerDarc.darc.rules);
-        newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rules.OR);
+        newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
         const re = "invoke:darc.evolve";
-        newSigner.rules.appendToRule(re, deviceDarcIdentity, Rules.OR);
+        newSigner.rules.appendToRule(re, deviceDarcIdentity, Rule.OR);
         await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
         this.contact.credential.setAttribute("1-devices", name, deviceDarc.darc.getBaseID());
         this.contact.incVersion();
@@ -896,6 +910,29 @@ export class Data {
         return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
             this.contact.credentialIID.toString("hex"),
             ephemeralIdentity.secret.marshalBinary().toString("hex"));
+    }
+
+    /**
+     * Removes a given device from the signerDarc, so that it cannot be used anymore
+     * to do anything related to it.
+     *
+     * @param name of the device to remove
+     */
+    async deleteDevice(name: string) {
+        const device = this.contact.credential.getAttribute("1-devices", name);
+        if (!device) {
+            throw new Error("didn't find this device");
+        }
+        const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
+        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
+        const newSigner = signerDarc.darc.evolve();
+        const deviceStr = `darc:${device.toString("hex")}`;
+        newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
+        newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
+        await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
+        this.contact.credential.delAttribute("1-devices", name);
+        this.contact.incVersion();
+        await this.contact.sendUpdate();
     }
 }
 

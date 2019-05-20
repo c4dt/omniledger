@@ -14,3 +14,7 @@ html, body {
     height: auto;
     margin: 0;
 }
+
+.redBack {
+    background-color: red;
+}

@@ -1,11 +1,11 @@
+import { curve } from "@dedis/kyber";
+import Keccak from "keccak";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, Write } from "@dedis/cothority/calypso/calypso-instance";
 import { OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
 import Darc from "@dedis/cothority/darc/darc";
-import Rules from "@dedis/cothority/darc/rules";
+import { Rule } from "@dedis/cothority/darc/rules";
 import Log from "@dedis/cothority/log";
-import { curve } from "@dedis/kyber";
-import Keccak from "keccak";
 import { TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
 
@@ -142,7 +142,7 @@ describe("In a full byzcoin setting, it should", () => {
         const wrDarc = await DarcInstance.fromByzcoin(tdAdmin.bc, wrInst.darcID);
         expect(wrDarc.darc.rules.getRule(Darc.ruleSign).expr.toString().includes(" ")).toBeFalsy();
         const nd = wrDarc.darc.evolve();
-        nd.rules.appendToRule(Darc.ruleSign, tdAdmin.keyIdentitySigner, Rules.OR);
+        nd.rules.appendToRule(Darc.ruleSign, tdAdmin.keyIdentitySigner, Rule.OR);
         await wrDarc.evolveDarcAndWait(nd, [tdAdmin.keyIdentitySigner], 5);
     });
 });

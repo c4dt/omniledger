@@ -2,7 +2,7 @@ import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef, MatSelectChange } from "@angular/material";
 import { curve } from "@dedis/kyber";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Darc, IdentityEd25519, IIdentity, Rules } from "@dedis/cothority/darc";
+import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 import Log from "@dedis/cothority/log";
@@ -130,7 +130,7 @@ export class ManageDarcComponent {
         if (this.chosen.length > 0) {
             this.newDarc.rules.setRule(this.rule, this.idWrapToId(this.chosen[0].identity));
             this.chosen.slice(1).forEach((item) => {
-                this.newDarc.rules.appendToRule(this.rule, this.idWrapToId(item.identity), Rules.OR);
+                this.newDarc.rules.appendToRule(this.rule, this.idWrapToId(item.identity), Rule.OR);
             });
         }
     }

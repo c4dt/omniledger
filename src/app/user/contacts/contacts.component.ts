@@ -1,8 +1,8 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import Darc from "@dedis/cothority/darc/darc";
 import Long from "long";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import Darc from "@dedis/cothority/darc/darc";
 import Log from "@dedis/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { Data, gData } from "../../../lib/Data";
@@ -10,7 +10,7 @@ import { Defaults } from "../../../lib/Defaults";
 import { Private } from "../../../lib/KeyPair";
 import { FileBlob } from "../../../lib/SecureData";
 import { showSnack } from "../../../lib/ui/Ui";
-import { BcviewerComponent, BcviewerService } from "../../bcviewer/bcviewer.component";
+import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -62,9 +62,8 @@ export class ContactsComponent implements OnInit {
         });
         ac.afterClosed().subscribe(async (result: IUserCred) => {
             if (result && result.alias !== "") {
-                const sb = this.snackBar.open("Creating new user " + result.alias);
-                let newUser: Data;
-                try {
+                await showSnack(this.snackBar, "Creating new user " + result.alias, async () => {
+                    let newUser: Data;
                     const ek = Private.fromRand();
                     newUser = await gData.createUser(result.alias, ek);
                     newUser.contact.email = result.email;
@@ -72,20 +71,17 @@ export class ContactsComponent implements OnInit {
                     await newUser.contact.sendUpdate([newUser.keyIdentitySigner]);
                     await gData.coinInstance.transfer(Long.fromNumber(100000), newUser.coinInstance.id,
                         [gData.keyIdentitySigner]);
-                } catch (e) {
-                    Log.catch(e);
-                }
-                sb.dismiss();
 
-                if (newUser) {
-                    gData.addContact(newUser.contact);
-                    await gData.save();
-                    this.dialog.open(CreateUserComponent, {
-                        data: window.location.protocol + "//" + window.location.host + "/register?ephemeral=" +
-                            newUser.keyIdentity._private.toHex(),
-                        width: "400px",
-                    });
-                }
+                    if (newUser) {
+                        gData.addContact(newUser.contact);
+                        await gData.save();
+                        this.dialog.open(CreateUserComponent, {
+                            data: window.location.protocol + "//" + window.location.host + "/register?ephemeral=" +
+                                newUser.keyIdentity._private.toHex(),
+                            width: "400px",
+                        });
+                    }
+                });
                 await this.bcvs.updateBlocks();
             }
         });
@@ -98,12 +94,12 @@ export class ContactsComponent implements OnInit {
                 Log.lvl1("Got new contact:", result);
                 const userID = Buffer.from(result, "hex");
                 if (userID.length === 32) {
-                    const sb = this.snackBar.open("Adding contact");
-                    gData.addContact(await Contact.fromByzcoin(gData.bc, userID));
-                    sb.dismiss();
-                    await gData.save();
+                    await showSnack(this.snackBar, "Adding contact", async () => {
+                        gData.addContact(await Contact.fromByzcoin(gData.bc, userID));
+                        await gData.save();
+                    });
+                    await this.bcvs.updateBlocks();
                 }
-                await this.bcvs.updateBlocks();
             }
         });
     }
@@ -118,32 +114,30 @@ export class ContactsComponent implements OnInit {
                 Log.lvl1("Got coins:", result);
                 const coins = Long.fromString(result);
                 if (coins.greaterThan(0)) {
-                    const sb = this.snackBar.open("Transferring coins");
-                    await gData.coinInstance.transfer(coins, c.coinInstance.id, [gData.keyIdentitySigner]);
-                    sb.dismiss();
+                    await showSnack(this.snackBar, "Transferring coins", async () => {
+                        await gData.coinInstance.transfer(coins, c.coinInstance.id, [gData.keyIdentitySigner]);
+                    });
+                    await this.bcvs.updateBlocks();
                 }
-                await this.bcvs.updateBlocks();
             }
         });
     }
 
     async contactDelete(toDelete: Contact) {
-        gData.contacts = gData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
-        await gData.save();
+        await showSnack(this.snackBar, "Deleting contact " + toDelete.alias, async () => {
+            gData.contacts = gData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
+            await gData.save();
+        });
         await this.bcvs.updateBlocks();
     }
 
     async calypsoSearch(c: Contact) {
-        const sb = this.snackBar.open("Searching new secure data for " + c.alias.toLocaleUpperCase());
-        try {
+        await showSnack(this.snackBar, "Searching new secure data for " + c.alias.toLocaleUpperCase(), async () => {
             const sds = await gData.contact.calypso.read(c);
             await gData.save();
             this.updateCalypso();
-            await this.bcvs.updateBlocks();
-        } catch (e) {
-            Log.catch(e);
-        }
-        sb.dismiss();
+        });
+        await this.bcvs.updateBlocks();
     }
 
     async changeGroups(a: DarcInstance, filter: string) {
@@ -163,20 +157,16 @@ export class ContactsComponent implements OnInit {
                 await showSnack(this.snackBar, "Updating Darc", async () => {
                     await a.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
                 });
+                await this.bcvs.updateBlocks();
             }
-            await this.bcvs.updateBlocks();
         });
     }
 
     async actionDelete(a: DarcInstance) {
-        const sb = this.snackBar.open("Deleting action");
-        try {
+        await showSnack(this.snackBar, "Deleting action", async () => {
             gData.contact.setActions((await gData.contact.getActions()).filter((aDI) => !aDI.id.equals(a.id)));
             await this.updateActions();
-        } catch (e) {
-            Log.error(e);
-        }
-        sb.dismiss();
+        });
         await this.bcvs.updateBlocks();
     }
 
@@ -184,8 +174,8 @@ export class ContactsComponent implements OnInit {
         await this.diCreate("Action", async (newDI) => {
             gData.contact.setActions((await gData.contact.getActions()).concat(newDI));
             await this.updateActions();
-            await this.bcvs.updateBlocks();
         });
+        await this.bcvs.updateBlocks();
     }
 
     async diCreate(title: string, store: (newDI: DarcInstance) => {}) {
@@ -193,37 +183,34 @@ export class ContactsComponent implements OnInit {
         tc.afterClosed().subscribe(async (result) => {
             if (result) {
                 Log.lvl1("Creating new darcInstance with description:", result, title);
-                const sb = this.snackBar.open("Creating new " + title);
-                const di = await gData.contact.getDarcSignIdentity();
-                const nd = Darc.createBasic([di], [di], Buffer.from(result));
-                const ndInst = await gData.spawnerInstance.spawnDarcs(gData.coinInstance, [gData.keyIdentitySigner], nd);
-                await store(ndInst[0]);
-                await gData.save();
+                await showSnack(this.snackBar, "Creating new " + title, async () => {
+                    const di = await gData.contact.getDarcSignIdentity();
+                    const nd = Darc.createBasic([di], [di], Buffer.from(result));
+                    const ndInst = await gData.spawnerInstance.spawnDarcs(gData.coinInstance,
+                        [gData.keyIdentitySigner], nd);
+                    await store(ndInst[0]);
+                    await gData.save();
+                });
                 await this.bcvs.updateBlocks();
-                sb.dismiss();
             }
         });
     }
 
     async groupDelete(g: DarcInstance) {
-        const sb = this.snackBar.open("Deleting action");
-        try {
+        await showSnack(this.snackBar, "Deleting action", async () => {
             gData.contact.setGroups((await gData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
             await gData.save();
             await this.updateGroups();
-            await this.bcvs.updateBlocks();
-        } catch (e) {
-            Log.error(e);
-        }
-        sb.dismiss();
+        });
+        await this.bcvs.updateBlocks();
     }
 
     async groupCreate() {
         await this.diCreate("Group", async (newDI) => {
             gData.contact.setGroups((await gData.contact.getGroups()).concat(newDI));
             await this.updateGroups();
-            await this.bcvs.updateBlocks();
         });
+        await this.bcvs.updateBlocks();
     }
 
     /**

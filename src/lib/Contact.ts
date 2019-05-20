@@ -8,9 +8,9 @@ import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "@dedis/cothority/byzcoin/instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@dedis/cothority/calypso";
 import { IdentityDarc } from "@dedis/cothority/darc";
+import { Rule } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
 import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
-import Rules from "@dedis/cothority/darc/rules";
 import Signer from "@dedis/cothority/darc/signer";
 import Log from "@dedis/cothority/log";
 import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
@@ -199,15 +199,16 @@ export class Contact {
         const id = new IdentityEd25519({point: pubKey.marshalBinary()});
 
         const darc = Darc.createBasic([id], [id], Buffer.from(`user ${alias}`));
-        darc.addIdentity("invoke:coin.update", id, Rules.AND);
-        darc.addIdentity("invoke:coin.fetch", id, Rules.AND);
-        darc.addIdentity("invoke:coin.transfer", id, Rules.AND);
-        darc.addIdentity("invoke:credential.update", id, Rules.AND);
+        darc.addIdentity("invoke:coin.update", id, Rule.AND);
+        darc.addIdentity("invoke:coin.fetch", id, Rule.AND);
+        darc.addIdentity("invoke:coin.transfer", id, Rule.AND);
+        darc.addIdentity("invoke:credential.update", id, Rule.AND);
 
         return darc;
     }
 
-    static prepareInitialCred(alias: string, pub: Public, spawner: InstanceID, lts: LongTermSecret): CredentialStruct {
+    static prepareInitialCred(alias: string, pub: Public, spawner: InstanceID, deviceDarcID: InstanceID,
+                              lts: LongTermSecret): CredentialStruct {
         const cred = new CredentialStruct();
         cred.setAttribute("1-public", "alias", Buffer.from(alias));
         cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
@@ -217,7 +218,7 @@ export class Contact {
         const svBuf = Buffer.alloc(4);
         svBuf.writeInt32LE(Contact.structVersionLatest, 0);
         cred.setAttribute("1-config", "structVersion", svBuf);
-        cred.setAttribute("1-devices", "initial", pub.toBuffer());
+        cred.setAttribute("1-devices", "initial", deviceDarcID);
         if (lts) {
             cred.setAttribute("1-config", "ltsID", lts.id);
             cred.setAttribute("1-config", "ltsX", lts.X.toProto());
