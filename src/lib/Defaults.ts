@@ -320,5 +320,5 @@ export function activateC4DT() {
 }
 
 // activateTesting();
-activateC4DT();
-// activateDEDIS();
+// activateC4DT();
+activateDEDIS();
