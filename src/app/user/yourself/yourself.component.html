@@ -1,6 +1,6 @@
 <ul>
-  <li>UserID: {{gData.contact.credentialIID.toString('hex')}}</li>
-  <li>Coins: {{gData.coinInstance.value.toNumber()}}
+  <li>UserID: {{userID}}</li>
+  <li>Memory: {{gData.coinInstance.value.toNumber()}}
     -
     <button mat-button (click)="gData.coinInstance.update()">Update</button>
   </li>

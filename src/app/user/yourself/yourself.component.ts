@@ -5,6 +5,7 @@ import Log from "@dedis/cothority/log";
 import { SkipchainRPC } from "@dedis/cothority/skipchain";
 import { Data, gData } from "../../../lib/Data";
 import { showDialogOKC, showSnack } from "../../../lib/ui/Ui";
+import { hexBuffer } from "../../../lib/ui/Ui";
 import { BCBlock, BcviewerComponent, BcviewerService, ShowBlockComponent } from "../../bcviewer/bcviewer.component";
 
 @Component({
@@ -15,11 +16,13 @@ import { BCBlock, BcviewerComponent, BcviewerService, ShowBlockComponent } from 
 export class YourselfComponent implements OnInit {
   gData: Data;
   contactForm: FormGroup;
+  userID: string;
 
   constructor(private snack: MatSnackBar,
               private dialog: MatDialog,
               private bcs: BcviewerService) {
     this.gData = gData;
+    this.userID = hexBuffer(gData.contact.credentialIID);
   }
 
   async ngOnInit() {

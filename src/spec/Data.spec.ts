@@ -114,13 +114,19 @@ describe("Data class should", async () => {
         expect(userCopy.contact.calypso.ours.size).toBe(1);
     });
 
-    it("spawn to another device correctly", async () => {
+    it("spawn to another device correctly and works with Data.overwrite", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
 
-        const deviceURL = await device1.createDevice();
-        const device2 = await Data.attachDevice(deviceURL);
+        const deviceURL = await device1.createDevice("newdevice");
+        await device1.save();
+        const device2 = new Data();
+        device2.dataFileName = "newdevice";
+        await device2.overwrite(await Data.attachDevice(deviceURL));
         expect(device2.contact.credentialIID).toEqual(device1.contact.credentialIID);
+        expect(device2.contact.credential).toEqual(device1.contact.credential);
+        expect(device2.contact.credential.toJSON()).toEqual(device1.contact.credential.toJSON());
         expect(device2.contact.credential.toBytes()).toEqual(device1.contact.credential.toBytes());
+
         let balance = device2.coinInstance.value;
         await device2.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
             [device2.keyIdentitySigner]);
@@ -129,11 +135,31 @@ describe("Data class should", async () => {
         expect(device2.coinInstance.value.toNumber()).toBe(balance.toNumber());
         await device1.coinInstance.update();
         expect(device1.coinInstance.value.toNumber()).toBe(balance.toNumber());
+        await device2.save();
+
+        const device2copy = new Data();
+        device2copy.dataFileName = "newdevice";
+        await device2copy.load();
+        await device2.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
+            [device2.keyIdentitySigner]);
+        balance = balance.sub(1000);
+        await device2.coinInstance.update();
+        expect(device2.coinInstance.value.toNumber()).toBe(balance.toNumber());
+        await device1.coinInstance.update();
+        expect(device1.coinInstance.value.toNumber()).toBe(balance.toNumber());
+        await device2.save();
 
         // const secretData = Buffer.from("very secret data");
         // const userSecret = await tdAdmin.createTestUser("secret");
         // const device1Signer = await device1.contact.getDarcSignIdentity();
         // await userSecret.contact.calypso.add(secretData, [device1Signer.id]);
         // await device1.contact.calypso.read(userSecret.contact);
+    });
+
+    it("create a device from a device", async () => {
+        const device1 = await tdAdmin.createTestUser("user1");
+        const device2 = await Data.attachDevice(await device1.createDevice("newdevice"));
+        const device3 = await Data.attachDevice(await device2.createDevice("newdevice2"));
+        expect(device3.contact.credentialIID).toEqual(device1.contact.credentialIID);
     });
 });

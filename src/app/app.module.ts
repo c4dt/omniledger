@@ -19,12 +19,13 @@ import {
     TransferCoinComponent,
     UserCredComponent,
 } from "./user/contacts/contacts.component";
+import { DeviceAddComponent, DevicesComponent, DeviceShowComponent } from "./user/devices/devices.component";
 import { ManageDarcComponent } from "./user/manage-darc";
 import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
 import { StatusComponent } from "./user/status/status.component";
 import { RetryLoadComponent, UserComponent } from "./user/user.component";
 import { YourselfComponent } from "./user/yourself/yourself.component";
-import { DevicesComponent } from './user/devices/devices.component';
+import { DeviceComponent } from './register/device/device.component';
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -50,6 +51,9 @@ import { DevicesComponent } from './user/devices/devices.component';
         BcviewerComponent,
         ShowBlockComponent,
         DevicesComponent,
+        DeviceAddComponent,
+        DeviceShowComponent,
+        DeviceComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
@@ -63,6 +67,8 @@ import { DevicesComponent } from './user/devices/devices.component';
         CreateComponent,
         DialogOKCancelComponent,
         ShowBlockComponent,
+        DeviceAddComponent,
+        DeviceShowComponent,
     ],
     imports: [
         BrowserModule,

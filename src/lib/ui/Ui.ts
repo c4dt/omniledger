@@ -17,6 +17,14 @@ export async function showDialogOKC(dialog: MatDialog, title: string, text: stri
     tc.afterClosed().subscribe(result);
 }
 
+export function hexBuffer(buf: Buffer, group: number = 16): string {
+    let hex = buf.toString("hex");
+    for (let pos = group; pos < hex.length; pos += group + 1) {
+        hex = hex.substring(0, pos) + " " + hex.substring(pos);
+    }
+    return hex;
+}
+
 export interface IDialogButtons {
     OKButton: string;
     CancelButton: string;

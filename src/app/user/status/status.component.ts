@@ -5,6 +5,7 @@ import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";
+import { hexBuffer } from "../../../lib/ui/Ui";
 
 @Component({
   selector: "app-status",
@@ -19,7 +20,7 @@ export class StatusComponent implements OnInit {
 
   constructor(private router: Router) {
     this.gData = gData;
-    gData.contact.getDarcSignIdentity().then((dsi) => this.signID = dsi.toString());
+    gData.contact.getDarcSignIdentity().then((dsi) => this.signID = hexBuffer(dsi.id));
   }
 
   async ngOnInit() {

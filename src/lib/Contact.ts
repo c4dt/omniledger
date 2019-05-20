@@ -1,8 +1,10 @@
+import { Point, PointFactory } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
 import { InstanceID } from "@dedis/cothority/byzcoin/instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@dedis/cothority/calypso";
 import { IdentityDarc } from "@dedis/cothority/darc";
@@ -11,10 +13,8 @@ import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
 import Rules from "@dedis/cothority/darc/rules";
 import Signer from "@dedis/cothority/darc/signer";
 import Log from "@dedis/cothority/log";
-import { Point, PointFactory } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import Long from "long";
-import { sprintf } from "sprintf-js";
+import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
+import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
 import { Data } from "./Data";
 import { Public } from "./KeyPair";
 import { parseQRCode } from "./Scan";
@@ -35,6 +35,7 @@ import { SecureData } from "./SecureData";
  * 2. can be used to fetch the latest data from ByzCoin
  */
 export class Contact {
+    static readonly structVersionLatest = 1;
 
     get version(): number {
         return Contact.getVersion(this.credential);
@@ -42,6 +43,14 @@ export class Contact {
 
     set version(v: number) {
         Contact.setVersion(this.credential, v);
+    }
+
+    get structVersion(): number {
+        const svBuf = this.credential.getAttribute("1-config", "structVersion");
+        if (!svBuf || svBuf.length === 0) {
+            return 0;
+        }
+        return svBuf.readInt32LE(0);
     }
 
     get credentialIID(): InstanceID {
@@ -205,6 +214,10 @@ export class Contact {
         cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
         cred.setAttribute("1-public", "seedPub", pub.toBuffer());
         cred.setAttribute("1-config", "spawner", spawner);
+        const svBuf = Buffer.alloc(4);
+        svBuf.writeInt32LE(Contact.structVersionLatest, 0);
+        cred.setAttribute("1-config", "structVersion", svBuf);
+        cred.setAttribute("1-devices", "initial", pub.toBuffer());
         if (lts) {
             cred.setAttribute("1-config", "ltsID", lts.id);
             cred.setAttribute("1-config", "ltsX", lts.X.toProto());
@@ -295,6 +308,10 @@ export class Contact {
         }
         this.recover = new Recover(this);
         this.calypso = new Calypso(this);
+    }
+
+    incVersion() {
+        this.version = this.version + 1;
     }
 
     async getActions(): Promise<DarcInstance[]> {
@@ -394,6 +411,14 @@ export class Contact {
             }
             await this.darcInstance.update();
             await this.coinInstance.update();
+        }
+
+        for (let i = this.structVersion; i < Contact.structVersionLatest; i++) {
+            switch (i) {
+                case 0:
+                    this.credential.setAttribute("1-devices", "initial", this.seedPublic.toBuffer());
+                    break;
+            }
         }
 
         if (getContacts && (!this.contactsCache || this.contactsCache.length === 0)) {

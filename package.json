@@ -1,6 +1,6 @@
 {
   "name": "omniledger",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -24,7 +24,7 @@
     "@angular/platform-browser": "^7.2.15",
     "@angular/platform-browser-dynamic": "^7.2.15",
     "@angular/router": "^7.2.15",
-    "@dedis/cothority": "^3.0.6",
+    "@dedis/cothority": "^3.0.7",
     "@dedis/kyber": "^3.0.2",
     "core-js": "^2.5.4",
     "crypto-browserify": "^3.12.0",

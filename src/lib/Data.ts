@@ -1,23 +1,10 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
-import { curve, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
-import CredentialInstance, {
-    Attribute,
-    Credential,
-    CredentialStruct,
-    RecoverySignature,
-} from "@dedis/cothority/personhood/credentials-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
 import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
 import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
 import Darc from "@dedis/cothority/darc/darc";
@@ -28,14 +15,27 @@ import Signer from "@dedis/cothority/darc/signer";
 import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
 import Log from "@dedis/cothority/log";
 import { Roster } from "@dedis/cothority/network";
-import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
+import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
+import CredentialInstance, {
+    Attribute,
+    Credential,
+    CredentialStruct,
+    RecoverySignature,
+} from "@dedis/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
+import { curve, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { Party } from "./Party";
+import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
 import { StorageDB } from "./StorageDB";
@@ -230,7 +230,7 @@ export class Data {
             throw new Error("not a newDevice url");
         }
         // Remove the leading "?"
-        const args = a.search.substring(1).split("+");
+        const args = a.search.substring(1).split("&");
         if (args.length !== 2) {
             throw new Error("need two arguments");
         }
@@ -308,6 +308,20 @@ export class Data {
     constructor(obj: any = {}) {
         this.setValues(obj);
         this.setFileName("data.json");
+    }
+
+    /**
+     * Initializes this Data with the given data. Useful because the global gData object
+     * cannot be overwritten. But with `gData.overwrite` you can copy another Data object
+     * over it.
+     *
+     * @param d the new data object.
+     */
+    async overwrite(d: Data) {
+        this.contact = d.contact;
+        this.keyIdentity = d.keyIdentity;
+        this.bc = d.bc;
+        return this.connectByzcoin();
     }
 
     setFileName(n: string) {
@@ -851,7 +865,17 @@ export class Data {
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [signer], 5);
     }
 
-    async createDevice(): Promise<string> {
+    /**
+     * creates a new darc for an additional device and adjusts the signer darc to include
+     * the new device with OR. This means that the new device has the same rights as all
+     * the other devices.
+     *
+     * The returned string can be used directly to navigate to the page that offers to register
+     * the new device. Registration can be done using Data.attachDevice.
+     *
+     * @param name the name of the new device
+     */
+    async createDevice(name: string): Promise<string> {
         const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
@@ -860,9 +884,16 @@ export class Data {
             dDarc))[0];
         const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
         const newSigner = signerDarc.darc.evolve();
+        Log.print(signerDarc.darc);
+        Log.print(signerDarc.darc.rules);
         newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rules.OR);
+        const re = "invoke:darc.evolve";
+        newSigner.rules.appendToRule(re, deviceDarcIdentity, Rules.OR);
         await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
-        return sprintf("%s?credentialIID=%s+ephemeral=%s", Data.urlNewDevice,
+        this.contact.credential.setAttribute("1-devices", name, deviceDarc.darc.getBaseID());
+        this.contact.incVersion();
+        await this.contact.sendUpdate();
+        return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
             this.contact.credentialIID.toString("hex"),
             ephemeralIdentity.secret.marshalBinary().toString("hex"));
     }
