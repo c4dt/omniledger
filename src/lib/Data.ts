@@ -233,7 +233,7 @@ export class Data {
     static async attachDevice(url: string): Promise<Data> {
         const a = document.createElement("a");
         a.href = url;
-        if (a.pathname !== this.urlNewDevice) {
+        if (!a.pathname.includes(this.urlNewDevice)) {
             throw new Error("not a newDevice url");
         }
         // Remove the leading "?"
