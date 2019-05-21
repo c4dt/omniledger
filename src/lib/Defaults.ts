@@ -1,6 +1,6 @@
 // import { FileIO } from "./FileIO";
-import { Roster } from "@dedis/cothority/network";
-import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
+import { Roster } from "src/lib/cothority/network";
+import SkipchainRPC from "src/lib/cothority/skipchain/skipchain-rpc";
 
 // tslint:disable-next-line
 export const Defaults = {

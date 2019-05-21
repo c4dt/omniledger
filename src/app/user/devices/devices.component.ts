@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Darc, IIdentity } from "@dedis/cothority/darc";
+import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
+import { Darc, IIdentity } from "src/lib/cothority/darc";
 import Log from "../../../lib/cothority/log";
 import { gData } from "../../../lib/Data";
 import { Device } from "../../../lib/Device";

@@ -6,30 +6,30 @@ import { Buffer } from "buffer";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { sprintf } from "sprintf-js";
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
-import { Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
-import Signer from "@dedis/cothority/darc/signer";
-import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
-import Log from "@dedis/cothority/log";
-import { Roster } from "@dedis/cothority/network";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "src/lib/cothority/byzcoin/client-transaction";
+import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
+import Instance, { InstanceID } from "src/lib/cothority/byzcoin/instance";
+import { LongTermSecret, OnChainSecretRPC } from "src/lib/cothority/calypso/calypso-rpc";
+import { Rule } from "src/lib/cothority/darc";
+import Darc from "src/lib/cothority/darc/darc";
+import IdentityDarc from "src/lib/cothority/darc/identity-darc";
+import IdentityEd25519 from "src/lib/cothority/darc/identity-ed25519";
+import Signer from "src/lib/cothority/darc/signer";
+import SignerEd25519 from "src/lib/cothority/darc/signer-ed25519";
+import Log from "src/lib/cothority/log";
+import { Roster } from "src/lib/cothority/network";
+import CredentialsInstance from "src/lib/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@dedis/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
+} from "src/lib/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "src/lib/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "src/lib/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "src/lib/cothority/personhood/spawner-instance";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";

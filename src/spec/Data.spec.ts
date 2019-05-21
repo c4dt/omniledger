@@ -1,5 +1,5 @@
 import Long from "long";
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import { Data, TestData } from "src/lib/Data";
 import { KeyPair } from "src/lib/KeyPair";
 

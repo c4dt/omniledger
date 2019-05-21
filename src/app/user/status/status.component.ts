@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
-import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-import StatusRPC from "@dedis/cothority/status/status-rpc";
+import Log from "src/lib/cothority/log";
+import SkipchainRPC from "src/lib/cothority/skipchain/skipchain-rpc";
+import StatusRPC from "src/lib/cothority/status/status-rpc";
 import { Data, gData } from "../../../lib/Data";
 import { Defaults } from "../../../lib/Defaults";
 import { hexBuffer } from "../../../lib/ui/Ui";

@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
 import { Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import { Data, gData } from "../../lib/Data";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 import { CalypsoUploadComponent } from "./secure/secure.component";

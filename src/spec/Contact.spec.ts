@@ -1,4 +1,4 @@
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import Long from "long";
 import { Data, TestData } from "src/lib/Data";
 import Darc from "../lib/cothority/darc/darc";

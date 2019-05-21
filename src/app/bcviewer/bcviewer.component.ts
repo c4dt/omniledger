@@ -1,17 +1,17 @@
 import { Component, EventEmitter, Inject, Injectable, OnInit, Output } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import Long from "long";
 import { sprintf } from "sprintf-js";
-import { Instruction } from "@dedis/cothority/byzcoin";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import Instance from "@dedis/cothority/byzcoin/instance";
-import Proof from "@dedis/cothority/byzcoin/proof";
-import DataBody from "@dedis/cothority/byzcoin/proto/data-body";
-import DataHeader from "@dedis/cothority/byzcoin/proto/data-header";
-import TxResult from "@dedis/cothority/byzcoin/proto/tx-result";
-import { ForwardLink, SkipBlock } from "@dedis/cothority/skipchain";
-import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
+import { Instruction } from "src/lib/cothority/byzcoin";
+import CredentialsInstance, { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
+import Instance from "src/lib/cothority/byzcoin/instance";
+import Proof from "src/lib/cothority/byzcoin/proof";
+import DataBody from "src/lib/cothority/byzcoin/proto/data-body";
+import DataHeader from "src/lib/cothority/byzcoin/proto/data-header";
+import TxResult from "src/lib/cothority/byzcoin/proto/tx-result";
+import { ForwardLink, SkipBlock } from "src/lib/cothority/skipchain";
+import SkipchainRPC from "src/lib/cothority/skipchain/skipchain-rpc";
 import { gData } from "../../lib/Data";
 
 @Injectable({

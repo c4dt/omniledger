@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { MatSnackBar } from "@angular/material";
 import { Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import { Data, gData } from "../../../lib/Data";
 import { showSnack } from "../../../lib/ui/Ui";
 

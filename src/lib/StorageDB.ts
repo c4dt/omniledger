@@ -1,4 +1,4 @@
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import Dexie from "dexie";
 
 export class StorageDB {

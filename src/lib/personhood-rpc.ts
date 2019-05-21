@@ -2,13 +2,13 @@ import { Point, Scalar } from "@dedis/kyber";
 import * as crypto from "crypto";
 import { randomBytes } from "crypto";
 import Long from "long";
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { Roster, ServerIdentity } from "@dedis/cothority/network";
-import { IConnection, RosterWSConnection, WebSocketConnection } from "@dedis/cothority/network/connection";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
-import { ed25519, Sign } from "@dedis/cothority/personhood/ring-sig";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
+import { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
+import { InstanceID } from "src/lib/cothority/byzcoin/instance";
+import { Roster, ServerIdentity } from "src/lib/cothority/network";
+import { IConnection, RosterWSConnection, WebSocketConnection } from "src/lib/cothority/network/connection";
+import { PopPartyInstance } from "src/lib/cothority/personhood/pop-party-instance";
+import { ed25519, Sign } from "src/lib/cothority/personhood/ring-sig";
 
 export class PersonhoodRPC {
     static serviceID = "Personhood";

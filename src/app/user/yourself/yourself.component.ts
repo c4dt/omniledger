@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatDialogModule, MatSnackBar } from "@angular/material";
-import Log from "@dedis/cothority/log";
-import { SkipchainRPC } from "@dedis/cothority/skipchain";
+import Log from "src/lib/cothority/log";
+import { SkipchainRPC } from "src/lib/cothority/skipchain";
 import { Data, gData } from "../../../lib/Data";
 import { showDialogOKC, showSnack } from "../../../lib/ui/Ui";
 import { hexBuffer } from "../../../lib/ui/Ui";

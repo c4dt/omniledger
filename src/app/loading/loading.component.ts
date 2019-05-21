@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 import { gData } from "../../lib/Data";
 
 @Component({
