@@ -114,6 +114,9 @@ export default class Proof extends Message<Proof> {
      * @returns an error if something is wrong, null otherwise
      */
     verify(genesisID: InstanceID): Error {
+        Log.warn("disabled verification");
+        return null;
+
         if (!this.latest.computeHash().equals(this.latest.hash)) {
             return new Error("invalid latest block");
         }

@@ -396,7 +396,7 @@ export class Contact {
         if (bc) {
             this.bc = bc;
             Log.lvl1("Connecting user", this.alias,
-                "with public key", this.seedPublic.toHex(), "and id", this.credentialIID);
+                "with public key", this.seedPublic.toHex(), "and id", this.credentialIID.toString("hex"));
             this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
             this.credential = this.credentialInstance.credential.copy();
             this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
