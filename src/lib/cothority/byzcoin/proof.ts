@@ -1,3 +1,4 @@
+import { Point } from "@dedis/kyber";
 import { createHash } from "crypto";
 import _ from "lodash";
 import Long from "long";
@@ -72,17 +73,18 @@ export default class Proof extends Message<Proof> {
     get key(): Buffer {
         return this.inclusionproof.key;
     }
+
+    static knownBlocks: Map<Buffer, Buffer[]> = new Map<Buffer, Buffer[]>();
+
     /**
      * @see README#Message classes
      */
     static register() {
         registerMessage("byzcoin.Proof", Proof, InclusionProof, SkipBlock, ForwardLink);
     }
-
     readonly inclusionproof: InclusionProof;
     readonly latest: SkipBlock;
     readonly links: ForwardLink[];
-
     protected _state: StateChangeBody;
 
     constructor(props: Properties<Proof>) {
@@ -121,15 +123,36 @@ export default class Proof extends Message<Proof> {
             return new Error("invalid root");
         }
 
-        let publics = this.links[0].newRoster.getServicePublics(SkipchainRPC.serviceName);
-        let prev = this.links[0].to;
-
-        if (!prev.equals(genesisID)) {
+        const links = this.links;
+        if (!links[0].to.equals(genesisID)) {
             return new Error("first link must come from the genesis block");
         }
 
-        const links = this.links;
-        for (let i = 1; i < links.length; i++) {
+        let latestKnown = 0;
+        const latestBlocks = Proof.knownBlocks.get(genesisID);
+        if (latestBlocks) {
+            links.map((l) => l).reverse().find((link, index) => {
+                if (latestBlocks.find((cache) => cache.equals(link.to))) {
+                    latestKnown = links.length - index - 1;
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (latestKnown === links.length - 1) {
+            return null;
+        }
+
+        let publics: Point[];
+        links.slice(0, latestKnown + 1).forEach((link) => {
+            const newRoster = link.newRoster;
+            if (newRoster) {
+                publics = newRoster.getServicePublics(SkipchainRPC.serviceName);
+            }
+        });
+        let prev = links[latestKnown].to;
+        for (let i = latestKnown + 1; i < links.length; i++) {
             const link = links[i];
 
             const err = link.verify(publics);
@@ -147,6 +170,10 @@ export default class Proof extends Message<Proof> {
                 publics = link.newRoster.getServicePublics(SkipchainRPC.serviceName);
             }
         }
+
+        // Update the known list of links. If we had access to the link-height, we could
+        // very much optimize this. But as it is, we can only store the current link list.
+        Proof.knownBlocks.set(genesisID, links.map((link) => link.to));
 
         if (!prev.equals(this.latest.hash)) {
             return new Error("last forward link does not point to the latest block");
@@ -263,6 +290,7 @@ function boolToBuffer(bits: boolean[]): Buffer {
  * Interior node of an inclusion proof
  */
 class InteriorNode extends Message<InteriorNode> {
+
     /**
      * @see README#Message classes
      */
@@ -278,6 +306,7 @@ class InteriorNode extends Message<InteriorNode> {
  * Empty node of an inclusion proof
  */
 class EmptyNode extends Message<EmptyNode> {
+
     /**
      * @see README#Message classes
      */
@@ -298,6 +327,7 @@ class EmptyNode extends Message<EmptyNode> {
  * Leaf node of an inclusion proof
  */
 class LeafNode extends Message<LeafNode> {
+
     /**
      * @see README#Message classes
      */
@@ -336,6 +366,7 @@ class InclusionProof extends Message<InclusionProof> {
     get value(): Buffer {
         return this.leaf.value;
     }
+
     /**
      * @see README#Message classes
      */
@@ -421,6 +452,7 @@ export class StateChangeBody extends Message<StateChangeBody> {
     get darcID(): Buffer {
         return this.darcid;
     }
+
     /**
      * @see README#Message classes
      */
