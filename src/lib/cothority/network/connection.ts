@@ -151,7 +151,7 @@ export class RosterWSConnection extends WebSocketConnection {
     constructor(r: Roster, service: string) {
         super("", service);
         this.addresses = r.list.map((conode) => conode.getWebSocketAddress());
-        shuffle(this.addresses);
+        // shuffle(this.addresses);
     }
 
     /** @inheritdoc */
@@ -159,7 +159,7 @@ export class RosterWSConnection extends WebSocketConnection {
         const errors: string[] = [];
         for (let i = 0; i < this.addresses.length; i++) {
             this.url = this.addresses[0];
-            Log.lvl3("trying with address", this.url);
+            Log.llvl3("trying with address", this.url);
 
             try {
                 // we need to await here to catch and try another conode

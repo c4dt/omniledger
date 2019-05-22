@@ -9,6 +9,46 @@ export const Defaults = {
     // tslint:disable:max-line-length
     RosterTOMLDEDIS: `
 [[servers]]
+  Address = "tls://conode.c4dt.org:7770"
+  Url = "https://conode.c4dt.org:7771"
+  Suite = "Ed25519"
+  Public = "67e30e168f83c4d4614e277cefba42dbc1fb5886b3945364ea5dae3f4e4fbc0d"
+  Description = "C4DT Conode"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "6bb65e6c3fb7cb9d84c81a21ce4cedf70539452e3e220c0383f087832bbd1d588590eb4fe777a360c3e12b8020a424db20fc00deafb1212bf8a4f70b978adbae093efc9aadff0a97cb0199372d5b55f135793393d94028cac0f432fb144b269f12162dbc163a80e32bea7219c2c51700ae8de5bd849d6d4001dfb2a3a8e2a161"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "842fdff85d9d1b16039c1ae3bde443fe949734080f80a3c1f0beb74ad2d3a43b7218b4f3d99f33da15f4411a0af0230681ced09e0c597b46408bd27a6dbe3aa1821acb39f8ba959da48c2567ed9e4b7ac10857efe771a6fa882b334b9972c9bc645ff507a5761bef61b69f5d4785876cceab29f78762d49b6f603574fb77b985"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "70a1f68fee1a78e621e023ea9ab0eaa042c1fa72e5bc2abd8ed9c039ce9dbdce122306f8b9e3d423757084fc9b4043adcf7b91f04c6fb66577a98f24bcddc248636fe63a69f661cd7e668fc4fa63fc2b55316c9d108d864e6f5461e31b77e03b0bcd6fcfb60b60c8a19ff07e068c43e7b3abad35ffb297710680fb693f5eee72"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "79e01b74993efc47a002c897356620eb0c3616127fcc2059ef87678c1198562e51b97148c9ce95dff439b0453a3a66e5f72baa275acb33591bd63b951b00e7f677f4a1814f4d73c028ad26d96a4c907d433c1189937fab27b2332079267db61a2be2e07ce1c10e52e645400cb998d8bc1f0c57382a13e07658c340f3f63f5e96"
+      Suite = "bn256.adapter"
+
+[[servers]]
+  Address = "tls://gasser.blue:7770"
+  Url = "https://gasser.blue:7771"
+  Suite = "Ed25519"
+  Public = "0e4c620122daca9518cace2a6b11c5c0892fbde7b130d04e8a194fd02906ffc6"
+  Description = "Ineiti's conode"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "00fe956fe1b90332bd7c5182d9f125c0e2108f5178d71b42b5f02582f9f2814281d4f2e0c9bd25f711c7138f9c2fb5fb6578b65aeae8cff1c349df34c497882f86ba36037678275d086b57bd04a9a020a80a47242b08274c696c009f097d3e7a31d0a6fc2b2e01b9d005e8c2ea538f3c581baac918cacb0650f6b3c2082e549f"
+      Suite = "bn256.adapter"
+    [servers.Services.PoPServer]
+      Public = "034be6b1ad082df3fa70520e3cbb937e4c51a15aa1e75680bffd01f7fc7d911f38a8c353ebdcdffd47182507415055b1590dfaa0c9fd3b91402b52f3a9701b9d85555409b23882e92393671f9ccb1e2fa380196cde89266ba020cbbab7b077e81a1828b9504c79374611b6c2639784d27194b9c6bc3830b5baeb6046de88f013"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "5878c63855bf0ad9a2575865b18a8e5856ed6c6b1cbfe1bacc0f4e889b9cd79f78b024fdcef448be2ffb292622927595047227f45a361e9094d5bb3ebcfd9bdb60bf179d5c6c3319d4c8bf2e1e149b78c1056814ac581b7c97decd9c58a570d6018712143844e5fd0a31ddb61e2d81bc1f35bfc47e8a884683d9692529119240"
+      Suite = "bn256.adapter"
+    [servers.Services.blsCoSiService]
+      Public = "3fbfc26efa7e39879ef106fc5a5a4da8c2e9e6be5ef4d369ddfad0a134031fe33b4c322c066b681c5b7b28b1ff668e5efecb96c5e0732ee854929dd0ea5f5c5a7837311cf73d2f6170567b1a287a3553ec46324ccf15fbcff84fdd433fe87c185592a79203b89a23a901e905531b7f19f31c8b599464aa0c9c5890e72a121e75"
+      Suite = "bn256.adapter"
+
+[[servers]]
   Address = "tls://conode.dedis.ch:7000"
   Url = "https://conode.dedis.ch"
   Suite = "Ed25519"
@@ -66,46 +106,6 @@ export const Defaults = {
       Suite = "bn256.adapter"
     [servers.Services.blsCoSiService]
       Public = "753367383700559bc310a2ba7d201b19e00c5bd37fa9fc0c7914757b1d88bfc35b3f00fefb25a6cb2bb0f46f7b5d0439493f0ecb8aae1d6b939a1b0fa38a850b43be80468dc1cd5f81f9f57e22931c4535541c7f5565b5b46c0f26897764322a1aaacb7ad312396c995c3c934b8106fa4bcb4c370ebe6264e2cae376735f715a"
-      Suite = "bn256.adapter"
-
-[[servers]]
-  Address = "tls://conode.c4dt.org:7770"
-  Url = "https://conode.c4dt.org:7771"
-  Suite = "Ed25519"
-  Public = "67e30e168f83c4d4614e277cefba42dbc1fb5886b3945364ea5dae3f4e4fbc0d"
-  Description = "C4DT Conode"
-  [servers.Services]
-    [servers.Services.ByzCoin]
-      Public = "6bb65e6c3fb7cb9d84c81a21ce4cedf70539452e3e220c0383f087832bbd1d588590eb4fe777a360c3e12b8020a424db20fc00deafb1212bf8a4f70b978adbae093efc9aadff0a97cb0199372d5b55f135793393d94028cac0f432fb144b269f12162dbc163a80e32bea7219c2c51700ae8de5bd849d6d4001dfb2a3a8e2a161"
-      Suite = "bn256.adapter"
-    [servers.Services.PoPServer]
-      Public = "842fdff85d9d1b16039c1ae3bde443fe949734080f80a3c1f0beb74ad2d3a43b7218b4f3d99f33da15f4411a0af0230681ced09e0c597b46408bd27a6dbe3aa1821acb39f8ba959da48c2567ed9e4b7ac10857efe771a6fa882b334b9972c9bc645ff507a5761bef61b69f5d4785876cceab29f78762d49b6f603574fb77b985"
-      Suite = "bn256.adapter"
-    [servers.Services.Skipchain]
-      Public = "70a1f68fee1a78e621e023ea9ab0eaa042c1fa72e5bc2abd8ed9c039ce9dbdce122306f8b9e3d423757084fc9b4043adcf7b91f04c6fb66577a98f24bcddc248636fe63a69f661cd7e668fc4fa63fc2b55316c9d108d864e6f5461e31b77e03b0bcd6fcfb60b60c8a19ff07e068c43e7b3abad35ffb297710680fb693f5eee72"
-      Suite = "bn256.adapter"
-    [servers.Services.blsCoSiService]
-      Public = "79e01b74993efc47a002c897356620eb0c3616127fcc2059ef87678c1198562e51b97148c9ce95dff439b0453a3a66e5f72baa275acb33591bd63b951b00e7f677f4a1814f4d73c028ad26d96a4c907d433c1189937fab27b2332079267db61a2be2e07ce1c10e52e645400cb998d8bc1f0c57382a13e07658c340f3f63f5e96"
-      Suite = "bn256.adapter"
-
-[[servers]]
-  Address = "tls://gasser.blue:7770"
-  Url = "https://gasser.blue:7771"
-  Suite = "Ed25519"
-  Public = "0e4c620122daca9518cace2a6b11c5c0892fbde7b130d04e8a194fd02906ffc6"
-  Description = "Ineiti's conode"
-  [servers.Services]
-    [servers.Services.ByzCoin]
-      Public = "00fe956fe1b90332bd7c5182d9f125c0e2108f5178d71b42b5f02582f9f2814281d4f2e0c9bd25f711c7138f9c2fb5fb6578b65aeae8cff1c349df34c497882f86ba36037678275d086b57bd04a9a020a80a47242b08274c696c009f097d3e7a31d0a6fc2b2e01b9d005e8c2ea538f3c581baac918cacb0650f6b3c2082e549f"
-      Suite = "bn256.adapter"
-    [servers.Services.PoPServer]
-      Public = "034be6b1ad082df3fa70520e3cbb937e4c51a15aa1e75680bffd01f7fc7d911f38a8c353ebdcdffd47182507415055b1590dfaa0c9fd3b91402b52f3a9701b9d85555409b23882e92393671f9ccb1e2fa380196cde89266ba020cbbab7b077e81a1828b9504c79374611b6c2639784d27194b9c6bc3830b5baeb6046de88f013"
-      Suite = "bn256.adapter"
-    [servers.Services.Skipchain]
-      Public = "5878c63855bf0ad9a2575865b18a8e5856ed6c6b1cbfe1bacc0f4e889b9cd79f78b024fdcef448be2ffb292622927595047227f45a361e9094d5bb3ebcfd9bdb60bf179d5c6c3319d4c8bf2e1e149b78c1056814ac581b7c97decd9c58a570d6018712143844e5fd0a31ddb61e2d81bc1f35bfc47e8a884683d9692529119240"
-      Suite = "bn256.adapter"
-    [servers.Services.blsCoSiService]
-      Public = "3fbfc26efa7e39879ef106fc5a5a4da8c2e9e6be5ef4d369ddfad0a134031fe33b4c322c066b681c5b7b28b1ff668e5efecb96c5e0732ee854929dd0ea5f5c5a7837311cf73d2f6170567b1a287a3553ec46324ccf15fbcff84fdd433fe87c185592a79203b89a23a901e905531b7f19f31c8b599464aa0c9c5890e72a121e75"
       Suite = "bn256.adapter"
 `,
     RosterTOMLLOCAL: `
