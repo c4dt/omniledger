@@ -159,7 +159,7 @@ export class RosterWSConnection extends WebSocketConnection {
         const errors: string[] = [];
         for (let i = 0; i < this.addresses.length; i++) {
             this.url = this.addresses[0];
-            Log.llvl3("trying with address", this.url);
+            Log.llvl3("trying with address", this.url, message.constructor.name);
 
             try {
                 // we need to await here to catch and try another conode

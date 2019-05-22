@@ -52,7 +52,7 @@ export class BcviewerComponent implements OnInit {
             if (this.blocks && this.blocks.length > 0) {
                 latest = this.blocks[this.blocks.length - 1].sb.hash;
             }
-            const sbBlocks = await this.scRPC.getUpdateChain(latest);
+            const sbBlocks = await this.scRPC.getUpdateChain(latest, false);
             sbBlocks.forEach((sbB) => {
                 if (!this.blocks.find((b) => b.sb.hash.equals(sbB.hash))) {
                     this.blocks.push(new BCBlock(this.scRPC, sbB));

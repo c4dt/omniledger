@@ -15,12 +15,13 @@ import { hexBuffer } from "../../../lib/ui/Ui";
 export class StatusComponent implements OnInit {
   nodes = [];
   gData: Data;
-  blockCount = -1;
   signID: string;
+  userID: string;
 
   constructor(private router: Router) {
     this.gData = gData;
     gData.contact.getDarcSignIdentity().then((dsi) => this.signID = hexBuffer(dsi.id));
+    this.userID = hexBuffer(gData.contact.credentialIID);
   }
 
   async ngOnInit() {
@@ -43,10 +44,6 @@ export class StatusComponent implements OnInit {
       this.nodes.push(node);
     }
     this.nodes.sort();
-    await gData.bc.updateConfig();
-    const skiprpc = new SkipchainRPC(gData.bc.getConfig().roster);
-    const last = await skiprpc.getLatestBlock(gData.bc.genesisID);
-    this.blockCount = last.index;
   }
 
   async deleteUser() {

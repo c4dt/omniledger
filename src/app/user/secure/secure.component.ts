@@ -1,13 +1,12 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
 import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
-import { CalypsoReadInstance } from "src/lib/cothority/calypso";
-import { CalypsoWriteInstance } from "src/lib/cothority/calypso";
+import { CalypsoReadInstance, CalypsoWriteInstance } from "src/lib/cothority/calypso";
 import Darc from "src/lib/cothority/darc/darc";
 import Log from "src/lib/cothority/log";
 import { Contact } from "../../../lib/Contact";
 import { gData } from "../../../lib/Data";
-import { FileBlob, SecureData } from "../../../lib/SecureData";
+import { FileBlob } from "../../../lib/SecureData";
 import { showSnack } from "../../../lib/ui/Ui";
 import { ManageDarcComponent } from "../manage-darc";
 
@@ -89,11 +88,13 @@ export class SecureComponent implements OnInit {
         });
         fileDialog.afterClosed().subscribe(async (result: File) => {
             if (result) {
-                const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
-                const fb = new FileBlob(result.name, data, [{name: "time", value: result.lastModified.toString()}]);
-                await gData.contact.calypso.add(fb.toBuffer());
-                await gData.save();
-                this.updateCalypso();
+                await showSnack(this.snackBar, "Storing data encrypted", async () => {
+                    const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
+                    const fb = new FileBlob(result.name, data, [{name: "time", value: result.lastModified.toString()}]);
+                    await gData.contact.calypso.add(fb.toBuffer());
+                    await gData.save();
+                    this.updateCalypso();
+                });
             } else {
                 Log.lvl1("Didnt get any data");
             }
