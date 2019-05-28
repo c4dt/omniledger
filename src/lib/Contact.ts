@@ -745,6 +745,7 @@ class Calypso {
             await di.evolveDarcAndWait(nDarc, [this.contact.data.keyIdentitySigner], 5);
             this.ours.delete(key);
             this.contact.version = this.contact.version + 1;
+            this.contact.credential.delAttribute("1-secret", key);
         }
     }
 
@@ -761,21 +762,27 @@ class Calypso {
         }
         const secret = this.contact.credential.getCredential("1-secret");
         if (!secret) {
-            Log.warn("no secrets found here");
+            Log.lvl2("no secrets found here");
             return;
         }
         for (const att of secret.attributes) {
             if (att.name === "others") {
-                Log.warn("others not supported yet");
+                Log.lvl2("others not supported yet");
             } else {
                 if (this.ours.get(att.name)) {
-                    Log.print(att.name, "already present");
+                    Log.lvl2(att.name, "already present");
                 } else {
-                    const calWrite = await CalypsoWriteInstance.fromByzcoin(this.contact.bc, att.value);
-                    const signers = [this.contact.data.keyIdentitySigner];
-                    const sds = await SecureData.fromWrite(this.contact.bc, lts, calWrite,
+                    Log.lvl1("Adding", att.name, "to secure storage");
+                    try {
+                        const calWrite = await CalypsoWriteInstance.fromByzcoin(this.contact.bc, att.value);
+                        const signers = [this.contact.data.keyIdentitySigner];
+                        const sds = await SecureData.fromWrite(this.contact.bc, lts, calWrite,
                             signers, this.contact.data.coinInstance, signers);
-                    this.ours.set(att.name, sds);
+                        this.ours.set(att.name, sds);
+                    } catch (e) {
+                        Log.warn("couldn't add new data:", e, "adding fake data so you can delete it");
+                        this.ours.set(att.name, new SecureData(null, null, null));
+                    }
                 }
             }
         }
