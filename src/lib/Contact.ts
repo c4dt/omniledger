@@ -746,7 +746,8 @@ class Calypso {
             this.ours.delete(key);
             this.contact.version = this.contact.version + 1;
             this.contact.credential.delAttribute("1-secret", key);
-            await this.contact.sendUpdate([this.contact.data.keyIdentitySigner]);
+            this.contact.incVersion();
+            await this.contact.sendUpdate();
         }
     }
 
@@ -783,7 +784,8 @@ class Calypso {
                     } catch (e) {
                         Log.warn("couldn't add new data:", e, "removing it from credential");
                         this.contact.credential.delAttribute("1-secret", att.name);
-                        await this.contact.sendUpdate([this.contact.data.keyIdentitySigner]);
+                        this.contact.incVersion();
+                        await this.contact.sendUpdate();
                     }
                 }
             }
