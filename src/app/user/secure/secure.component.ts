@@ -24,16 +24,20 @@ export class SecureComponent implements OnInit {
         this.calypsoOtherKeys = new Map();
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         Log.lvl3("init secure");
-        this.updateCalypso();
+        await showSnack(this.snackBar, "Searching our secrets", async () => {
+            await this.updateCalypso();
+        });
     }
 
     /**
      * updateCalypso stores the keys and the FileBlobs in the class-variables so that the UI
      * can correctly show them.
      */
-    updateCalypso() {
+    async updateCalypso() {
+        await gData.contact.calypso.fetchOurs(gData.lts);
+        await gData.save();
         this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
         Array.from(gData.contact.calypso.others.keys()).forEach((oid) => {
             const other = gData.contacts.find((c) => c.credentialIID.equals(oid));
@@ -77,9 +81,11 @@ export class SecureComponent implements OnInit {
     }
 
     async calypsoDelete(key: string) {
-        await gData.contact.calypso.remove(key);
-        await gData.save();
-        this.updateCalypso();
+        await showSnack(this.snackBar, "Deleting secret", async () => {
+            await gData.contact.calypso.remove(key);
+            await gData.save();
+            await this.updateCalypso();
+        });
     }
 
     async calypsoAddData() {

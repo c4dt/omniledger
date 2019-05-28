@@ -255,7 +255,7 @@ export class Data {
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
         await d.contact.updateOrConnect(d.bc);
-        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX);
+        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX, Defaults.RosterCalypso);
 
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = d.contact.darcInstance.getSignerDarcIDs()[0];
@@ -405,7 +405,7 @@ export class Data {
 
             this.contact.data = this;
             await this.contact.updateOrConnect();
-            this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
+            this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, Defaults.RosterCalypso);
         } catch (e) {
             await Log.rcatch(e, "failed to load");
         }
@@ -868,7 +868,7 @@ export class Data {
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, Defaults.RosterCalypso);
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
@@ -991,3 +991,6 @@ export class TestData extends Data {
  * test the libraries.
  */
 export let gData = new Data();
+
+// tslint:disable-next-line
+global["gData"] = gData;

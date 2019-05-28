@@ -17,11 +17,13 @@ export class StatusComponent implements OnInit {
   gData: Data;
   signID: string;
   userID: string;
+  pubKey: string;
 
   constructor(private router: Router) {
     this.gData = gData;
     gData.contact.getDarcSignIdentity().then((dsi) => this.signID = hexBuffer(dsi.id));
     this.userID = hexBuffer(gData.contact.credentialIID);
+    this.pubKey = hexBuffer(gData.keyIdentity._public.toBuffer());
   }
 
   async ngOnInit() {

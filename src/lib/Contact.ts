@@ -426,7 +426,6 @@ export class Contact {
             await this.getContacts();
         }
 
-        await this.calypso.update(new LongTermSecret(this.bc, this.ltsID, this.ltsX));
         return this;
     }
 
@@ -556,7 +555,7 @@ class Recover {
 
     set trusteesBuf(t: Buffer) {
         this.contact.credential.setAttribute("1-recover", "trustees", t);
-        this.contact.version++;
+        this.contact.incVersion();
     }
 
     get trustees(): InstanceID[] {
@@ -585,7 +584,7 @@ class Recover {
         const thresholdBuf = Buffer.alloc(4);
         thresholdBuf.writeUInt32LE(t, 0);
         this.contact.credential.setAttribute("1-recover", "threshold", thresholdBuf);
-        this.contact.version++;
+        this.contact.incVersion();
     }
 
     findTrustee(trustee: InstanceID | Contact): number {
@@ -708,7 +707,7 @@ class Calypso {
         const id = sprintf("value-%d", count);
         this.contact.credential.setAttribute("1-secret", id, sd.writeInstID);
         this.ours.set(id, sd);
-        this.contact.version++;
+        this.contact.incVersion();
         return id;
     }
 
@@ -747,17 +746,13 @@ class Calypso {
             this.contact.version = this.contact.version + 1;
             this.contact.credential.delAttribute("1-secret", key);
             this.contact.incVersion();
-            await this.contact.sendUpdate();
         }
     }
 
     /**
-     * Updates our and remote contents by:
-     * - going through the entries stored in our credential
-     *   - get our data
-     *   - get other's data
+     * Updates our secrets by going through the entries stored in our credential and get our data.
      */
-    async update(lts: LongTermSecret) {
+    async fetchOurs(lts: LongTermSecret) {
         if (!this.contact.data) {
             Log.warn("called update without contact.data");
             return;
@@ -774,7 +769,7 @@ class Calypso {
                 if (this.ours.get(att.name)) {
                     Log.lvl2(att.name, "already present");
                 } else {
-                    Log.lvl1("Adding", att.name, "to secure storage");
+                    Log.lvl1("Adding", att.name, "to our secure storage");
                     try {
                         const calWrite = await CalypsoWriteInstance.fromByzcoin(this.contact.bc, att.value);
                         const signers = [this.contact.data.keyIdentitySigner];
@@ -782,7 +777,8 @@ class Calypso {
                             signers, this.contact.data.coinInstance, signers);
                         this.ours.set(att.name, sds);
                     } catch (e) {
-                        Log.warn("couldn't add new data:", e, "removing it from credential");
+                        Log.warn("couldn't add new data:", e);
+                        // Not sure whether this should actually delete stale data or not...
                         this.contact.credential.delAttribute("1-secret", att.name);
                         this.contact.incVersion();
                         await this.contact.sendUpdate();
@@ -790,6 +786,13 @@ class Calypso {
                 }
             }
         }
+
+        // And finally check if all `ours` are in the secret
+        Array.from(this.ours.keys()).forEach((key) => {
+            if (!this.contact.credential.getAttribute("1-secret", key)) {
+                this.ours.delete(key);
+            }
+        });
     }
 
 }
