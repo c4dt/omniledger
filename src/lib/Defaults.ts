@@ -229,7 +229,7 @@ export const Defaults = {
   Suite = "Ed25519"
   Public = "c2d64d0b6b4ad33eca744f3b1cf09c417b6c1b94be7128ffaba01d118220c294"
   Description = "Conode_3"
-  URL = "https://conode.c4dt.org:7772"
+  Url = "https://conode.c4dt.org:7776"
   [servers.Services]
     [servers.Services.ByzCoin]
       Public = "07e87f17f4ecd8f556f6692da991080e5b554e2bbc2bbd41e45b11e6a52945be7f6e1d411295d813d660fd0c3fdd08d0e9dd8f1af56fc6650fac5bb44b513a0560da91d6d5b85509dfc32d2479092e85abff18ada72e7f0a6c3ff35c7002a27283419957311dbe10786ef0f8611d58ee6d5280ef0cfcd07f3319712b2fd0e695"
@@ -242,7 +242,7 @@ export const Defaults = {
   Suite = "Ed25519"
   Public = "0866448991887684959bd183da8a300558d44ecf31aa9091d31c17e42ec9cb12"
   Description = "Conode_2"
-  URL = "https://conode.c4dt.org:7772"
+  Url = "https://conode.c4dt.org:7774"
   [servers.Services]
     [servers.Services.ByzCoin]
       Public = "73ee09ef3daf9df0d9100390d14a4900937deba4a4dbf140da7e877ed6a1e1038020f90d8c3b2ab425afec04ad1e955b3996cd8d5b71b541d071a524aebd6bfb31033150a1015f034c4b38176613d47e437fc067da4e3304fba9849cbd3a000a6002a1808d35cf34fa11b2ec6abe01b7862268366fbbc9c0ad51c941101ed26f"
@@ -255,7 +255,7 @@ export const Defaults = {
   Suite = "Ed25519"
   Public = "7f9d54738f9ba0cb040e12e9304f00404cc5e23bf75ce52c2e0fd4cf533d3834"
   Description = "Conode_1"
-  URL = "https://conode.c4dt.org:7772"
+  Url = "https://conode.c4dt.org:7772"
   [servers.Services]
     [servers.Services.ByzCoin]
       Public = "5f7e8168cdcec8ac358b548362489420b46a1bac1d30cc064d4d14bac16805a74bc6220262a0df06ee8beba24c0d88e64fe4c2af81c9cc14aefa15ea9a238fd5872ce28d7418116d464c634df104c2bca0428fd6c1d43f2ac610646521d222fe64e96e61addd0f43c4d4bade0a023c7af8025c45516edb3f6f637a3cd839c67b"
