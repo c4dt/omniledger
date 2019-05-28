@@ -4,7 +4,6 @@ import { Router } from "@angular/router";
 import Log from "src/lib/cothority/log";
 import { Data, gData } from "../../lib/Data";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
-import { CalypsoUploadComponent } from "./secure/secure.component";
 
 @Component({
   selector: "app-user",

@@ -425,6 +425,8 @@ export class Contact {
         if (getContacts && (!this.contactsCache || this.contactsCache.length === 0)) {
             await this.getContacts();
         }
+
+        await this.calypso.update(new LongTermSecret(this.bc, this.ltsID, this.ltsX));
         return this;
     }
 
@@ -720,15 +722,17 @@ class Calypso {
             signer, [this.contact.data.keyIdentitySigner],
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);
         this.others.set(user.credentialIID, sds);
-        // const obj = this.toObject();
-        // Currently just make sure that previous instances don't carry around too many MBs of
-        // JSONified Buffers...
         this.contact.credential.setAttribute("1-secret", "others", Buffer.alloc(0));
-        //     Buffer.from(JSON.stringify(obj.others)));
-        // this.contact.version++;
         return sds;
     }
 
+    /**
+     * removes the object with the given keys from our secure objects. It removes all necessary
+     * rules from the reader-darc, which makes sure that it cannot be evolved back to an active
+     * darc.
+     *
+     * @param key of the object that should be deleted.
+     */
     async remove(key: string) {
         const sd = this.ours.get(key);
         if (sd) {
@@ -736,10 +740,45 @@ class Calypso {
             const di = await DarcInstance.fromByzcoin(this.contact.bc, wi.darcID);
             const nDarc = di.darc.evolve();
             nDarc.rules.removeRule(Darc.ruleSign);
+            nDarc.rules.removeRule(DarcInstance.ruleEvolve);
             nDarc.rules.removeRule("spawn:" + CalypsoReadInstance.contractID);
             await di.evolveDarcAndWait(nDarc, [this.contact.data.keyIdentitySigner], 5);
             this.ours.delete(key);
             this.contact.version = this.contact.version + 1;
         }
     }
+
+    /**
+     * Updates our and remote contents by:
+     * - going through the entries stored in our credential
+     *   - get our data
+     *   - get other's data
+     */
+    async update(lts: LongTermSecret) {
+        if (!this.contact.data) {
+            Log.warn("called update without contact.data");
+            return;
+        }
+        const secret = this.contact.credential.getCredential("1-secret");
+        if (!secret) {
+            Log.warn("no secrets found here");
+            return;
+        }
+        for (const att of secret.attributes) {
+            if (att.name === "others") {
+                Log.warn("others not supported yet");
+            } else {
+                if (this.ours.get(att.name)) {
+                    Log.print(att.name, "already present");
+                } else {
+                    const calWrite = await CalypsoWriteInstance.fromByzcoin(this.contact.bc, att.value);
+                    const signers = [this.contact.data.keyIdentitySigner];
+                    const sds = await SecureData.fromWrite(this.contact.bc, lts, calWrite,
+                            signers, this.contact.data.coinInstance, signers);
+                    this.ours.set(att.name, sds);
+                }
+            }
+        }
+    }
+
 }
