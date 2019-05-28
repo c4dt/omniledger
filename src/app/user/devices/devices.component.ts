@@ -1,3 +1,4 @@
+import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
 import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
@@ -18,6 +19,7 @@ export class DevicesComponent implements OnInit {
     constructor(
         private dialog: MatDialog,
         private snack: MatSnackBar,
+        private location: Location,
     ) {
     }
 
@@ -59,8 +61,9 @@ export class DevicesComponent implements OnInit {
                 });
                 this.updateDevices();
                 if (device) {
-                    this.dialog.open(DeviceShowComponent,
-                        {data: device});
+                    const url = window.location.protocol + "//" + window.location.host +
+                        this.location.prepareExternalUrl(device);
+                    this.dialog.open(DeviceShowComponent, {data: url});
                 }
             }
         });

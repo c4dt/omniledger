@@ -695,7 +695,7 @@ class Calypso {
     async add(data: Buffer, readers: InstanceID[] = []): Promise<string> {
         const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.credentialInstance.darcID);
         readers.unshift(ourSigner.darc.getBaseID());
-        readers.forEach((r) => Log.lvl2("reader", r));
+        readers.forEach((r) => Log.lvl2("reader", r.toString("hex")));
         const sd = await SecureData.spawnFromSpawner(this.contact.bc, this.contact.data.lts, data, readers,
             this.contact.spawnerInstance,
             this.contact.data.coinInstance, [this.contact.data.keyIdentitySigner]);

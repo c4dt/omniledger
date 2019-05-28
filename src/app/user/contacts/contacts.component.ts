@@ -1,3 +1,4 @@
+import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
 import Long from "long";
@@ -29,6 +30,7 @@ export class ContactsComponent implements OnInit {
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         private bcvs: BcviewerService,
+        private location: Location,
     ) {
         this.gData = gData;
         this.calypsoOtherKeys = new Map();
@@ -75,9 +77,10 @@ export class ContactsComponent implements OnInit {
                     if (newUser) {
                         gData.addContact(newUser.contact);
                         await gData.save();
+                        const url = this.location.prepareExternalUrl("/register?ephemeral=" +
+                            newUser.keyIdentity._private.toHex());
                         this.dialog.open(CreateUserComponent, {
-                            data: window.location.protocol + "//" + window.location.host + "/register?ephemeral=" +
-                                newUser.keyIdentity._private.toHex(),
+                            data: `${window.location.protocol}//${window.location.host + url}`,
                             width: "400px",
                         });
                     }
