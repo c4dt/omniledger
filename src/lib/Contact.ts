@@ -746,6 +746,7 @@ class Calypso {
             this.ours.delete(key);
             this.contact.version = this.contact.version + 1;
             this.contact.credential.delAttribute("1-secret", key);
+            await this.contact.sendUpdate([this.contact.data.keyIdentitySigner]);
         }
     }
 
@@ -780,8 +781,9 @@ class Calypso {
                             signers, this.contact.data.coinInstance, signers);
                         this.ours.set(att.name, sds);
                     } catch (e) {
-                        Log.warn("couldn't add new data:", e, "adding fake data so you can delete it");
-                        this.ours.set(att.name, new SecureData(null, null, null));
+                        Log.warn("couldn't add new data:", e, "removing it from credential");
+                        this.contact.credential.delAttribute("1-secret", att.name);
+                        await this.contact.sendUpdate([this.contact.data.keyIdentitySigner]);
                     }
                 }
             }
