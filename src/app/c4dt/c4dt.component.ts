@@ -1,17 +1,18 @@
-import { Component, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
+import { Component, OnInit } from "@angular/core";
+import { MatDialog } from "@angular/material";
 import { Router } from "@angular/router";
-import Log from "src/lib/cothority/log";
+import Log from "../../lib/cothority/log";
 import { Data, gData } from "../../lib/Data";
 import { Defaults } from "../../lib/Defaults";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
+import { RetryLoadComponent } from "../user/user.component";
 
 @Component({
-  selector: "app-user",
-  styleUrls: ["./user.component.css"],
-  templateUrl: "./user.component.html",
+  selector: "app-c4dt",
+  styleUrls: ["./c4dt.component.css"],
+  templateUrl: "./c4dt.component.html",
 })
-export class UserComponent implements OnInit {
+export class C4dtComponent implements OnInit {
   isLoaded = false;
 
   constructor(private dialog: MatDialog,
@@ -47,26 +48,15 @@ export class UserComponent implements OnInit {
   }
 
   navigateToSubtab() {
-    if (window.location.pathname === "/user") {
-      this.router.navigateByUrl("/user/yourself");
+    if (window.location.pathname === "/c4dt") {
+      this.router.navigateByUrl("/c4dt");
     }
     this.isLoaded = true;
     this.bcs.updateBlocks();
   }
 
+
   ngOnInit() {
-    Log.llvl3("init user");
   }
 
-}
-
-@Component({
-  selector: "app-retry-load",
-  templateUrl: "retry-load.html",
-})
-export class RetryLoadComponent {
-  constructor(
-      public dialogRef: MatDialogRef<RetryLoadComponent>,
-      @Inject(MAT_DIALOG_DATA) public data: string) {
-  }
 }

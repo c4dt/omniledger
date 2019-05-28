@@ -32,6 +32,17 @@ const routes: Routes = [
             {path: "", redirectTo: "yourself", pathMatch: "full"},
         ],
     },
+    {
+        // tslint:disable-next-line
+        path: "c4dt", component: C4DTComponent, children: [
+            {path: "yourself", component: YourselfComponent},
+            {path: "contacts", component: ContactsComponent},
+            {path: "secure", component: SecureComponent},
+            {path: "status", component: StatusComponent},
+            {path: "devices", component: DevicesComponent},
+            {path: "", redirectTo: "yourself", pathMatch: "full"},
+        ],
+    },
 ];
 
 @NgModule({

@@ -26,6 +26,9 @@ import { StatusComponent } from "./user/status/status.component";
 import { RetryLoadComponent, UserComponent } from "./user/user.component";
 import { YourselfComponent } from "./user/yourself/yourself.component";
 import { DeviceComponent } from './register/device/device.component';
+import { C4dtComponent } from './c4dt/c4dt.component';
+import { NewuserComponent } from './c4dt/newuser/newuser.component';
+import { PartnerComponent } from './c4dt/partner/partner.component';
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -54,6 +57,9 @@ import { DeviceComponent } from './register/device/device.component';
         DeviceAddComponent,
         DeviceShowComponent,
         DeviceComponent,
+        C4dtComponent,
+        NewuserComponent,
+        PartnerComponent,
     ],
     entryComponents: [
         ManageDarcComponent,

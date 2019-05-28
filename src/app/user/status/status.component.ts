@@ -51,6 +51,6 @@ export class StatusComponent implements OnInit {
   async deleteUser() {
     gData.delete();
     await gData.save();
-    await this.router.navigateByUrl("/register");
+    await this.router.navigateByUrl(Defaults.PathNew);
   }
 }

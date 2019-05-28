@@ -290,6 +290,10 @@ export const Defaults = {
     TestButtons: false,
     // DataFile can be set to a string that will be used to overwrite the Data
     DataFile: null,
+    // PathNew is where a new user is sent to
+    PathNew: "/c4dt/newuser",
+    // PathUser is where a registered user is sent to
+    PathUser: "/c4dt/user",
 };
 
 export function activateTesting() {
