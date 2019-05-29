@@ -326,6 +326,6 @@ export function activateC4DT() {
     Defaults.Alias = "c4dt";
 }
 
-activateTesting();
+// activateTesting();
 // activateC4DT();
-// activateDEDIS();
+activateDEDIS();
