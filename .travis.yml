@@ -10,4 +10,4 @@ deploy:
   provider: script
   script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
   on:
-    branch: master
+    branch: service
