@@ -1,9 +1,6 @@
-FROM debian:stretch-slim
+FROM c4dt/conode:dev
 WORKDIR /root/
 COPY conodes /root/conodes
-RUN apt update; apt install -y procps; apt clean
-COPY run_nodes.sh .
-COPY conode /root/conode
 
 EXPOSE 7770 7771 7772 7773 7774 7775 7776 7777
 

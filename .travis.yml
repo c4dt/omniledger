@@ -1,0 +1,13 @@
+language: minimal
+
+addons:
+  ssh_known_hosts: c4dtsrv1.epfl.ch
+
+before_deploy:
+  - echo "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_rsa"
+
+deploy:
+  provider: script
+  script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
+  on:
+    branch: master
