@@ -9,7 +9,7 @@ ldflags=-s -w -X main.gitTag=$(TAG)
 all: docker
 
 # Use this target to build from local source
-docker: clean build/Dockerfile build/conode
+docker: clean build/Dockerfile
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
@@ -45,13 +45,6 @@ docker_start:
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
-
-# The suffix on conode exe is the result from: echo `uname -s`.`uname -m`
-# so that we can find the right one in the wrapper script.
-# This is in it's own rule because the Docker build needs it also.
-build/conode:
-	make -C .. cothority-pull
-	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="$(ldflags)" -o $@
 
 clean:
 	rm -rf build/conode
