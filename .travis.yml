@@ -4,7 +4,8 @@ addons:
   ssh_known_hosts: c4dtsrv1.epfl.ch
 
 before_deploy:
-  - echo "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_rsa"
+  - echo "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+  - chmod 600 "$HOME/.ssh/id_ed25519"
 
 deploy:
   provider: script
