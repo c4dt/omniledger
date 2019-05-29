@@ -1,6 +1,6 @@
 <div class="mat-body">
     <h1>{{data.Title}}</h1>
-    <p>{{data.Text}}</p>
+    <div [innerHTML]="data.Text"></div>
     <p>
         <button mat-raised-button color='primary' [mat-dialog-close]="true" cdkFocusInitial>{{data.Buttons.OKButton}}</button>
         <button *ngIf="data.Buttons.CancelButton != ''"

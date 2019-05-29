@@ -37,7 +37,7 @@ export async function showDialogInfo(dialog: MatDialog, title: string, text: str
             Buttons: {OKButton: dismiss, CancelButton: ""},
             Text: text,
             Title: title,
-        }
+        },
     });
     tc.afterClosed().subscribe((res) => {
         if (result) {

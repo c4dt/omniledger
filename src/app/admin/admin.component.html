@@ -3,23 +3,23 @@
 </div>
 <div *ngIf="isLoaded">
     <nav mat-tab-nav-bar>
-        <a mat-tab-link routerLink="/user/yourself"
+        <a mat-tab-link routerLink="/admin/yourself"
         routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">
             Yourself
         </a>
-        <a mat-tab-link routerLink="/user/contacts"
+        <a mat-tab-link routerLink="/admin/contacts"
         routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive">
             Contacts
         </a>
-        <a mat-tab-link routerLink="/user/secure"
+        <a mat-tab-link routerLink="/admin/secure"
         routerLinkActive #rla3="routerLinkActive" [active]="rla3.isActive">
             Secure
         </a>
-        <a mat-tab-link routerLink="/user/devices"
+        <a mat-tab-link routerLink="/admin/devices"
         routerLinkActive #rla4="routerLinkActive" [active]="rla4.isActive">
             Devices
         </a>
-        <a mat-tab-link routerLink="/user/status"
+        <a mat-tab-link routerLink="/admin/status"
         routerLinkActive #rla5="routerLinkActive" [active]="rla5.isActive">
             Status
         </a>

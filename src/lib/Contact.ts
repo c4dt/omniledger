@@ -185,16 +185,27 @@ export class Contact {
         }
     }
 
-    get view(): string{
+    get view(): string {
         const v = this.credential.getAttribute("1-config", "view");
-        if (v){
+        if (v) {
             return v.toString();
         }
         return "default";
     }
 
-    set view(v: string){
+    set view(v: string) {
         this.credential.setAttribute("1-config", "view", Buffer.from(v));
+        this.incVersion();
+    }
+
+    get subscribe(): boolean {
+        const sub = this.credential.getAttribute("1-public", "subscribe");
+        return sub && sub.equals(Buffer.from("true"));
+    }
+
+    set subscribe(c: boolean) {
+        this.credential.setAttribute("1-public", "subscribe",
+            c ? Buffer.from("true") : Buffer.from("false"));
         this.incVersion();
     }
 

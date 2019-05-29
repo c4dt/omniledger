@@ -7,28 +7,29 @@ import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DialogOKCancelComponent } from "../lib/ui/Ui";
 import { DemoMaterialModule } from "../material-module";
-import { AppRoutingModule } from "./app-routing.module";
-import { AppComponent } from "./app.component";
-import { BcviewerComponent, BcviewerService, ShowBlockComponent } from "./bcviewer/bcviewer.component";
-import { LoadingComponent } from "./loading/loading.component";
-import { RegisterComponent } from "./register/register.component";
+import { AdminComponent, RetryLoadComponent } from "./admin/admin.component";
 import {
     AddContactComponent,
     ContactsComponent, CreateComponent,
     CreateUserComponent,
     TransferCoinComponent,
     UserCredComponent,
-} from "./user/contacts/contacts.component";
-import { DeviceAddComponent, DevicesComponent, DeviceShowComponent } from "./user/devices/devices.component";
-import { ManageDarcComponent } from "./user/manage-darc";
-import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./user/secure/secure.component";
-import { StatusComponent } from "./user/status/status.component";
-import { RetryLoadComponent, UserComponent } from "./user/user.component";
-import { YourselfComponent } from "./user/yourself/yourself.component";
-import { DeviceComponent } from './register/device/device.component';
-import { C4dtComponent } from './c4dt/c4dt.component';
-import { NewuserComponent } from './c4dt/newuser/newuser.component';
-import { PartnerComponent } from './c4dt/partner/partner.component';
+} from "./admin/contacts/contacts.component";
+import { DeviceAddComponent, DevicesComponent, DeviceShowComponent } from "./admin/devices/devices.component";
+import { ManageDarcComponent } from "./admin/manage-darc";
+import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./admin/secure/secure.component";
+import { StatusComponent } from "./admin/status/status.component";
+import { YourselfComponent } from "./admin/yourself/yourself.component";
+import { AppRoutingModule } from "./app-routing.module";
+import { AppComponent } from "./app.component";
+import { BcviewerComponent, BcviewerService, ShowBlockComponent } from "./bcviewer/bcviewer.component";
+import { C4dtComponent } from "./c4dt/c4dt.component";
+import { NewuserComponent } from "./c4dt/newuser/newuser.component";
+import { PartnerComponent } from "./c4dt/partner/partner.component";
+import { UserComponent } from "./c4dt/user/user.component";
+import { LoadingComponent } from "./loading/loading.component";
+import { DeviceComponent } from "./register/device/device.component";
+import { RegisterComponent } from "./register/register.component";
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -50,6 +51,7 @@ import { PartnerComponent } from './c4dt/partner/partner.component';
         StatusComponent,
         LoadingComponent,
         UserComponent,
+        AdminComponent,
         DialogOKCancelComponent,
         BcviewerComponent,
         ShowBlockComponent,

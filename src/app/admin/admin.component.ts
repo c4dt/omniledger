@@ -8,10 +8,10 @@ import { BcviewerService } from "../bcviewer/bcviewer.component";
 
 @Component({
   selector: "app-user",
-  styleUrls: ["./user.component.css"],
-  templateUrl: "./user.component.html",
+  styleUrls: ["./admin.component.css"],
+  templateUrl: "./admin.component.html",
 })
-export class UserComponent implements OnInit {
+export class AdminComponent implements OnInit {
   isLoaded = false;
 
   constructor(private dialog: MatDialog,
@@ -48,7 +48,7 @@ export class UserComponent implements OnInit {
 
   navigateToSubtab() {
     if (window.location.pathname === "/user") {
-      this.router.navigateByUrl("/user/yourself");
+      this.router.navigateByUrl("/admin/yourself");
     }
     this.isLoaded = true;
     this.bcs.updateBlocks();

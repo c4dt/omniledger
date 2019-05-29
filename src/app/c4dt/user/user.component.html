@@ -1,3 +1,15 @@
-<p>
-  user works!
-</p>
+<h1>Welcome {{gData.contact.alias | titlecase}}</h1>
+<form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact()">
+
+    <mat-form-field class="width100">
+        <input matInput type="text" placeholder="Alias" formControlName="alias"/>
+    </mat-form-field>
+    <mat-form-field class="width100">
+        <input matInput type="text" placeholder="Your Email" formControlName="email"/>
+    </mat-form-field>
+    <mat-checkbox formControlName="subscribe">Subscribe to C4DT monthly Newsletter</mat-checkbox>
+    <br>
+    <br>
+    <button mat-raised-button color="primary" class="submit-btn" type="submit">Store Data</button>
+    <button mat-stroked-button (click)="login()">Login to Services</button>
+</form>
