@@ -293,7 +293,7 @@ export const Defaults = {
     // PathNew is where a new user is sent to
     PathNew: "/c4dt/newuser",
     // PathUser is where a registered user is sent to
-    PathUser: "/c4dt/user",
+    PathUser: "/c4dt",
 };
 
 export function activateTesting() {
@@ -326,6 +326,6 @@ export function activateC4DT() {
     Defaults.Alias = "c4dt";
 }
 
-// activateTesting();
+activateTesting();
 // activateC4DT();
-activateDEDIS();
+// activateDEDIS();

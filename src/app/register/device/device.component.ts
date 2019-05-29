@@ -3,6 +3,7 @@ import { MatSnackBar } from "@angular/material";
 import { Router } from "@angular/router";
 import Log from "src/lib/cothority/log";
 import { Data, gData } from "../../../lib/Data";
+import { Defaults } from "../../../lib/Defaults";
 import { showSnack } from "../../../lib/ui/Ui";
 
 @Component({
@@ -26,7 +27,7 @@ export class DeviceComponent implements OnInit {
                 const newData = await Data.attachDevice(window.location.href);
                 await gData.overwrite(newData);
                 await gData.save();
-                await this.router.navigateByUrl("/user");
+                await this.router.navigateByUrl(Defaults.PathUser);
             });
         } catch (e) {
             Log.catch("Couldn't register:", e);

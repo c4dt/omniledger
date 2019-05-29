@@ -68,7 +68,7 @@ export class Contact {
     set alias(a: string) {
         if (a) {
             this.credential.setAttribute("1-public", "alias", Buffer.from(a));
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -83,7 +83,7 @@ export class Contact {
     set email(e: string) {
         if (e) {
             this.credential.setAttribute("1-public", "email", Buffer.from(e));
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -98,7 +98,7 @@ export class Contact {
     set url(u: string) {
         if (u) {
             this.credential.setAttribute("1-public", "url", Buffer.from(u));
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -111,7 +111,7 @@ export class Contact {
             this.contactsCache = cs;
             const csBuf = Buffer.concat(cs.map((c) => c.credentialIID));
             this.credential.setAttribute("1-public", "contactsBuf", csBuf);
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -126,7 +126,7 @@ export class Contact {
     set phone(p: string) {
         if (p) {
             this.credential.setAttribute("1-public", "phone", Buffer.from(p));
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -137,7 +137,7 @@ export class Contact {
     set seedPublic(pub: Public) {
         if (pub) {
             this.credential.setAttribute("1-public", "seedPub", pub.toBuffer());
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -148,7 +148,7 @@ export class Contact {
     set coinID(id: InstanceID) {
         if (id) {
             this.credential.setAttribute("1-public", "coin", id);
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -159,7 +159,7 @@ export class Contact {
     set ltsID(id: InstanceID) {
         if (id) {
             this.credential.setAttribute("1-config", "ltsID", id);
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -170,7 +170,7 @@ export class Contact {
     set ltsX(X: Point) {
         if (X) {
             this.credential.setAttribute("1-config", "ltsX", X.toProto());
-            this.version = this.version + 1;
+            this.incVersion();
         }
     }
 
@@ -181,8 +181,21 @@ export class Contact {
     set spawnerID(id: InstanceID) {
         if (id) {
             this.credential.setAttribute("1-config", "spawner", id);
-            this.version = this.version + 1;
+            this.incVersion();
         }
+    }
+
+    get view(): string{
+        const v = this.credential.getAttribute("1-config", "view");
+        if (v){
+            return v.toString();
+        }
+        return "default";
+    }
+
+    set view(v: string){
+        this.credential.setAttribute("1-config", "view", Buffer.from(v));
+        this.incVersion();
     }
 
     static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";

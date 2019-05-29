@@ -15,6 +15,14 @@
   <mat-form-field class="width100">
     <input matInput type="text" placeholder="Your Phone" formControlName="phone"/>
   </mat-form-field>
+  <mat-form-field>
+    <mat-label>Selected view</mat-label>
+    <mat-select formControlName="view">
+      <mat-option *ngFor="let view of views" [value]="view">
+        {{view | titlecase}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
   <br>
   <button mat-raised-button color="primary" class="submit-btn" type="submit">Store Data</button>
 </form>

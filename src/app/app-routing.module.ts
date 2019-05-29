@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
+import { C4dtComponent } from "./c4dt/c4dt.component";
+import { NewuserComponent } from "./c4dt/newuser/newuser.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
@@ -34,13 +36,10 @@ const routes: Routes = [
     },
     {
         // tslint:disable-next-line
-        path: "c4dt", component: C4DTComponent, children: [
-            {path: "yourself", component: YourselfComponent},
-            {path: "contacts", component: ContactsComponent},
-            {path: "secure", component: SecureComponent},
-            {path: "status", component: StatusComponent},
-            {path: "devices", component: DevicesComponent},
-            {path: "", redirectTo: "yourself", pathMatch: "full"},
+        path: "c4dt", component: C4dtComponent, children: [
+            {path: "newuser", component: NewuserComponent},
+            {path: "partner", component: ContactsComponent},
+            {path: "user", component: UserComponent},
         ],
     },
 ];

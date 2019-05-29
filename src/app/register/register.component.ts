@@ -40,7 +40,7 @@ export class RegisterComponent implements OnInit {
                             await StorageDB.set(gData.dataFileName, "");
                             window.location.reload();
                         } else {
-                            this.router.navigateByUrl("/user");
+                            this.router.navigateByUrl(Defaults.PathUser);
                         }
                     });
                 } else {
@@ -50,21 +50,19 @@ export class RegisterComponent implements OnInit {
                     });
                 }
             });
+        } else {
+            this.register = true;
+            this.registerForm = new FormGroup({
+                alias: new FormControl(Defaults.Alias),
+                darcID: new FormControl(darcID,
+                    Validators.pattern(/[0-9a-fA-F]{64}/)),
+                ephemeralKey: new FormControl(ephemeral,
+                    Validators.pattern(/[0-9a-fA-F]{64}/)),
+            });
+            gData.load().finally(() => {
+                bcs.updateBlocks();
+            });
         }
-
-        this.register = true;
-        this.registerForm = new FormGroup({
-            alias: new FormControl(Defaults.Alias),
-            darcID: new FormControl(darcID,
-                Validators.pattern(/[0-9a-fA-F]{64}/)),
-            ephemeralKey: new FormControl(ephemeral,
-                Validators.pattern(/[0-9a-fA-F]{64}/)),
-        });
-        gData.load().finally(() => {
-            Log.print("finally");
-            bcs.updateBlocks();
-        });
-        return;
     }
 
     ngOnInit() {
@@ -92,7 +90,7 @@ export class RegisterComponent implements OnInit {
             Log.lvl1("verifying registration");
             await gData.save();
             Log.lvl1("done registering");
-            await this.router.navigateByUrl("/user");
+            await this.router.navigateByUrl(Defaults.PathUser);
             Log.lvl1("navigated to user");
         }
     }

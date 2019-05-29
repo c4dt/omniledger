@@ -52,11 +52,11 @@ export class ContactsComponent implements OnInit {
         await this.updateGroups();
     }
 
-    async createContact() {
+    async createContact(view?: string) {
         let creds = {alias: "", email: ""};
         if (Defaults.Testing) {
-            const id = Date.now() % 1e6;
-            creds = {alias: "test " + id, email: "test" + id + "@test.com"};
+            const base = ( view ? view : "test" ) + Date.now() % 1e6;
+            creds = {alias: base, email: base + "@test.com"};
         }
         const ac = this.dialog.open(UserCredComponent, {
             data: creds,
@@ -69,6 +69,9 @@ export class ContactsComponent implements OnInit {
                     const ek = Private.fromRand();
                     newUser = await gData.createUser(result.alias, ek);
                     newUser.contact.email = result.email;
+                    if (view) {
+                        newUser.contact.view = view;
+                    }
                     newUser.addContact(gData.contact);
                     await newUser.contact.sendUpdate([newUser.keyIdentitySigner]);
                     await gData.coinInstance.transfer(Long.fromNumber(100000), newUser.coinInstance.id,
@@ -79,8 +82,18 @@ export class ContactsComponent implements OnInit {
                         await gData.save();
                         const url = this.location.prepareExternalUrl("/register?ephemeral=" +
                             newUser.keyIdentity._private.toHex());
+                        let host = window.location.host;
+                        if (Defaults.Testing) {
+                            if (host.match(/local[1-9]{0,1}/)) {
+                                let index = parseInt(host.slice(5, 6), 10);
+                                if (!index) {
+                                    index = 0;
+                                }
+                                host = "local" + (index + 1) + ":4200";
+                            }
+                        }
                         this.dialog.open(CreateUserComponent, {
-                            data: `${window.location.protocol}//${window.location.host + url}`,
+                            data: `${window.location.protocol}//${host + url}`,
                             width: "400px",
                         });
                     }
