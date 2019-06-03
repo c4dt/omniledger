@@ -1,0 +1,11 @@
+<h2>Contacts</h2>
+<ul>
+    <li *ngFor="let contact of gData.contacts">
+        {{ contact.alias | titlecase }} -
+        <button mat-button (click)="contactDelete(contact)">Delete</button>
+    </li>
+</ul>
+<div>
+    <button mat-stroked-button color="primary" (click)="createContact('c4dt_user')">Create C4DT User</button>
+    <button mat-stroked-button color="primary" (click)="addContact()">Add Contact</button>
+</div>

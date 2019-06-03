@@ -59,14 +59,10 @@ export class C4dtComponent implements OnInit {
         Log.print("pathname is", window.location.pathname);
         let path = "/c4dt/";
         switch (gData.contact.view) {
-            case "c4dt_admin":
-                path += "admin";
-                break;
             case "c4dt_partner":
-                path += "partner";
                 this.isPartner = true;
                 this.showDevices = true;
-                break;
+            case "c4dt_admin":
             case "c4dt_user":
                 path += "user";
                 break;

@@ -37,7 +37,7 @@ export class UserComponent implements OnInit {
             "Chose from one of the following services to log in:<br>" +
             "<ul><li><a href='https://demo.c4dt.org/stainless?token=1234' target='_blank'>" +
             "Stainless Demonstrator</a></li>" +
-            "<li><a href='https://demo.c4dt.org/safeai?token=1234' target='_blank'>SafeAI Demonstrator</a></li>" +
+            // "<li><a href='https://demo.c4dt.org/safeai?token=1234' target='_blank'>SafeAI Demonstrator</a></li>" +
             "<li><a href='https://c4dt.org/restricted?token=1234' target='_blank'>Restricted C4DT Area</a></li></ul>",
             "Cancel");
     }
