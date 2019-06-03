@@ -71,7 +71,7 @@ export class C4dtComponent implements OnInit {
                 path += "user";
                 break;
             default:
-                path = "/user";
+                path = "/admin";
         }
         Log.print("navigatetosubtab done");
         this.isLoaded = true;

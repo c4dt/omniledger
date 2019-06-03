@@ -47,7 +47,7 @@ export class AdminComponent implements OnInit {
   }
 
   navigateToSubtab() {
-    if (window.location.pathname === "/user") {
+    if (window.location.pathname === "/admin") {
       this.router.navigateByUrl("/admin/yourself");
     }
     this.isLoaded = true;
