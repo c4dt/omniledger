@@ -33,7 +33,7 @@ export class StorageDB {
 
     private static getDB(): Dexie.Table<IContact, string> {
         if (!this.db) {
-            this.db = new Dexie("dynasent");
+            this.db = new Dexie("OmniLedger");
             this.db.version(1).stores({
                 contacts: "&key,buffer",
             });
