@@ -73,12 +73,11 @@ export class C4dtComponent implements OnInit {
             default:
                 path = "/admin";
         }
-        Log.print("navigatetosubtab done");
         this.isLoaded = true;
         this.bcs.updateBlocks();
 
-        Log.print("navigating to", path, "because of", gData.contact.view);
-        if (window.location.pathname === "/c4dt") {
+        Log.lvl1("navigating to", path, "because of", gData.contact.view);
+        if (window.location.pathname.match(/\/c4dt$/)) {
             return this.router.navigateByUrl(path);
         }
     }
