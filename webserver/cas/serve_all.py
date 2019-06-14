@@ -32,12 +32,11 @@ def other(other):
 @app.route('/api/v0/cas/proxyValidate')
 def proxyVerify():
     ticket = request.args.get('ticket')
-    print("proxyVerify", ticket)
     return """
   <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
     <cas:authenticationSuccess>
       <cas:user>{ticket}</cas:user>
-      <cas:proxyGrantingTicket>1234</cas:proxyGrantingTicket>
+      <cas:proxyGrantingTicket>{ticket}</cas:proxyGrantingTicket>
       <cas:proxies>
         <cas:proxy>https://proxy2/pgtUrl</cas:proxy>
         <cas:proxy>https://proxy1/pgtUrl</cas:proxy>
