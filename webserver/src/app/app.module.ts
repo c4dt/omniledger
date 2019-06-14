@@ -30,6 +30,7 @@ import { UserComponent } from "./c4dt/user/user.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
+import { LoginComponent } from "./api/v0/cas/login/login.component";
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -62,6 +63,7 @@ import { RegisterComponent } from "./register/register.component";
         C4dtComponent,
         NewuserComponent,
         PartnerComponent,
+        LoginComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
