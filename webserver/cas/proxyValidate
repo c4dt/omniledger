@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+
+from wsgiref.handlers import CGIHandler
+from flask import Flask
+from flask import request
+
+import requests
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def proxyVerify():
+    ticket = request.args.get('ticket')
+    return """  <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
+    <cas:authenticationSuccess>
+      <cas:user>{ticket}</cas:user>
+      <cas:proxyGrantingTicket>{ticket}</cas:proxyGrantingTicket>
+      <cas:proxies>
+        <cas:proxy>https://proxy2/pgtUrl</cas:proxy>
+        <cas:proxy>https://proxy1/pgtUrl</cas:proxy>
+      </cas:proxies>
+    </cas:authenticationSuccess>
+  </cas:serviceResponse>""".format(ticket=ticket)
+
+#if __name__ == "__main__":
+#    app.run()
+
+CGIHandler().run(app)
+
