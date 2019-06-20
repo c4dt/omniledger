@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import Log from "src/lib/cothority/log";
-import { Defaults } from "../../lib/Defaults";
+import Log from "@dedis/cothority/log";
+import { Defaults } from "@c4dt/dynacred/Defaults";
 
 @Component({
   selector: "app-loading",

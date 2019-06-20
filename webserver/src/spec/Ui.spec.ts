@@ -1,4 +1,4 @@
-import { hexBuffer } from "../lib/ui/Ui";
+import { hexBuffer } from "../lib/Ui";
 
 describe("Ui elements should", async () =>{
     it("split buffer", () =>{

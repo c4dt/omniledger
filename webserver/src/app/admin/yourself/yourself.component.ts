@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
-import { Data, gData } from "../../../lib/Data";
-import { showSnack } from "../../../lib/ui/Ui";
+import { Data, gData } from "@c4dt/dynacred/Data";
+import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 
 @Component({
