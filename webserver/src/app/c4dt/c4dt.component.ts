@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material";
 import { Router } from "@angular/router";
-import Log from "../../lib/cothority/log";
-import { Data, gData } from "../../lib/Data";
-import { Defaults } from "../../lib/Defaults";
+import Log from "@dedis/cothority/log";
+import { Data, gData } from "@c4dt/dynacred/Data";
+import { Defaults } from "@c4dt/dynacred/Defaults";
 import { RetryLoadComponent } from "../admin/admin.component";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 

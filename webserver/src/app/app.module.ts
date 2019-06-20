@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { DialogOKCancelComponent } from "../lib/ui/Ui";
+import { DialogOKCancelComponent } from "../lib/Ui";
 import { DemoMaterialModule } from "../material-module";
 import { AdminComponent, RetryLoadComponent } from "./admin/admin.component";
 import {

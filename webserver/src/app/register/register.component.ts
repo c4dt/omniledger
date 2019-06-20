@@ -2,13 +2,13 @@ import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ByzCoinRPC } from "src/lib/cothority/byzcoin";
-import Log from "src/lib/cothority/log";
-import { Data, gData } from "../../lib/Data";
-import { Defaults } from "../../lib/Defaults";
-import { Private } from "../../lib/KeyPair";
-import { StorageDB } from "../../lib/StorageDB";
-import { showDialogOKC } from "../../lib/ui/Ui";
+import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
+import Log from "@dedis/cothority/log";
+import { Data, gData } from "@c4dt/dynacred/Data";
+import { Defaults } from "@c4dt/dynacred/Defaults";
+import { Private } from "@c4dt/dynacred/KeyPair";
+import { StorageDB } from "@c4dt/dynacred/StorageDB";
+import { showDialogOKC } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 
 @Component({

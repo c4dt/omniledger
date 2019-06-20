@@ -1,0 +1,101 @@
+{
+  "private": true,
+  "name": "@c4dt/dynacred",
+  "version": "0.0.1",
+  "description": "The library used by the omniledger-ui and the personhood.online app",
+  "main": "index.js",
+  "browser": "bundle.min.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/c4dt/omniledger-lib.git"
+  },
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "linter": "node_modules/.bin/tslint 'src/{,**/}*.ts' 'spec/{,**/}*.ts'",
+    "linter:fix": "node_modules/.bin/tslint --fix 'src/{,**/}*.ts' 'spec/{,**/}*.ts'",
+    "test": "npm run linter && npm run cover",
+    "test:nocover": "ts-node node_modules/jasmine/bin/jasmine.js",
+    "cover": "node_modules/.bin/nyc --reporter=lcov --reporter=text node_modules/jasmine/bin/jasmine.js",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "bundle": "node node_modules/.bin/webpack",
+    "doc": "node_modules/.bin/typedoc --out doc/ src/",
+    "link": "./publish.sh --link"
+  },
+  "keywords": [
+    "cothority",
+    "network"
+  ],
+  "author": "C4DT",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5",
+    "@dedis/cothority": "^3.1.1",
+    "@dedis/kyber": "^3.0.7",
+    "@stablelib/blake2xs": "^0.10.4",
+    "@types/crypto-js": "^3.1.43",
+    "@types/node": "^10.12.18",
+    "@types/sprintf-js": "^1.1.1",
+    "buffer": "^5.2.1",
+    "co": "^4.6.0",
+    "dexie": "^2.0.4",
+    "file": "^0.2.2",
+    "isomorphic-ws": "^4.0.1",
+    "keccak": "^2.0.0",
+    "lodash": "^4.17.11",
+    "long": "^4.0.0",
+    "moment": "^2.24.0",
+    "os": "^0.1.1",
+    "protobufjs": "^6.8.8",
+    "pure-uuid": "^1.5.5",
+    "shuffle-array": "^1.0.1",
+    "sprintf-js": "^1.1.2",
+    "toml": "^2.3.5",
+    "tweetnacl-ts": "^1.0.3",
+    "util": "^0.11.1",
+    "ws": "^6.1.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@types/bn.js": "^4.11.4",
+    "@types/dockerode": "^2.5.11",
+    "@types/elliptic": "^6.4.2",
+    "@types/jasmine": "^3.3.5",
+    "@types/lodash": "^4.14.120",
+    "@types/shuffle-array": "0.0.28",
+    "@types/ws": "^6.0.1",
+    "babel-loader": "^8.0.5",
+    "coveralls": "^3.0.2",
+    "dockerode": "^2.5.8",
+    "jasmine": "^3.3.1",
+    "jasmine-console-reporter": "^3.1.0",
+    "nyc": "^13.3.0",
+    "ts-loader": "^5.3.3",
+    "ts-node": "^8.0.1",
+    "tslint": "^5.12.1",
+    "typedoc": "^0.14.2",
+    "typescript": "^3.1.6",
+    "webpack": "^4.29.1",
+    "webpack-cli": "^3.2.3"
+  },
+  "nyc": {
+    "all": true,
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "spec/**/*",
+      "**/*.d.ts",
+      "**/*.config.js",
+      "coverage/**/*",
+      "dist/**/*",
+      "doc/**/*",
+      "scripts/**/*",
+      "src/darc/signer.ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  }
+}

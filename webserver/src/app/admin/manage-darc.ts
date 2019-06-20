@@ -1,12 +1,10 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef, MatSelectChange } from "@angular/material";
 import { curve } from "@dedis/kyber";
-import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
-import { Darc, IdentityEd25519, IIdentity, Rule } from "src/lib/cothority/darc";
-import IdentityDarc from "src/lib/cothority/darc/identity-darc";
-import IdentityWrapper from "src/lib/cothority/darc/identity-wrapper";
-import Log from "src/lib/cothority/log";
-import { gData } from "../../lib/Data";
+import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
+import { gData } from "@c4dt/dynacred/Data";
 
 export interface IManageDarc {
     title: string;
@@ -56,7 +54,7 @@ export class ManageDarcComponent {
         this.available = this.available.filter((i) => i.label !== "Unknown");
         this.chosen = [];
 
-        const expr = this.newDarc.rules.getRule(this.rule).expr.toString();
+        const expr = this.newDarc.rules.getRule(this.rule).getExpr().toString();
         if (expr.indexOf("&") >= 0) {
             throw new Error("cannot handle darcs with AND");
         }
