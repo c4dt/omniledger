@@ -1,6 +1,6 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import Log from "src/lib/cothority/log";
+import Log from "@dedis/cothority/log";
 
 export async function showSnack(snack: MatSnackBar, text: string, cmd: () => void) {
     let sb = snack.open(text);

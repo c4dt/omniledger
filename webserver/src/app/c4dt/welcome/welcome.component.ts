@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { gData } from "src/lib/dynacred/Data";
+import { gData } from "@c4dt/dynacred/Data";
 
 @Component({
   selector: "app-welcome",
