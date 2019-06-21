@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material";
 import { Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
-import { Data, gData } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
+import Log from "src/lib/cothority/log";
+import { Data, gData } from "src/lib/dynacred/Data";
+import { Defaults } from "src/lib/dynacred/Defaults";
 import { RetryLoadComponent } from "../admin/admin.component";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 
@@ -64,7 +64,7 @@ export class C4dtComponent implements OnInit {
                 this.showDevices = true;
             case "c4dt_admin":
             case "c4dt_user":
-                path += "user";
+                path += "welcome";
                 break;
             default:
                 path = "/admin";

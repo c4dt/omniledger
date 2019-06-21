@@ -1,10 +1,10 @@
 import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Darc, IIdentity } from "@dedis/cothority/darc";
-import { gData } from "@c4dt/dynacred/Data";
-import { Device } from "@c4dt/dynacred/Device";
+import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
+import { Darc, IIdentity } from "src/lib/cothority/darc";
+import { gData } from "src/lib/dynacred/Data";
+import { Device } from "src/lib/dynacred/Device";
 import { showDialogInfo, showSnack } from "../../../lib/Ui";
 
 @Component({

@@ -11,7 +11,8 @@ import { LoginComponent } from "./api/v0/cas/login/login.component";
 import { C4dtComponent } from "./c4dt/c4dt.component";
 import { NewuserComponent } from "./c4dt/newuser/newuser.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
-import { UserComponent } from "./c4dt/user/user.component";
+import { ProfileComponent } from "./c4dt/profile/profile.component";
+import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
@@ -45,7 +46,8 @@ const routes: Routes = [
         path: "c4dt", component: C4dtComponent, children: [
             {path: "newuser", component: NewuserComponent},
             {path: "partner", component: PartnerComponent},
-            {path: "user", component: UserComponent},
+            {path: "profile", component: ProfileComponent},
+            {path: "welcome", component: WelcomeComponent},
             {path: "devices", component: DevicesComponent},
             {path: "status", component: StatusComponent},
         ],
