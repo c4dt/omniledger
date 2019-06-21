@@ -196,6 +196,10 @@ export class ContactsComponent implements OnInit {
         await this.bcvs.updateBlocks();
     }
 
+    async actionShow(inst: DarcInstance) {
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst}});
+    }
+
     async diCreate(title: string, store: (newDI: DarcInstance) => {}) {
         const tc = this.dialog.open(CreateComponent, {data: title});
         tc.afterClosed().subscribe(async (result) => {
@@ -229,6 +233,10 @@ export class ContactsComponent implements OnInit {
             await this.updateGroups();
         });
         await this.bcvs.updateBlocks();
+    }
+
+    async groupShow(inst: DarcInstance) {
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst}});
     }
 
     /**
@@ -335,5 +343,16 @@ export class CreateComponent {
 
     cancel(): void {
         this.dialogRef.close();
+    }
+}
+
+@Component({
+    selector: "app-show-darcinstance",
+    templateUrl: "show-darcinstance.html",
+})
+export class DarcInstanceInfoComponent {
+    constructor(
+        public dialogRef: MatDialogRef<DarcInstanceInfoComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: {inst: DarcInstance}) {
     }
 }

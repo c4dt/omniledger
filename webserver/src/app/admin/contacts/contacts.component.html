@@ -19,7 +19,8 @@
 <h2>Groups</h2>
 <ul>
     <li *ngFor="let group of groups">
-        {{ group.darc.description.toString() | titlecase }} -
+        <button mat-button (click)="groupShow(group)"> {{ group.darc.description.toString() | titlecase }}</button>
+	-
         <button mat-button (click)="changeGroups(group, 'contact')">Change users</button>
         -
         <button mat-button (click)="groupDelete(group)">Delete group</button>
@@ -32,7 +33,8 @@
 <h2>Actions</h2>
 <ul>
     <li *ngFor="let action of actions">
-        {{ action.darc.description.toString() | titlecase }} -
+        <button mat-button (click)="actionShow(action)"> {{ action.darc.description.toString() | titlecase }}</button>
+	-
         <button mat-button (click)="changeGroups(action, 'group')">Change groups</button>
         -
         <button mat-button (click)="actionDelete(action)">Delete action</button>
