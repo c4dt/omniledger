@@ -74,8 +74,10 @@ export class ContactsComponent implements OnInit {
                     }
                     newUser.addContact(gData.contact);
                     await newUser.contact.sendUpdate([newUser.keyIdentitySigner]);
-                    await gData.coinInstance.transfer(Long.fromNumber(100000), newUser.coinInstance.id,
-                        [gData.keyIdentitySigner]);
+                    if (gData.coinInstance.value.greaterThan(1e6)) {
+                        await gData.coinInstance.transfer(Long.fromNumber(100000), newUser.coinInstance.id,
+                            [gData.keyIdentitySigner]);
+                    }
 
                     if (newUser) {
                         gData.addContact(newUser.contact);
@@ -84,7 +86,7 @@ export class ContactsComponent implements OnInit {
                             newUser.keyIdentity._private.toHex());
                         let host = window.location.host;
                         if (Defaults.Testing) {
-                            if (host.match(/local[1-9]{0,1}/)) {
+                            if (host.match(/local[1-9]?/)) {
                                 let index = parseInt(host.slice(5, 6), 10);
                                 if (!index) {
                                     index = 0;

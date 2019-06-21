@@ -58,4 +58,6 @@ dynacred_npm: cothority_npm
 	rm -rf src/lib/dynacred; \
 	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/dynacred:\@c4dt/dynacred:"
 
+src: cothority_src
 
+npm: dynacred_npm
