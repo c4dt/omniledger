@@ -1,16 +1,16 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
-import { Data, gData } from "@c4dt/dynacred/Data";
+import { Data, gData } from "src/lib/dynacred/Data";
 import { showDialogInfo, showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 
 @Component({
     selector: "app-user",
-    styleUrls: ["./user.component.css"],
-    templateUrl: "./user.component.html",
+    styleUrls: ["./profile.component.css"],
+    templateUrl: "./profile.component.html",
 })
-export class UserComponent implements OnInit {
+export class ProfileComponent implements OnInit {
     contactForm: FormGroup;
     gData: Data;
 

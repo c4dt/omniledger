@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { MatSnackBar } from "@angular/material";
 import { Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
-import { Data, gData } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
+import Log from "src/lib/cothority/log";
+import { Data, gData } from "src/lib/dynacred/Data";
+import { Defaults } from "src/lib/dynacred/Defaults";
 import { showSnack } from "../../../lib/Ui";
 
 @Component({

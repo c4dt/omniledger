@@ -1,14 +1,14 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog } from "@angular/material";
+import { MatDialog, MatSnackBar } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
-import Log from "@dedis/cothority/log";
-import { Data, gData } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
-import { Private } from "@c4dt/dynacred/KeyPair";
-import { StorageDB } from "@c4dt/dynacred/StorageDB";
-import { showDialogOKC } from "../../lib/Ui";
+import { ByzCoinRPC } from "src/lib/cothority/byzcoin";
+import Log from "src/lib/cothority/log";
+import { Data, gData } from "src/lib/dynacred/Data";
+import { Defaults } from "src/lib/dynacred/Defaults";
+import { Private } from "src/lib/dynacred/KeyPair";
+import { StorageDB } from "src/lib/dynacred/StorageDB";
+import { showDialogOKC, showSnack } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 
 @Component({
@@ -18,19 +18,21 @@ import { BcviewerService } from "../bcviewer/bcviewer.component";
 })
 export class RegisterComponent implements OnInit {
     registerForm: FormGroup;
-    registering: boolean = false;
+    registering: number;
     register: boolean = false;
     error: string;
+    ephemeralParam: string;
 
     constructor(private router: Router,
                 private dialog: MatDialog,
                 private route: ActivatedRoute,
+                private snack: MatSnackBar,
                 private bcs: BcviewerService) {
         const darcID = Defaults.AdminDarc.toString("hex");
         const ephemeral = Defaults.Ephemeral.toString("hex");
 
-        const ephemeralParam = route.snapshot.queryParamMap.get("ephemeral");
-        if (ephemeralParam && ephemeralParam.length === 64) {
+        this.ephemeralParam = route.snapshot.queryParamMap.get("ephemeral");
+        if (this.ephemeralParam && this.ephemeralParam.length === 64) {
             StorageDB.get(gData.dataFileName).then((buf) => {
                 if (buf.length > 0) {
                     showDialogOKC(this.dialog, "Overwrite user?", "There seems to be a user already " +
@@ -44,10 +46,7 @@ export class RegisterComponent implements OnInit {
                         }
                     });
                 } else {
-                    this.registering = true;
-                    this.addID(ephemeralParam).catch((e) => {
-                        this.error = "Registration failed - you can only register once using a registration link!";
-                    });
+                    this.registering = 1;
                 }
             });
         } else {
@@ -73,34 +72,50 @@ export class RegisterComponent implements OnInit {
         gData.delete();
         gData.bc = await ByzCoinRPC.fromByzcoin(Defaults.Roster, Defaults.ByzCoinID);
         if (ephemeral.length === 64) {
-            Log.lvl1("creating user");
-            const ekStr = ephemeral;
-            const ek = Private.fromHex(ekStr);
-            if (darcID.length === 64 && alias.length > 0) {
-                Log.lvl2("creating FIRST user");
-                const d = await Data.createFirstUser(gData.bc, Buffer.from(darcID, "hex"), ek.scalar,
-                    alias);
-                gData.contact = d.contact;
-                gData.keyIdentity = d.keyIdentity;
-                await gData.connectByzcoin();
-            } else {
-                Log.lvl2("attaching to existing user and replacing password");
-                await gData.attachAndEvolve(ek);
-            }
-            Log.lvl1("verifying registration");
-            await gData.save();
-            Log.lvl1("done registering");
-            await this.router.navigateByUrl(Defaults.PathUser);
-            Log.lvl1("navigated to user");
+            await showSnack(this.snack, "Creating new user", async () => {
+                Log.lvl1("creating user");
+                const ekStr = ephemeral;
+                const ek = Private.fromHex(ekStr);
+                if (darcID.length === 64 && alias.length > 0) {
+                    Log.lvl2("creating FIRST user");
+                    const d = await Data.createFirstUser(gData.bc, Buffer.from(darcID, "hex"), ek.scalar,
+                        alias);
+                    gData.contact = d.contact;
+                    gData.keyIdentity = d.keyIdentity;
+                    await gData.connectByzcoin();
+                } else {
+                    Log.lvl2("attaching to existing user and replacing password");
+                    await gData.attachAndEvolve(ek);
+                }
+                Log.lvl1("verifying registration");
+                await gData.save();
+                Log.lvl1("done registering");
+            });
         }
     }
 
     async addIDButton() {
         const ctrl = this.registerForm.controls;
         try {
-            this.addID(ctrl.ephemeralKey.value, ctrl.alias.value, ctrl.darcID.value);
+            await this.addID(ctrl.ephemeralKey.value, ctrl.alias.value, ctrl.darcID.value);
+            await this.start_demonstrator();
         } catch (e) {
             Log.error("Couldn't register:", e);
         }
+    }
+
+    async register_user() {
+        this.registering = 2;
+        try {
+            await this.addID(this.ephemeralParam);
+            this.registering = 3;
+        } catch (e) {
+            this.registering = 4;
+            this.error = "Registration failed - you can only register once using a registration link!";
+        }
+    }
+
+    async start_demonstrator() {
+        this.router.navigateByUrl(Defaults.PathUser);
     }
 }

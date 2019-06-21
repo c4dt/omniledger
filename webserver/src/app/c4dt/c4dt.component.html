@@ -3,9 +3,13 @@
 </div>
 <div *ngIf="isLoaded">
     <nav mat-tab-nav-bar>
-        <a mat-tab-link routerLink="/c4dt/user"
+        <a mat-tab-link routerLink="/c4dt/welcome"
            routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">
-            User
+            Welcome
+        </a>
+        <a mat-tab-link routerLink="/c4dt/profile"
+           routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">
+            Profile
         </a>
         <a *ngIf="isPartner"
            mat-tab-link routerLink="/c4dt/partner"

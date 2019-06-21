@@ -1,17 +1,45 @@
-<div *ngIf="registering"><h1>Registering user - please wait</h1>
-<h2>{{error}}</h2></div>
+<div *ngIf="registering > 0"><h1>Registration of new User</h1>
+    <div *ngIf="registering == 1">
+        <h2>Welcome at the C4DT OmniLedger demonstrator</h2>
+        <p>Welcome to the C4DT Demonstrator for the DEDIS blockchain. You've been sent here to claim the user
+            that has been created for you on this blockchain. With this user account you're able to interact
+            with the blockchain and connect to our chat system as well as access restricted content on our
+            webpage.</p>
+        <p>To do so, you need to link this browser to your user account. It is important to understand that
+            your account is linked to a browser, so install it on your work computer. Later on you can give access
+            to your user account to other browsers, but this is a more advanced option.</p>
+        <button mat-raised-button class="mat-primary" (click)="register_user()">Register User</button>
+    </div>
+    <div *ngIf="registering == 2">
+        <h2>Registering new user</h2>
+        <p>The system generates a new, random, key for you, and configures your user account on the
+            blockchain with this key. Please be patient...</p>
+    </div>
+    <div *ngIf="registering == 3">
+        <h2>All done!</h2>
+        <p>It seems that all is good now. Your user account is bound to this browser, congratulations!</p>
+        <p>Click on the button to start using your new user account, e.g., by signing up to our
+        internal chat-system.</p>
+        <button mat-raised-button class="mat-primary" (click)="start_demonstrator()">Start Demonstrator</button>
+    </div>
+    <div *ngIf="registering == 4">
+        <h2>Houston, we have a problem!</h2>
+        <p>Something went wrong! This should not happen. Please read the below error message and then either
+        fix the problem, or contact <a href="mailto:linus.gasser@epfl.ch">Linus Gasser</a></p>
+    </div>
+    <h2>{{error}}</h2></div>
 <div *ngIf="register">
     <h1>You're not yet registered.</h1>
     <p>Please enter an ephemeral key:</p>
 
     <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addIDButton()">
-        <mat-form-field class="width100" >
+        <mat-form-field class="width100">
             <input matInput type="text" placeholder="Ephemeral Key" formControlName="ephemeralKey"/>
         </mat-form-field>
-        <mat-form-field class="width100" >
+        <mat-form-field class="width100">
             <input matInput type="text" placeholder="DarcID" formControlName="darcID"/>
         </mat-form-field>
-        <mat-form-field class="width100" >
+        <mat-form-field class="width100">
             <input matInput type="text" placeholder="Alias" formControlName="alias"/>
         </mat-form-field>
         <br>

@@ -26,11 +26,12 @@ import { BcviewerComponent, BcviewerService, ShowBlockComponent } from "./bcview
 import { C4dtComponent } from "./c4dt/c4dt.component";
 import { NewuserComponent } from "./c4dt/newuser/newuser.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
-import { UserComponent } from "./c4dt/user/user.component";
+import { ProfileComponent } from "./c4dt/profile/profile.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
 import { LoginComponent } from "./api/v0/cas/login/login.component";
+import { WelcomeComponent } from './c4dt/welcome/welcome.component';
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -51,7 +52,7 @@ import { LoginComponent } from "./api/v0/cas/login/login.component";
         SecureComponent,
         StatusComponent,
         LoadingComponent,
-        UserComponent,
+        ProfileComponent,
         AdminComponent,
         DialogOKCancelComponent,
         BcviewerComponent,
@@ -64,6 +65,7 @@ import { LoginComponent } from "./api/v0/cas/login/login.component";
         NewuserComponent,
         PartnerComponent,
         LoginComponent,
+        WelcomeComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
