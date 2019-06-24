@@ -6,7 +6,7 @@ import { showDialogInfo, showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 
 @Component({
-    selector: "app-user",
+    selector: "app-profile",
     styleUrls: ["./profile.component.css"],
     templateUrl: "./profile.component.html",
 })
