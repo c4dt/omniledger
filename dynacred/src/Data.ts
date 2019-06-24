@@ -30,15 +30,15 @@ import CredentialInstance, {
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
-import { Badge } from "./Badge";
 import { Contact } from "src/lib/dynacred/Contact";
 import { activateTesting, Defaults } from "src/lib/dynacred/Defaults";
 import { KeyPair, Private, Public } from "src/lib/dynacred/KeyPair";
+import { StorageDB } from "src/lib/dynacred/StorageDB";
+import { Badge } from "./Badge";
 import { Party } from "./Party";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
-import { StorageDB } from "src/lib/dynacred/StorageDB";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -835,17 +835,19 @@ export class Data {
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id,
             darcDevice.getBaseID(), this.lts);
 
-        const signers = [this.keyIdentitySigner];
         Log.lvl1("Creating identity from spawner");
-        Log.lvl2("spawning darcs");
-        await this.spawnerInstance.spawnDarcs(this.coinInstance, signers,
-            darcDevice, darcSign, darcCred, darcCoin);
-        Log.lvl2("spawning coin");
-        await this.spawnerInstance.spawnCoin(this.coinInstance, signers, darcCoin.getBaseID(),
-            d.keyIdentity._public.toBuffer());
-        Log.lvl2("spawning credential");
-        await this.spawnerInstance.spawnCredential(this.coinInstance, signers, darcCred.getBaseID(), cred,
-            d.keyIdentity._public.toBuffer());
+        const ctx = new ClientTransaction({
+            instructions: [
+                ...this.spawnerInstance.spawnDarcInstructions(this.coinInstance,
+                    darcDevice, darcSign, darcCred, darcCoin),
+                ...this.spawnerInstance.spawnCoinInstructions(this.coinInstance,
+                    darcCoin.getBaseID(), d.keyIdentity._public.toBuffer()),
+                ...this.spawnerInstance.spawnCredentialInstruction(this.coinInstance,
+                    darcCred.getBaseID(), cred, d.keyIdentity._public.toBuffer()),
+            ],
+        });
+        await ctx.updateCountersAndSign(this.bc, [[this.keyIdentitySigner]]);
+        await this.bc.sendTransactionAndWait(ctx);
 
         d.contact = new Contact(cred, d);
         Log.lvl2("updating contact");
