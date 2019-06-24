@@ -1,6 +1,17 @@
 import * as toml from "toml";
 
 /**
+    * Type containing both the addresses of the endpoints for servers and for
+    * clients
+    */
+class Addresses {
+    constructor(
+        readonly servers: string[],
+        readonly clients: string[],
+    ) {} // tslint:disable-line
+}
+
+/**
  * Readonly container for the configuration
  *
  * TODO preciser name
@@ -9,18 +20,6 @@ export class Config {
     constructor(
         readonly addresses: Addresses,
     ) {}
-
-    /**
-     * Type containing both the addresses of the endpoints for servers and for
-     * clients
-     */
-    // tslint:disable-next-line
-    private class Addresses {
-        constructor(
-            readonly servers: string[],
-            readonly clients: string[],
-        ) {} // tslint:disable-line
-    }
 }
 
 /**
@@ -52,15 +51,22 @@ export default async function LoadConfig(): Promise<Config> {
             if (typeof value !== "string") {
                 return Promise.reject(new Error(`on parse config: "${key}" of server is not a string`));
             }
-            if (!value.startswith("tls:")) {
+            if (!value.startsWith("tls:")) {
                 return Promise.reject(new Error(`on parse config: "${key}" of server doesn't start with "tls:"`));
             }
 
-            return value;
-            };
+            return Promise.resolve(value);
+        };
 
-        addrsServer.push(await getField("Address"));
-        addrsClient.push(await getField("Url"));
+        const addr = await getField("Address");
+        const url = await getField("Url").catch((err) => {
+            // TODO check for expected error
+            const [_, host, port] = addr.split(":");
+            return `ws:${host}:${parseInt(port, 10) + 1}`;
+        })
+
+        addrsServer.push(addr);
+        addrsClient.push(url);
     }
 
     return new Config(new Addresses(
