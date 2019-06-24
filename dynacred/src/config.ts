@@ -43,23 +43,24 @@ export default async function LoadConfig(): Promise<Config> {
     const addrsClient: string[] = [];
     const addrsServer: string[] = [];
     for (const s of parsed.servers) {
-        if (!("Address" in s)) {
-            return Promise.reject(new Error(`on parse config: unable to find "Address" in each server`));
-        }
+        const getField = (key: string): Promise<string> => {
+            if (!(key in s)) {
+                return Promise.reject(new Error(`on parse config: unable to find "${key}" in each server`));
+            }
 
-        const addr = s.Address;
-        if (typeof addr !== "string") {
-            return Promise.reject(new Error(`on parse config: "Address" of server is not a string`));
-        }
+            const value = s[key];
+            if (typeof value !== "string") {
+                return Promise.reject(new Error(`on parse config: "${key}" of server is not a string`));
+            }
+            if (!value.startswith("tls:")) {
+                return Promise.reject(new Error(`on parse config: "${key}" of server doesn't start with "tls:"`));
+            }
 
-        const [scheme, host, port] = addr.split(":");
-        if (scheme !== "tls") {
-            return Promise.reject(new Error(`on parse config: "Address" of server doesn't start with "tls"`));
-        }
+            return value;
+            };
 
-        addrsServer.push(addr);
-        // FIXME hack as in cothority
-        addrsClient.push(`ws:${host}:${parseInt(port, 10) + 1}`);
+        addrsServer.push(await getField("Address"));
+        addrsClient.push(await getField("Url"));
     }
 
     return new Config(new Addresses(
