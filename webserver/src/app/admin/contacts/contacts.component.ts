@@ -133,6 +133,7 @@ export class ContactsComponent implements OnInit {
                 const coins = Long.fromString(result);
                 if (coins.greaterThan(0)) {
                     await showSnack(this.snackBar, "Transferring coins", async () => {
+                        await c.updateOrConnect(gData.bc);
                         await gData.coinInstance.transfer(coins, c.coinInstance.id, [gData.keyIdentitySigner]);
                     });
                     await this.bcvs.updateBlocks();
@@ -151,6 +152,7 @@ export class ContactsComponent implements OnInit {
 
     async calypsoSearch(c: Contact) {
         await showSnack(this.snackBar, "Searching new secure data for " + c.alias.toLocaleUpperCase(), async () => {
+            await c.updateOrConnect(gData.bc);
             const sds = await gData.contact.calypso.read(c);
             await gData.save();
             this.updateCalypso();
