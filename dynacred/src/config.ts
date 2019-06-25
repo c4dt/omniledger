@@ -51,9 +51,13 @@ async function parseServer(server: any): Promise<Server> {
 
     let url = server["Url"]; // tslint:disable-line
     if (url === undefined) {
-        const [_, host, port] = addr.split(":");
-        url = `ws:${host}:${parseInt(port, 10) + 1}`;
-    } else if (typeof url !== "string" || !url.startsWith("ws:")) {
+        url = server["URL"]
+        if (url === undefined) {
+            const [_, host, port] = addr.split(":");
+            url = `ws:${host}:${parseInt(port, 10) + 1}`;
+        }
+    }
+    if (typeof url !== "string" || !url.startsWith("ws:")) {
         return Promise.reject(new Error(`"Url" is invalid`));
     }
 
