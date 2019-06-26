@@ -1,7 +1,7 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import { Contact } from "src/lib/dynacred/Contact";
-import { Data } from "src/lib/dynacred/Data";
-import { KeyPair } from "src/lib/dynacred/KeyPair";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import { Contact } from "./Contact";
+import { Data } from "./Data";
+import { KeyPair } from "./KeyPair";
 import { Party } from "./Party";
 
 // const ZXing = require("nativescript-zxing");

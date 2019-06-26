@@ -1,4 +1,4 @@
-import { Data } from "src/lib/dynacred/Data";
+import { Data } from "./Data";
 
 export {
     Data,
