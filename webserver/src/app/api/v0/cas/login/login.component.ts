@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { gData } from "@c4dt/dynacred/Data";
 
 @Component({
