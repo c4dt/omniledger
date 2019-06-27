@@ -288,15 +288,12 @@ export class Contact {
         }
     }
 
-    static async fromByzcoin(bc: ByzCoinRPC, credIID: InstanceID, full: boolean = true): Promise<Contact> {
+    static async fromByzcoin(bc: ByzCoinRPC, credIID: InstanceID): Promise<Contact> {
         const u = new Contact();
         u.credentialInstance = await CredentialsInstance.fromByzcoin(bc, credIID);
         u.credential = u.credentialInstance.credential.copy();
-        if (full) {
-            u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
-            u.coinInstance = await CoinInstance.fromByzcoin(bc, u.getCoinAddress());
-        }
-        u.bc = bc;
+        u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
+        u.coinInstance = await CoinInstance.fromByzcoin(bc, u.getCoinAddress());
         return u;
     }
 
@@ -426,11 +423,10 @@ export class Contact {
                 "with public key", this.seedPublic.toHex(), "and id", this.credentialIID.toString("hex"));
             this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
             this.credential = this.credentialInstance.credential.copy();
-            if (getContacts) {
-                this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
-                this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID);
-                this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID);
-            }
+            this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
+            this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID);
+            this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID);
+            Log.lvl2("done for", this.alias);
         } else {
             Log.lvl2("Updating user", this.alias);
             await this.credentialInstance.update();
@@ -442,7 +438,6 @@ export class Contact {
             await this.coinInstance.update();
         }
 
-        Log.lvl2("Updating credential version");
         for (let i = this.structVersion; i < Contact.structVersionLatest; i++) {
             switch (i) {
                 case 0:
@@ -451,12 +446,10 @@ export class Contact {
             }
         }
 
-        Log.lvl2("Updating contacts");
         if (getContacts && (!this.contactsCache || this.contactsCache.length === 0)) {
             await this.getContacts();
         }
 
-        Log.lvl2("done for", this.alias);
         return this;
     }
 
@@ -480,9 +473,8 @@ export class Contact {
             let hasFaulty: boolean = false;
             for (let c = 0; c < csBuf.length; c += 32) {
                 try {
-                    const d = new Date();
-                    const cont = await Contact.fromByzcoin(this.bc, csBuf.slice(c, c + 32), false);
-                    Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
+                    const cont = await Contact.fromByzcoin(this.bc, csBuf.slice(c, c + 32));
+                    await cont.updateOrConnect(this.bc, false);
                     this.contactsCache.push(cont);
                 } catch (e) {
                     Log.error("couldn't get contact - deleting");
