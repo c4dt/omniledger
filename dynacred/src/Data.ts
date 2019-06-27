@@ -6,30 +6,30 @@ import { Buffer } from "buffer";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { sprintf } from "sprintf-js";
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
-import { LongTermSecret, OnChainSecretRPC } from "@c4dt/cothority/calypso/calypso-rpc";
-import { Rule } from "@c4dt/cothority/darc";
-import Darc from "@c4dt/cothority/darc/darc";
-import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
-import Signer from "@c4dt/cothority/darc/signer";
-import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
-import Log from "@c4dt/cothority/log";
-import { Roster } from "@c4dt/cothority/network";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
+import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
+import { Rule } from "@dedis/cothority/darc";
+import Darc from "@dedis/cothority/darc/darc";
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
+import Signer from "@dedis/cothority/darc/signer";
+import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
+import Log from "@dedis/cothority/log";
+import { Roster } from "@dedis/cothority/network";
+import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@c4dt/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
+} from "@dedis/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
