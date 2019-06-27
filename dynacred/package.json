@@ -1,7 +1,6 @@
 {
-  "private": true,
   "name": "@c4dt/dynacred",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The library used by the omniledger-ui and the personhood.online app",
   "main": "index.js",
   "browser": "bundle.min.js",
