@@ -1,6 +1,7 @@
 import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import { FormControl, Validators } from '@angular/forms';
 import Long from "long";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import Darc from "@dedis/cothority/darc/darc";
@@ -196,6 +197,10 @@ export class ContactsComponent implements OnInit {
         await this.bcvs.updateBlocks();
     }
 
+    async actionAdd() {
+        this.darcInstanceAdd(this.actions, "Action");
+    }
+
     async actionShow(inst: DarcInstance) {
         this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst}});
     }
@@ -235,6 +240,10 @@ export class ContactsComponent implements OnInit {
         await this.bcvs.updateBlocks();
     }
 
+    async groupAdd() {
+        this.darcInstanceAdd(this.groups, "Group");
+    }
+
     async groupShow(inst: DarcInstance) {
         this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst}});
     }
@@ -251,6 +260,32 @@ export class ContactsComponent implements OnInit {
                 .map((sd) => FileBlob.fromBuffer(sd.plainData));
             this.calypsoOtherKeys.set(other, fbs);
         });
+    }
+
+    private async darcInstanceAdd(array: DarcInstance[], type: string) {
+        this.dialog.open(DarcInstanceAddComponent, {data: {type: type}}).
+            afterClosed().subscribe(async (darcID: string | undefined) => {
+                if (darcID === "" || darcID === undefined) {
+                    return; // cancel yield empty string, escape yield undef
+                }
+                const id = Buffer.from(darcID, "hex");
+
+                // TODO might be movable to AsyncValidator
+                showSnack(this.snackBar, `Adding ${type}`, async () => {
+                    try {
+                        const inst = await DarcInstance.fromByzcoin(gData.bc, id);
+                        if (array.some(a => a.darc.id.equals(id))) {
+                            throw new Error(`Given ${type} is already added under the name "${inst.darc.description}"`);
+                        }
+                        array.push(inst);
+                    } catch (e) {
+                        if (e.message === `key not in proof: ${darcID}`) {
+                            e = new Error(`Given ${type}'s ID was not found`);
+                        }
+                        throw e;
+                    }
+                });
+            });
     }
 }
 
@@ -354,5 +389,25 @@ export class DarcInstanceInfoComponent {
     constructor(
         public dialogRef: MatDialogRef<DarcInstanceInfoComponent>,
         @Inject(MAT_DIALOG_DATA) public data: {inst: DarcInstance}) {
+    }
+}
+
+@Component({
+    selector: "app-add-darcinstance",
+    templateUrl: "add-darcinstance.html",
+})
+export class DarcInstanceAddComponent implements OnInit {
+    public form: FormControl;
+
+    constructor(
+        public dialogRef: MatDialogRef<DarcInstanceAddComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: {type: string}) {
+    }
+
+    async ngOnInit() {
+        this.form = new FormControl(null, [
+            Validators.required,
+            Validators.pattern('[0-9a-f]{64}'),
+        ])
     }
 }

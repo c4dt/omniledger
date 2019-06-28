@@ -12,6 +12,7 @@ import {
     AddContactComponent,
     ContactsComponent, CreateComponent,
     CreateUserComponent,
+    DarcInstanceAddComponent,
     DarcInstanceInfoComponent,
     TransferCoinComponent,
     UserCredComponent,
@@ -41,6 +42,7 @@ import { WelcomeComponent } from './c4dt/welcome/welcome.component';
         AppComponent,
         CreateUserComponent,
         ManageDarcComponent,
+        DarcInstanceAddComponent,
         DarcInstanceInfoComponent,
         AddContactComponent,
         TransferCoinComponent,
@@ -71,6 +73,7 @@ import { WelcomeComponent } from './c4dt/welcome/welcome.component';
     ],
     entryComponents: [
         ManageDarcComponent,
+        DarcInstanceAddComponent,
         DarcInstanceInfoComponent,
         AddContactComponent,
         CreateUserComponent,
