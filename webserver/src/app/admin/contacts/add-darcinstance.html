@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Add an existing {{ data.type }}</h2>
+<mat-dialog-content>
+	To find the ID of the {{ data.type }} you want to share, simply click on
+	the existing instance of the {{ data.type }}.
+	<p>
+	<mat-form-field class="width100">
+		<input matInput cdkFocusInitial [formControl]="form"
+			placeholder="{{ data.type }}'s ID">
+	</mat-form-field>
+	<div *ngIf="form.invalid && (form.dirty || form.touched)"
+		class="alert alert-danger">
+		<div *ngIf="form.errors.required">
+			Please enter the wanted {{ data.type }}.
+		</div>
+		<div *ngIf="form.errors.pattern">
+			Please enter a valid 64 characters hex string.
+		</div>
+	</div>
+</mat-dialog-content>
+<mat-dialog-actions>
+	<button mat-raised-button mat-dialog-close>Cancel</button>
+	<button mat-raised-button color="primary" [mat-dialog-close]="form.value"
+		[disabled]="form.invalid" cdkFocusInitial>Ok</button>
+</mat-dialog-actions>
