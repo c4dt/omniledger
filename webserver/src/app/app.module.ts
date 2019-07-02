@@ -22,6 +22,8 @@ import { ManageDarcComponent } from "./admin/manage-darc";
 import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./admin/secure/secure.component";
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
+import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
+import { LoginComponent as WPLoginComponent } from "./api/v0/wordpress/login/login.component";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { BcviewerComponent, BcviewerService, ShowBlockComponent } from "./bcviewer/bcviewer.component";
@@ -29,11 +31,10 @@ import { C4dtComponent } from "./c4dt/c4dt.component";
 import { NewuserComponent } from "./c4dt/newuser/newuser.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
 import { ProfileComponent } from "./c4dt/profile/profile.component";
+import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
 import { LoadingComponent } from "./loading/loading.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
-import { LoginComponent } from "./api/v0/cas/login/login.component";
-import { WelcomeComponent } from './c4dt/welcome/welcome.component';
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -68,7 +69,8 @@ import { WelcomeComponent } from './c4dt/welcome/welcome.component';
         C4dtComponent,
         NewuserComponent,
         PartnerComponent,
-        LoginComponent,
+        CASLoginComponent,
+        WPLoginComponent,
         WelcomeComponent,
     ],
     entryComponents: [
