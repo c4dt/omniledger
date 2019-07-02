@@ -33,8 +33,8 @@ export class StatusComponent implements OnInit {
 
   async update() {
     this.nodes = [];
-    const list = (await Defaults.Roster).list;
-    const srpc = new StatusRPC(await Defaults.Roster);
+    const list = Defaults.Roster.list;
+    const srpc = new StatusRPC(Defaults.Roster);
     for (let i = 0; i < list.length; i++) {
       let node = list[i].description;
       try {
