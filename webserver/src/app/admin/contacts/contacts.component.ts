@@ -184,6 +184,7 @@ export class ContactsComponent implements OnInit {
     async actionDelete(a: DarcInstance) {
         await showSnack(this.snackBar, "Deleting action", async () => {
             gData.contact.setActions((await gData.contact.getActions()).filter((aDI) => !aDI.id.equals(a.id)));
+            await gData.save();
             await this.updateActions();
         });
         await this.bcvs.updateBlocks();
