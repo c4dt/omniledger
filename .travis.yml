@@ -1,17 +1,55 @@
 language: minimal
+dist: trusty
 
 addons:
   ssh_known_hosts: c4dtsrv1.epfl.ch
 
-before_deploy:
-  - echo "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
-  - chmod 600 "$HOME/.ssh/id_ed25519"
+stages:
+  - build
+  - name: deploy
+    if: branch = master
 
-deploy:
-  provider: script
-  script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
-  on:
-    branch: master
+jobs:
+  include:
+
+    - stage: build
+      name: conode
+      script:
+        - cd conode
+        - make docker
+    - name: dynacred
+      language: node_js
+      node_js: 10
+      install: cd dynacred && npm ci
+      before_script: npm run linter
+      script:
+        - npm run build
+        - npm run test
+    - name: webserver
+      language: node_js
+      node_js: 10
+      before_install: cd dynacred && npm ci && npm run build && cd ..
+      install: cd webserver && npm ci
+      before_script:
+        - npm run lint
+        - d=node_modules/@c4dt/dynacred && rm -r $d && ln -s ../../../dynacred/dist $d
+      script:
+        - npm run build
+        - npm run test --no-watch
+
+    - stage: deploy
+      name: demo.c4dt.org
+      before_deploy:
+        - echo "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+        - chmod 600 "$HOME/.ssh/id_ed25519"
+      deploy:
+        provider: script
+        script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
+    - name: NPM
+      before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
+      deploy:
+        provider: script
+        script: cd dynacred && npm version prerelease --preid=p`date +%Y%m%d%H%M%S` && ./publish
 
 notifications:
   email: false
