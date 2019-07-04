@@ -1,11 +1,6 @@
 /* This is the main library for storing and getting things from the phone's file
  * system.
  */
-import { curve, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
@@ -30,15 +25,20 @@ import CredentialInstance, {
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
+import { curve, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
+import Long from "long";
+import { sprintf } from "sprintf-js";
+import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
-import { StorageDB } from "./StorageDB";
-import { Badge } from "./Badge";
 import { Party } from "./Party";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
+import { StorageDB } from "./StorageDB";
 
 const ed25519 = curve.newCurve("edwards25519");
 
