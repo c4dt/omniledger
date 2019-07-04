@@ -1,4 +1,3 @@
-import { randomBytes } from "crypto";
 import { ByzCoinRPC, InstanceID } from "@dedis/cothority/byzcoin";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
@@ -8,6 +7,7 @@ import { IdentityDarc, IIdentity } from "@dedis/cothority/darc";
 import Signer from "@dedis/cothority/darc/signer";
 import Log from "@dedis/cothority/log";
 import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
+import { randomBytes } from "crypto";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
 import { KeyPair } from "./KeyPair";

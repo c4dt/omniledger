@@ -8,8 +8,8 @@ export const Defaults = {
     DataDir: "storage",
 
     // ByzCoinID
-    ByzCoinID: Buffer.alloc(0),
     AdminDarc: Buffer.alloc(0),
+    ByzCoinID: Buffer.alloc(0),
     Ephemeral: Buffer.alloc(0),
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
@@ -18,25 +18,25 @@ export const Defaults = {
     Roster: null as Promise<Roster>,
     RosterCalypso: null as Promise<Roster>,
 
-    // Testing
-    Testing: false,
+    // Alias can be set to a non-"" value to have a default alias
+    Alias: "",
     // Calling registering of calypso
     CalypsoRegister: false,
     // If Confirm is false, there are no security confirmations asked. This is for
     // easier UI testing.
     Confirm: true,
-    // pre-loads polling stats for UI testing
-    PollPrechoice: false,
-    // Alias can be set to a non-"" value to have a default alias
-    Alias: "",
-    // TestButtons allow to delete everything
-    TestButtons: false,
     // DataFile can be set to a string that will be used to overwrite the Data
     DataFile: null as string,
     // PathNew is where a new user is sent to
     PathNew: "/c4dt/newuser",
     // PathUser is where a registered user is sent to
     PathUser: "/c4dt",
+    // pre-loads polling stats for UI testing
+    PollPrechoice: false,
+    // TestButtons allow to delete everything
+    TestButtons: false,
+    // Testing
+    Testing: false,
 };
 
 function getConodesURL(): string {
