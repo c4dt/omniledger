@@ -29,7 +29,7 @@ module.exports = function(config) {
     autoWatch: true,
     browsers: ["ChromeHeadless"],
     // browsers: ['Chrome'],
-    singleRun: false,
+    singleRun: true,
     restartOnFileChange: true,
   });
 };
