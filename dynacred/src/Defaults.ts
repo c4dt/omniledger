@@ -1,6 +1,7 @@
 // import { FileIO } from "./FileIO";
 import { Roster } from "@dedis/cothority/network";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
+import fetch from "node-fetch";
 
 // tslint:disable-next-line
 export const Defaults = {
@@ -38,8 +39,17 @@ export const Defaults = {
     PathUser: "/c4dt",
 };
 
+function getConodesURL(): string {
+    const host =
+        (typeof window !== "undefined")
+            ? window.location.origin
+            : "http://localhost:4200"; // not via browser, so via tests (TODO not true for lib/karma), so localhost
+
+    return host + "/assets/conodes.toml";
+}
+
 async function rosterFromAssets(): Promise<Roster> {
-    const res = await fetch(window.location.origin + "/assets/conodes.toml");
+    const res = await fetch(getConodesURL());
     if (!res.ok) {
         return Promise.reject(Error(`while fetching Roster config: ${res.status}: ${res.body}`));
     }
