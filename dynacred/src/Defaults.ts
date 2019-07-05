@@ -87,8 +87,12 @@ function setRosterFromAssets() {
     Defaults.RosterCalypso = roster;
 }
 
-// activateC4DT();
-activateDEDIS();
-// activateTesting();
+// TODO ugly hack to delay fetching when running tests, would be fixed with
+// having a not globally defined and not auto-initialized Defaults
+if (typeof window !== "undefined") {
+    // activateC4DT();
+    activateDEDIS();
+    // activateTesting();
 
-setRosterFromAssets();
+    setRosterFromAssets();
+}
