@@ -1,28 +1,13 @@
-#!/bin/bash
+#!/bin/sh -eu
 
-# Stop on error.
-set -e
+readonly TAG=${1:-dev}
+
+rm -r dist
 
 npm run build
+npm run bundle
+npm run doc
 
-cp README.md dist/.
-cp package.json dist/.
-cp package-lock.json dist/.
+cp -r README.md package.json package-lock.json doc/ dist/
 
-# remove the private field of the package json
-sed -i -e '/"private": true,/d' dist/package.json
-# fix the bundle path
-#sed -i -e 's/src="dist\//src="/' dist/index.html
-
-if [ "$1" = "--link" ] || [ "$1" = "-l" ]; then
-    # linking allow to use the package locally
-    cd dist/
-    npm link
-else
-    npm run bundle
-    rm -rf doc dist/doc
-    npm run doc
-    cp -r doc dist/doc
-
-    npm publish dist --access public $*
-fi
+npm publish dist --tag "$TAG" --access public
