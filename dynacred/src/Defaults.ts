@@ -45,7 +45,7 @@ function getConodesURL(): string {
             ? window.location.origin
             : "http://localhost:4200"; // not via browser, so via tests (TODO not true for lib/karma), so localhost
 
-    return host + "/assets/conodes.toml";
+    return host + "/omniledger/assets/conodes.toml";
 }
 
 async function rosterFromAssets(): Promise<Roster> {
