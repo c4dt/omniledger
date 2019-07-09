@@ -1,9 +1,12 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
 import { Router } from "@angular/router";
+
 import Log from "@dedis/cothority/log";
+
 import { Data, gData } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
+
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 
 @Component({
