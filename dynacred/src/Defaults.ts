@@ -1,7 +1,7 @@
 // import { FileIO } from "./FileIO";
 import { Roster } from "@dedis/cothority/network";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-import fetch from "node-fetch";
+import "cross-fetch/polyfill";
 
 // tslint:disable-next-line
 export const Defaults = {
