@@ -1,9 +1,11 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef, MatSelectChange } from "@angular/material";
-import { curve } from "@dedis/kyber";
+
 import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
+import { curve } from "@dedis/kyber";
+
 import { gData } from "@c4dt/dynacred/Data";
 
 export interface IManageDarc {

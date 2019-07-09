@@ -6,14 +6,10 @@ import { gData } from "@c4dt/dynacred/Data";
   styleUrls: ["./welcome.component.css"],
   templateUrl: "./welcome.component.html",
 })
-export class WelcomeComponent implements OnInit {
+export class WelcomeComponent {
     name: string;
 
   constructor() {
       this.name = gData.contact.alias;
   }
-
-  ngOnInit() {
-  }
-
 }

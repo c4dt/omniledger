@@ -1,16 +1,19 @@
 import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
+import { FormControl, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import { FormControl, Validators } from '@angular/forms';
 import Long from "long";
+
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import Darc from "@dedis/cothority/darc/darc";
 import Log from "@dedis/cothority/log";
+
 import { Contact } from "@c4dt/dynacred/Contact";
 import { Data, gData } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
 import { Private } from "@c4dt/dynacred/KeyPair";
 import { FileBlob } from "@c4dt/dynacred/SecureData";
+
 import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { ManageDarcComponent } from "../manage-darc";
@@ -205,7 +208,7 @@ export class ContactsComponent implements OnInit {
     }
 
     async actionShow(inst: DarcInstance) {
-        this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst}});
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
     }
 
     async diCreate(title: string, store: (newDI: DarcInstance) => {}) {
@@ -248,7 +251,7 @@ export class ContactsComponent implements OnInit {
     }
 
     async groupShow(inst: DarcInstance) {
-        this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst}});
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
     }
 
     /**
@@ -266,7 +269,7 @@ export class ContactsComponent implements OnInit {
     }
 
     private async darcInstanceAdd(array: DarcInstance[], type: string) {
-        this.dialog.open(DarcInstanceAddComponent, {data: {type: type}}).
+        this.dialog.open(DarcInstanceAddComponent, {data: {type}}).
             afterClosed().subscribe(async (darcID: string | undefined) => {
                 if (darcID === "" || darcID === undefined) {
                     return; // cancel yield empty string, escape yield undef
@@ -277,7 +280,7 @@ export class ContactsComponent implements OnInit {
                 showSnack(this.snackBar, `Adding ${type}`, async () => {
                     try {
                         const inst = await DarcInstance.fromByzcoin(gData.bc, id);
-                        if (array.some(a => a.darc.id.equals(id))) {
+                        if (array.some((a) => a.darc.id.equals(id))) {
                             throw new Error(`Given ${type} is already added under the name "${inst.darc.description}"`);
                         }
                         array.push(inst);
@@ -400,7 +403,7 @@ export class DarcInstanceInfoComponent {
     templateUrl: "add-darcinstance.html",
 })
 export class DarcInstanceAddComponent implements OnInit {
-    public form: FormControl;
+    form: FormControl;
 
     constructor(
         public dialogRef: MatDialogRef<DarcInstanceAddComponent>,
@@ -410,7 +413,7 @@ export class DarcInstanceAddComponent implements OnInit {
     async ngOnInit() {
         this.form = new FormControl(null, [
             Validators.required,
-            Validators.pattern('[0-9a-f]{64}'),
-        ])
+            Validators.pattern("[0-9a-f]{64}"),
+        ]);
     }
 }

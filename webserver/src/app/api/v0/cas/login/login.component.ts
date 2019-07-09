@@ -1,8 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+
+import Log from "@dedis/cothority/log";
+
 import { gData } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
-import Log from "@dedis/cothority/log";
 
 @Component({
     selector: "app-login",
