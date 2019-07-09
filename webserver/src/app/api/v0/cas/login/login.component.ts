@@ -10,7 +10,7 @@ import { gData } from "@c4dt/dynacred/Data";
 })
 export class LoginComponent implements OnInit {
     private service: string;
-    private server: string;
+    public server: string;
 
     constructor(
         private route: ActivatedRoute,
