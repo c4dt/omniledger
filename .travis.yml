@@ -46,6 +46,8 @@ jobs:
         provider: script
         script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
     - name: NPM
+      language: node_js
+      node_js: 10
       before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
       deploy:
         provider: script
