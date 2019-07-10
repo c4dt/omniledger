@@ -37,7 +37,7 @@ export class C4dtComponent implements OnInit {
             }).catch((e) => {
                 Log.lvl1("error while loading");
                 if (!gData.constructorObj) {
-                    this.router.navigateByUrl("/c4dt/newuser");
+                    this.router.navigateByUrl(Defaults.PathNew);
                     this.isNew = true;
                 } else {
                     const fileDialog = this.dialog.open(RetryLoadComponent, {

@@ -1,7 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import Log from "@dedis/cothority/log";
 import { gData } from "@c4dt/dynacred/Data";
+import { Defaults } from "@c4dt/dynacred/Defaults";
+import Log from "@dedis/cothority/log";
 
 @Component({
     selector: "app-login",
@@ -9,23 +10,31 @@ import { gData } from "@c4dt/dynacred/Data";
     templateUrl: "./login.component.html",
 })
 export class LoginComponent implements OnInit {
+    server: string;
     private service: string;
-    public server: string;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        if (gData.contact.isRegistered()) {
-            this.service = decodeURI(route.snapshot.queryParamMap.get("service"));
-            Log.print(this.service);
-            this.server = this.service.replace(/^https*:\/\/(.*?)\/.*/, "$1");
-        } else {
-            router.navigateByUrl("/c4dt/newuser");
-        }
     }
 
-    ngOnInit() {
+    async ngOnInit() {
+        try {
+            Log.print("loading");
+            await gData.load();
+            Log.print("loaded");
+            if (gData.contact.isRegistered()) {
+                this.service = decodeURI(this.route.snapshot.queryParamMap.get("service"));
+                Log.print(this.service);
+                this.server = this.service.replace(/^https*:\/\/(.*?)\/.*/, "$1");
+            } else {
+                await this.router.navigateByUrl(Defaults.PathNew);
+            }
+        } catch (e) {
+            Log.catch(e);
+            throw new Error(e);
+        }
     }
 
     login() {
