@@ -14,7 +14,7 @@ cothority_npm: kyber_npm
 		exit 0; \
 	fi; \
 	diff -Naurq cothority/external/js/cothority/src/ src/lib/cothority/ || \
-	    ( echo "Moving changes to cothority"; cp -a src/lib/cothority/ cothority/external/js/cothority/src ); \
+		( echo "Moving changes to cothority"; cp -a src/lib/cothority/ cothority/external/js/cothority/src ); \
 	rm -rf src/lib/cothority; \
 	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@dedis/cothority:"
 
@@ -37,7 +37,7 @@ kyber_npm:
 		exit 0; \
 	fi; \
 	diff -Naurq cothority/external/js/kyber/src/ src/lib/kyber/ || \
-	    ( echo "Moving changes to kyber"; cp -a src/lib/kyber/ cothority/external/js/kyber/src ); \
+		( echo "Moving changes to kyber"; cp -a src/lib/kyber/ cothority/external/js/kyber/src ); \
 	rm -rf src/lib/kyber; \
 	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/kyber:\@dedis/kyber:"
 
@@ -54,10 +54,13 @@ dynacred_npm: cothority_npm
 		exit 0; \
 	fi; \
 	diff -Naurq ../dynacred/src/ src/lib/dynacred/ || \
-	    ( echo "Moving changes to dynacred"; cp -a src/lib/dynacred/ ../dynacred/src ); \
+		( echo "Moving changes to dynacred"; cp -a src/lib/dynacred/ ../dynacred/src ); \
 	rm -rf src/lib/dynacred; \
 	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/dynacred:\@c4dt/dynacred:"
 
 src: cothority_src
 
 npm: dynacred_npm
+
+serve:
+	ng serve --disable-host-check
