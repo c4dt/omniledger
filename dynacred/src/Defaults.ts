@@ -19,6 +19,8 @@ export const Defaults = {
 
     // Alias can be set to a non-"" value to have a default alias
     Alias: "",
+    // Assets path
+    AssetsPath: "/omniledger/assets/",
     // Calling registering of calypso
     CalypsoRegister: false,
     // If Confirm is false, there are no security confirmations asked. This is for
@@ -36,8 +38,6 @@ export const Defaults = {
     TestButtons: false,
     // Testing
     Testing: false,
-    // Assets path
-    AssetsPath: "/omniledger/assets/",
 };
 
 function getConodesURL(): string {
