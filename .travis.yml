@@ -48,6 +48,7 @@ jobs:
     - name: NPM
       language: node_js
       node_js: 10
+      script:
       before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
       deploy:
         provider: script
