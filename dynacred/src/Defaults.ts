@@ -1,6 +1,5 @@
 // import { FileIO } from "./FileIO";
 import { Roster } from "@dedis/cothority/network";
-import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
 import "cross-fetch/polyfill";
 
 // tslint:disable-next-line
@@ -37,6 +36,8 @@ export const Defaults = {
     TestButtons: false,
     // Testing
     Testing: false,
+    // Assets path
+    AssetsPath: "/omniledger/assets/",
 };
 
 function getConodesURL(): string {
@@ -45,7 +46,7 @@ function getConodesURL(): string {
             ? window.location.origin
             : "http://localhost:4200"; // not via browser, so via tests (TODO not true for lib/karma), so localhost
 
-    return host + "/omniledger/assets/conodes.toml";
+    return host + Defaults.AssetsPath + "conodes.toml";
 }
 
 async function rosterFromAssets(): Promise<Roster> {
@@ -66,6 +67,7 @@ export function activateTesting() {
     Defaults.Alias = "garfield";
     Defaults.Confirm = false;
     Defaults.TestButtons = true;
+    Defaults.AssetsPath = "/assets/";
 }
 
 export function activateDEDIS() {
