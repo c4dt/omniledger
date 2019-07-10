@@ -2,7 +2,7 @@
 
 readonly TAG=${1:-dev}
 
-rm -r dist
+rm -rf dist
 
 npm run build
 npm run bundle
