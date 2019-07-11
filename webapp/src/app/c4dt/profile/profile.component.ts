@@ -1,7 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
+import { Router } from "@angular/router";
+
 import { Data, gData } from "@c4dt/dynacred/Data";
+import { Defaults } from "@c4dt/dynacred/Defaults";
+
 import { showDialogInfo, showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 
@@ -15,6 +19,7 @@ export class ProfileComponent implements OnInit {
     gData: Data;
 
     constructor(private snack: MatSnackBar,
+                private router: Router,
                 private dialog: MatDialog,
                 private bcs: BcviewerService) {
         this.gData = gData;
@@ -30,16 +35,6 @@ export class ProfileComponent implements OnInit {
             email: new FormControl(gData.contact.email, Validators.email),
             subscribe: new FormControl(gData.contact.subscribe),
         });
-    }
-
-    login() {
-        showDialogInfo(this.dialog, "Login to Service",
-            "Chose from one of the following services to log in:<br>" +
-            "<ul><li><a href='https://demo.c4dt.org/stainless?token=1234' target='_blank'>" +
-            "Stainless Demonstrator</a></li>" +
-            // "<li><a href='https://demo.c4dt.org/safeai?token=1234' target='_blank'>SafeAI Demonstrator</a></li>" +
-            "<li><a href='https://c4dt.org/restricted?token=1234' target='_blank'>Restricted C4DT Area</a></li></ul>",
-            "Cancel");
     }
 
     async updateContact() {

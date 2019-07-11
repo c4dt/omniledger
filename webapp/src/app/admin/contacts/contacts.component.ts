@@ -2,11 +2,17 @@ import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import Long from "long";
 
+import { Argument, Instruction } from "@dedis/cothority/byzcoin";
+import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { Rule } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
+import ISigner from "@dedis/cothority/darc/signer";
 import Log from "@dedis/cothority/log";
+import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 
 import { Contact } from "@c4dt/dynacred/Contact";
 import { Data, gData } from "@c4dt/dynacred/Data";
@@ -57,11 +63,14 @@ export class ContactsComponent implements OnInit {
     }
 
     async createContact(view?: string) {
-        let creds = {alias: "", email: ""};
+        const creds: IUserCred = {alias: "", email: "", view: "default", groups: []};
         if (Defaults.Testing) {
-            const base = ( view ? view : "test" ) + Date.now() % 1e6;
-            creds = {alias: base, email: base + "@test.com"};
+            const base = (view ? view : "test") + Date.now() % 1e6;
+            creds.alias = base;
+            creds.email = base + "@test.com";
         }
+        const groups = await gData.contact.getGroups();
+        creds.groups = groups.map((group) => group.darc.description.toString());
         const ac = this.dialog.open(UserCredComponent, {
             data: creds,
             width: "400px",
@@ -72,18 +81,66 @@ export class ContactsComponent implements OnInit {
                     let newUser: Data;
                     const ek = Private.fromRand();
                     newUser = await gData.createUser(result.alias, ek);
-                    newUser.contact.email = result.email;
-                    if (view) {
-                        newUser.contact.view = view;
-                    }
-                    newUser.addContact(gData.contact);
-                    await newUser.contact.sendUpdate([newUser.keyIdentitySigner]);
-                    if (gData.coinInstance.value.greaterThan(1e6)) {
-                        await gData.coinInstance.transfer(Long.fromNumber(100000), newUser.coinInstance.id,
-                            [gData.keyIdentitySigner]);
-                    }
 
                     if (newUser) {
+                        newUser.contact.email = result.email;
+                        if (view) {
+                            newUser.contact.view = view;
+                        }
+                        newUser.addContact(gData.contact);
+
+                        // Concatenate multiple instructions into one clientTransaction, so that
+                        // the update is faster, as there won't be a wait for all transactions to
+                        // go in.
+
+                        const instructions: Instruction[] = [];
+                        const signers: ISigner[][] = [];
+
+                        // Update all chosen group-darcs to include the new user
+                        const addedGroups = await Promise.all(result.groups.map(async (group) => {
+                            const gInst = groups.find((g) => group === g.darc.description.toString());
+                            const newDarc = gInst.darc.evolve();
+                            const signID = (await newUser.contact.getDarcSignIdentity());
+                            newDarc.rules.appendToRule(Darc.ruleSign, signID, Rule.OR);
+                            const args = [new Argument({
+                                name: DarcInstance.argumentDarc,
+                                value: Buffer.from(Darc.encode(newDarc).finish()),
+                            })];
+                            const instr = Instruction.createInvoke(newDarc.getBaseID(),
+                                DarcInstance.contractID, DarcInstance.commandEvolve, args);
+                            instructions.push(instr);
+                            signers.push([gData.keyIdentitySigner]);
+                            return gInst;
+                        }));
+
+                        // Send enough coins to do 5 new devices
+                        const coins = Long.fromNumber(5 * 100);
+                        const argsTransfer = [
+                            new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(coins.toBytesLE())}),
+                            new Argument({name: CoinInstance.argumentDestination, value: newUser.coinInstance.id}),
+                        ];
+                        instructions.push(Instruction.createInvoke(gData.coinInstance.id, CoinInstance.contractID,
+                            CoinInstance.commandTransfer, argsTransfer));
+                        signers.push([gData.keyIdentitySigner]);
+
+                        // Update the new user
+                        newUser.contact.setGroups(addedGroups);
+                        newUser.contact.view = result.view;
+                        const instrUpdate = Instruction.createInvoke(
+                            newUser.contact.credentialIID,
+                            CredentialsInstance.contractID,
+                            CredentialsInstance.commandUpdate,
+                            [new Argument({
+                                name: CredentialsInstance.argumentCredential,
+                                value: newUser.contact.credential.toBytes(),
+                            })],
+                        );
+                        instructions.push(instrUpdate);
+                        signers.push([newUser.keyIdentitySigner]);
+                        const ctx = new ClientTransaction({instructions});
+                        await ctx.updateCountersAndSign(gData.bc, signers);
+                        await gData.bc.sendTransactionAndWait(ctx);
+
                         gData.addContact(newUser.contact);
                         await gData.save();
                         const url = this.location.prepareExternalUrl("/register?ephemeral=" +
@@ -98,7 +155,7 @@ export class ContactsComponent implements OnInit {
                                 host = "local" + (index + 1) + ":4200";
                             }
                         }
-                        this.dialog.open(CreateUserComponent, {
+                        this.dialog.open(SignupLinkComponent, {
                             data: `${window.location.protocol}//${host + url}`,
                             width: "400px",
                         });
@@ -166,6 +223,7 @@ export class ContactsComponent implements OnInit {
 
     async changeGroups(a: DarcInstance, filter: string) {
         Log.lvl3("change groups");
+        await a.update();
         const tc = this.dialog.open(ManageDarcComponent,
             {
                 data: {
@@ -269,29 +327,29 @@ export class ContactsComponent implements OnInit {
     }
 
     private async darcInstanceAdd(array: DarcInstance[], type: string) {
-        this.dialog.open(DarcInstanceAddComponent, {data: {type}}).
-            afterClosed().subscribe(async (darcID: string | undefined) => {
-                if (darcID === "" || darcID === undefined) {
-                    return; // cancel yield empty string, escape yield undef
-                }
-                const id = Buffer.from(darcID, "hex");
+        this.dialog.open(DarcInstanceAddComponent, {data: {type}})
+            .afterClosed().subscribe(async (darcID: string | undefined) => {
+            if (darcID === "" || darcID === undefined) {
+                return; // cancel yield empty string, escape yield undef
+            }
+            const id = Buffer.from(darcID, "hex");
 
-                // TODO might be movable to AsyncValidator
-                showSnack(this.snackBar, `Adding ${type}`, async () => {
-                    try {
-                        const inst = await DarcInstance.fromByzcoin(gData.bc, id);
-                        if (array.some((a) => a.darc.id.equals(id))) {
-                            throw new Error(`Given ${type} is already added under the name "${inst.darc.description}"`);
-                        }
-                        array.push(inst);
-                    } catch (e) {
-                        if (e.message === `key not in proof: ${darcID}`) {
-                            e = new Error(`Given ${type}'s ID was not found`);
-                        }
-                        throw e;
+            // TODO might be movable to AsyncValidator
+            await showSnack(this.snackBar, `Adding ${type}`, async () => {
+                try {
+                    const inst = await DarcInstance.fromByzcoin(gData.bc, id);
+                    if (array.some((a) => a.darc.id.equals(id))) {
+                        throw new Error(`Given ${type} is already added under the name "${inst.darc.description}"`);
                     }
-                });
+                    array.push(inst);
+                } catch (e) {
+                    if (e.message === `key not in proof: ${darcID}`) {
+                        e = new Error(`Given ${type}'s ID was not found`);
+                    }
+                    throw e;
+                }
             });
+        });
     }
 }
 
@@ -319,6 +377,8 @@ export class TransferCoinComponent {
 export interface IUserCred {
     alias: string;
     email: string;
+    view: string;
+    groups: string[];
 }
 
 @Component({
@@ -326,10 +386,18 @@ export interface IUserCred {
     templateUrl: "user-cred.html",
 })
 export class UserCredComponent {
+    views = Data.views;
+    groupsAvail: string[];
 
     constructor(
         public dialogRef: MatDialogRef<TransferCoinComponent>,
         @Inject(MAT_DIALOG_DATA) public data: IUserCred) {
+        this.groupsAvail = data.groups;
+        data.groups = [];
+    }
+
+    show(): void {
+        Log.print(this.data.groups, this.data.view);
     }
 
     cancel(): void {
@@ -338,13 +406,13 @@ export class UserCredComponent {
 }
 
 @Component({
-    selector: "app-create-user",
-    templateUrl: "create-user.html",
+    selector: "app-signup-link",
+    templateUrl: "signup-link.html",
 })
-export class CreateUserComponent {
+export class SignupLinkComponent {
 
     constructor(
-        public dialogRef: MatDialogRef<CreateUserComponent>,
+        public dialogRef: MatDialogRef<SignupLinkComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
     }
 
@@ -394,7 +462,7 @@ export class CreateComponent {
 export class DarcInstanceInfoComponent {
     constructor(
         public dialogRef: MatDialogRef<DarcInstanceInfoComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: {inst: DarcInstance}) {
+        @Inject(MAT_DIALOG_DATA) public data: { inst: DarcInstance }) {
     }
 }
 
@@ -407,7 +475,7 @@ export class DarcInstanceAddComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<DarcInstanceAddComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: {type: string}) {
+        @Inject(MAT_DIALOG_DATA) public data: { type: string }) {
     }
 
     async ngOnInit() {
