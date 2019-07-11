@@ -159,14 +159,6 @@ export class Data {
         });
 
         const ocs = new OnChainSecretRPC(bc);
-        if (Defaults.CalypsoRegister) {
-            Log.lvl1("Setting authorization for byzcoin in calypso");
-            try {
-                await ocs.authorizeRoster(await Defaults.RosterCalypso);
-            } catch (e) {
-                Log.error("Could not authorize roster", e);
-            }
-        }
         const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], await Defaults.RosterCalypso);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);
