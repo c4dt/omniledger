@@ -1,18 +1,19 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import Log from "@dedis/cothority/log";
-
 import { gData } from "@c4dt/dynacred/Data";
+
+import Log from "@dedis/cothority/log";
+import { Defaults } from "../../../../../../../dynacred/src/Defaults";
 
 @Component({
     selector: "app-login",
     styleUrls: ["./login.component.css"],
     templateUrl: "./login.component.html",
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
+    server: string;
     private service: string;
-    public server: string;
 
     constructor(
         private route: ActivatedRoute,
@@ -23,11 +24,8 @@ export class LoginComponent implements OnInit {
             Log.print(this.service);
             this.server = this.service.replace(/^https*:\/\/(.*?)\/.*/, "$1");
         } else {
-            router.navigateByUrl("/c4dt/newuser");
+            router.navigateByUrl(Defaults.PathUser);
         }
-    }
-
-    ngOnInit() {
     }
 
     login() {
@@ -35,8 +33,8 @@ export class LoginComponent implements OnInit {
             gData.contact.credentialIID.slice(0, 8).toString("hex");
     }
 
-    deny() {
-        this.router.navigateByUrl("/c4dt");
+    async deny() {
+        await this.router.navigateByUrl(Defaults.PathUser);
     }
 
 }

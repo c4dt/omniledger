@@ -10,10 +10,11 @@ import { DemoMaterialModule } from "../material-module";
 import { AdminComponent, RetryLoadComponent } from "./admin/admin.component";
 import {
     AddContactComponent,
-    ContactsComponent, CreateComponent,
-    SignupLinkComponent,
+    ContactsComponent,
+    CreateComponent,
     DarcInstanceAddComponent,
     DarcInstanceInfoComponent,
+    SignupLinkComponent,
     TransferCoinComponent,
     UserCredComponent,
 } from "./admin/contacts/contacts.component";
@@ -26,7 +27,7 @@ import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.co
 import { LoginComponent as WPLoginComponent } from "./api/v0/wordpress/login/login.component";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { BcviewerComponent, BcviewerService, ShowBlockComponent } from "./bcviewer/bcviewer.component";
+import { BcviewerComponent, ShowBlockComponent } from "./bcviewer/bcviewer.component";
 import { C4dtComponent } from "./c4dt/c4dt.component";
 import { NewuserComponent } from "./c4dt/newuser/newuser.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
