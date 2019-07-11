@@ -11,7 +11,7 @@ import { AdminComponent, RetryLoadComponent } from "./admin/admin.component";
 import {
     AddContactComponent,
     ContactsComponent, CreateComponent,
-    CreateUserComponent,
+    SignupLinkComponent,
     DarcInstanceAddComponent,
     DarcInstanceInfoComponent,
     TransferCoinComponent,
@@ -41,7 +41,7 @@ import { RegisterComponent } from "./register/register.component";
     declarations: [
         CreateComponent,
         AppComponent,
-        CreateUserComponent,
+        SignupLinkComponent,
         ManageDarcComponent,
         DarcInstanceAddComponent,
         DarcInstanceInfoComponent,
@@ -78,7 +78,7 @@ import { RegisterComponent } from "./register/register.component";
         DarcInstanceAddComponent,
         DarcInstanceInfoComponent,
         AddContactComponent,
-        CreateUserComponent,
+        SignupLinkComponent,
         TransferCoinComponent,
         UserCredComponent,
         CalypsoUploadComponent,

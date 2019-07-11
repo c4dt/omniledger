@@ -3,13 +3,13 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
-import Log from "@dedis/cothority/log";
-
 import { Data, gData } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
 import { Private } from "@c4dt/dynacred/KeyPair";
 import { StorageDB } from "@c4dt/dynacred/StorageDB";
+
+import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
+import Log from "@dedis/cothority/log";
 
 import { showDialogOKC, showSnack } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
@@ -31,27 +31,30 @@ export class RegisterComponent implements OnInit {
                 private route: ActivatedRoute,
                 private snack: MatSnackBar,
                 private bcs: BcviewerService) {
+    }
+
+    async ngOnInit() {
+        Log.llvl3("init register");
         const darcID = Defaults.AdminDarc.toString("hex");
         const ephemeral = Defaults.Ephemeral.toString("hex");
 
-        this.ephemeralParam = route.snapshot.queryParamMap.get("ephemeral");
+        this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
-            StorageDB.get(gData.dataFileName).then((buf) => {
-                if (buf.length > 0) {
-                    showDialogOKC(this.dialog, "Overwrite user?", "There seems to be a user already " +
-                        "stored in this browser - do you want to overwrite it?", async (overwrite: boolean) => {
-                        if (overwrite) {
-                            Log.lvl1("overwriting existing user");
-                            await StorageDB.set(gData.dataFileName, "");
-                            window.location.reload();
-                        } else {
-                            this.router.navigateByUrl(Defaults.PathUser);
-                        }
-                    });
-                } else {
-                    this.registering = 1;
-                }
-            });
+            const buf = await StorageDB.get(gData.dataFileName);
+            if (buf.length > 0) {
+                await showDialogOKC(this.dialog, "Overwrite user?", "There seems to be a user already " +
+                    "stored in this browser - do you want to overwrite it?", async (overwrite: boolean) => {
+                    if (overwrite) {
+                        Log.lvl1("overwriting existing user");
+                        await StorageDB.set(gData.dataFileName, "");
+                        window.location.reload();
+                    } else {
+                        await this.router.navigateByUrl(Defaults.PathUser);
+                    }
+                });
+            } else {
+                this.registering = 1;
+            }
         } else {
             this.register = true;
             this.registerForm = new FormGroup({
@@ -61,14 +64,9 @@ export class RegisterComponent implements OnInit {
                 ephemeralKey: new FormControl(ephemeral,
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
-            gData.load().finally(() => {
-                bcs.updateBlocks();
-            });
+            await gData.load();
+            this.bcs.updateBlocks();
         }
-    }
-
-    ngOnInit() {
-        Log.llvl3("init register");
     }
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {

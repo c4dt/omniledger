@@ -32,23 +32,23 @@
             </div>
             <h2>{{error}}</h2>
         </div>
-    </div>
-</div>
-<div *ngIf="register">
-    <h1>You're not yet registered.</h1>
-    <p>Please enter an ephemeral key:</p>
+        <div *ngIf="register">
+            <h1>You're not yet registered.</h1>
+            <p>Please enter an ephemeral key:</p>
 
-    <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addIDButton()">
-        <mat-form-field class="width100">
-            <input matInput type="text" placeholder="Ephemeral Key" formControlName="ephemeralKey"/>
-        </mat-form-field>
-        <mat-form-field class="width100">
-            <input matInput type="text" placeholder="DarcID" formControlName="darcID"/>
-        </mat-form-field>
-        <mat-form-field class="width100">
-            <input matInput type="text" placeholder="Alias" formControlName="alias"/>
-        </mat-form-field>
-        <br>
-        <button mat-button class="submit-btn mat-primary" type="submit">Register</button>
-    </form>
+            <form [formGroup]="registerForm" class="formwidth" (ngSubmit)="addIDButton()">
+                <mat-form-field class="width100">
+                    <input matInput type="text" placeholder="Ephemeral Key" formControlName="ephemeralKey"/>
+                </mat-form-field>
+                <mat-form-field class="width100">
+                    <input matInput type="text" placeholder="DarcID" formControlName="darcID"/>
+                </mat-form-field>
+                <mat-form-field class="width100">
+                    <input matInput type="text" placeholder="Alias" formControlName="alias"/>
+                </mat-form-field>
+                <br>
+                <button mat-button class="submit-btn mat-primary" type="submit">Register</button>
+            </form>
+        </div>
+    </div>
 </div>

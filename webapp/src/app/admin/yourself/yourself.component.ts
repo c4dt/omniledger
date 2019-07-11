@@ -1,7 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
+import { Router } from "@angular/router";
+
 import { Data, gData } from "@c4dt/dynacred/Data";
+import { Defaults } from "@c4dt/dynacred/Defaults";
+
 import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 
@@ -13,13 +17,13 @@ import { BcviewerService } from "../../bcviewer/bcviewer.component";
 export class YourselfComponent implements OnInit {
     gData: Data;
     contactForm: FormGroup;
-    views: string[];
+    views = Data.views;
 
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
+                private router: Router,
                 private bcs: BcviewerService) {
         this.gData = gData;
-        this.views = ["default", "c4dt_admin", "c4dt_partner", "c4dt_user"];
     }
 
     async ngOnInit() {
@@ -49,6 +53,7 @@ export class YourselfComponent implements OnInit {
             gData.contact.view = this.contactForm.controls.view.value;
             await gData.contact.sendUpdate();
             this.bcs.updateBlocks();
+            await this.router.navigateByUrl(Defaults.PathUser);
         });
     }
 }

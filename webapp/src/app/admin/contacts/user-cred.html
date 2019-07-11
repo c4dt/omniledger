@@ -7,9 +7,24 @@
         <mat-form-field class="width100">
             <input matInput [(ngModel)]="data.email" placeholder="Email for new user">
         </mat-form-field>
+        <mat-form-field class="width100">
+            <mat-label>Default view for user</mat-label>
+            <mat-select [(value)]="data.view">
+                <mat-option *ngFor="let view of views" [value]="view">
+                    {{view | titlecase}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Groups for user</mat-label>
+            <mat-select [(value)]="data.groups" multiple>
+                <mat-option *ngFor="let group of groupsAvail" [value]="group">{{group}}</mat-option>
+            </mat-select>
+        </mat-form-field>
     </p>
     <p>
         <button mat-raised-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button (click)="show()">Show</button>
         <button mat-raised-button color='primary' [mat-dialog-close]="data" cdkFocusInitial>Create</button>
     </p>
 </div>
