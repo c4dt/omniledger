@@ -60,7 +60,7 @@ export class RegisterComponent implements OnInit {
         } else {
             this.register = true;
             this.registerForm = new FormGroup({
-                alias: new FormControl(Defaults.Alias),
+                alias: new FormControl(),
                 darcID: new FormControl(darcID,
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
                 ephemeralKey: new FormControl(ephemeral,

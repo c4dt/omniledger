@@ -17,8 +17,6 @@ export const Defaults = {
     Roster: null as Promise<Roster>,
     RosterCalypso: null as Promise<Roster>,
 
-    // Alias can be set to a non-"" value to have a default alias
-    Alias: "",
     // Assets path
     AssetsPath: "/omniledger/assets/",
     // PathNew is where a new user is sent to
@@ -52,7 +50,6 @@ export function activateTesting() {
     Defaults.ByzCoinID = Buffer.from("5f78d08a260b6fcc0b492448ec272dc4a59794ddf34a9914fdfe4f3faeba616e", "hex");
     Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
     Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
-    Defaults.Alias = "garfield";
     Defaults.AssetsPath = "/assets/";
 }
 
@@ -65,7 +62,6 @@ export function activateC4DT() {
     Defaults.ByzCoinID = Buffer.from("5b081e02e38e583085204abfe4553ceb6e0833a530bf8fa476ce2f5c1a9a51ae", "hex");
     Defaults.AdminDarc = Buffer.from("05e647cbdd220e30e33db4d168bd3ceacd09839ca099ca8ef5ab146c986726f6", "hex");
     Defaults.Ephemeral = Buffer.from("ed3ebf1be6fbe7496a8a31c4124fe560fa2f1651dbfa851c61cbd48c961ab30c", "hex");
-    Defaults.Alias = "c4dt";
 }
 
 function setRosterFromAssets() {
