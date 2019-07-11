@@ -23,19 +23,10 @@ export const Defaults = {
     AssetsPath: "/omniledger/assets/",
     // Calling registering of calypso
     CalypsoRegister: false,
-    // If Confirm is false, there are no security confirmations asked. This is for
-    // easier UI testing.
-    Confirm: true,
-    // DataFile can be set to a string that will be used to overwrite the Data
-    DataFile: null as string,
     // PathNew is where a new user is sent to
     PathNew: "/newuser",
     // PathUser is where a registered user is sent to
     PathUser: "/c4dt",
-    // pre-loads polling stats for UI testing
-    PollPrechoice: false,
-    // TestButtons allow to delete everything
-    TestButtons: false,
     // Testing
     Testing: false,
 };
@@ -65,8 +56,6 @@ export function activateTesting() {
     Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
     Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
     Defaults.Alias = "garfield";
-    Defaults.Confirm = false;
-    Defaults.TestButtons = true;
     Defaults.AssetsPath = "/assets/";
 }
 
