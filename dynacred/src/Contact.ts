@@ -437,8 +437,8 @@ export class Contact {
                 this.credential = this.credentialInstance.credential.copy();
                 this.contactsCache = null;
             }
-            await this.darcInstance.update();
-            await this.coinInstance.update();
+            this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID);
+            this.coinInstance = await CoinInstance.fromByzcoin(this.bc, this.coinID);
         }
 
         Log.lvl2("Updating credential version");
