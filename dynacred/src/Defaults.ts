@@ -94,6 +94,7 @@ function setRosterFromAssets() {
 if (typeof window !== "undefined") {
     // activateC4DT();
     activateDEDIS();
+    // Defaults.AssetsPath = "/assets/";
     // activateTesting();
 
     setRosterFromAssets();
