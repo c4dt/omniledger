@@ -2,7 +2,11 @@
   "name": "@c4dt/dynacred",
   "version": "0.0.5",
   "description": "The library used by the omniledger-ui and the personhood.online app",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "browser": "bundle.min.js",
   "repository": {
     "type": "git",

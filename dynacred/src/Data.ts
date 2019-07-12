@@ -93,6 +93,7 @@ export class Data {
     static readonly urlNewDevice = "/register/device";
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
+    static readonly views = ["default", "c4dt_admin", "c4dt_partner", "c4dt_user"];
 
     /**
      * createFirstUser sets up a new user with all the necessary darcs. It does the following:
