@@ -41,7 +41,7 @@ export class ContactsComponent implements OnInit {
         private snackBar: MatSnackBar,
         private bcvs: BcviewerService,
         private location: Location,
-        private uData: UserData,
+        public uData: UserData,
     ) {
         this.calypsoOtherKeys = new Map();
         this.updateActions();
