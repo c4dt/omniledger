@@ -23,7 +23,7 @@ export class YourselfComponent implements OnInit {
                 private dialog: MatDialog,
                 private router: Router,
                 private bcs: BcviewerService,
-                private uData: UserData) {
+                public uData: UserData) {
     }
 
     async ngOnInit() {
