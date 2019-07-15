@@ -1,6 +1,6 @@
 <h2>Contacts</h2>
 <ul>
-    <li *ngFor="let contact of gData.contacts">
+    <li *ngFor="let contact of uData.contacts">
         {{ contact.alias | titlecase }} -
         <button mat-button (click)="transferCoin(contact)">Transfer</button>
         -

@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { Data, gData } from "@c4dt/dynacred/Data";
+import { Data } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
 import { Private } from "@c4dt/dynacred/KeyPair";
 import { StorageDB } from "@c4dt/dynacred/StorageDB";
@@ -13,6 +13,7 @@ import Log from "@dedis/cothority/log";
 
 import { showDialogOKC, showSnack } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
+import { UserData } from "../user-data.service";
 
 @Component({
     selector: "app-register",
@@ -30,7 +31,8 @@ export class RegisterComponent implements OnInit {
                 private dialog: MatDialog,
                 private route: ActivatedRoute,
                 private snack: MatSnackBar,
-                private bcs: BcviewerService) {
+                private bcs: BcviewerService,
+                private uData: UserData) {
     }
 
     async ngOnInit() {
@@ -40,13 +42,13 @@ export class RegisterComponent implements OnInit {
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
-            const buf = await StorageDB.get(gData.dataFileName);
+            const buf = await StorageDB.get(this.uData.dataFileName);
             if (buf.length > 0) {
                 await showDialogOKC(this.dialog, "Overwrite user?", "There seems to be a user already " +
                     "stored in this browser - do you want to overwrite it?", async (overwrite: boolean) => {
                     if (overwrite) {
                         Log.lvl1("overwriting existing user");
-                        await StorageDB.set(gData.dataFileName, "");
+                        await StorageDB.set(this.uData.dataFileName, "");
                         window.location.reload();
                     } else {
                         await this.router.navigateByUrl(Defaults.PathUser);
@@ -64,14 +66,14 @@ export class RegisterComponent implements OnInit {
                 ephemeralKey: new FormControl(ephemeral,
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
-            await gData.load();
+            await this.uData.load();
             this.bcs.updateBlocks();
         }
     }
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {
-        gData.delete();
-        gData.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
+        this.uData.delete();
+        this.uData.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
         if (ephemeral.length === 64) {
             await showSnack(this.snack, "Creating new user", async () => {
                 Log.lvl1("creating user");
@@ -79,17 +81,17 @@ export class RegisterComponent implements OnInit {
                 const ek = Private.fromHex(ekStr);
                 if (darcID.length === 64 && alias.length > 0) {
                     Log.lvl2("creating FIRST user");
-                    const d = await Data.createFirstUser(gData.bc, Buffer.from(darcID, "hex"), ek.scalar,
+                    const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar,
                         alias);
-                    gData.contact = d.contact;
-                    gData.keyIdentity = d.keyIdentity;
-                    await gData.connectByzcoin();
+                    this.uData.contact = d.contact;
+                    this.uData.keyIdentity = d.keyIdentity;
+                    await this.uData.connectByzcoin();
                 } else {
                     Log.lvl2("attaching to existing user and replacing password");
-                    await gData.attachAndEvolve(ek);
+                    await this.uData.attachAndEvolve(ek);
                 }
                 Log.lvl1("verifying registration");
-                await gData.save();
+                await this.uData.save();
                 Log.lvl1("done registering");
             });
         }

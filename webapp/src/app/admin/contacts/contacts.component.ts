@@ -2,26 +2,27 @@ import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import Long from "long";
+
+import { Data } from "@c4dt/dynacred";
+import { Contact } from "@c4dt/dynacred/Contact";
+import { Defaults } from "@c4dt/dynacred/Defaults";
+import { Private } from "@c4dt/dynacred/KeyPair";
+import { FileBlob } from "@c4dt/dynacred/SecureData";
 
 import { Argument, Instruction } from "@dedis/cothority/byzcoin";
 import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { Rule } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
 import ISigner from "@dedis/cothority/darc/signer";
 import Log from "@dedis/cothority/log";
 import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
-
-import { Contact } from "@c4dt/dynacred/Contact";
-import { Data, gData } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
-import { Private } from "@c4dt/dynacred/KeyPair";
-import { FileBlob } from "@c4dt/dynacred/SecureData";
+import Long from "long";
 
 import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
+import { UserData } from "../../user-data.service";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -30,7 +31,6 @@ import { ManageDarcComponent } from "../manage-darc";
     templateUrl: "./contacts.component.html",
 })
 export class ContactsComponent implements OnInit {
-    gData: Data;
     calypsoOurKeys: string[];
     calypsoOtherKeys: Map<Contact, FileBlob[]>;
     actions: DarcInstance[] = [];
@@ -41,19 +41,19 @@ export class ContactsComponent implements OnInit {
         private snackBar: MatSnackBar,
         private bcvs: BcviewerService,
         private location: Location,
+        private uData: UserData,
     ) {
-        this.gData = gData;
         this.calypsoOtherKeys = new Map();
         this.updateActions();
         this.updateGroups();
     }
 
     async updateActions() {
-        this.actions = await gData.contact.getActions();
+        this.actions = await this.uData.contact.getActions();
     }
 
     async updateGroups() {
-        this.groups = await gData.contact.getGroups();
+        this.groups = await this.uData.contact.getGroups();
     }
 
     async ngOnInit() {
@@ -69,7 +69,7 @@ export class ContactsComponent implements OnInit {
             creds.alias = base;
             creds.email = base + "@test.com";
         }
-        const groups = await gData.contact.getGroups();
+        const groups = await this.uData.contact.getGroups();
         creds.groups = groups.map((group) => group.darc.description.toString());
         const ac = this.dialog.open(UserCredComponent, {
             data: creds,
@@ -80,14 +80,14 @@ export class ContactsComponent implements OnInit {
                 await showSnack(this.snackBar, "Creating new user " + result.alias, async () => {
                     let newUser: Data;
                     const ek = Private.fromRand();
-                    newUser = await gData.createUser(result.alias, ek);
+                    newUser = await this.uData.createUser(result.alias, ek);
 
                     if (newUser) {
                         newUser.contact.email = result.email;
                         if (view) {
                             newUser.contact.view = view;
                         }
-                        newUser.addContact(gData.contact);
+                        newUser.addContact(this.uData.contact);
 
                         // Concatenate multiple instructions into one clientTransaction, so that
                         // the update is faster, as there won't be a wait for all transactions to
@@ -109,7 +109,7 @@ export class ContactsComponent implements OnInit {
                             const instr = Instruction.createInvoke(newDarc.getBaseID(),
                                 DarcInstance.contractID, DarcInstance.commandEvolve, args);
                             instructions.push(instr);
-                            signers.push([gData.keyIdentitySigner]);
+                            signers.push([this.uData.keyIdentitySigner]);
                             return gInst;
                         }));
 
@@ -119,9 +119,9 @@ export class ContactsComponent implements OnInit {
                             new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(coins.toBytesLE())}),
                             new Argument({name: CoinInstance.argumentDestination, value: newUser.coinInstance.id}),
                         ];
-                        instructions.push(Instruction.createInvoke(gData.coinInstance.id, CoinInstance.contractID,
+                        instructions.push(Instruction.createInvoke(this.uData.coinInstance.id, CoinInstance.contractID,
                             CoinInstance.commandTransfer, argsTransfer));
-                        signers.push([gData.keyIdentitySigner]);
+                        signers.push([this.uData.keyIdentitySigner]);
 
                         // Update the new user
                         newUser.contact.setGroups(addedGroups);
@@ -138,11 +138,11 @@ export class ContactsComponent implements OnInit {
                         instructions.push(instrUpdate);
                         signers.push([newUser.keyIdentitySigner]);
                         const ctx = new ClientTransaction({instructions});
-                        await ctx.updateCountersAndSign(gData.bc, signers);
-                        await gData.bc.sendTransactionAndWait(ctx);
+                        await ctx.updateCountersAndSign(this.uData.bc, signers);
+                        await this.uData.bc.sendTransactionAndWait(ctx);
 
-                        gData.addContact(newUser.contact);
-                        await gData.save();
+                        this.uData.addContact(newUser.contact);
+                        await this.uData.save();
                         const url = this.location.prepareExternalUrl("/register?ephemeral=" +
                             newUser.keyIdentity._private.toHex());
                         let host = window.location.host;
@@ -174,8 +174,8 @@ export class ContactsComponent implements OnInit {
                 const userID = Buffer.from(result, "hex");
                 if (userID.length === 32) {
                     await showSnack(this.snackBar, "Adding contact", async () => {
-                        gData.addContact(await Contact.fromByzcoin(gData.bc, userID));
-                        await gData.save();
+                        this.uData.addContact(await Contact.fromByzcoin(this.uData.bc, userID));
+                        await this.uData.save();
                     });
                     await this.bcvs.updateBlocks();
                 }
@@ -194,8 +194,9 @@ export class ContactsComponent implements OnInit {
                 const coins = Long.fromString(result);
                 if (coins.greaterThan(0)) {
                     await showSnack(this.snackBar, "Transferring coins", async () => {
-                        await c.updateOrConnect(gData.bc);
-                        await gData.coinInstance.transfer(coins, c.coinInstance.id, [gData.keyIdentitySigner]);
+                        await c.updateOrConnect(this.uData.bc);
+                        await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
+                            [this.uData.keyIdentitySigner]);
                     });
                     await this.bcvs.updateBlocks();
                 }
@@ -205,17 +206,17 @@ export class ContactsComponent implements OnInit {
 
     async contactDelete(toDelete: Contact) {
         await showSnack(this.snackBar, "Deleting contact " + toDelete.alias, async () => {
-            gData.contacts = gData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
-            await gData.save();
+            this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
+            await this.uData.save();
         });
         await this.bcvs.updateBlocks();
     }
 
     async calypsoSearch(c: Contact) {
         await showSnack(this.snackBar, "Searching new secure data for " + c.alias.toLocaleUpperCase(), async () => {
-            await c.updateOrConnect(gData.bc);
-            const sds = await gData.contact.calypso.read(c);
-            await gData.save();
+            await c.updateOrConnect(this.uData.bc);
+            const sds = await this.uData.contact.calypso.read(c);
+            await this.uData.save();
             this.updateCalypso();
         });
         await this.bcvs.updateBlocks();
@@ -237,7 +238,7 @@ export class ContactsComponent implements OnInit {
         tc.afterClosed().subscribe(async (result) => {
             if (result) {
                 await showSnack(this.snackBar, "Updating Darc", async () => {
-                    await a.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
+                    await a.evolveDarcAndWait(result, [this.uData.keyIdentitySigner], 5);
                 });
                 await this.bcvs.updateBlocks();
             }
@@ -246,8 +247,9 @@ export class ContactsComponent implements OnInit {
 
     async actionDelete(a: DarcInstance) {
         await showSnack(this.snackBar, "Deleting action", async () => {
-            gData.contact.setActions((await gData.contact.getActions()).filter((aDI) => !aDI.id.equals(a.id)));
-            await gData.save();
+            this.uData.contact.setActions((await this.uData.contact.getActions())
+                .filter((aDI) => !aDI.id.equals(a.id)));
+            await this.uData.save();
             await this.updateActions();
         });
         await this.bcvs.updateBlocks();
@@ -255,7 +257,7 @@ export class ContactsComponent implements OnInit {
 
     async actionCreate() {
         await this.diCreate("Action", async (newDI) => {
-            gData.contact.setActions((await gData.contact.getActions()).concat(newDI));
+            this.uData.contact.setActions((await this.uData.contact.getActions()).concat(newDI));
             await this.updateActions();
         });
         await this.bcvs.updateBlocks();
@@ -275,12 +277,12 @@ export class ContactsComponent implements OnInit {
             if (result) {
                 Log.lvl1("Creating new darcInstance with description:", result, title);
                 await showSnack(this.snackBar, "Creating new " + title, async () => {
-                    const di = await gData.contact.getDarcSignIdentity();
+                    const di = await this.uData.contact.getDarcSignIdentity();
                     const nd = Darc.createBasic([di], [di], Buffer.from(result));
-                    const ndInst = await gData.spawnerInstance.spawnDarcs(gData.coinInstance,
-                        [gData.keyIdentitySigner], nd);
+                    const ndInst = await this.uData.spawnerInstance.spawnDarcs(this.uData.coinInstance,
+                        [this.uData.keyIdentitySigner], nd);
                     await store(ndInst[0]);
-                    await gData.save();
+                    await this.uData.save();
                 });
                 await this.bcvs.updateBlocks();
             }
@@ -289,8 +291,8 @@ export class ContactsComponent implements OnInit {
 
     async groupDelete(g: DarcInstance) {
         await showSnack(this.snackBar, "Deleting action", async () => {
-            gData.contact.setGroups((await gData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
-            await gData.save();
+            this.uData.contact.setGroups((await this.uData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
+            await this.uData.save();
             await this.updateGroups();
         });
         await this.bcvs.updateBlocks();
@@ -298,7 +300,7 @@ export class ContactsComponent implements OnInit {
 
     async groupCreate() {
         await this.diCreate("Group", async (newDI) => {
-            gData.contact.setGroups((await gData.contact.getGroups()).concat(newDI));
+            this.uData.contact.setGroups((await this.uData.contact.getGroups()).concat(newDI));
             await this.updateGroups();
         });
         await this.bcvs.updateBlocks();
@@ -317,10 +319,10 @@ export class ContactsComponent implements OnInit {
      * can correctly show them.
      */
     updateCalypso() {
-        this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
-        Array.from(gData.contact.calypso.others.keys()).forEach((oid) => {
-            const other = gData.contacts.find((c) => c.credentialIID.equals(oid));
-            const fbs = Array.from(gData.contact.calypso.others.get(oid))
+        this.calypsoOurKeys = Array.from(this.uData.contact.calypso.ours.keys());
+        Array.from(this.uData.contact.calypso.others.keys()).forEach((oid) => {
+            const other = this.uData.contacts.find((c) => c.credentialIID.equals(oid));
+            const fbs = Array.from(this.uData.contact.calypso.others.get(oid))
                 .map((sd) => FileBlob.fromBuffer(sd.plainData));
             this.calypsoOtherKeys.set(other, fbs);
         });
@@ -337,7 +339,7 @@ export class ContactsComponent implements OnInit {
             // TODO might be movable to AsyncValidator
             await showSnack(this.snackBar, `Adding ${type}`, async () => {
                 try {
-                    const inst = await DarcInstance.fromByzcoin(gData.bc, id);
+                    const inst = await DarcInstance.fromByzcoin(this.uData.bc, id);
                     if (array.some((a) => a.darc.id.equals(id))) {
                         throw new Error(`Given ${type} is already added under the name "${inst.darc.description}"`);
                     }

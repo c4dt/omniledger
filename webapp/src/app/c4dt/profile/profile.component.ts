@@ -3,11 +3,9 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
 import { Router } from "@angular/router";
 
-import { Data, gData } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
-
-import { showDialogInfo, showSnack } from "../../../lib/Ui";
+import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
+import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-profile",
@@ -16,13 +14,12 @@ import { BcviewerService } from "../../bcviewer/bcviewer.component";
 })
 export class ProfileComponent implements OnInit {
     contactForm: FormGroup;
-    gData: Data;
 
     constructor(private snack: MatSnackBar,
                 private router: Router,
                 private dialog: MatDialog,
-                private bcs: BcviewerService) {
-        this.gData = gData;
+                private bcs: BcviewerService,
+                private uData: UserData) {
     }
 
     ngOnInit() {
@@ -31,18 +28,18 @@ export class ProfileComponent implements OnInit {
 
     updateContactForm() {
         this.contactForm = new FormGroup({
-            alias: new FormControl(gData.contact.alias),
-            email: new FormControl(gData.contact.email, Validators.email),
-            subscribe: new FormControl(gData.contact.subscribe),
+            alias: new FormControl(this.uData.contact.alias),
+            email: new FormControl(this.uData.contact.email, Validators.email),
+            subscribe: new FormControl(this.uData.contact.subscribe),
         });
     }
 
     async updateContact() {
         await showSnack(this.snack, "Updating User Data", async () => {
-            gData.contact.alias = this.contactForm.controls.alias.value;
-            gData.contact.email = this.contactForm.controls.email.value;
-            gData.contact.subscribe = this.contactForm.controls.subscribe.value;
-            await gData.contact.sendUpdate();
+            this.uData.contact.alias = this.contactForm.controls.alias.value;
+            this.uData.contact.email = this.contactForm.controls.email.value;
+            this.uData.contact.subscribe = this.contactForm.controls.subscribe.value;
+            await this.uData.contact.sendUpdate();
             this.bcs.updateBlocks();
         });
     }

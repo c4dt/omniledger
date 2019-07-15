@@ -3,11 +3,12 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
 import { Router } from "@angular/router";
 
-import { Data, gData } from "@c4dt/dynacred/Data";
+import { Data } from "@c4dt/dynacred";
 import { Defaults } from "@c4dt/dynacred/Defaults";
 
 import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
+import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-yourself",
@@ -15,15 +16,14 @@ import { BcviewerService } from "../../bcviewer/bcviewer.component";
     templateUrl: "./yourself.component.html",
 })
 export class YourselfComponent implements OnInit {
-    gData: Data;
     contactForm: FormGroup;
     views = Data.views;
 
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
                 private router: Router,
-                private bcs: BcviewerService) {
-        this.gData = gData;
+                private bcs: BcviewerService,
+                private uData: UserData) {
     }
 
     async ngOnInit() {
@@ -32,26 +32,26 @@ export class YourselfComponent implements OnInit {
 
     updateContactForm() {
         this.contactForm = new FormGroup({
-            alias: new FormControl(gData.contact.alias),
-            email: new FormControl(gData.contact.email, Validators.email),
-            phone: new FormControl(gData.contact.phone),
-            view: new FormControl(gData.contact.view),
+            alias: new FormControl(this.uData.contact.alias),
+            email: new FormControl(this.uData.contact.email, Validators.email),
+            phone: new FormControl(this.uData.contact.phone),
+            view: new FormControl(this.uData.contact.view),
         });
     }
 
     async updateCoins() {
         await showSnack(this.snack, "Updating coins", async () => {
-            await gData.coinInstance.update();
+            await this.uData.coinInstance.update();
         });
     }
 
     async updateContact() {
         await showSnack(this.snack, "Updating User Data", async () => {
-            gData.contact.alias = this.contactForm.controls.alias.value;
-            gData.contact.email = this.contactForm.controls.email.value;
-            gData.contact.phone = this.contactForm.controls.phone.value;
-            gData.contact.view = this.contactForm.controls.view.value;
-            await gData.contact.sendUpdate();
+            this.uData.contact.alias = this.contactForm.controls.alias.value;
+            this.uData.contact.email = this.contactForm.controls.email.value;
+            this.uData.contact.phone = this.contactForm.controls.phone.value;
+            this.uData.contact.view = this.contactForm.controls.view.value;
+            await this.uData.contact.sendUpdate();
             this.bcs.updateBlocks();
             await this.router.navigateByUrl(Defaults.PathUser);
         });

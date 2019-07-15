@@ -495,7 +495,7 @@ export class Contact {
     }
 
     isRegistered(): boolean {
-        return this.credentialIID != null && this.credentialIID.length === 32;
+        return this.credentialInstance != null;
     }
 
     getCoinAddress(): InstanceID {

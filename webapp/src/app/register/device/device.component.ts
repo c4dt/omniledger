@@ -4,10 +4,11 @@ import { Router } from "@angular/router";
 
 import Log from "@dedis/cothority/log";
 
-import { Data, gData } from "@c4dt/dynacred/Data";
+import { Data } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
 
 import { showSnack } from "../../../lib/Ui";
+import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-device",
@@ -20,6 +21,7 @@ export class DeviceComponent implements OnInit {
     constructor(
         private router: Router,
         private snack: MatSnackBar,
+        private uData: UserData,
     ) {
         this.text = "Please wait";
     }
@@ -28,8 +30,8 @@ export class DeviceComponent implements OnInit {
         try {
             return showSnack(this.snack, "Attaching to existing user", async () => {
                 const newData = await Data.attachDevice(window.location.href);
-                await gData.overwrite(newData);
-                await gData.save();
+                await this.uData.overwrite(newData);
+                await this.uData.save();
                 await this.router.navigateByUrl(Defaults.PathUser);
             });
         } catch (e) {

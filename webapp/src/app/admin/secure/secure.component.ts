@@ -7,10 +7,10 @@ import Darc from "@dedis/cothority/darc/darc";
 import Log from "@dedis/cothority/log";
 
 import { Contact } from "@c4dt/dynacred/Contact";
-import { gData } from "@c4dt/dynacred/Data";
 import { FileBlob } from "@c4dt/dynacred/SecureData";
 
 import { showSnack } from "../../../lib/Ui";
+import { UserData } from "../../user-data.service";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -22,8 +22,11 @@ export class SecureComponent implements OnInit {
     calypsoOurKeys: string[];
     calypsoOtherKeys: Map<Contact, FileBlob[]>;
 
-    constructor(public dialog: MatDialog,
-                private snackBar: MatSnackBar) {
+    constructor(
+        private dialog: MatDialog,
+        private snackBar: MatSnackBar,
+        private uData: UserData,
+    ) {
         this.calypsoOtherKeys = new Map();
     }
 
@@ -39,12 +42,12 @@ export class SecureComponent implements OnInit {
      * can correctly show them.
      */
     async updateCalypso() {
-        await gData.contact.calypso.fetchOurs(gData.lts);
-        await gData.save();
-        this.calypsoOurKeys = Array.from(gData.contact.calypso.ours.keys());
-        Array.from(gData.contact.calypso.others.keys()).forEach((oid) => {
-            const other = gData.contacts.find((c) => c.credentialIID.equals(oid));
-            const fbs = Array.from(gData.contact.calypso.others.get(oid))
+        await this.uData.contact.calypso.fetchOurs(this.uData.lts);
+        await this.uData.save();
+        this.calypsoOurKeys = Array.from(this.uData.contact.calypso.ours.keys());
+        Array.from(this.uData.contact.calypso.others.keys()).forEach((oid) => {
+            const other = this.uData.contacts.find((c) => c.credentialIID.equals(oid));
+            const fbs = Array.from(this.uData.contact.calypso.others.get(oid))
                 .map((sd) => FileBlob.fromBuffer(sd.plainData));
             this.calypsoOtherKeys.set(other, fbs);
         });
@@ -52,17 +55,17 @@ export class SecureComponent implements OnInit {
 
     async calypsoSearch(c: Contact) {
         await showSnack(this.snackBar, "Searching new secure data for " + c.alias.toLocaleUpperCase(), async () => {
-            await gData.contact.calypso.read(c);
-            await gData.save();
+            await this.uData.contact.calypso.read(c);
+            await this.uData.save();
             this.updateCalypso();
         });
     }
 
     async calypsoAccess(key: string) {
         Log.lvl3("change groups");
-        const idWrite = await CalypsoWriteInstance.fromByzcoin(gData.bc,
-            gData.contact.calypso.ours.get(key).writeInstID);
-        const idDarc = await DarcInstance.fromByzcoin(gData.bc, idWrite.darcID);
+        const idWrite = await CalypsoWriteInstance.fromByzcoin(this.uData.bc,
+            this.uData.contact.calypso.ours.get(key).writeInstID);
+        const idDarc = await DarcInstance.fromByzcoin(this.uData.bc, idWrite.darcID);
         const tc = this.dialog.open(ManageDarcComponent,
             {
                 data: {
@@ -77,7 +80,7 @@ export class SecureComponent implements OnInit {
         tc.afterClosed().subscribe(async (result: Darc) => {
             if (result) {
                 await showSnack(this.snackBar, "Updating Darc", async () => {
-                    await idDarc.evolveDarcAndWait(result, [gData.keyIdentitySigner], 5);
+                    await idDarc.evolveDarcAndWait(result, [this.uData.keyIdentitySigner], 5);
                 });
             }
         });
@@ -85,8 +88,8 @@ export class SecureComponent implements OnInit {
 
     async calypsoDelete(key: string) {
         await showSnack(this.snackBar, "Deleting secret", async () => {
-            await gData.contact.calypso.remove(key);
-            await gData.save();
+            await this.uData.contact.calypso.remove(key);
+            await this.uData.save();
             await this.updateCalypso();
         });
     }
@@ -100,8 +103,8 @@ export class SecureComponent implements OnInit {
                 await showSnack(this.snackBar, "Storing data encrypted", async () => {
                     const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
                     const fb = new FileBlob(result.name, data, [{name: "time", value: result.lastModified.toString()}]);
-                    await gData.contact.calypso.add(fb.toBuffer());
-                    await gData.save();
+                    await this.uData.contact.calypso.add(fb.toBuffer());
+                    await this.uData.save();
                     this.updateCalypso();
                 });
             } else {

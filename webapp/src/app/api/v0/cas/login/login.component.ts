@@ -1,36 +1,53 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
+import { MatDialog } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { gData } from "@c4dt/dynacred/Data";
+import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
+
 import { Defaults } from "@c4dt/dynacred/Defaults";
 
-import Log from "@dedis/cothority/log";
+import { showDialogInfo } from "../../../../../lib/Ui";
+import { UserData } from "../../../../user-data.service";
 
 @Component({
     selector: "app-login",
     styleUrls: ["./login.component.css"],
     templateUrl: "./login.component.html",
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+    static readonly casLoginDarc =
+        Buffer.from("ed6175116686d3326d8dabbfe9a73c8d03cd0ceb86d000e42f274d958eb2a398", "hex");
     server: string;
+    authorized = false;
     private service: string;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private dialog: MatDialog,
+        private uData: UserData,
     ) {
-        if (gData.contact.isRegistered()) {
-            this.service = decodeURI(route.snapshot.queryParamMap.get("service"));
-            Log.print(this.service);
-            this.server = this.service.replace(/^https*:\/\/(.*?)\/.*/, "$1");
+    }
+
+    async ngOnInit() {
+        this.service = decodeURI(this.route.snapshot.queryParamMap.get("service"));
+        this.server = this.service.replace(/^https*:\/\/(.*?)\/.*/, "$1");
+        const auths = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID,
+            LoginComponent.casLoginDarc,
+            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+        if (auths.indexOf(Darc.ruleSign) >= 0) {
+            this.authorized = true;
         } else {
-            router.navigateByUrl(Defaults.PathUser);
+            await showDialogInfo(this.dialog, "No access", "Sorry, you don't have access to " +
+                `${this.service}...`, "Understood");
         }
     }
 
-    login() {
+    async login() {
         window.location.href = this.service + "&ticket=ol-" +
-            gData.contact.credentialIID.slice(0, 8).toString("hex");
+            this.uData.contact.credentialIID.slice(0, 8).toString("hex");
+        window.location.href = this.service + "&ticket=ol-" +
+            this.uData.contact.credentialIID.slice(0, 8).toString("hex");
     }
 
     async deny() {

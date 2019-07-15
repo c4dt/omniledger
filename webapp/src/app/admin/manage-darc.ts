@@ -1,12 +1,12 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef, MatSelectChange } from "@angular/material";
 
+import { curve } from "@dedis/kyber";
+
 import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
-import { curve } from "@dedis/kyber";
-
-import { gData } from "@c4dt/dynacred/Data";
+import { UserData } from "../user-data.service";
 
 export interface IManageDarc {
     title: string;
@@ -36,7 +36,8 @@ export class ManageDarcComponent {
     rule: string = Darc.ruleSign;
 
     constructor(
-        public dialogRef: MatDialogRef<ManageDarcComponent>,
+        private dialogRef: MatDialogRef<ManageDarcComponent>,
+        private uData: UserData,
         @Inject(MAT_DIALOG_DATA) public data: IManageDarc) {
         if (!data.title || data.title === "") {
             data.title = "Manage access rights";
@@ -78,25 +79,25 @@ export class ManageDarcComponent {
     async getItems(filter: string): Promise<IItem[]> {
         const items: IItem[] = [];
         if (filter.indexOf("contact") >= 0) {
-            for (const contact of gData.contact.contacts) {
+            for (const contact of this.uData.contact.contacts) {
                 items.push(this.createItem("Contact: " + contact.alias,
                     await contact.getDarcSignIdentity()));
             }
         }
         if (filter.indexOf("action") >= 0) {
-            for (const action of await gData.contact.getActions()) {
+            for (const action of await this.uData.contact.getActions()) {
                 items.push(this.createItem("Action: " + action.darc.description.toString(),
                     new IdentityDarc({id: action.id})));
             }
         }
         if (filter.indexOf("group") >= 0) {
-            for (const group of await gData.contact.getGroups()) {
+            for (const group of await this.uData.contact.getGroups()) {
                 items.push(this.createItem("Group: " + group.darc.description.toString(),
                     new IdentityDarc({id: group.id})));
             }
         }
-        items.unshift(this.createItem("Ourselves: " + gData.contact.alias,
-            await gData.contact.getDarcSignIdentity()));
+        items.unshift(this.createItem("Ourselves: " + this.uData.contact.alias,
+            await this.uData.contact.getDarcSignIdentity()));
         return items;
     }
 
