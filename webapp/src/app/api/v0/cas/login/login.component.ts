@@ -16,7 +16,7 @@ import { UserData } from "../../../../user-data.service";
 })
 export class LoginComponent implements OnInit {
     static readonly casLoginDarc =
-        Buffer.from("ed6175116686d3326d8dabbfe9a73c8d03cd0ceb86d000e42f274d958eb2a398", "hex");
+        Buffer.from("b7240d7e4bcc33b4a2af5d2110c512f3118478b964f2b4be9f99b27853702489", "hex");
     server: string;
     authorized = false;
     private service: string;
