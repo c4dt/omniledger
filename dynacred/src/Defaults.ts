@@ -4,8 +4,6 @@ import "cross-fetch/polyfill";
 
 // tslint:disable-next-line
 export const Defaults = {
-    DataDir: "storage",
-
     // ByzCoinID
     AdminDarc: Buffer.alloc(0),
     ByzCoinID: Buffer.alloc(0),
