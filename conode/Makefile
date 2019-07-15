@@ -34,6 +34,7 @@ newdb:
 
 docker_run:
 	docker rm -f $(CONTAINER) || echo nothing to stop
+	cp build/conodes/public.toml ../webapp/src/assets/conodes.toml
 	docker run --rm -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_stop:

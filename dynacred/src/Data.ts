@@ -10,7 +10,6 @@ import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calyp
 import { Rule } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
 import Signer from "@dedis/cothority/darc/signer";
 import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
 import Log from "@dedis/cothority/log";
@@ -284,21 +283,14 @@ export class Data {
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [ephemeralSigner], 5);
         return d;
     }
-
     dataFileName: string;
     continuousScan: boolean;
-
-    // createFirstUser sets up a new user with all the necessary darcs. It does the following:
-    // - creates all necessary darcs (four)
-    // - creates credential and coin
-    // If darcID is given, it will use this darc to create all the instances. If darcID == null,
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;
     keyIdentity: KeyPair;
     bc: ByzCoinRPC = null;
     lts: LongTermSecret = null;
     constructorObj: any;
-    // then the gData needs to have enough coins to pay for all the instances when using
     contact: Contact;
     parties: Party[] = [];
     badges: Badge[] = [];
@@ -336,27 +328,26 @@ export class Data {
         this.dataFileName = Defaults.DataDir + "/" + n;
     }
 
-    setValues(obj: any) {
+    async setValues(obj: any) {
         if (Object.keys(obj).length > 0) {
             this.constructorObj = obj;
         }
-        try {
-            this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
-            this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
-            this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
-            this.keyIdentity = obj.keyIdentity ? new KeyPair(obj.keyIdentity) : new KeyPair();
-            this.meetups = obj.meetups ? obj.meetups.map((m: any) => SocialNode.fromObject(m)) : [];
+        this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
+        this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
+        this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
+        this.keyIdentity = obj.keyIdentity ? new KeyPair(obj.keyIdentity) : new KeyPair();
+        this.meetups = obj.meetups ? obj.meetups.map((m: any) => SocialNode.fromObject(m)) : [];
 
-            if (obj.contact != null) {
-                this.contact = Contact.fromObject(obj.contact);
-                this.contact.data = this;
-            } else {
+        if (obj.contact != null) {
+            this.contact = Contact.fromObject(obj.contact);
+            this.contact.data = this;
+        } else {
+            // TODO: remove this once gData has been converted to a service
+            if (Contact != null) {
                 const cred = Contact.prepareInitialCred("new identity", this.keyIdentity._public,
                     null, null, null);
                 this.contact = new Contact(cred, this);
             }
-        } catch (e) {
-            Log.catch(e);
         }
     }
 
@@ -372,44 +363,40 @@ export class Data {
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
-        try {
-            const obj = this.constructorObj;
-            if (this.bc == null) {
-                this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
-            }
-
-            if (obj) {
-                Log.lvl2("getting parties and badges");
-                if (obj.parties) {
-                    this.parties = obj.parties.map((p: any) => Party.fromObject(this.bc, p));
-                }
-                if (obj.badges) {
-                    this.badges = obj.badges.map((b: any) => Badge.fromObject(this.bc, b));
-                    this.badges = this.badges.filter((badge, i) =>
-                        this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
-                }
-
-                Log.lvl2("Getting rock-paper-scissors and polls");
-                if (obj.ropascis) {
-                    this.ropascis = obj.ropascis.map((rps: any) =>
-                        new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
-                }
-                if (obj.polls) {
-                    this.polls = obj.polls.map((rps: any) => PollStruct.fromObject(rps));
-                }
-
-                if (obj.contact) {
-                    this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
-                }
-                Log.lvl2("Getting contact informations");
-            }
-
-            this.contact.data = this;
-            await this.contact.updateOrConnect();
-            this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, await Defaults.RosterCalypso);
-        } catch (e) {
-            await Log.rcatch(e, "failed to load");
+        const obj = this.constructorObj;
+        if (this.bc == null) {
+            this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
         }
+
+        if (obj) {
+            Log.lvl2("getting parties and badges");
+            if (obj.parties) {
+                this.parties = obj.parties.map((p: any) => Party.fromObject(this.bc, p));
+            }
+            if (obj.badges) {
+                this.badges = obj.badges.map((b: any) => Badge.fromObject(this.bc, b));
+                this.badges = this.badges.filter((badge, i) =>
+                    this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
+            }
+
+            Log.lvl2("Getting rock-paper-scissors and polls");
+            if (obj.ropascis) {
+                this.ropascis = obj.ropascis.map((rps: any) =>
+                    new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
+            }
+            if (obj.polls) {
+                this.polls = obj.polls.map((rps: any) => PollStruct.fromObject(rps));
+            }
+
+            if (obj.contact) {
+                this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
+            }
+            Log.lvl2("Getting contact informations");
+        }
+
+        this.contact.data = this;
+        await this.contact.updateOrConnect();
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, await Defaults.RosterCalypso);
         return this.bc;
     }
 
@@ -462,11 +449,7 @@ export class Data {
      */
     async load(): Promise<Data> {
         Log.lvl1("Loading data from", this.dataFileName);
-        try {
-            await this.setValues(await StorageDB.getObject(this.dataFileName));
-        } catch (e) {
-            Log.catch(e);
-        }
+        await this.setValues(await StorageDB.getObject(this.dataFileName));
         this.bc = null;
         await this.connectByzcoin();
         return this;
@@ -790,7 +773,7 @@ export class Data {
 
     async reloadPolls(): Promise<PollStruct[]> {
         const phrpc = new PersonhoodRPC(this.bc);
-        this.polls = await phrpc.pollList(gData.badges.map((b) => b.party.partyInstance.id));
+        this.polls = await phrpc.pollList(this.badges.map((b) => b.party.partyInstance.id));
         return this.polls;
     }
 
@@ -987,13 +970,3 @@ export class TestData extends Data {
         return d;
     }
 }
-
-/**
- * gData can be used as a global data in the app. However, when using it outside
- * of the UI, it is important to always pass the data, so that it is simpler to
- * test the libraries.
- */
-export let gData = new Data();
-
-// @ts-ignore
-global.gData = gData;

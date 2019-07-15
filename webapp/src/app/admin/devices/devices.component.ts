@@ -5,10 +5,10 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { Darc, IIdentity } from "@dedis/cothority/darc";
 
-import { gData } from "@c4dt/dynacred/Data";
 import { Device } from "@c4dt/dynacred/Device";
 
 import { showDialogInfo, showSnack } from "../../../lib/Ui";
+import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-devices",
@@ -22,11 +22,12 @@ export class DevicesComponent implements OnInit {
         private dialog: MatDialog,
         private snack: MatSnackBar,
         private location: Location,
+        private uData: UserData,
     ) {
     }
 
     updateDevices() {
-        const cred = gData.contact.credential.getCredential("1-devices");
+        const cred = this.uData.contact.credential.getCredential("1-devices");
         if (cred) {
             this.devices = cred.attributes.map((a) => new Device(a.name, a.value));
         }
@@ -41,13 +42,13 @@ export class DevicesComponent implements OnInit {
             return showDialogInfo(this.dialog, "Too few devices", "There must be at least one device available, so " +
                 "it's not possible to remove the only device you have.", "Understood");
         }
-        const signerDarc = await DarcInstance.fromByzcoin(gData.bc, device.darcID);
-        if (await signerDarc.ruleMatch(Darc.ruleSign, [gData.keyIdentitySigner])) {
+        const signerDarc = await DarcInstance.fromByzcoin(this.uData.bc, device.darcID);
+        if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.keyIdentitySigner])) {
             return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                 "reasons.", "Understood");
         }
         await showSnack(this.snack, "Deleting device " + device.name, async () => {
-            await gData.deleteDevice(device.name);
+            await this.uData.deleteDevice(device.name);
             this.updateDevices();
         });
     }
@@ -56,10 +57,10 @@ export class DevicesComponent implements OnInit {
         const ac = this.dialog.open(DeviceAddComponent);
         ac.afterClosed().subscribe(async (result) => {
             if (result) {
-                // const result = "phone" + gData.contact.credential.getCredential("1-devices").attributes.length;
+                // const result = "phone" + this.uData.contact.credential.getCredential("1-devices").attributes.length;
                 let device: string;
                 await showSnack(this.snack, "Adding new device", async () => {
-                    device = await gData.createDevice(result);
+                    device = await this.uData.createDevice(result);
                 });
                 this.updateDevices();
                 if (device) {

@@ -10,17 +10,15 @@ import { YourselfComponent } from "./admin/yourself/yourself.component";
 import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
 import { LoginComponent as WPLoginComponent } from "./api/v0/wordpress/login/login.component";
 import { C4dtComponent } from "./c4dt/c4dt.component";
-import { NewuserComponent } from "./c4dt/newuser/newuser.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
 import { ProfileComponent } from "./c4dt/profile/profile.component";
 import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
-import { LoadingComponent } from "./loading/loading.component";
+import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
 
 const routes: Routes = [
-    {path: "", redirectTo: "/loading", pathMatch: "full"},
-    {path: "loading", component: LoadingComponent},
+    {path: "", redirectTo: "/c4dt", pathMatch: "full"},
     {
         // tslint:disable-next-line
         path: "register", children: [
@@ -44,8 +42,11 @@ const routes: Routes = [
     },
     {
         // tslint:disable-next-line
+        path: "newuser", component: NewuserComponent
+    },
+    {
+        // tslint:disable-next-line
         path: "c4dt", component: C4dtComponent, children: [
-            {path: "newuser", component: NewuserComponent},
             {path: "partner", component: PartnerComponent},
             {path: "profile", component: ProfileComponent},
             {path: "welcome", component: WelcomeComponent},

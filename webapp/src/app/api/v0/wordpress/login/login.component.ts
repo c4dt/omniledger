@@ -1,10 +1,12 @@
 import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
-import { gData } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
+import { ActivatedRoute, Router } from "@angular/router";
+
 import { InstanceID } from "@dedis/cothority/byzcoin";
 import { IdentityWrapper } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
+
+import { Defaults } from "@c4dt/dynacred/Defaults";
+import { UserData } from "../../../../user-data.service";
 
 @Component({
     selector: "app-login",
@@ -19,6 +21,7 @@ export class LoginComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
+        private uData: UserData,
     ) {
     }
 
@@ -41,13 +44,10 @@ export class LoginComponent implements OnInit {
             return;
         }
 
-        const d = await gData.load();
-
         let loginOK = false;
         try {
-            const signer = d.contact.darcInstance.getSignerDarcIDs()[0];
-            const ident = IdentityWrapper.fromIdentity(d.keyIdentitySigner);
-            const reply = await d.bc.checkAuthorization(Defaults.ByzCoinID, signer, ident);
+            const ident = IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner);
+            const reply = await this.uData.bc.checkAuthorization(Defaults.ByzCoinID, this.darcID, ident);
             if (!reply || reply.length === 0) {
                 this.failed = "You're not allowed to login";
             } else {

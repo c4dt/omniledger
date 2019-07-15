@@ -4,10 +4,10 @@ import { Router } from "@angular/router";
 import Log from "@dedis/cothority/log";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 
-import { Data, gData } from "@c4dt/dynacred/Data";
 import { Defaults } from "@c4dt/dynacred/Defaults";
 
 import { hexBuffer } from "../../../lib/Ui";
+import { UserData } from "../../user-data.service";
 
 @Component({
   selector: "app-status",
@@ -16,16 +16,17 @@ import { hexBuffer } from "../../../lib/Ui";
 })
 export class StatusComponent implements OnInit {
   nodes = [];
-  gData: Data;
   signID: string;
   userID: string;
   pubKey: string;
 
-  constructor(private router: Router) {
-    this.gData = gData;
-    gData.contact.getDarcSignIdentity().then((dsi) => this.signID = hexBuffer(dsi.id));
-    this.userID = hexBuffer(gData.contact.credentialIID);
-    this.pubKey = hexBuffer(gData.keyIdentity._public.toBuffer());
+  constructor(
+      private router: Router,
+      private uData: UserData,
+      ) {
+    this.uData.contact.getDarcSignIdentity().then((dsi) => this.signID = hexBuffer(dsi.id));
+    this.userID = hexBuffer(this.uData.contact.credentialIID);
+    this.pubKey = hexBuffer(this.uData.keyIdentity._public.toBuffer());
   }
 
   async ngOnInit() {
@@ -51,8 +52,8 @@ export class StatusComponent implements OnInit {
   }
 
   async deleteUser() {
-    gData.delete();
-    await gData.save();
+    this.uData.delete();
+    await this.uData.save();
     await this.router.navigateByUrl(Defaults.PathNew);
   }
 }

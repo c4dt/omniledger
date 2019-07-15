@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 
-import { Instruction } from "@dedis/cothority/byzcoin";
+import { ByzCoinRPC, Instruction } from "@dedis/cothority/byzcoin";
 import Instance from "@dedis/cothority/byzcoin/instance";
 import Proof from "@dedis/cothority/byzcoin/proof";
 import DataBody from "@dedis/cothority/byzcoin/proto/data-body";
@@ -13,8 +13,7 @@ import Log from "@dedis/cothority/log";
 import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
 import { ForwardLink, SkipBlock } from "@dedis/cothority/skipchain";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-
-import { gData } from "@c4dt/dynacred/Data";
+import { UserData } from "../user-data.service";
 
 @Injectable({
     providedIn: "root",
@@ -39,18 +38,19 @@ export class BcviewerComponent implements OnInit {
     blocks: BCBlock[] = [];
 
     constructor(private showBlockService: BcviewerService,
-                private dialog: MatDialog) {
-        setInterval(() => {
-            this.updateBlocks();
+                private dialog: MatDialog,
+                private uData: UserData) {
+        setInterval(async () => {
+            await this.updateBlocks();
         }, 30000);
     }
 
     async updateBlocks(): Promise<any> {
-        if (gData.bc) {
+        if (this.uData.bc) {
             if (!this.scRPC) {
-                this.scRPC = new SkipchainRPC(gData.bc.getConfig().roster);
+                this.scRPC = new SkipchainRPC(this.uData.bc.getConfig().roster);
             }
-            let latest = gData.bc.genesisID;
+            let latest = this.uData.bc.genesisID;
             if (this.blocks && this.blocks.length > 0) {
                 latest = this.blocks[this.blocks.length - 1].sb.hash;
             }
@@ -71,10 +71,10 @@ export class BcviewerComponent implements OnInit {
             {width: "80%", data: block});
     }
 
-    ngOnInit() {
-        this.showBlockService.update.subscribe((update) => {
+    async ngOnInit() {
+        this.showBlockService.update.subscribe(async (update) => {
             if (update) {
-                this.updateBlocks();
+                await this.updateBlocks();
             }
         });
     }
@@ -116,7 +116,8 @@ export class ShowBlockComponent {
     ctxs: TxStr[];
 
     constructor(
-        public dialogRef: MatDialogRef<ShowBlockComponent>,
+        private dialogRef: MatDialogRef<ShowBlockComponent>,
+        private uData: UserData,
         @Inject(MAT_DIALOG_DATA) public data: BCBlock) {
         this.updateVars();
         data.updateLinks();
@@ -124,7 +125,7 @@ export class ShowBlockComponent {
 
     updateVars() {
         this.roster = this.data.sb.roster.list.slice(1).map((l) => l.description);
-        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(txr, index));
+        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(this.uData.bc, txr, index));
     }
 
     async goBlock(l: LinkBlock) {
@@ -139,8 +140,8 @@ class TxStr {
     instructions: InstStr[];
     accepted: boolean;
 
-    constructor(tx: TxResult, public index: number) {
-        this.instructions = tx.clientTransaction.instructions.map((inst, ind) => new InstStr(inst, ind));
+    constructor(bc: ByzCoinRPC, tx: TxResult, public index: number) {
+        this.instructions = tx.clientTransaction.instructions.map((inst, ind) => new InstStr(bc, inst, ind));
         this.accepted = tx.accepted;
     }
 }
@@ -152,7 +153,7 @@ class InstStr {
     command: string;
     instance: LinkInstance;
 
-    constructor(public inst: Instruction, public index: number) {
+    constructor(bc: ByzCoinRPC, public inst: Instruction, public index: number) {
         switch (inst.type) {
             case 0:
                 this.type = "spawn";
@@ -170,7 +171,7 @@ class InstStr {
                 this.contractID = inst.delete.contractID;
                 break;
         }
-        this.instance = new LinkInstance(inst, this.contractID);
+        this.instance = new LinkInstance(bc, inst, this.contractID);
     }
 
     getInstanceStr(inst: Instruction): string {
@@ -204,10 +205,10 @@ class LinkInstance {
     description: string;
     instanceProof: Proof;
 
-    constructor(public inst: Instruction, public contractID: string) {
+    constructor(bc: ByzCoinRPC, public inst: Instruction, public contractID: string) {
         this.instanceID = inst.instanceID;
         this.description = "loading...";
-        gData.bc.getProof(this.instanceID).then((p) => {
+        bc.getProof(this.instanceID).then((p) => {
             this.instanceProof = p;
             switch (contractID) {
                 case "config":

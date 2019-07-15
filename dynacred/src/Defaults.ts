@@ -29,7 +29,7 @@ export const Defaults = {
     // DataFile can be set to a string that will be used to overwrite the Data
     DataFile: null as string,
     // PathNew is where a new user is sent to
-    PathNew: "/c4dt/newuser",
+    PathNew: "/newuser",
     // PathUser is where a registered user is sent to
     PathUser: "/c4dt",
     // pre-loads polling stats for UI testing
