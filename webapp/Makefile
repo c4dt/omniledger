@@ -63,4 +63,4 @@ src: cothority_src
 npm: dynacred_npm
 
 serve:
-	ng serve --disable-host-check
+	ng serve --disable-host-check --aot
