@@ -317,7 +317,7 @@ export class Data {
     }
 
     setFileName(n: string) {
-        this.dataFileName = Defaults.DataDir + "/" + n;
+        this.dataFileName = `storage/${n}`;
     }
 
     async setValues(obj: any) {
