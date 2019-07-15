@@ -34,7 +34,7 @@ jobs:
         - npm run lint
         - d=node_modules/@c4dt/dynacred && rm -r $d && ln -s ../../../dynacred/dist $d
       script:
-        - npm run build
+        - npm run build --prod
         - npm run test --no-watch
 
     - stage: deploy
