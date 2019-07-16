@@ -4,8 +4,6 @@ import { ActivatedRoute, Router } from "@angular/router";
 
 import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
-import { Defaults } from "@c4dt/dynacred/Defaults";
-
 import { showDialogInfo } from "../../../../../lib/Ui";
 import { UserData } from "../../../../user-data.service";
 
@@ -51,7 +49,7 @@ export class LoginComponent implements OnInit {
     }
 
     async deny() {
-        await this.router.navigateByUrl(Defaults.PathUser);
+        await this.router.navigate([]);
     }
 
 }

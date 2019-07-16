@@ -51,7 +51,7 @@ export class RegisterComponent implements OnInit {
                         await StorageDB.set(this.uData.dataFileName, "");
                         window.location.reload();
                     } else {
-                        await this.router.navigateByUrl(Defaults.PathUser);
+                        await this.router.navigate([]);
                     }
                 });
             } else {
@@ -119,6 +119,6 @@ export class RegisterComponent implements OnInit {
     }
 
     async start_demonstrator() {
-        this.router.navigateByUrl(Defaults.PathUser);
+        this.router.navigate([]);
     }
 }
