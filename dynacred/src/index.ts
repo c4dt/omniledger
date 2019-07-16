@@ -1,3 +1,4 @@
+import { Config } from "./Config";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { Defaults } from "./Defaults";
@@ -7,6 +8,7 @@ import { FileBlob } from "./SecureData";
 import { StorageDB } from "./StorageDB";
 
 export {
+    Config,
     Contact,
     Data,
     Defaults,

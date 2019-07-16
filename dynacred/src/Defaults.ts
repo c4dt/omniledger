@@ -8,7 +8,6 @@ export const Defaults = {
     // TODO remove these when data path is clearer
     AdminDarc: Buffer.alloc(0), // darc of root user -> ? config.toml
     ByzCoinID: Buffer.alloc(0), // genesis block -> config.toml
-    Ephemeral: Buffer.alloc(0), // new user init pass -> by User
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
