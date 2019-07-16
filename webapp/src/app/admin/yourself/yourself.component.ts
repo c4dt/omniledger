@@ -4,7 +4,6 @@ import { MatDialog, MatSnackBar } from "@angular/material";
 import { Router } from "@angular/router";
 
 import { Data } from "@c4dt/dynacred";
-import { Defaults } from "@c4dt/dynacred/Defaults";
 
 import { showSnack } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
@@ -53,7 +52,7 @@ export class YourselfComponent implements OnInit {
             this.uData.contact.view = this.contactForm.controls.view.value;
             await this.uData.contact.sendUpdate();
             this.bcs.updateBlocks();
-            await this.router.navigateByUrl(Defaults.PathUser);
+            await this.router.navigate([]);
         });
     }
 }

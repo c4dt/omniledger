@@ -5,7 +5,6 @@ import { Router } from "@angular/router";
 import Log from "@dedis/cothority/log";
 
 import { Data } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
 
 import { showSnack } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
@@ -32,7 +31,7 @@ export class DeviceComponent implements OnInit {
                 const newData = await Data.attachDevice(window.location.href);
                 await this.uData.overwrite(newData);
                 await this.uData.save();
-                await this.router.navigateByUrl(Defaults.PathUser);
+                await this.router.navigate([]);
             });
         } catch (e) {
             Log.catch("Couldn't register:", e);
