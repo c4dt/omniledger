@@ -16,8 +16,6 @@ export const Defaults = {
     Roster: null as Promise<Roster>,  // config.toml
     RosterCalypso: null as Promise<Roster>, // config.toml
 
-    // Assets path
-    AssetsPath: "/omniledger/assets/",
     // PathNew is where a new user is sent to
     PathNew: "/newuser",
     // PathUser is where a registered user is sent to
@@ -26,13 +24,16 @@ export const Defaults = {
     Testing: false,
 };
 
+// Assets path
+let assetsPath = "/omniledger/assets/";
+
 function getConodesURL(): string {
     const host =
         (typeof window !== "undefined")
             ? window.location.origin
             : "http://localhost:4200"; // not via browser, so via tests (TODO not true for lib/karma), so localhost
 
-    return host + Defaults.AssetsPath + "conodes.toml";
+    return host + assetsPath + "conodes.toml";
 }
 
 async function rosterFromAssets(): Promise<Roster> {
@@ -49,7 +50,7 @@ export function activateTesting() {
     Defaults.ByzCoinID = Buffer.from("5f78d08a260b6fcc0b492448ec272dc4a59794ddf34a9914fdfe4f3faeba616e", "hex");
     Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
     Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
-    Defaults.AssetsPath = "/assets/";
+    assetsPath = "/assets/";
 }
 
 export function activateDEDIS() {
@@ -74,7 +75,6 @@ function setRosterFromAssets() {
 if (typeof window !== "undefined") {
     // activateC4DT();
     activateDEDIS();
-    // Defaults.AssetsPath = "/assets/";
     // activateTesting();
 
     setRosterFromAssets();
