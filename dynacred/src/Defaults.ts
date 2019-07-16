@@ -16,8 +16,6 @@ export const Defaults = {
     Roster: null as Promise<Roster>,  // config.toml
     RosterCalypso: null as Promise<Roster>, // config.toml
 
-    // PathNew is where a new user is sent to
-    PathNew: "/newuser",
     // PathUser is where a registered user is sent to
     PathUser: "/c4dt",
     // Testing
