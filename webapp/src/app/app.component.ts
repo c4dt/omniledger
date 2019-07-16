@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
             if (!this.uData.constructorObj) {
                 // No data saved - show how to get a new user
                 this.loading = false;
-                await this.router.navigateByUrl(Defaults.PathNew);
+                await this.router.navigate(["/newuser"]);
             } else {
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {
@@ -52,7 +52,7 @@ export class AppComponent implements OnInit {
                         window.location.reload();
                     } else {
                         this.loading = false;
-                        await this.router.navigateByUrl(Defaults.PathNew);
+                        await this.router.navigate(["/newuser"]);
                     }
                 });
             }
