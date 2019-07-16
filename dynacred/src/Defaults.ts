@@ -4,16 +4,17 @@ import "cross-fetch/polyfill";
 
 // tslint:disable-next-line
 export const Defaults = {
-    // ByzCoinID
-    AdminDarc: Buffer.alloc(0),
-    ByzCoinID: Buffer.alloc(0),
-    Ephemeral: Buffer.alloc(0),
+    // IDs
+    // TODO remove these when data path is clearer
+    AdminDarc: Buffer.alloc(0), // darc of root user -> ? config.toml
+    ByzCoinID: Buffer.alloc(0), // genesis block -> config.toml
+    Ephemeral: Buffer.alloc(0), // new user init pass -> by User
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
 
-    Roster: null as Promise<Roster>,
-    RosterCalypso: null as Promise<Roster>,
+    Roster: null as Promise<Roster>,  // config.toml
+    RosterCalypso: null as Promise<Roster>, // config.toml
 
     // Assets path
     AssetsPath: "/omniledger/assets/",
