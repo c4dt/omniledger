@@ -64,11 +64,6 @@ export class ContactsComponent implements OnInit {
 
     async createContact(view?: string) {
         const creds: IUserCred = {alias: "", email: "", view: "default", groups: []};
-        if (Defaults.Testing) {
-            const base = (view ? view : "test") + Date.now() % 1e6;
-            creds.alias = base;
-            creds.email = base + "@test.com";
-        }
         const groups = await this.uData.contact.getGroups();
         creds.groups = groups.map((group) => group.darc.description.toString());
         const ac = this.dialog.open(UserCredComponent, {
