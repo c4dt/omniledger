@@ -1,0 +1,36 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Lab of great ideas"></Label>
+    </ActionBar>
+    <GridLayout rows="*, auto, *, auto, *" columns="auto, *" margin="2%" backgroundColor="#eeeeee">
+
+        <Label text="&#xf577; " fontSize="100%" class="fas"
+               row="0" col="0" style="vertical-align: center; horizontal-align: center" tap="goPersonhood"/>
+        <StackLayout padding="10%" row="0" col="1" style="vertical-align: center;" tap="goPersonhood">
+            <Label text="Personhood" class="h2" textWrap="true"
+                   textTransform="uppercase" style="padding:5%;"/>
+        </StackLayout>
+
+        <Label backgroundColor="#ffffff" row="1" colSpan="2" height="3%"/>
+
+        <StackLayout row="2" col="0" style="vertical-align: center;" tap="goRoPaSci">
+        <Label text="&#xf255;" fontSize="30%" class="fas" style="horizontal-align: left;"/>
+        <Label text="&#xf256;" fontSize="30%" class="fas" style="horizontal-align: center;"/>
+        <Label text="&#xf257;" fontSize="30%" class="fas" style="horizontal-align: right;"/>
+        </StackLayout>
+        <StackLayout padding="10%" row="2" col="1" style="vertical-align: center;" tap="goRoPaSci">
+            <Label text="Rock Paper Scissors" class="h2" textWrap="true"
+                   textTransform="uppercase" style="padding:5%;" />
+        </StackLayout>
+
+        <Label backgroundColor="#ffffff" row="3" colSpan="2" height="3%"/>
+
+        <Label text="&#xf681; " fontSize="100%" class="fas"
+               row="4" col="0" style="vertical-align: center; horizontal-align: center" tap="goPoll"/>
+        <StackLayout padding="10%" row="4" col="1" style="vertical-align: center;" tap="goPoll">
+            <Label text="Troll-resistant Poll" class="h2" textWrap="true"
+                   textTransform="uppercase" style="padding:5%;"/>
+        </StackLayout>
+    </GridLayout>
+</Page>

@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Show Contact"/>
+    </ActionBar>
+    <StackLayout style="margins: 10%; margin-top:20%;" width="80%">
+        <Label text="{{ 'Info for ' + alias }}" class="h1"/>
+        <Label text="{{ 'Email: ' + email }}" class="h2" visibility="{{ email ? 'visible' : 'collapse' }}"
+               tap="tapEmail"/>
+        <Label text="{{ 'Telephone: ' + phone }}" class="h2" visibility="{{ phone ? 'visible' : 'collapse' }}"
+               tap="tapPhone"/>
+        <Label text="{{ 'Webpage: ' + url }}" class="h2" visibility="{{ url ? 'visible' : 'collapse' }}"
+               tap="tapUrl" textWrap="true"/>
+        <Label text="Click on the attributes to call, send email, or open url." class="h3"
+               textWrap="true"/>
+        <Button text="Close" tap="goBack" class="btn"/>
+    </StackLayout>
+</Page>

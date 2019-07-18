@@ -1,0 +1,38 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Meetup"/>
+        <ActionItem tap="meetupUpdate" ios.position="right" android.position="actionBar">
+            <ActionItem.actionView>
+                <Label text="&#xf2f1;  " class="fas" style="font-size: 25%;"/>
+            </ActionItem.actionView>
+        </ActionItem>
+    </ActionBar>
+    <GridLayout rows="*, auto, auto" row="1">
+        <ListView items="{{ userViews }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <FlexboxLayout orientation="horizontal" flexDirection="row"
+                               class="basic-list-decorated"
+                               alignItems="center">
+                    <Label text="{{ alias }}" class="h3"
+                           textTransform="uppercase"
+                           tap="{{ credUser }}"
+                           flexGrow="1"/>
+                </FlexboxLayout>
+            </ListView.itemTemplate>
+        </ListView>
+
+        <Button row="1" text="Add all contacts" class="btn" tap="addContacts"/>
+
+        <GridLayout rows="auto" row="2" class="network-progress-grid">
+            <Label class="label-title" text=" "/>
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

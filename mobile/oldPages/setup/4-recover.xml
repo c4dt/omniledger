@@ -1,0 +1,57 @@
+<!--
+Here the user can enter his alias
+-->
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Recover"/>
+    </ActionBar>
+    <GridLayout rows="auto, *, auto, auto, auto" class="p-20" height="100%">
+        <StackLayout row="0">
+            <Label text="Recover your identity" class="h2"/>
+            <Label text="Sorry for having lost your identity. If you set up a number of contacts to recover it, you can get it back soon."
+                   class="h3" textWrap="true"/>
+            <Label text="Show this QRCode to each of your trusted contacts, and you'll be able to use your identity just as before."
+                   class="h3"
+                   textWrap="true"/>
+            <Image src="{{ qrcode }}" width="50%"/>
+        </StackLayout>
+
+        <StackLayout row="1">
+            <Button text="Scan Signature" tap="{{ scanSignature }}" class="btn btn-primary"/>
+            <ListView items="{{ trustees }}" class="list-group" row="1" height="100%">
+                <ListView.itemTemplate>
+                    <FlexboxLayout orientation="horizontal" flexDirection="row"
+                                   class="basic-list-decorated"
+                                   tap="{{ showTrustee }}"
+                                   alignItems="center">
+                        <Label text="{{ signed }}" class="h2 fas"/>
+                        <Label text="{{ alias }}" class="h3"
+                               height="100%"
+                               textTransform="uppercase"
+                               flexGrow="1"/>
+                    </FlexboxLayout>
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+
+        <GridLayout rows="auto" row="2 " class="network-progress-grid"
+                    visibility="{{ threshold > 0 ? 'visible' : 'hidden'}}">
+            <GridLayout>
+                <Label row="0" text="{{ 'Signatures Needed: ' + trustees.length }}" class="label-title network-progress"
+                       id="progress_text_signatures"/>
+                <Label row="0" width="100%" class="network-progress-bar" id="progress_bar_signatures"/>
+            </GridLayout>
+        </GridLayout>
+
+        <Button text="Cancel Recovery" tap="cancelRecovery" class="btn" row="3"/>
+
+        <GridLayout rows="auto" row="4" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

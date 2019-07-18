@@ -1,0 +1,76 @@
+<Page
+        class="page"
+        navigatingTo="onNavigatingTo"
+        xmlns:nsListView="nativescript-ui-listview"
+        xmlns:df="nativescript-ui-dataform">
+
+    <ActionBar class="action-bar">
+        <NavigationButton text="Go Back" android:icon="res://ic_arrow_back" tap="goBack"/>
+        <Label class="action-bar-title" text="Configuration"/>
+        <ActionItem tap="save"
+                    ios.systemIcon="0" ios.position="right"
+                    android:icon="res://ic_done" android.position="actionBar"
+                    visibility="{{ readOnly ? 'collapsed' : 'visible' }}"/>
+    </ActionBar>
+
+    <GridLayout class="page-content" rows="auto, auto, auto, *, auto"
+                columns="*,auto,*">
+        <Label class="label-title" text="Description" row="0" col="0" colSpan="3"/>
+        <df:RadDataForm
+                id="data-form"
+                source="{{ dataForm }}"
+                row="1" colSpan="3"
+                isReadOnly="{{ readOnly }}">
+            <df:RadaForm.properties>
+                <df:EntityProperty name="description" index="0">
+                    <df:EntityProperty.editor>
+                        <df:PropertyEditor type="Text">
+                            <df:PropertyEditor.propertyEditorStyle>
+                                <df:PropertyEditorStyle labelPosition="Left" labelWidth="120"
+                                                        labelFontStyle="Italic" labelTextColor="#00695c"/>
+                            </df:PropertyEditor.propertyEditorStyle>
+                        </df:PropertyEditor>
+                    </df:EntityProperty.editor>
+                </df:EntityProperty>
+                <df:EntityProperty name="stake" index="1">
+                    <df:EntityProperty.editor>
+                        <df:PropertyEditor type="Number">
+                            <df:PropertyEditor.propertyEditorStyle>
+                                <df:PropertyEditorStyle labelPosition="Left" labelWidth="120"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                            </df:PropertyEditor.propertyEditorStyle>
+                        </df:PropertyEditor>
+                    </df:EntityProperty.editor>
+                </df:EntityProperty>
+                <df:EntityProperty name="choice" index="2" valuesProvider="Rock, Paper, Scissors">
+                    <df:EntityProperty.editor>
+                        <df:PropertyEditor type="SegmentedEditor"/>
+                    </df:EntityProperty.editor>
+                </df:EntityProperty>
+                <!-- For some reason the 'hidden="true"' doesn't work with an EntityProperty -->
+                <df:RadDataForm.groups>
+                    <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
+                        <df:PropertyGroup.properties>
+                            <df:EntityProperty name="_observers"/>
+                            <df:EntityProperty name="_map"/>
+                        </df:PropertyGroup.properties>
+                    </df:PropertyGroup>
+                </df:RadDataForm.groups>
+            </df:RadaForm.properties>
+        </df:RadDataForm>
+
+        <Button text="Send Game to ByzCoin" tap="save" class="btn"
+                row="2" colSpan="3"/>
+
+        <Label text="" row="3"/>
+
+        <GridLayout rows="auto" row="4" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

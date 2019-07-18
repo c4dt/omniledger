@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+app/**/*.js
+hooks/
+node_modules/
+platforms/
+releases/
+archive/
+release
+cothority/

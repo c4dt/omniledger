@@ -1,0 +1,9 @@
+<Page shownModally="onShownModally">
+    <StackLayout style="text-align: center;">
+        <Label text="{{ 'Info for ' + alias }}" class="h2"/>
+        <Image src="{{ qrcode }}" visibility="visible" width="100%"
+        tap="goBack"/>
+        <Label text="Scan QRCode to copy user"/>
+        <Label text="Tap to close"/>
+    </StackLayout>
+</Page>

@@ -1,0 +1,15 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Show Recovery"/>
+    </ActionBar>
+    <StackLayout style="margins: 10%; margin-top:20%;" width="80%">
+        <Label text="Recovery of Contact" class="h1"/>
+        <Label text="Show the signature to the contact to be recovered." class="h2"
+               textWrap="true"/>
+        <Image src="{{ qrcode }}" visibility="visible" width="100%"
+               tap="goBack"/>
+        <Button text="Done" tap="goBack" class="btn"/>
+    </StackLayout>
+</Page>

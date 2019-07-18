@@ -1,0 +1,7 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <GridLayout rows="*, auto, *">
+    <Label text="Connecting" class="h1 text-center" row="1"/>
+    </GridLayout>
+</Page>

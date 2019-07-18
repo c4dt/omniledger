@@ -1,0 +1,45 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Manage Contacts"/>
+        <ActionItem tap="addFriend"
+                    ios.systemIcon="4" ios.position="right"
+                    icon="res://ic_add_white" android.position="actionBar"/>
+    </ActionBar>
+    <GridLayout rows="*, auto" row="1" tap="cancelNetwork">
+        <ListView items="{{ users }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <FlexboxLayout orientation="horizontal" flexDirection="row"
+                               class="basic-list-decorated"
+                               alignItems="center">
+                    <StackLayout width="5%" style="margin-right: 2%;">
+                        <Image src="~/images/icon-personhood-64.png"
+                               visibility="{{ isRegistered ? 'visible' : 'collapse' }}"
+                               tap="{{ credUser }}"/>
+                    </StackLayout>
+                    <Label text="{{ alias }}" class="h3"
+                           height="100%"
+                           textTransform="uppercase"
+                           tap="{{ credUser }}"
+                           flexGrow="1"/>
+                    <Label text="&#xf158;  " class="fas h1"
+                           tap="{{ payUser }}"/>
+                    <Label text="&#xf029;  " class="fas h1"
+                           tap="{{ showUser }}"/>
+                    <Label text="&#xf2ed;" class="fas h1"
+                           tap="{{ deleteUser }}"/>
+                </FlexboxLayout>
+            </ListView.itemTemplate>
+        </ListView>
+
+        <GridLayout rows="auto" row="1" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

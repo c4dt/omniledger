@@ -1,0 +1,54 @@
+<Page
+        class="page"
+        loaded="onLoaded"
+        xmlns:nsListView="nativescript-ui-listview">
+
+    <ActionBar class="action-bar">
+        <NavigationButton text="Go Back" android:icon="res://ic_arrow_back" tap="goBack"/>
+        <Label class="action-bar-title" text="Public Keys"/>
+        <!--<ActionItem tap="shareToAttendee"-->
+        <!--ios.systemIcon="9" ios.position="left"-->
+        <!--android.position="actionBar" android:icon="res://ic_share_white">-->
+        <!--</ActionItem>-->
+        <ActionItem tap="addNewKey"
+                    ios.systemIcon="4" ios.position="right"
+                    android.position="actionBar" android:icon="res://ic_add_white">
+        </ActionItem>
+    </ActionBar>
+
+    <GridLayout columns="*">
+        <GridLayout class="page-content" rows="auto,*,auto" columns="auto,*" row="0">
+            <Label width="100%" class="inverted-gray" row="0" colSpan="2"/>
+            <Label text="{{ '#' + size }}" fontSize="18" textAlignment="right" row="0" col="0"
+                   style="margin: 10em;" class="inverted-gray"/>
+            <Label text="{{ 'sha256:' + hash }}" fontSize="18" textAlignment="right" row="0" col="1"
+                   style="margin: 10em;" class="inverted-gray"
+                   textTransform="uppercase"/>
+
+            <nsListView:RadListView items="{{ attendees }}" id="list-view-registered-keys"
+                                    row="1"
+                                    colSpan="2">
+
+                <nsListView:RadListView.itemTemplate>
+                    <GridLayout class="basic-list" rows="*,*" columns="*">
+                        <Label text="{{ hex }}" fontSize="18" textAlignment="center" textWrap="true"
+                               tap="{{ onTap }}"/>
+                    </GridLayout>
+                </nsListView:RadListView.itemTemplate>
+
+            </nsListView:RadListView>
+
+            <Label text="FINALIZE" tap="finalize" row="2" colSpan="2" class="h1 text-center inverted-accent"/>
+        </GridLayout>
+
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+
+</Page>

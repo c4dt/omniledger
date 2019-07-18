@@ -1,0 +1,35 @@
+<!--
+This is the presentation screen when the user is not signed up yet.
+-->
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Presentation"></Label>
+    </ActionBar>
+    <GridLayout rows="*, auto" row="1" tap="cancelNetwork">
+        <StackLayout class="p-20" row="0">
+            <Label text="Presenting personhood" class="h2 text-center"/>
+            <Label text="Personhood.online is an experimental application that is used to try out new ideas for identity management and troll-resistance. It is based on research from the DEDIS lab at EPFL and actively developed by Linus Gasser. The current version should run without too many bugs and its goal is to start a discussion of what is possible."
+                   class="h3" textWrap="true"/>
+            <StackLayout orientation="horizontal" style="horizontal-align: center;">
+                <HtmlView html="Personhood is brought to you by <u>https://personhood.online</u>:" class="h3" textWrap="true"
+                width="60%" style="vertical-align: center;" tap="goPersonhood"/>
+                <Image src="~/images/icon-personhood-64.png" width="20%" tap="goPersonhood"/>
+            </StackLayout>
+            <Button text="Create BC" tap="goInitTest" class="btn btn-test"
+                    visibility="{{ testing ? 'visible' : 'collapse' }}"/>
+            <Button text="Reload BC Config" tap="goReloadBC" class="btn btn-test"
+                    visibility="{{ testing ? 'visible' : 'collapse' }}"/>
+            <Button text="Continue" tap="goAlias" class="btn"/>
+            <Button text="Recover" tap="goRecover" class="btn"/>
+        </StackLayout>
+
+        <GridLayout rows="auto" row="1" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

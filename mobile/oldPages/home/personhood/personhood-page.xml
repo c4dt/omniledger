@@ -1,0 +1,37 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <NavigationButton text="Go Back" tap="goBack"
+                          android:icon="res://ic_arrow_back" ios:iconSource="res://ic_reload_white"/>
+        <Label class="action-bar-title" text="Personhood"
+               textTransform="uppercase"/>
+    </ActionBar>
+    <ScrollView>
+        <StackLayout style="margin: 20px;" tap="goBack">
+            <Label text="Personhood-score" class="h1 text-center" textWrap="true"/>
+            <Label text="Your personhood score is an evaluation of how much you can prove that you're a unique human being. The higher the score, the more the system can trust that your account is uniquely tied to one person only."
+                   class="h3" textWrap="true"/>
+            <Label text="Attributes" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ attributes_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{attributes_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+            <Label text="Registration" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ registrations_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{registrations_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+            <Label text="Meetups" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ meetups_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{meetups_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+            <Label text="Party" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ parties_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{parties_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</Page>

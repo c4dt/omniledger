@@ -1,0 +1,66 @@
+<!--
+Here the user can enter his alias
+-->
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      xmlns:df="nativescript-ui-dataform"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Setting Alias"></Label>
+    </ActionBar>
+    <ScrollView>
+        <StackLayout class="p-20">
+            <Label text="Setting your identity" class="h1 text-center" textWrap="true"/>
+            <Label text="Let's start with getting to know you. The only required field is 'alias', but for more functionality, you should also fill out the email, the phone-number, and give an URL. Of course you can also do so later. All of this information will eventually be public on our servers."
+                   class="h2" textWrap="true"/>
+            <df:RadDataForm id="myDataForm" source="{{ input }}">
+                <df:RadaForm.properties>
+                    <df:EntityProperty name="alias"
+                                       displayName="Alias"
+                                       hintText="Enter Alias" index="0" labelWidth="60">
+                        <df:EntityProperty.editor>
+                            <df:PropertyEditor type="Text">
+                                <df:PropertyEditor.propertyEditorStyle>
+                                    <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                            labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                </df:PropertyEditor.propertyEditorStyle>
+                            </df:PropertyEditor>
+                        </df:EntityProperty.editor>
+                    </df:EntityProperty>
+                    <df:EntityProperty name="email" index="1" hintText="Enter email">
+                        <df:EntityProperty.editor>
+                            <df:PropertyEditor type="Email">
+                                <df:PropertyEditor.propertyEditorStyle>
+                                    <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                            labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                </df:PropertyEditor.propertyEditorStyle>
+                            </df:PropertyEditor>
+                        </df:EntityProperty.editor>
+                    </df:EntityProperty>
+                    <df:EntityProperty name="phone" index="2" hintText="Enter phone-#">
+                        <df:EntityProperty.editor>
+                            <df:PropertyEditor type="Phone">
+                                <df:PropertyEditor.propertyEditorStyle>
+                                    <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                            labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                </df:PropertyEditor.propertyEditorStyle>
+                            </df:PropertyEditor>
+                        </df:EntityProperty.editor>
+                    </df:EntityProperty>
+                    <df:EntityProperty name="url" index="2" hintText="Enter personal webpage">
+                        <df:EntityProperty.editor>
+                            <df:PropertyEditor type="Text">
+                                <df:PropertyEditor.propertyEditorStyle>
+                                    <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                            labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                </df:PropertyEditor.propertyEditorStyle>
+                            </df:PropertyEditor>
+                        </df:EntityProperty.editor>
+                    </df:EntityProperty>
+                </df:RadaForm.properties>
+            </df:RadDataForm>
+
+            <Button text="Continue" tap="goNext" class="btn"/>
+        </StackLayout>
+    </ScrollView>
+</Page>

@@ -1,0 +1,80 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      xmlns:df="nativescript-ui-dataform"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Settings"></Label>
+    </ActionBar>
+    <GridLayout columns="*">
+        <ScrollView row="0">
+            <StackLayout class="p-20" row="0">
+
+                <df:RadDataForm id="myDataForm" source="{{ userId }}">
+                    <df:RadaForm.properties>
+                        <df:EntityProperty name="alias" index="0">
+                            <df:EntityProperty.editor>
+                                <df:PropertyEditor type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:PropertyEditor>
+                            </df:EntityProperty.editor>
+                        </df:EntityProperty>
+                        <df:EntityProperty name="email" index="1" hintText="Enter email">
+                            <df:EntityProperty.editor>
+                                <df:PropertyEditor type="Email">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:PropertyEditor>
+                            </df:EntityProperty.editor>
+                        </df:EntityProperty>
+                        <df:EntityProperty name="phone" index="2" hintText="Enter phone-#">
+                            <df:EntityProperty.editor>
+                                <df:PropertyEditor type="Phone">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:PropertyEditor>
+                            </df:EntityProperty.editor>
+                        </df:EntityProperty>
+                        <df:EntityProperty name="url" index="2" hintText="Enter personal webpage">
+                            <df:EntityProperty.editor>
+                                <df:PropertyEditor type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:PropertyEditor>
+                            </df:EntityProperty.editor>
+                        </df:EntityProperty>
+                        <df:EntityProperty name="publishPersonhood" index="3">
+                            <df:EntityProperty.editor>
+                                <df:PropertyEditor type="Switch">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:PropertyEditorStyle labelPosition="Left" labelWidth="160"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:PropertyEditor>
+                            </df:EntityProperty.editor>
+                        </df:EntityProperty>
+                    </df:RadaForm.properties>
+                </df:RadDataForm>
+
+                <Button text="Save" tap="tapSave" class="btn"/>
+            </StackLayout>
+        </ScrollView>
+
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

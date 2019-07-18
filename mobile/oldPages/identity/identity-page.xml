@@ -1,0 +1,33 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Manage Identity"></Label>
+    </ActionBar>
+    <GridLayout rows="*, auto, *, auto, *" columns="auto, *" margin="2%" backgroundColor="#eeeeee">
+
+        <Label text="&#xf2c2; " fontSize="100%" class="fas"
+               row="0" col="0" style="vertical-align: center;" tap="goIdentity"/>
+        <StackLayout padding="10%" row="0" col="2" style="vertical-align: center;" tap="goIdentity">
+            <Label text="Attributes" class="h2" textWrap="true" style="padding: 5%;"
+                   textTransform="uppercase"/>
+        </StackLayout>
+
+        <Label backgroundColor="#ffffff" row="1" colSpan="2" height="3%"/>
+
+        <Label text="&#xf0c0; " fontSize="100%" class="fas"
+               row="2" col="0" style="vertical-align: center;" tap="goFriends"/>
+        <StackLayout padding="10%" row="2" col="2" style="vertical-align: center;" tap="goFriends">
+            <Label text="Contacts" class="h2" textWrap="true" style="padding: 5%;"
+                   textTransform="uppercase"/>
+        </StackLayout>
+
+        <Label backgroundColor="#ffffff" row="3" colSpan="2" height="3%"/>
+
+        <Label text="&#xf1b8; " fontSize="100%" class="fas"
+               row="4" col="0" style="vertical-align: center; horizontal-align: center" tap="goRecover"/>
+        <StackLayout padding="10%" row="4" col="2" style="vertical-align: center;" tap="goRecover">
+            <Label text="Recover" class="h2" textWrap="true" style="padding: 5%;"
+                   textTransform="uppercase"/>
+        </StackLayout>
+    </GridLayout>
+</Page>

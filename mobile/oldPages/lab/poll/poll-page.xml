@@ -1,0 +1,57 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Answer polls anonymously"></Label>
+        <ActionItem tap="addPoll"
+                    ios.systemIcon="4" ios.position="right"
+                    icon="res://ic_add_white" android.position="actionBar"/>
+        <ActionItem tap="updatePoll" ios.position="right" android.position="actionBar">
+            <ActionItem.actionView>
+                <Label text="&#xf2f1; " class="fas" style="font-size: 25%;"/>
+            </ActionItem.actionView>
+        </ActionItem>
+    </ActionBar>
+    <GridLayout rows="*, auto">
+        <ListView items="{{ polls }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <GridLayout tap="{{ onTap }}" class="{{ 'basic-list-decorated ' + bgcolor }}" rows="auto, auto">
+                    <GridLayout style="padding-right: 15%;" columns="*" rows="auto, auto" row="0">
+                        <Label text="{{ 'Title: ' + poll.title }}" class="h2"
+                               row="0" col="0"/>
+                        <Label text="{{ 'Desc: ' + poll.description }}" class="h3"
+                               row="1" col="0" textWrap="true"/>
+                    </GridLayout>
+                    <GridLayout row="1" height="{{ height }}">
+                        <StackLayout row="0" style="padding: 5px; padding-top: 15px;">
+                            <ListView items="{{ choices }}">
+                                <ListView.itemTemplate>
+                                    <GridLayout tap="{{ onTap }}">
+                                        <Label text="{{ label }}" class="h3" style="text-align: left; margin-left: 10px;"
+                                               width="100%" row="0"/>
+                                        <Label text="{{ counts }}" class="h3" style="text-align: right;"
+                                               width="100%" row="0"/>
+                                        <Label width="{{ bar }}"
+                                               style="horizontal-align:left; opacity:0.2; background-color: #00caab; margin: 5px;"
+                                               row="0"/>
+                                    </GridLayout>
+                                </ListView.itemTemplate>
+                            </ListView>
+                        </StackLayout>
+                        <Label width="100%" row="0"
+                               style="border-color: black; border-width: 2px; padding-right: 2px"/>
+                    </GridLayout>
+                </GridLayout>
+            </ListView.itemTemplate>
+        </ListView>
+
+        <GridLayout rows="auto" row="1" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

@@ -1,0 +1,58 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <NavigationButton text="Go Back" tap="goBack"
+                          android:icon="res://ic_arrow_back" ios:iconSource="res://ic_reload_white"/>
+        <Label class="action-bar-title" text="Recover Account"/>
+    </ActionBar>
+    <ScrollView>
+        <GridLayout rows="auto, *, auto, auto, auto, auto" height="100%">
+            <StackLayout visibility="{{ maxValue > 1 ? 'visible' : 'collapse' }}"
+                         style="margin: 5%; margin-bottom: 0%;" row="0">
+                <Label text="Number of contacts that need to come together to recover your identity" textWrap="true"
+                       class="h2"/>
+                <StackLayout orientation="horizontal">
+                    <Slider value="{{ threshold }}" minValue="1" maxValue="{{ maxValue }}" width="80%"
+                            loaded="sliderLoaded"/>
+                    <Label text="{{ threshold }}" class="h1"/>
+                </StackLayout>
+            </StackLayout>
+
+            <ScrollView>
+                <ListView items="{{ trustees }}" class="list-group" row="1">
+                    <ListView.itemTemplate>
+                        <FlexboxLayout orientation="horizontal" flexDirection="row"
+                                       class="basic-list-decorated"
+                                       alignItems="center">
+                            <Label text="{{ alias }}" class="h3"
+                                   height="100%"
+                                   textTransform="uppercase"
+                                   tap="{{ showTrustee }}"
+                                   flexGrow="1"/>
+                            <Label text="&#xf2ed;" class="fas h1"
+                                   tap="{{ removeTrustee }}"/>
+                        </FlexboxLayout>
+                    </ListView.itemTemplate>
+                </ListView>
+            </ScrollView>
+
+            <Button text="Add Trustee" tap="addTrustee" class="btn" row="2"/>
+
+            <Button text="Recover User" tap="recoverUser" class="btn" row="3"
+                    visibility="{{ isTrustee ? 'visible' : 'collapse' }}"/>
+
+            <Button text="Save Credential" tap="save" class="btn" row="4"
+                    visibility="{{ changed ? 'visible' : 'collapse' }}"/>
+
+            <GridLayout rows="auto" row="5" class="network-progress-grid">
+                <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                    <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                           id="progress_text"/>
+                    <Label row="0" width="100%" class="network-progress-bar"
+                           id="progress_bar" tap="setProgress"/>
+                </GridLayout>
+            </GridLayout>
+        </GridLayout>
+    </ScrollView>
+</Page>

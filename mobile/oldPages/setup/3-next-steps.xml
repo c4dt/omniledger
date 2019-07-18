@@ -1,0 +1,27 @@
+<!--
+Here the user can enter his alias
+-->
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Next Steps"/>
+    </ActionBar>
+    <ScrollView>
+        <StackLayout class="p-20">
+            <Label text="Proof-of-concept code!" class="h2"/>
+            <Label text="This software is given as-is. More specifically: all of your date is stored in clear on our blockchain. Calls are done unprotected. Coins will disappear. Feel free to open issues on github.com/dedis/personhood.online anyway."
+                   class="h3" textWrap="true"/>
+            <Label text="Congratulations, you're all set up to go. As is, you are not connected to any of our services. But you can go around and meet other people who have the app and exchange your identity with them. This will also start to create your social graph."
+                   class="h3"
+                   textWrap="true"/>
+            <Label text="You can also visit personhood-parties. They will proof that you're a unique person, and will allow you to sign up to our experimental blockchain. Once you signed up, your identity can be updated automatically by all your contacts, if you give them the permission."
+                   class="h3"
+                   textWrap="true"/>
+            <Label text="Once you're signed up you can play a game of rock-paper-scissors on the blockchain. If you participate in a personhood party, you can create an anonymous, troll-resistant poll."
+                   class="h3"
+                   textWrap="true"/>
+            <Button text="Show Main Screen" tap="goMain" class="btn"/>
+            <Button text="Delete all" tap="deleteAll" class="btn btn-test"
+                    visibility="{{ testing ? 'visible' : 'collapse' }}"/>
+        </StackLayout>
+    </ScrollView>
+</Page>

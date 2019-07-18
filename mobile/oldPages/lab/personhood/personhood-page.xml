@@ -1,0 +1,59 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Manage Badges and Parties"></Label>
+        <ActionItem tap="addParty" visibility="{{ canAddParty ? 'visible' : 'collapse' }}"
+                    ios.systemIcon="4" ios.position="right"
+                    icon="res://ic_add_white" android.position="actionBar"/>
+        <ActionItem tap="updateParties" ios.position="right" android.position="actionBar">
+            <ActionItem.actionView>
+                <Label text="&#xf2f1; " class="fas" style="font-size: 25%;"/>
+            </ActionItem.actionView>
+        </ActionItem>
+        <!--<ActionItem tap="updateParties"-->
+                    <!--ios.systemIcon="13" ios.position="right"-->
+                    <!--icon="res://ic_reload_white" android.position="actionBar"/>-->
+    </ActionBar>
+    <GridLayout rows="*" tap="cancelNetwork">
+        <ListView items="{{ elements }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <StackLayout class="{{ 'basic-list-decorated ' + bgcolor }}">
+                    <StackLayout orientation="horizontal">
+                        <Image src="{{ qrcode }}"
+                               visibility="{{ qrcode ? 'visible' : 'collapse' }}"
+                               width="30%" tap="{{ showQrcode }}"/>
+                        <Image src="{{ icon }}"
+                               visibility="{{ icon ? 'visible' : 'collapse' }}"
+                               width="10%" tap="{{ onTap }}"/>
+                        <StackLayout style="margin-left:5%;" tap="{{ onTap }}">
+                            <Label text="{{ desc.name }}" class="h2" textTransform="uppercase"/>
+                            <StackLayout visibility="{{ showDetails ? 'visible' : 'collapse' }}">
+                                <Label text="{{ desc.purpose }}" class="h3"/>
+                                <Label text="{{ desc.dateString }}" class="h3"/>
+                                <Label text="{{ desc.location }}" class="h3"/>
+                            </StackLayout>
+                        </StackLayout>
+                    </StackLayout>
+                    <GridLayout visibility="{{ nextStep ? 'visible' : 'collapse' }}" tap="{{ onTap }}">
+                        <Label text="{{ nextStep }}" class="h3" row="0" style="text-align: center;" width="100%"/>
+                        <Label width="{{ stepWidth }}"
+                               style="horizontal-align:left; opacity:0.5; background-color: #00caab;"
+                               id="{{ 'progress_bar_' + desc.name }}" row="0"/>
+                        <Label width="100%"
+                               style="border-color: black; border-width: 2px;"/>
+                    </GridLayout>
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView>
+
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>
