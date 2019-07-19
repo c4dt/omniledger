@@ -29,6 +29,7 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
     onMessage(callback: (data: Buffer) => void): void {
         this.ws.on("message", (socket, msg) => {
             if (msg instanceof Buffer || msg instanceof ArrayBuffer) {
+                Log.print("received message");
                 callback(Buffer.from(msg));
             } else {
                 // In theory, any type of data could be sent through but we only

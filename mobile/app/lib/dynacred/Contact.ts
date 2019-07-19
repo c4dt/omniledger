@@ -420,6 +420,7 @@ export class Contact {
             Log.lvl1("Connecting user", this.alias,
                 "with public key", this.seedPublic.toHex(), "and id", this.credentialIID.toString("hex"));
             this.CredentialsInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
+            Log.print("copying");
             this.credential = this.CredentialsInstance.credential.copy();
             if (getContacts) {
                 this.darcInstance = await DarcInstance.fromByzcoin(bc, this.CredentialsInstance.darcID);

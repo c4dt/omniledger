@@ -182,7 +182,6 @@ export class Data {
             signers: [adminSigner],
         });
 
-        const ocs = new OnChainSecretRPC(bc);
         const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], await Defaults.RosterCalypso);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);

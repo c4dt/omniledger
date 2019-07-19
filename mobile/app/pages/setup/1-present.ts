@@ -53,7 +53,6 @@ export async function goReloadBC(args: EventData) {
         // Defaults.SpawnerIID = ts.spawnerIID.iid;
         uData.delete();
         await uData.connectByzcoin();
-        Log.print("uData.bc is:", uData.bc);
     } catch (e) {
         return Log.rcatch(e);
     }
