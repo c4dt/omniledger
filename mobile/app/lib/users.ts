@@ -34,24 +34,24 @@ export async function assertRegistered(u: Contact, setProgress: Function): Promi
     if (u.isRegistered()) {
         return true;
     }
-    // if (await gData.canPay(gData.spawnerInstance.signupCost)) {
+    // if (await uData.canPay(uData.spawnerInstance.signupCost)) {
     //     let pay = await dialogs.confirm({
     //         title: "Register user",
     //         message: "This user is not registered yet - do you want to pay " +
-    //             gData.spawnerInstance.signupCost.toString() + " for the registration of " + u.alias + "?",
+    //             uData.spawnerInstance.signupCost.toString() + " for the registration of " + u.alias + "?",
     //         okButtonText: "Yes, pay",
     //         cancelButtonText: "No, don't pay"
     //     });
     //     if (pay) {
     //         try {
-    //             await gData.registerContact(u, Long.fromNumber(0), setProgress);
+    //             await uData.registerContact(u, Long.fromNumber(0), setProgress);
     //         } catch (e) {
     //             await msgFailed("Couldn't register user: " + e.toString());
     //             return false;
     //         }
-    //         await u.verifyRegistration(gData.bc);
+    //         await u.isRegistered();
     //         await msgOK(u.alias + " is now registered and can be verified.");
-    //         await gData.save();
+    //         await uData.save();
     //         return true;
     //     }
     // } else {
@@ -72,11 +72,11 @@ export async function sendCoins(u: Contact, setProgress: Function) {
         });
         if (reply.result) {
             let coins = Long.fromString(reply.text);
-            // if (await gData.canPay(coins)) {
+            // if (await uData.canPay(coins)) {
             //     let target = u.getCoinAddress();
             //     if (target) {
             //         setProgress("Transferring coin", 50);
-            //         await gData.coinInstance.transfer(coins, target, [gData.keyIdentitySigner]);
+            //         await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
             //         setProgress("Success", 100);
             //         await msgOK("Transferred " + coins.toString() + " to " + u.alias)
             //         setProgress();

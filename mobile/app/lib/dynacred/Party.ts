@@ -59,19 +59,6 @@ export class Party {
     constructor(public partyInstance: PopPartyInstance) {
     }
 
-    // qrcode(key: Public): ImageSource {
-    //     let url = Party.url + "?public=" + key.toHex();
-    //     url += "&name=" + this.partyInstance.popPartyStruct.description.name;
-    //     const sideLength = screen.mainScreen.widthPixels / 4;
-    //     const qrcode = QRGenerator.createBarcode({
-    //         encode: url,
-    //         format: ZXing.QR_CODE,
-    //         height: sideLength,
-    //         width: sideLength
-    //     });
-    //     return fromNativeSource(qrcode);
-    // }
-
     toObject(): any {
         return {
             isOrganizer: this.isOrganizer,

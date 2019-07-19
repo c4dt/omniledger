@@ -40,7 +40,7 @@ export class Badge {
         };
     }
 
-    async mine(d: Data, setProgress: () => {} = null) {
+    async mine(d: Data, setProgress: (text?: string, width?: number) => void = null) {
         this.mined = true;
         if (d.coinInstance) {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,

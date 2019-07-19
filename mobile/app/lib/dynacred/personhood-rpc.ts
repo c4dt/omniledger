@@ -1,14 +1,19 @@
+import { Point, Scalar } from "@dedis/kyber";
+import * as crypto from "crypto-browserify";
+import { randomBytes } from "crypto-browserify";
+import Long from "long";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
+import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { IConnection, RosterWSConnection, WebSocketConnection } from "~/lib/cothority/network/connection";
 import { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { ed25519, Sign } from "~/lib/cothority/personhood/ring-sig";
-import { Point, Scalar } from "@dedis/kyber";
-import * as crypto from "crypto-browserify";
-import { randomBytes } from "crypto-browserify";
-import Long from "long";
+import Log from "~/lib/cothority/log";
+import { Contact } from "~/lib/dynacred/Contact";
+import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
+import { Public } from "~/lib/dynacred/KeyPair";
 
 export class PersonhoodRPC {
     static serviceID = "Personhood";
@@ -23,7 +28,7 @@ export class PersonhoodRPC {
     /**
      */
     async listParties(id: InstanceID = null): Promise<PersonhoodParty[]> {
-        const party: {newparty: any} = {newparty: null};
+        const party: { newparty: any } = {newparty: null};
         if (id) {
             const p = new PersonhoodParty(this.rpc.getConfig().roster, this.rpc.genesisID, id);
             party.newparty = p.toObject();
@@ -80,7 +85,7 @@ export class PersonhoodRPC {
     }
 
     async listRPS(id: InstanceID = null): Promise<RoPaSci[]> {
-        const ropasci: {newropasci: any} = {newropasci: null};
+        const ropasci: { newropasci: any } = {newropasci: null};
         if (id) {
             ropasci.newropasci = new RoPaSci(this.rpc.genesisID, id).toObject();
         }
@@ -162,13 +167,13 @@ export class PersonhoodRPC {
 
 export class PersonhoodParty {
 
+    constructor(public roster: Roster, public byzcoinID: InstanceID, public instanceID: InstanceID) {
+    }
+
     static fromObject(obj: any): PersonhoodParty {
         return new PersonhoodParty(Roster.fromBytes(Buffer.from(obj.roster)),
             Buffer.from(obj.byzcoinid),
             Buffer.from(obj.instanceid));
-    }
-
-    constructor(public roster: Roster, public byzcoinID: InstanceID, public instanceID: InstanceID) {
     }
 
     toObject(): any {
@@ -182,12 +187,12 @@ export class PersonhoodParty {
 
 export class RoPaSci {
 
+    constructor(public byzcoinID: InstanceID, public instanceID: InstanceID) {
+    }
+
     static fromObject(obj: any): RoPaSci {
         return new RoPaSci(Buffer.from(obj.byzcoinid),
             Buffer.from(obj.ropasciid));
-    }
-
-    constructor(public byzcoinID: InstanceID, public instanceID: InstanceID) {
     }
 
     toObject(): any {
@@ -201,13 +206,13 @@ export class RoPaSci {
 // Poll allows for adding, listing, and answering to polls
 export class Poll {
 
+    constructor(public byzcoinID: Buffer, public newPoll: PollStruct, public list: PollList,
+                public answer: PollAnswer) {
+    }
+
     static fromObject(obj: any): Poll {
         return new Poll(Buffer.from(obj.byzcoinid), PollStruct.fromObject(obj.newpoll),
             PollList.fromObject(obj.list), PollAnswer.fromObject(obj.answer));
-    }
-
-    constructor(public byzcoinID: Buffer, public newPoll: PollStruct, public list: PollList,
-                public answer: PollAnswer) {
     }
 
     toObject(): any {
@@ -223,14 +228,14 @@ export class Poll {
 // Empty class to request the list of polls available.
 export class PollList {
 
+    constructor(public partyIDs: InstanceID[]) {
+    }
+
     static fromObject(obj: any): PollList {
         if (obj == null) {
             return null;
         }
         return new PollList(obj.partyids.map((pi: any) => Buffer.from(pi)));
-    }
-
-    constructor(public partyIDs: InstanceID[]) {
     }
 
     toObject(): any {
@@ -241,19 +246,19 @@ export class PollList {
 // PollStruct represents one poll with answers.
 export class PollStruct {
 
+    constructor(public personhood: InstanceID, public pollID: Buffer, public title: string,
+                public description: string, public choices: string[], public chosen: PollChoice[] = []) {
+        if (this.pollID == null) {
+            this.pollID = randomBytes(32);
+        }
+    }
+
     static fromObject(obj: any): PollStruct {
         if (obj == null) {
             return null;
         }
         return new PollStruct(Buffer.from(obj.personhood), Buffer.from(obj.pollid),
             obj.title, obj.description, obj.choices, obj.chosen.map((c: any) => PollChoice.fromObject(c)));
-    }
-
-    constructor(public personhood: InstanceID, public pollID: Buffer, public title: string,
-                public description: string, public choices: string[], public chosen: PollChoice[] = []) {
-        if (this.pollID == null) {
-            this.pollID = randomBytes(32);
-        }
     }
 
     toObject(): any {
@@ -281,14 +286,14 @@ export class PollStruct {
 //   'Choice' + byte(Choice)
 export class PollAnswer {
 
+    constructor(public pollID: Buffer, public choice: number, public lrs: Buffer) {
+    }
+
     static fromObject(obj: any): PollAnswer {
         if (obj == null) {
             return null;
         }
         return new PollAnswer(Buffer.from(obj.pollid), obj.choice, Buffer.from(obj.lrs));
-    }
-
-    constructor(public pollID: Buffer, public choice: number, public lrs: Buffer) {
     }
 
     toObject(): any {
@@ -303,11 +308,11 @@ export class PollAnswer {
 // PollChoice represents one choice of one participant.
 export class PollChoice {
 
-    static fromObject(obj: any): PollChoice {
-        return new PollChoice(obj.choice, Buffer.from(obj.lrstag));
+    constructor(public choice: number, public lrstag: Buffer) {
     }
 
-    constructor(public choice: number, public lrstag: Buffer) {
+    static fromObject(obj: any): PollChoice {
+        return new PollChoice(obj.choice, Buffer.from(obj.lrstag));
     }
 
     toObject(): any {
@@ -321,12 +326,12 @@ export class PollChoice {
 // PollResponse is sent back to the client and contains all known polls.
 export class PollResponse {
 
+    constructor(public polls: PollStruct[]) {
+    }
+
     static fromObject(obj: any): PollResponse {
         return new PollResponse(obj.polls.map((p: any) =>
             PollStruct.fromObject(p)));
-    }
-
-    constructor(public polls: PollStruct[]) {
     }
 
     toObject(): any {
@@ -339,15 +344,15 @@ export class PollResponse {
 // Meetup contains one user that wants to meet others.
 export class Meetup {
 
+    constructor(public userLocation: UserLocation, public wipe: boolean = false) {
+    }
+
     static fromObject(obj: any): Meetup {
         return new Meetup(UserLocation.fromObject(obj.userlocation), obj.wipe);
     }
 
-    constructor(public userLocation: UserLocation, public wipe: boolean = false) {
-    }
-
     toObject(): any {
-        const o: {userlocation: any, wipe: boolean} = {
+        const o: { userlocation: any, wipe: boolean } = {
             userlocation: null,
             wipe: this.wipe,
         };
@@ -361,6 +366,13 @@ export class Meetup {
 // UserLocation is one user in one location, either a registered one, or an unregistered one.
 export class UserLocation {
 
+    static readonly protoName = "UserLocation";
+
+    constructor(public credential: CredentialStruct, public location: string,
+                public publicKey: Point = null,
+                public credentialIID: InstanceID = null, public time: Long = Long.fromNumber(0)) {
+    }
+
     get alias(): string {
         return this.credential.getAttribute("personal", "alias").toString();
     }
@@ -371,8 +383,6 @@ export class UserLocation {
         }
         return Buffer.from(this.alias);
     }
-
-    static readonly protoName = "UserLocation";
 
     static fromObject(o: any): UserLocation {
         let crediid: InstanceID = null;
@@ -393,9 +403,8 @@ export class UserLocation {
         // return UserLocation.fromObject(root.lookup(UserLocation.protoName).decode(p));
     }
 
-    constructor(public credential: CredentialStruct, public location: string,
-                public publicKey: Point = null,
-                public credentialIID: InstanceID = null, public time: Long = Long.fromNumber(0)) {
+    static fromContact(c: Contact): UserLocation {
+        return new UserLocation(c.credential, "somewhere", c.seedPublic.point, c.credentialIID);
     }
 
     toObject(): any {
@@ -428,5 +437,21 @@ export class UserLocation {
 
     equals(ul: UserLocation): boolean {
         return this.unique.equals(ul.unique);
+    }
+
+    async toContact(bc: ByzCoinRPC): Promise<Contact> {
+        try {
+            let c = new Contact(this.credential);
+            if (this.credentialIID) {
+                c.CredentialsInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
+                c.credential = c.CredentialsInstance.credential.copy();
+                c.darcInstance = await DarcInstance.fromByzcoin(bc, c.CredentialsInstance.darcID);
+            } else {
+                c.seedPublic = new Public(this.publicKey);
+            }
+            return c;
+        } catch (e) {
+            return Log.rcatch(e, "couldn't convert toContact");
+        }
     }
 }

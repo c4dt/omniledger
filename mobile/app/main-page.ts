@@ -13,17 +13,13 @@ import { getFrameById, Page } from "tns-core-modules/ui/frame";
 import { SelectedIndexChangedEventData, TabView } from "tns-core-modules/ui/tab-view";
 import Log from "~/lib/cothority/Log";
 import { Roster } from "~/lib/cothority/network";
+import { setFactory } from "~/lib/cothority/network/connection";
 import { Defaults } from "~/lib/dynacred/Defaults";
 import { msgFailed } from "~/lib/messages";
+import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { uData } from "~/user-data";
 
 declare const exit: (code: number) => void;
-
-const BASE_URL_WS = "ws://";
-const BASE_URL_TLS = "tls://";
-const URL_PORT_SPLITTER = ":";
-const PORT_MIN = 0;
-const PORT_MAX = 65535;
 
 export let mainView = fromObject({showGroup: 0});
 
@@ -34,10 +30,12 @@ export async function navigatingTo(args: EventData) {
         Log.lvl2("navigatingTo: main-page");
         let page = <Page> args.object;
         page.bindingContext = mainView;
+        setFactory((path) => new NativescriptWebSocketAdapter(path));
         activateTesting();
         Log.lvl1("loading");
         await uData.load();
-        if (!uData.contact.alias || uData.contact.alias == "") {
+        Log.print("loaded");
+        if (!uData.contact.alias || uData.contact.alias == "new identity") {
             return mainViewRegister(args);
         }
         return mainViewRegistered(args);

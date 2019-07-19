@@ -18,9 +18,6 @@ import { Public } from "./KeyPair";
 import { parseQRCode } from "./Scan";
 import { SecureData } from "./SecureData";
 
-// const ZXing = require("nativescript-zxing");
-// const QRGenerator = new ZXing();
-
 /**
  * Contact represents a user that is either registered or not. It holds
  * all data in an internal CredentialStruct, and can synchronize in two ways
@@ -270,10 +267,10 @@ export class Contact {
         const u = new Contact();
         switch (qr.url) {
             case Contact.urlRegistered:
-                u.credentialInstance = await CredentialsInstance.fromByzcoin(bc,
+                u.CredentialsInstance = await CredentialsInstance.fromByzcoin(bc,
                     Buffer.from(qr.credentialIID, "hex"));
-                u.credential = u.credentialInstance.credential.copy();
-                u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
+                u.credential = u.CredentialsInstance.credential.copy();
+                u.darcInstance = await DarcInstance.fromByzcoin(bc, u.CredentialsInstance.darcID);
                 return await u.updateOrConnect();
             case Contact.urlUnregistered:
                 u.alias = qr.alias;
@@ -288,10 +285,10 @@ export class Contact {
 
     static async fromByzcoin(bc: ByzCoinRPC, credIID: InstanceID, full: boolean = true): Promise<Contact> {
         const u = new Contact();
-        u.credentialInstance = await CredentialsInstance.fromByzcoin(bc, credIID);
-        u.credential = u.credentialInstance.credential.copy();
+        u.CredentialsInstance = await CredentialsInstance.fromByzcoin(bc, credIID);
+        u.credential = u.CredentialsInstance.credential.copy();
         if (full) {
-            u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
+            u.darcInstance = await DarcInstance.fromByzcoin(bc, u.CredentialsInstance.darcID);
             u.coinInstance = await CoinInstance.fromByzcoin(bc, u.getCoinAddress());
         }
         u.bc = bc;
@@ -315,7 +312,7 @@ export class Contact {
     static sortAlias(cs: IHasAlias[]): IHasAlias[] {
         return cs.sort((a, b) => a.alias.toLocaleLowerCase().localeCompare(b.alias.toLocaleLowerCase()));
     }
-    credentialInstance: CredentialsInstance = null;
+    CredentialsInstance: CredentialsInstance = null;
     darcInstance: DarcInstance = null;
     coinInstance: CoinInstance = null;
     spawnerInstance: SpawnerInstance = null;
@@ -422,21 +419,24 @@ export class Contact {
             this.bc = bc;
             Log.lvl1("Connecting user", this.alias,
                 "with public key", this.seedPublic.toHex(), "and id", this.credentialIID.toString("hex"));
-            this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
-            this.credential = this.credentialInstance.credential.copy();
+            this.CredentialsInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID);
+            this.credential = this.CredentialsInstance.credential.copy();
             if (getContacts) {
-                this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID);
+                this.darcInstance = await DarcInstance.fromByzcoin(bc, this.CredentialsInstance.darcID);
                 this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID);
                 this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID);
             }
         } else {
+            if (this.CredentialsInstance == null){
+                throw new Error("contact not initialized");
+            }
             Log.lvl2("Updating user", this.alias);
-            await this.credentialInstance.update();
-            if (Contact.getVersion(this.credentialInstance.credential) > this.version) {
-                this.credential = this.credentialInstance.credential.copy();
+            await this.CredentialsInstance.update();
+            if (Contact.getVersion(this.CredentialsInstance.credential) > this.version) {
+                this.credential = this.CredentialsInstance.credential.copy();
                 this.contactsCache = null;
             }
-            this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID);
+            this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.CredentialsInstance.darcID);
             this.coinInstance = await CoinInstance.fromByzcoin(this.bc, this.coinID);
         }
 
@@ -494,7 +494,7 @@ export class Contact {
     }
 
     isRegistered(): boolean {
-        return this.credentialInstance != null;
+        return this.CredentialsInstance != null;
     }
 
     getCoinAddress(): InstanceID {
@@ -508,27 +508,6 @@ export class Contact {
         return CoinInstance.coinIID(this.seedPublic.toBuffer());
     }
 
-    qrcodeIdentityStr(): string {
-        let str = Contact.urlUnregistered + "?";
-        if (this.isRegistered()) {
-            str = sprintf("%s?credentialIID=%s&", Contact.urlRegistered, this.credentialIID.toString("hex"));
-        }
-        str += sprintf("public_ed25519=%s&alias=%s&email=%s&phone=%s", this.seedPublic.toHex(), this.alias, this.email,
-            this.phone);
-        return str;
-    }
-
-    // qrcodeIdentity(): ImageSource {
-    //     const sideLength = screen.mainScreen.widthPixels / 4;
-    //     const qrcode = QRGenerator.createBarcode({
-    //         encode: this.qrcodeIdentityStr(),
-    //         format: ZXing.QR_CODE,
-    //         height: sideLength,
-    //         width: sideLength
-    //     });
-    //     return fromNativeSource(qrcode);
-    // }
-
     equals(u: Contact): boolean {
         if (this.credentialIID && u.credentialIID) {
             return this.credentialIID.equals(u.credentialIID);
@@ -538,16 +517,16 @@ export class Contact {
 
     // this method sends the current state of the Credentials to ByzCoin.
     async sendUpdate(signers: Signer[] = null) {
-        if (this.credentialInstance != null) {
+        if (this.CredentialsInstance != null) {
             if (this.coinInstance && !this.coinID) {
                 this.coinID = this.coinInstance.id;
                 this.version = this.version + 1;
             }
-            if (this.version > Contact.getVersion(this.credentialInstance.credential)) {
+            if (this.version > Contact.getVersion(this.CredentialsInstance.credential)) {
                 if (!signers) {
                     signers = [this.data.keyIdentitySigner];
                 }
-                await this.credentialInstance.sendUpdate(signers, this.credential);
+                await this.CredentialsInstance.sendUpdate(signers, this.credential);
             }
         }
     }
@@ -724,7 +703,7 @@ class Calypso {
      * @return the key-string used to store this secret in the 'secret'-credential
      */
     async add(data: Buffer, readers: InstanceID[] = []): Promise<string> {
-        const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.credentialInstance.darcID);
+        const ourSigner = await Data.findSignerDarc(this.contact.data.bc, this.contact.CredentialsInstance.darcID);
         readers.unshift(ourSigner.darc.getBaseID());
         readers.forEach((r) => Log.lvl2("reader", r.toString("hex")));
         const sd = await SecureData.spawnFromSpawner(this.contact.bc, this.contact.data.lts, data, readers,

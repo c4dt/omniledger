@@ -12,9 +12,9 @@ http://docs.nativescript.org/cookbook/ui/tab-view
         <Frame defaultPage="pages/loading/loading-page"
                visibility="{{ showGroup == 1 ? 'visible' : 'collapse' }}"
                id="setup"/>
-<!--        <TabView androidTabsPosition="bottom" androidOffscreenTabLimit="0" selectedIndex="0"-->
-<!--                 selectedIndexChanged="onChangeTab" id="mainTabView"-->
-<!--                 visibility="{{ showGroup == 2 ? 'visible' : 'collapse' }}">-->
+        <TabView androidTabsPosition="bottom" androidOffscreenTabLimit="0" selectedIndex="0"
+                 selectedIndexChanged="onChangeTab" id="mainTabView"
+                 visibility="{{ showGroup == 2 ? 'visible' : 'collapse' }}">
 <!--            <TabViewItem title="Home" ios:iconSource="res://tabIcons/home" android:iconSource="res://home">-->
 <!--                <Frame defaultPage="pages/home/home-page"/>-->
 <!--            </TabViewItem>-->
@@ -30,6 +30,6 @@ http://docs.nativescript.org/cookbook/ui/tab-view
 <!--            <TabViewItem title="Settings" ios:iconSource="res://tabIcons/admin" android:iconSource="res://admin">-->
 <!--                <Frame defaultPage="pages/settings/settings-page"/>-->
 <!--            </TabViewItem>-->
-<!--        </TabView>-->
+        </TabView>
     </StackLayout>
 </Page>

@@ -1,10 +1,12 @@
 apply-patches: npm-install
 	patch -p0 < nodeify_temporary_patch.patch
 
-npm-install:
-	rm -rf node_modules platforms hooks
+npm-install: clean
 	npm ci
 	find app -name "*js" | xargs rm
+
+clean:
+	rm -rf node_modules platforms hooks
 
 android-dev: apply-patches
 	tns prepare android
