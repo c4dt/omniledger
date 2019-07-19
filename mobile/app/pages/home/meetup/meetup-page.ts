@@ -64,7 +64,6 @@ export async function addContacts(){
         uData.meetups.push(new SocialNode(identity.users));
         for (let i = 0; i < identity.users.length; i++) {
             uData.addContact(await identity.users[i].toContact(uData.bc));
-            Log.print("updating")
         }
         await uData.save();
     }

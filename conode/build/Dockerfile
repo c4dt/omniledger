@@ -1,6 +1,7 @@
 FROM c4dt/conode:dev
 WORKDIR /root/
 COPY conodes /root/conodes
+COPY conode bcadmin csadmin run_nodes.sh /root/
 
 EXPOSE 7770 7771 7772 7773 7774 7775 7776 7777
 

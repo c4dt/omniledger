@@ -445,7 +445,6 @@ export class Data {
         }
         await this.setValues(values);
         this.bc = null;
-        Log.print("connecting to byzcoin");
         await this.connectByzcoin();
         return this;
     }

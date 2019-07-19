@@ -17,6 +17,10 @@ import { setFactory } from "~/lib/cothority/network/connection";
 import { Defaults } from "~/lib/dynacred/Defaults";
 import { msgFailed } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
+import { switchHome } from "~/pages/home/home-page";
+import { switchIdentity } from "~/pages/identity/identity-page";
+import { switchLab } from "~/pages/lab/lab-page";
+import { switchSettings } from "~/pages/settings/settings-page";
 import { uData } from "~/user-data";
 
 declare const exit: (code: number) => void;
@@ -34,13 +38,13 @@ export async function navigatingTo(args: EventData) {
         activateTesting();
         Log.lvl1("loading");
         await uData.load();
-        Log.print("loaded");
         if (!uData.contact.alias || uData.contact.alias == "new identity") {
             return mainViewRegister(args);
         }
         return mainViewRegistered(args);
     } catch (e) {
         Log.catch("couldn't load:", e);
+        return mainViewRegister(args);
         await msgFailed("Error when setting up communication: " + e.toString());
         let again = await dialogs.confirm({
             title: "Network error",
@@ -65,7 +69,7 @@ export function mainViewRegistered(args: any) {
     mainView.set("showGroup", 2);
     let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
     tv.selectedIndex = 0;
-    // return switchHome(args);
+    return switchHome(args);
 }
 
 export function mainViewRegister(args: any) {
@@ -76,27 +80,27 @@ export function mainViewRegister(args: any) {
 
 export async function onChangeTab(args: SelectedIndexChangedEventData) {
     Log.lvl2("onchangetab", args.newIndex);
-    // switch (args.newIndex) {
-    //     case 0:
-    //         await switchHome(args);
-    //         break;
-    //     case 1:
-    //         await switchIdentity(args);
-    //         break;
-    //     case 2:
-    //         await switchLab(args);
-    //         break;
-    //     case 3:
-    //         await switchSettings(args);
-    //         break;
-    // }
+    switch (args.newIndex) {
+        case 0:
+            await switchHome(args);
+            break;
+        case 1:
+            await switchIdentity(args);
+            break;
+        case 2:
+            await switchLab(args);
+            break;
+        case 3:
+            await switchSettings(args);
+            break;
+    }
 }
 
 export function activateTesting() {
     Defaults.Testing = true;
-    Defaults.ByzCoinID = Buffer.from("5f78d08a260b6fcc0b492448ec272dc4a59794ddf34a9914fdfe4f3faeba616e", "hex");
-    Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
-    Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
+    Defaults.ByzCoinID = Buffer.from("bda4198dd8b575d4e00cff6e408a5a7c7cf515032fb3afba8a13a1bdeb3893bf", "hex");
+    Defaults.AdminDarc = Buffer.from("72e94134229f9bb6e74864a5742e8d25b8a65e93c33f5b1dbd365865458b1eaf", "hex");
+    Defaults.Ephemeral = Buffer.from("e4882b7e9043e2b291136ca7ca585f9740b749dea45043dd40f41702901cef01", "hex");
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
   Address = "tls://localhost:7776"
   Suite = "Ed25519"

@@ -54,7 +54,7 @@ export class StorageLocal {
     }
 
     static putObject(key: string, obj: any) {
-        StorageDB.set(key, JSON.stringify(obj));
+        StorageLocal.set(key, JSON.stringify(obj));
     }
 
     static getObject(entry: string): any {
@@ -84,7 +84,7 @@ export class StorageFile {
     }
 
     static async putObject(key: string, obj: any) {
-        await StorageDB.set(key, JSON.stringify(obj));
+        await StorageFile.set(key, JSON.stringify(obj));
     }
 
     static async getObject(entry: string): Promise<any> {

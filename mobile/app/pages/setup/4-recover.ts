@@ -9,7 +9,6 @@ export let setupRecoverView: SetupRecoverView;
 
 export function navigatingTo(args: EventData) {
     try {
-        Log.print("navigating to 4");
         page = <Page>args.object;
         setupRecoverView = new SetupRecoverView();
         page.bindingContext = setupRecoverView;

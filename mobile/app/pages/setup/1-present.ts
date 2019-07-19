@@ -33,6 +33,7 @@ export async function goInitTest(args: EventData) {
     try {
         setProgress("creating ByzCoin", 30);
         let td = await TestData.init("admin");
+        await uData.load();
 
         setProgress("verify registration", 70);
         await uData.contact.updateOrConnect(uData.bc);
@@ -60,6 +61,7 @@ export async function goReloadBC(args: EventData) {
 }
 
 export function goAlias(args: EventData) {
+    Log.print("going to alias");
     return getFrameById("setup").navigate("pages/setup/2-alias");
 }
 
@@ -75,7 +77,6 @@ export async function goRecover(args: EventData){
         cancelButtonText: "Abort"
     });
     if (doit){
-        Log.print("going to recover");
         try {
             getFrameById("setup").navigate("pages/setup/4-recover");
         } catch(e){

@@ -66,9 +66,7 @@ export class SetupRecoverView extends Observable {
         if (width < 100) {
             color = "#a04040";
         }
-        Log.print(1);
         topmost().getViewById("progress_bar_signatures").setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
-        Log.print(2);
     }
 
     async scanSignature() {
@@ -81,7 +79,6 @@ export class SetupRecoverView extends Observable {
             }
             if (this._trustees.length == 0) {
                 let user = await uData.recoveryUser();
-                Log.print("user is:", user, user.credentialIID);
                 this._threshold = user.recover.threshold;
                 let contacts = await Promise.all(user.recover.trustees.map(tiid =>
                     Contact.fromByzcoin(uData.bc, tiid)));
