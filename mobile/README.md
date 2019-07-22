@@ -1,4 +1,4 @@
-# Personhood.online application
+# Mobile Personhood.Online App V3
 
 This is the new personhood.online application that allows to test our latest ideas from https://personhood.online:
 
@@ -20,20 +20,70 @@ This is the new personhood.online application that allows to test our latest ide
 - wanted: login services using the identity management
 - wanted: Peace on earth
 
-You use this at your own risk. It stores all your data unprotected on our test-network, so be sure that you're OK
-with that!
+You use this at your own risk. It stores all your data unprotected on our test-network that is open to the public internet, 
+so be sure that you're OK with that!
 
 It is written in NativeScript works and on iOS and Android.
 
-## Where to get it
+## New V3 Version
 
-You can either get it on AppLivery (only possibility for iOS): https://applivery.com/personhood
-
-Or you can get it in the google-play store: https://play.google.com/store/apps/details?id=online.personhood
-
-Comments, suggestions are welcome either in the issues, PRs or via mail: <mailto:linus.gasser@epfl.ch>
+The old personhood.online available on the Google-play store uses an internal test-network of the ByzCoin
+blockchain. This new version is being ported to the V3 version of the ByzCoin blockchain, which is a more open, 
+polished, and used version of the DEDIS blockchain.
 
 ## Bugs, comments
 
+Comments, suggestions are welcome either in the issues, PRs or via mail: <mailto:linus.gasser@epfl.ch>
+
 Please submit bugs and comments to the issue-tracker. Be sure to use the latest version of the software before
 submitting bugs.
+
+# Local Testing
+
+As of 22nd of July, the app is not completely ported to the V3 version of ByzCoin. If you want to test it
+locally and help debug it, here are the steps to do so.
+
+## Environment
+
+The tests suppose you have the following tools available:
+
+- Node == 8.16.0
+    - to check: `node -v`
+    - to install on Mac: `brew install node@8`
+
+- Mac: XCode >= 10.2
+    - command-line tools: `xcode-select --install`
+
+- NativeScript >= 5.1
+    - to check: `tns info`
+    - to install: `npm i -g nativescript`
+    
+- Docker
+    - to check - Mac: have the whale in your toolbar
+    - to install: https://download.docker.com/mac/stable/Docker.dmg  
+
+## Tests Overview
+
+For the tests, you need to run your own little cothority locally on your computer. The mobile app will then
+contact this cothority to send its transactions. To start your local cothority, do the following:
+
+```bash
+cd c4dt/omniledger/conode
+make conode
+make docker
+make docker_run
+```
+
+This should give out a list of logging messages while it starts up 4 nodes locally on your computer. Once
+this is done, you can start the actual app:
+
+```bash
+cd c4dt/omniledger/mobile
+make
+tns run ios
+# or
+tns run android
+```
+
+Currently only the ios version has been tested. There are still bugs that prevent the app from being it
+used like the old, v2, app.
