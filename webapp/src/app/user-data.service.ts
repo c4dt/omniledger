@@ -1,5 +1,7 @@
 import { Injectable } from "@angular/core";
 
+import "cross-fetch/polyfill";
+
 import { Config, Data } from "@c4dt/dynacred";
 
 @Injectable({
@@ -11,8 +13,20 @@ import { Config, Data } from "@c4dt/dynacred";
  * test the libraries.
  */
 export class UserData extends Data {
-    constructor(config: Config) {
-        super(config);
+    config: Config; // trick to allow writing to Data.config
+
+    constructor() {
+        super(undefined); // poison
+    }
+
+    async load(): Promise<any> {
+        const res = await fetch("assets/config.toml");
+        if (!res.ok) {
+            return Promise.reject(`fetching config gave: ${res.status}: ${res.body}`);
+        }
+        this.config = Config.fromTOML(await res.text());
+
+        await super.load();
     }
 }
 
