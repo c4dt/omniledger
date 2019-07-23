@@ -1,34 +1,18 @@
 import * as http from "http";
-import { Data } from "../src/Data";
-import { activateTesting } from "../src/Defaults";
-
-function getLocalServer(): Promise<http.Server> {
-    const srv = http.createServer((req, res) => {
-        res.writeHead(200, {"Content-Type": "text/plain"});
-        res.end("TODO");
-    });
-
-    // TODO hardcoded addr, better providing it to tests
-    return new Promise((resolve, reject) =>
-        srv.listen(4200, "localhost", () =>
-            resolve(srv),
-        ),
-    );
-}
+import { Config, Data } from "../src";
 
 describe("Data", async () => {
-    let srv: http.Server;
-
-    beforeEach(async () => {
-        srv = await getLocalServer();
-        activateTesting();
+    it("can be constructed with a trivial config", async () => {
+        // TODO empty list of servers fails
+        // tslint:disable-next-line:no-unused-expression
+        new Data(Config.fromTOML(`
+            ByzCoinID = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+            [[servers]]
+                Address = "tls://localhost"
+                Url = "https://localhost"
+                Suite = "Ed25519"
+                Public = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+                Description = "irrelevant"
+        `));
     });
-
-    afterEach(async () => {
-        if (typeof srv !== "undefined") {
-            await new Promise((resolve, reject) => srv.close(resolve));
-        }
-    });
-
-    it("can be trivially constructed", async () => new Data());
 });

@@ -28,7 +28,7 @@ export class DeviceComponent implements OnInit {
     async ngOnInit() {
         try {
             return showSnack(this.snack, "Attaching to existing user", async () => {
-                const newData = await Data.attachDevice(window.location.href);
+                const newData = await Data.attachDevice(this.uData.config, window.location.href);
                 await this.uData.overwrite(newData);
                 await this.uData.save();
                 await this.router.navigate(["/"]);
