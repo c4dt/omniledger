@@ -13,7 +13,6 @@ import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import Signer from "@dedis/cothority/darc/signer";
 import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
 import Log from "@dedis/cothority/log";
-import { Roster } from "@dedis/cothority/network";
 import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
@@ -254,7 +253,7 @@ export class Data {
             throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
         }
         const d = new Data(config);
-        d.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
+        d.bc = await ByzCoinRPC.fromByzcoin(config.roster, Defaults.ByzCoinID);
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
         await d.contact.updateOrConnect(d.bc);
@@ -368,7 +367,7 @@ export class Data {
     async connectByzcoin(): Promise<ByzCoinRPC> {
         const obj = this.constructorObj;
         if (this.bc == null) {
-            this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.config.roster, Defaults.ByzCoinID);
         }
 
         if (obj) {
