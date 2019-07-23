@@ -42,7 +42,6 @@ async function rosterFromAssets(): Promise<Roster> {
 export function activateTesting() {
     Defaults.Testing = true;
     Defaults.ByzCoinID = Buffer.from("5f78d08a260b6fcc0b492448ec272dc4a59794ddf34a9914fdfe4f3faeba616e", "hex");
-    Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
     assetsPath = "/assets/";
 }
 
@@ -52,7 +51,6 @@ export function activateDEDIS() {
 
 export function activateC4DT() {
     Defaults.ByzCoinID = Buffer.from("5b081e02e38e583085204abfe4553ceb6e0833a530bf8fa476ce2f5c1a9a51ae", "hex");
-    Defaults.Ephemeral = Buffer.from("ed3ebf1be6fbe7496a8a31c4124fe560fa2f1651dbfa851c61cbd48c961ab30c", "hex");
 }
 
 function setRosterFromAssets() {

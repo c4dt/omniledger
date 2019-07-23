@@ -35,7 +35,7 @@ export class RegisterComponent implements OnInit {
     async ngOnInit() {
         Log.llvl3("init register");
         const darcID = this.uData.config.adminDarcID.toString("hex");
-        const ephemeral = Defaults.Ephemeral.toString("hex");
+        const ephemeral = this.uData.config.ephemeral.toString("hex");
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
