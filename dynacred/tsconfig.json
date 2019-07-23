@@ -1,17 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "module": "commonjs",
-    "target": "es6",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
     "declaration": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "typeRoots": [
-      "node_modules/@types",
-      "types"
-    ]
+    "moduleResolution": "Node",
+    "target": "ES6"
   },
   "include": [
     "src/**/*.ts"
