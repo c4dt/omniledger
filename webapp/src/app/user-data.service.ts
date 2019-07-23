@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 
-import { Data } from "@c4dt/dynacred";
+import { Config, Data } from "@c4dt/dynacred";
 
 @Injectable({
     providedIn: "root",
@@ -11,8 +11,8 @@ import { Data } from "@c4dt/dynacred";
  * test the libraries.
  */
 export class UserData extends Data {
-    constructor() {
-        super();
+    constructor(config: Config) {
+        super(config);
     }
 }
 

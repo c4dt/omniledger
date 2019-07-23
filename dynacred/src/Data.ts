@@ -30,8 +30,9 @@ import { randomBytes } from "crypto";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
+import { Config } from "./Config";
 import { Contact } from "./Contact";
-import { activateTesting, Defaults } from "./Defaults";
+import { Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { Party } from "./Party";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
@@ -107,9 +108,13 @@ export class Data {
      * @param alias for the new user
      * @param unrestricted whether the adminDarcID needs evolve_unrestricted
      */
-    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string,
-                                 unrestricted: boolean = false):
+    static async createFirstUser(bc: ByzCoinRPC, config: Config, adminDarcID: InstanceID, adminKey: Scalar,
+                                 alias: string, unrestricted: boolean = false):
         Promise<Data> {
+
+        if (config.adminDarcID !== null) {
+            throw Error("config already contains an adminDarc");
+        }
 
         // Prepare adminDarc to have all necessary rules
         const adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
@@ -126,7 +131,7 @@ export class Data {
             await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10, unrestricted);
         }
 
-        const d = new Data({alias, bc});
+        const d = new Data(config, {alias, bc});
 
         const darcDevice = Darc.createBasic([d.keyIdentitySigner]
             , [d.keyIdentitySigner], Buffer.from("device"));
@@ -228,7 +233,7 @@ export class Data {
         return DarcInstance.fromByzcoin(bc, signer[0]);
     }
 
-    static async attachDevice(url: string): Promise<Data> {
+    static async attachDevice(config: Config, url: string): Promise<Data> {
         const a = document.createElement("a");
         a.href = url;
         if (!a.pathname.includes(this.urlNewDevice)) {
@@ -248,7 +253,7 @@ export class Data {
         if (credentialIID.length !== 32 || ephemeral.length !== 32) {
             throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
         }
-        const d = new Data();
+        const d = new Data(config);
         d.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
@@ -303,7 +308,7 @@ export class Data {
      * fields for initialization of the class.
      * @param obj (optional) object with all fields for the class.
      */
-    constructor(obj: any = {}) {
+    constructor(readonly config: Config, obj: any = {}) {
         this.setValues(obj);
         this.setFileName("data.json");
     }
@@ -798,7 +803,7 @@ export class Data {
     // the 'SpawnerInstance'.
     async createUser(alias: string, ephemeral?: Private): Promise<Data> {
         Log.lvl1("Starting to create user", alias);
-        const d = new Data();
+        const d = new Data(this.config);
         if (!ephemeral) {
             d.keyIdentity = new KeyPair();
         } else {

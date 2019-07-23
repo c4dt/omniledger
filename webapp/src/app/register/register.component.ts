@@ -78,8 +78,8 @@ export class RegisterComponent implements OnInit {
                 const ek = Private.fromHex(ekStr);
                 if (darcID.length === 64 && alias.length > 0) {
                     Log.lvl2("creating FIRST user");
-                    const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar,
-                        alias);
+                    const d = await Data.createFirstUser(this.uData.bc, this.uData.config, Buffer.from(darcID, "hex"),
+                                                         ek.scalar, alias);
                     this.uData.contact = d.contact;
                     this.uData.keyIdentity = d.keyIdentity;
                     await this.uData.connectByzcoin();
