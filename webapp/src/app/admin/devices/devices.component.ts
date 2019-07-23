@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { Darc, IIdentity } from "@dedis/cothority/darc";
 
-import { Device } from "@c4dt/dynacred/Device";
+import { Device } from "@c4dt/dynacred";
 
 import { showDialogInfo, showSnack } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
