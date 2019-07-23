@@ -170,7 +170,7 @@ export class Data {
                 throw new Error(e.toString());
             }
         }
-        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], await Defaults.RosterCalypso);
+        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], config.roster);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);
 
@@ -258,7 +258,7 @@ export class Data {
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
         await d.contact.updateOrConnect(d.bc);
-        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX, await Defaults.RosterCalypso);
+        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX, config.roster);
 
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = d.contact.darcInstance.getSignerDarcIDs()[0];
@@ -399,7 +399,7 @@ export class Data {
 
         this.contact.data = this;
         await this.contact.updateOrConnect();
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, await Defaults.RosterCalypso);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, this.config.roster);
         return this.bc;
     }
 
@@ -857,7 +857,7 @@ export class Data {
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, await Defaults.RosterCalypso);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, this.config.roster);
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);

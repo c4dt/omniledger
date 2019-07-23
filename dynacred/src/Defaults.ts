@@ -12,7 +12,6 @@ export const Defaults = {
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.
 
     Roster: null as Promise<Roster>,  // config.toml
-    RosterCalypso: null as Promise<Roster>, // config.toml
 
     // Testing
     Testing: false,
@@ -56,7 +55,6 @@ export function activateC4DT() {
 function setRosterFromAssets() {
     const roster = rosterFromAssets();
     Defaults.Roster = roster;
-    Defaults.RosterCalypso = roster;
 }
 
 // TODO ugly hack to delay fetching when running tests, would be fixed with
