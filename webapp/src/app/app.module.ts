@@ -1,4 +1,4 @@
-import { NgModule } from "@angular/core";
+import { APP_INITIALIZER, NgModule } from "@angular/core";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -35,6 +35,11 @@ import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
+import { UserData } from "./user-data.service";
+
+export function loadUserData(d: UserData) {
+    return () => d.load();
+}
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -99,7 +104,15 @@ import { RegisterComponent } from "./register/register.component";
         MatDialogModule,
         AppRoutingModule,
     ],
-    providers: [],
+    providers: [
+        UserData,
+        {
+            deps: [UserData],
+            multi: true,
+            provide: APP_INITIALIZER,
+            useFactory: loadUserData,
+        },
+    ],
 })
 export class AppModule {
 }
