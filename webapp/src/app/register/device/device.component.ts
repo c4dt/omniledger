@@ -4,7 +4,7 @@ import { Router } from "@angular/router";
 
 import Log from "@dedis/cothority/log";
 
-import { Data } from "@c4dt/dynacred/Data";
+import { Data } from "@c4dt/dynacred";
 
 import { showSnack } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";

@@ -21,18 +21,16 @@ jobs:
       language: node_js
       node_js: 10
       install: cd dynacred && npm ci
-      before_script: npm run linter
-      script:
-        - npm run build
-        - npm run test
+      script: npm run test
     - name: webapp
       language: node_js
       node_js: 10
-      before_install: cd dynacred && npm ci && npm run build && cd ..
-      install: cd webapp && npm ci
-      before_script:
-        - npm run lint
-        - d=node_modules/@c4dt/dynacred && rm -r $d && ln -s ../../../dynacred/dist $d
+      before_install: cd dynacred && npm ci && npm pack && cd ..
+      install:
+        - cd webapp && npm ci
+        - d=node_modules/@c4dt/dynacred; rm -r $d && mkdir $d
+        - tar -x -f ../dynacred/*.tgz --strip-components=1 -C node_modules/@c4dt/dynacred
+      before_script: npm run lint
       script:
         - npm run build --prod
         - npm run test --no-watch
@@ -52,7 +50,11 @@ jobs:
       before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
       deploy:
         provider: script
-        script: cd dynacred && npm ci && npm version prerelease --preid=p`date +%Y%m%d%H%M%S` && ./publish.sh
+        script: >
+          cd dynacred &&
+          npm ci &&
+          npm version prerelease --preid=p`date +%Y%m%d%H%M%S` &&
+          npm publish --tag dev
 
 notifications:
   email: false

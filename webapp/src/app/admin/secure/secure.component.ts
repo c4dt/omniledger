@@ -6,8 +6,7 @@ import { CalypsoReadInstance, CalypsoWriteInstance } from "@dedis/cothority/caly
 import Darc from "@dedis/cothority/darc/darc";
 import Log from "@dedis/cothority/log";
 
-import { Contact } from "@c4dt/dynacred/Contact";
-import { FileBlob } from "@c4dt/dynacred/SecureData";
+import { Contact, FileBlob } from "@c4dt/dynacred";
 
 import { showSnack } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";

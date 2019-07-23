@@ -2,24 +2,17 @@
   "name": "@c4dt/dynacred",
   "version": "0.0.5",
   "description": "The library used by the omniledger-ui and the personhood.online app",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "browser": "bundle.min.js",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/c4dt/omniledger-lib.git"
+    "url": "git+ssh://git@github.com/c4dt/omniledger.git"
   },
   "scripts": {
     "build": "tsc",
-    "linter": "node_modules/.bin/tslint 'src/{,**/}*.ts' 'spec/{,**/}*.ts'",
-    "linter:fix": "node_modules/.bin/tslint --fix 'src/{,**/}*.ts' 'spec/{,**/}*.ts'",
-    "test": "npm run linter && npm run cover",
-    "test:nocover": "ts-node node_modules/jasmine/bin/jasmine.js",
-    "cover": "node_modules/.bin/nyc --reporter=lcov --reporter=text node_modules/jasmine/bin/jasmine.js",
-    "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "bundle": "node node_modules/.bin/webpack",
-    "doc": "node_modules/.bin/typedoc --out doc/ src/",
-    "link": "./publish.sh --link"
+    "test": "ts-node --prefer-ts-exts node_modules/.bin/jasmine",
+    "prepare": "tslint --project . && npm run build",
+    "cover": "nyc jasmine"
   },
   "keywords": [
     "cothority",
@@ -34,44 +27,16 @@
     "tweetnacl-ts": "^1.0.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
-    "@types/bn.js": "^4.11.5",
-    "@types/dockerode": "^2.5.20",
-    "@types/elliptic": "^6.4.9",
-    "@types/jasmine": "^3.3.13",
-    "@types/lodash": "^4.14.135",
-    "@types/shuffle-array": "0.0.28",
-    "@types/ws": "^6.0.1",
-    "babel-loader": "^8.0.6",
-    "coveralls": "^3.0.4",
-    "dockerode": "^2.5.8",
+    "@types/jasmine": "^3.3.15",
     "jasmine": "^3.4.0",
-    "jasmine-console-reporter": "^3.1.0",
-    "nyc": "^13.3.0",
-    "ts-loader": "^5.4.5",
+    "nyc": "^14.1.1",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
-    "typedoc": "^0.14.2",
-    "typescript": "^3.5.2",
-    "webpack": "^4.35.2",
-    "webpack-cli": "^3.3.5"
+    "typescript": "^3.5.3"
   },
   "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
     "all": true,
-    "extension": [
-      ".ts"
-    ],
-    "exclude": [
-      "spec/**/*",
-      "**/*.d.ts",
-      "**/*.config.js",
-      "coverage/**/*",
-      "dist/**/*",
-      "doc/**/*",
-      "scripts/**/*",
-      "src/darc/signer.ts"
-    ],
     "require": [
       "ts-node/register"
     ]
