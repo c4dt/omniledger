@@ -37,8 +37,8 @@ import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
 import { UserData } from "./user-data.service";
 
-export function loadUserData(d: UserData) {
-    return () => d.load();
+export function loadUserDataConfig(d: UserData) {
+    return () => d.loadConfig();
 }
 
 @NgModule({
@@ -110,7 +110,7 @@ export function loadUserData(d: UserData) {
             deps: [UserData],
             multi: true,
             provide: APP_INITIALIZER,
-            useFactory: loadUserData,
+            useFactory: loadUserDataConfig,
         },
     ],
 })

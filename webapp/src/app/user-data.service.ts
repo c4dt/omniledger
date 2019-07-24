@@ -19,14 +19,12 @@ export class UserData extends Data {
         super(undefined); // poison
     }
 
-    async load(): Promise<any> {
+    async loadConfig(): Promise<any> {
         const res = await fetch("assets/config.toml");
         if (!res.ok) {
             return Promise.reject(`fetching config gave: ${res.status}: ${res.body}`);
         }
         this.config = Config.fromTOML(await res.text());
-
-        await super.load();
     }
 }
 
