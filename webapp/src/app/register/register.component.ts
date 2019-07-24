@@ -34,8 +34,6 @@ export class RegisterComponent implements OnInit {
 
     async ngOnInit() {
         Log.llvl3("init register");
-        const darcID = this.uData.config.adminDarcID.toString("hex");
-        const ephemeral = this.uData.config.ephemeral.toString("hex");
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
@@ -58,9 +56,9 @@ export class RegisterComponent implements OnInit {
             this.register = true;
             this.registerForm = new FormGroup({
                 alias: new FormControl(),
-                darcID: new FormControl(darcID,
+                darcID: new FormControl(undefined,
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
-                ephemeralKey: new FormControl(ephemeral,
+                ephemeralKey: new FormControl(undefined,
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
             await this.uData.load();
