@@ -3,7 +3,7 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
 
-import { Contact, Data, Defaults, FileBlob, Private } from "@c4dt/dynacred";
+import { Contact, Data, FileBlob, Private } from "@c4dt/dynacred";
 
 import { Argument, Instruction } from "@dedis/cothority/byzcoin";
 import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";

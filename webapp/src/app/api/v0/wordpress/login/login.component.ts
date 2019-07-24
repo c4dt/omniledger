@@ -5,7 +5,6 @@ import { InstanceID } from "@dedis/cothority/byzcoin";
 import { IdentityWrapper } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
-import { Defaults } from "@c4dt/dynacred";
 import { UserData } from "../../../../user-data.service";
 
 @Component({

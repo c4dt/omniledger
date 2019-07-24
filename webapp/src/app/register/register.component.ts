@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog, MatSnackBar } from "@angular/material";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { Data, Defaults, Private, StorageDB } from "@c4dt/dynacred";
+import { Data, Private, StorageDB } from "@c4dt/dynacred";
 
 import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 import Log from "@dedis/cothority/log";

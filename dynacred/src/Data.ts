@@ -31,7 +31,6 @@ import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Config } from "./Config";
 import { Contact } from "./Contact";
-import { Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { Party } from "./Party";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
