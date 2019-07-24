@@ -253,7 +253,7 @@ export class Data {
             throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
         }
         const d = new Data(config);
-        d.bc = await ByzCoinRPC.fromByzcoin(config.roster, Defaults.ByzCoinID);
+        d.bc = await ByzCoinRPC.fromByzcoin(config.roster, config.byzCoinID);
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
         await d.contact.updateOrConnect(d.bc);
@@ -367,7 +367,7 @@ export class Data {
     async connectByzcoin(): Promise<ByzCoinRPC> {
         const obj = this.constructorObj;
         if (this.bc == null) {
-            this.bc = await ByzCoinRPC.fromByzcoin(this.config.roster, Defaults.ByzCoinID);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.config.roster, this.config.byzCoinID);
         }
 
         if (obj) {

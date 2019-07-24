@@ -70,7 +70,7 @@ export class RegisterComponent implements OnInit {
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {
         this.uData.delete();
-        this.uData.bc = await ByzCoinRPC.fromByzcoin(this.uData.config.roster, Defaults.ByzCoinID);
+        this.uData.bc = await ByzCoinRPC.fromByzcoin(this.uData.config.roster, this.uData.config.byzCoinID);
         if (ephemeral.length === 64) {
             await showSnack(this.snack, "Creating new user", async () => {
                 Log.lvl1("creating user");
