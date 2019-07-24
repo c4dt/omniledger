@@ -49,14 +49,14 @@ The tests suppose you have the following tools available:
 
 - Node == 8.16.0
     - to check: `node -v`
-    - to install on Mac: `brew install node@8`
+    - to install on Mac: `brew install node@8`, then update your PATH so that `/usr/local/opt/node@8/bin` is at the front.
 
 - Mac: XCode >= 10.2
     - command-line tools: `xcode-select --install`
 
-- NativeScript >= 5.1
-    - to check: `tns info`
-    - to install: `npm i -g nativescript`
+- NativeScript == 5.1.x
+    - to check: `tns --version`
+    - to install: `npm i -g nativescript@5.1`
     
 - Docker
     - to check - Mac: have the whale in your toolbar
@@ -68,17 +68,13 @@ For the tests, you need to run your own little cothority locally on your compute
 contact this cothority to send its transactions. To start your local cothority, do the following:
 
 ```bash
-cd c4dt/omniledger/conode
-make conode
-make docker
-make docker_run
+make -C ../conode docker_run
 ```
 
 This should give out a list of logging messages while it starts up 4 nodes locally on your computer. Once
 this is done, you can start the actual app:
 
 ```bash
-cd c4dt/omniledger/mobile
 make
 tns run ios
 # or
