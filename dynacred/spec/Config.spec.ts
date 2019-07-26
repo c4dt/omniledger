@@ -1,11 +1,12 @@
 import * as http from "http";
-import { Config, Data } from "../src";
 
-describe("Data", async () => {
-    it("can be constructed with a trivial config", async () => {
+import { Config } from "../src";
+
+describe("Config", async () => {
+    it("can be constructed with a trivial toml", async () => {
         // TODO empty list of servers fails
         // tslint:disable-next-line:no-unused-expression
-        new Data(Config.fromTOML(`
+        Config.fromTOML(`
             ByzCoinID = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
             [[servers]]
                 Address = "tls://localhost"
@@ -13,6 +14,6 @@ describe("Data", async () => {
                 Suite = "Ed25519"
                 Public = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
                 Description = "irrelevant"
-        `));
+        `);
     });
 });

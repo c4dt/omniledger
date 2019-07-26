@@ -4,6 +4,8 @@ import { Router } from "@angular/router";
 import Log from "@dedis/cothority/log";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 
+import { Data } from "@c4dt/dynacred";
+
 import { hexBuffer } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
@@ -34,7 +36,7 @@ export class StatusComponent implements OnInit {
 
   async update() {
     this.nodes = [];
-    const roster = this.uData.config.roster;
+    const roster = this.uData.bc.getConfig().roster;
     const list = roster.list;
     const srpc = new StatusRPC(roster);
     for (let i = 0; i < list.length; i++) {
@@ -51,8 +53,8 @@ export class StatusComponent implements OnInit {
   }
 
   async deleteUser() {
-    this.uData.delete();
-    await this.uData.save();
+    const d = new Data(this.uData.bc);
+    await d.save();
     await this.router.navigate(["/newuser"]);
   }
 }

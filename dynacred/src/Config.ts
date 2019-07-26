@@ -33,20 +33,11 @@ export class Config {
             return Buffer.from(field, "hex");
         };
 
-        const asBoolean = (field: any): boolean => {
-            if (typeof field !== "boolean") {
-                throw Error("is not a boolean");
-            }
-
-            return field;
-        };
-
         return new Config(
             getField("ByzCoinID", asID),
             Roster.fromTOML(raw),
             tryToGetField("AdminDarcID", asID),
             tryToGetField("Ephemeral", asID),
-            tryToGetField("LocalTesting", asBoolean),
         );
     }
 
@@ -57,6 +48,5 @@ export class Config {
         // initial deploy; that's also why it's optional
         readonly adminDarcID?: ID,
         readonly ephemeral?: ID,
-        readonly localTesting?: boolean,
     ) {}
 }

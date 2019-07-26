@@ -1,6 +1,8 @@
+import "cross-fetch/polyfill";
+
 import { Injectable } from "@angular/core";
 
-import "cross-fetch/polyfill";
+import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 
 import { Config, Data } from "@c4dt/dynacred";
 
@@ -13,18 +15,19 @@ import { Config, Data } from "@c4dt/dynacred";
  * test the libraries.
  */
 export class UserData extends Data {
-    config: Config; // trick to allow writing to Data.config
+    bc: ByzCoinRPC;
 
     constructor() {
         super(undefined); // poison
     }
 
-    async loadConfig(): Promise<any> {
+    async loadConfig(): Promise<void> {
         const res = await fetch("assets/config.toml");
         if (!res.ok) {
             return Promise.reject(`fetching config gave: ${res.status}: ${res.body}`);
         }
-        this.config = Config.fromTOML(await res.text());
+        const config = Config.fromTOML(await res.text());
+        this.bc = await ByzCoinRPC.fromByzcoin(config.roster, config.byzCoinID);
     }
 }
 

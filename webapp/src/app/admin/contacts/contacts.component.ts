@@ -151,8 +151,8 @@ export class ContactsComponent implements OnInit {
                         const url = this.location.prepareExternalUrl("/register?ephemeral=" +
                             newUser.keyIdentity._private.toHex());
                         let host = window.location.host;
-                        // TODO by hand testing, move it to dedicated test case
-                        if (this.uData.config.localTesting) {
+                        // TODO testing code
+                        if (false) {
                             if (host.match(/local[1-9]?/)) {
                                 let index = parseInt(host.slice(5, 6), 10);
                                 if (!index) {
