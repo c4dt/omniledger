@@ -29,7 +29,6 @@ import { randomBytes } from "crypto";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
-import { Config } from "./Config";
 import { Contact } from "./Contact";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { Party } from "./Party";
@@ -106,13 +105,9 @@ export class Data {
      * @param alias for the new user
      * @param unrestricted whether the adminDarcID needs evolve_unrestricted
      */
-    static async createFirstUser(bc: ByzCoinRPC, config: Config, adminDarcID: InstanceID, adminKey: Scalar,
+    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar,
                                  alias: string, unrestricted: boolean = false):
         Promise<Data> {
-
-        if (config.adminDarcID !== null) {
-            throw Error("config already contains an adminDarc");
-        }
 
         // Prepare adminDarc to have all necessary rules
         const adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
@@ -129,7 +124,7 @@ export class Data {
             await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10, unrestricted);
         }
 
-        const d = new Data(config, {alias, bc});
+        const d = new Data(bc, {alias});
 
         const darcDevice = Darc.createBasic([d.keyIdentitySigner]
             , [d.keyIdentitySigner], Buffer.from("device"));
@@ -168,7 +163,7 @@ export class Data {
                 throw new Error(e.toString());
             }
         }
-        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], config.roster);
+        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner]);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);
 
@@ -206,7 +201,6 @@ export class Data {
 
         Log.lvl2("Linking new data to Data-structure");
         d.contact = new Contact(cred, d);
-        d.bc = bc;
         Log.lvl2("Credential id should be", CredentialsInstance.credentialIID(idBuf));
         await d.contact.updateOrConnect(bc);
         await d.connectByzcoin();
@@ -231,7 +225,7 @@ export class Data {
         return DarcInstance.fromByzcoin(bc, signer[0]);
     }
 
-    static async attachDevice(config: Config, url: string): Promise<Data> {
+    static async attachDevice(bc: ByzCoinRPC, url: string): Promise<Data> {
         const a = document.createElement("a");
         a.href = url;
         if (!a.pathname.includes(this.urlNewDevice)) {
@@ -251,12 +245,11 @@ export class Data {
         if (credentialIID.length !== 32 || ephemeral.length !== 32) {
             throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
         }
-        const d = new Data(config);
-        d.bc = await ByzCoinRPC.fromByzcoin(config.roster, config.byzCoinID);
+        const d = new Data(bc);
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
         await d.contact.updateOrConnect(d.bc);
-        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX, config.roster);
+        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX);
 
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = d.contact.darcInstance.getSignerDarcIDs()[0];
@@ -289,7 +282,6 @@ export class Data {
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;
     keyIdentity: KeyPair;
-    bc: ByzCoinRPC = null;
     lts: LongTermSecret = null;
     constructorObj: any;
     contact: Contact;
@@ -306,23 +298,12 @@ export class Data {
      * fields for initialization of the class.
      * @param obj (optional) object with all fields for the class.
      */
-    constructor(readonly config: Config, obj: any = {}) {
+    constructor(
+        readonly bc: ByzCoinRPC,
+        obj: any = {},
+    ) {
         this.setValues(obj);
         this.setFileName("data.json");
-    }
-
-    /**
-     * Initializes this Data with the given data. Useful because the global gData object
-     * cannot be overwritten. But with `gData.overwrite` you can copy another Data object
-     * over it.
-     *
-     * @param d the new data object.
-     */
-    async overwrite(d: Data) {
-        this.contact = d.contact;
-        this.keyIdentity = d.keyIdentity;
-        this.bc = d.bc;
-        return this.connectByzcoin();
     }
 
     setFileName(n: string) {
@@ -352,22 +333,8 @@ export class Data {
         }
     }
 
-    delete() {
-        this.setValues({});
-        this.bc = null;
-        this.constructorObj = {};
-        this.meetups = [];
-        this.parties = [];
-        this.badges = [];
-        this.ropascis = [];
-        this.polls = [];
-    }
-
     async connectByzcoin(): Promise<ByzCoinRPC> {
         const obj = this.constructorObj;
-        if (this.bc == null) {
-            this.bc = await ByzCoinRPC.fromByzcoin(this.config.roster, this.config.byzCoinID);
-        }
 
         if (obj) {
             Log.lvl2("getting parties and badges");
@@ -397,7 +364,7 @@ export class Data {
 
         this.contact.data = this;
         await this.contact.updateOrConnect();
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, this.config.roster);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         return this.bc;
     }
 
@@ -451,7 +418,6 @@ export class Data {
     async load(): Promise<Data> {
         Log.lvl1("Loading data from", this.dataFileName);
         this.setValues(await StorageDB.getObject(this.dataFileName));
-        this.bc = null;
         await this.connectByzcoin();
         return this;
     }
@@ -801,7 +767,8 @@ export class Data {
     // the 'SpawnerInstance'.
     async createUser(alias: string, ephemeral?: Private): Promise<Data> {
         Log.lvl1("Starting to create user", alias);
-        const d = new Data(this.config);
+        const d = new Data(this.bc);
+
         if (!ephemeral) {
             d.keyIdentity = new KeyPair();
         } else {
@@ -837,7 +804,6 @@ export class Data {
         d.contact = new Contact(cred, d);
         Log.lvl2("updating contact");
         await d.contact.updateOrConnect(this.bc);
-        d.bc = this.bc;
         Log.lvl2("finalizing data");
         await d.connectByzcoin();
         return d;
@@ -855,7 +821,7 @@ export class Data {
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, this.config.roster);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);

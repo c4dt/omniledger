@@ -67,8 +67,6 @@ export class RegisterComponent implements OnInit {
     }
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {
-        this.uData.delete();
-        this.uData.bc = await ByzCoinRPC.fromByzcoin(this.uData.config.roster, this.uData.config.byzCoinID);
         if (ephemeral.length === 64) {
             await showSnack(this.snack, "Creating new user", async () => {
                 Log.lvl1("creating user");
@@ -76,8 +74,7 @@ export class RegisterComponent implements OnInit {
                 const ek = Private.fromHex(ekStr);
                 if (darcID.length === 64 && alias.length > 0) {
                     Log.lvl2("creating FIRST user");
-                    const d = await Data.createFirstUser(this.uData.bc, this.uData.config, Buffer.from(darcID, "hex"),
-                                                         ek.scalar, alias);
+                    const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar, alias);
                     this.uData.contact = d.contact;
                     this.uData.keyIdentity = d.keyIdentity;
                     await this.uData.connectByzcoin();

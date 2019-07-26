@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
         let loginOK = false;
         try {
             const ident = IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner);
-            const reply = await this.uData.bc.checkAuthorization(this.uData.config.byzCoinID, this.darcID, ident);
+            const reply = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, this.darcID, ident);
             if (!reply || reply.length === 0) {
                 this.failed = "You're not allowed to login";
             } else {
