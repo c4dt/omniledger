@@ -329,7 +329,7 @@ export class Data {
         this.dataFileName = `storage/${n}`;
     }
 
-    async setValues(obj: any) {
+    setValues(obj: any) {
         if (Object.keys(obj).length > 0) {
             this.constructorObj = obj;
         }
@@ -450,7 +450,7 @@ export class Data {
      */
     async load(): Promise<Data> {
         Log.lvl1("Loading data from", this.dataFileName);
-        await this.setValues(await StorageDB.getObject(this.dataFileName));
+        this.setValues(await StorageDB.getObject(this.dataFileName));
         this.bc = null;
         await this.connectByzcoin();
         return this;
