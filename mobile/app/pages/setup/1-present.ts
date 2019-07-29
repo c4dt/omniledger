@@ -26,7 +26,12 @@ export async function navigatingTo(args: EventData) {
     page = <Page>args.object;
     page.bindingContext = view;
     setProgress();
-    return uData.connectByzcoin();
+    try {
+        var ret = await uData.connectByzcoin();
+        return ret;
+    } catch (e) {
+        Log.error(e);
+    }
 }
 
 export async function goInitTest(args: EventData) {

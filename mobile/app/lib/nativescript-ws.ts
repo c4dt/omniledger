@@ -12,7 +12,8 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
     constructor(path: string) {
         Log.lvl4("new ns-ws with path", path);
         super(path);
-        this.ws = new WS(path, {timeout: 100});
+        //this.ws = new WS(path, {debug: true, timeout: 1000});
+        this.ws = new WS(path, {timeout: 1000});
         // to prevent the browser to use blob
         this.ws.binaryType = "arraybuffer";
         this.ws.open();
@@ -40,16 +41,16 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
 
     /** @inheritdoc */
     onClose(callback: (code: number, reason: string) => void): void {
-        this.ws.onclose = (evt: { code: number, reason: string }) => {
-            callback(evt.code, evt.reason);
-        };
+        this.ws.on("close", (ws: any, code: number, reason: string) => {
+            callback(code, reason);
+        });
     }
 
     /** @inheritdoc */
     onError(callback: (err: Error) => void): void {
-        this.ws.onerror = (evt: Event) => {
-            callback(new Error("something went wrong"));
-        };
+        this.ws.on("error", (ws: any, error: any) => {
+            callback(new Error("ns-ws error: " + error));
+        });
     }
 
     /** @inheritdoc */

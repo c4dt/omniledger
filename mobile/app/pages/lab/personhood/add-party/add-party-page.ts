@@ -106,7 +106,7 @@ export async function save() {
         setProgress("Saving", 30);
         await copyViewModelToParty();
         let orgs = viewModel.get("orgList").slice();
-
+        
         // Create the party
         setProgress("Creating Party on ByzCoin", 50);
         let ppi = await uData.spawnerInstance.spawnPopParty({

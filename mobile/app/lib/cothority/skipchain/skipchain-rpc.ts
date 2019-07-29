@@ -76,7 +76,6 @@ export default class SkipchainRPC {
         if (!block.computeHash().equals(block.hash)) {
             throw new Error("invalid block: hash does not match");
         }
-
         return block;
     }
 

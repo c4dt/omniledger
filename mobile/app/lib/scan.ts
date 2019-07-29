@@ -21,7 +21,7 @@ export async function scan(msg: string = "Please scan QRCode"): Promise<ScanResu
             beepOnScan: true,             // Play or Suppress beep on scan (default true)
             torchOn: false,               // launch with the flashlight on (default false)
             closeCallback: () => {
-                console.log("Scanner closed")
+                Log.lvl4("Scanner closed")
             }, // invoked when the scanner was closed (success or abort)
             // orientation: orientation,     // Android only, default undefined (sensor-driven orientation), other options: portrait|landscape
             // openSettingsIfPermissionWasPreviouslyDenied: true // On iOS you can send the user to the settings app if access was previously denied
