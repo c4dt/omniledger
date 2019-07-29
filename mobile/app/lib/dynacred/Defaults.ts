@@ -1,6 +1,4 @@
-// import { FileIO } from "./FileIO";
 import { Roster } from "~/lib/cothority/network";
-// import "cross-fetch/polyfill";
 
 // tslint:disable-next-line
 export const Defaults = {
@@ -58,10 +56,4 @@ export function activateC4DT() {
     Defaults.ByzCoinID = Buffer.from("5b081e02e38e583085204abfe4553ceb6e0833a530bf8fa476ce2f5c1a9a51ae", "hex");
     Defaults.AdminDarc = Buffer.from("05e647cbdd220e30e33db4d168bd3ceacd09839ca099ca8ef5ab146c986726f6", "hex");
     Defaults.Ephemeral = Buffer.from("ed3ebf1be6fbe7496a8a31c4124fe560fa2f1651dbfa851c61cbd48c961ab30c", "hex");
-}
-
-function setRosterFromAssets() {
-    const roster = rosterFromAssets();
-    Defaults.Roster = roster;
-    Defaults.RosterCalypso = roster;
 }

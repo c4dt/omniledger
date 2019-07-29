@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import { Documents, FileIO } from "../FileIO";
+import FileIO from "../FileIO";
 import Log from "~/lib/cothority/log"
 
 export class StorageDB {
@@ -63,7 +63,7 @@ export class StorageLocal {
 }
 
 export class StorageFile {
-    static fileName = Documents.path + "/dyna.json";
+    static fileName = "dyna.json";
     static keyValues: any = {};
 
     static async set(key: string, value: string) {

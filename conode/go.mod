@@ -9,9 +9,9 @@ require (
 	github.com/qantik/qrgo v0.0.0-20160917134849-0c6b902c59f6
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.3.0
-	go.dedis.ch/cothority/v3 v3.1.2
+	go.dedis.ch/cothority/v3 v3.1.3
 	go.dedis.ch/kyber/v3 v3.0.3
-	go.dedis.ch/onet/v3 v3.0.19
+	go.dedis.ch/onet/v3 v3.0.20
 	go.dedis.ch/protobuf v1.0.6
 	go.etcd.io/bbolt v1.3.2
 	golang.org/x/oauth2 v0.0.0-20190115181402-5dab4167f31c
@@ -20,4 +20,4 @@ require (
 	gopkg.in/urfave/cli.v1 v1.20.0
 )
 
-replace go.dedis.ch/onet/v3 => ./onet
+replace go.dedis.ch/cothority/v3 => ./cothority

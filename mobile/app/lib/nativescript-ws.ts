@@ -1,5 +1,4 @@
 const WS = require("nativescript-websockets");
-import { sprintf } from "sprintf-js";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
 
@@ -11,9 +10,9 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
     private ws: any;
 
     constructor(path: string) {
-        Log.lvl2("new ns-ws with path", path);
+        Log.lvl4("new ns-ws with path", path);
         super(path);
-        this.ws = new WS(path, {timeout: 6000});
+        this.ws = new WS(path, {timeout: 100});
         // to prevent the browser to use blob
         this.ws.binaryType = "arraybuffer";
         this.ws.open();

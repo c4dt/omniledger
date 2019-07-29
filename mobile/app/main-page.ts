@@ -11,8 +11,8 @@ import { EventData, fromObject } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { getFrameById, Page } from "tns-core-modules/ui/frame";
 import { SelectedIndexChangedEventData, TabView } from "tns-core-modules/ui/tab-view";
-import Log from "~/lib/cothority/Log";
-import { Roster } from "~/lib/cothority/network";
+import Log from "~/lib/cothority/log";
+import { Roster, WebSocketAdapter } from "~/lib/cothority/network";
 import { setFactory } from "~/lib/cothority/network/connection";
 import { Defaults } from "~/lib/dynacred/Defaults";
 import { msgFailed } from "~/lib/messages";
@@ -34,12 +34,12 @@ export async function navigatingTo(args: EventData) {
         Log.lvl2("navigatingTo: main-page");
         let page = <Page> args.object;
         page.bindingContext = mainView;
-        setFactory((path) => new NativescriptWebSocketAdapter(path));
+        setFactory((path: string):WebSocketAdapter => new NativescriptWebSocketAdapter(path));
         activateTesting();
         Log.lvl1("loading");
         await uData.load();
         if (!uData.contact.alias || uData.contact.alias == "new identity") {
-            return mainViewRegister(args);
+          return mainViewRegister(args);
         }
         return mainViewRegistered(args);
     } catch (e) {
@@ -102,7 +102,7 @@ export function activateTesting() {
     Defaults.AdminDarc = Buffer.from("72e94134229f9bb6e74864a5742e8d25b8a65e93c33f5b1dbd365865458b1eaf", "hex");
     Defaults.Ephemeral = Buffer.from("e4882b7e9043e2b291136ca7ca585f9740b749dea45043dd40f41702901cef01", "hex");
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
-  Address = "tls://localhost:7776"
+  Address = "tls://192.168.100.1:7776"
   Suite = "Ed25519"
   Public = "ed2494dfd826cd2c2ea23adedf564fb19619c6004bff91f08bc76e80bdb4ec7f"
   Description = "Conode_4"
@@ -114,7 +114,7 @@ export function activateTesting() {
       Public = "3ff215e1755712e28f8f4d60ca412101c60d3707a68f68b37cf6c29437cc315c79ab1190fa941309e50dee30eeb677e6f2b8796f01d99a866c24dd5dd59594840dd387970c6eaaf6b56c8f8055c7c9d65f3a82e1bfc3bb7efb80d5faa9c33ff35099a96c9dbd32e65e3448f78693d00b346400796629229432161e1044b0af5f"
       Suite = "bn256.adapter"
 [[servers]]
-  Address = "tls://localhost:7774"
+  Address = "tls://192.168.100.1:7774"
   Suite = "Ed25519"
   Public = "0a0bdbb3f4059e9dad2d92b967bde211865f7d00839abd3330d8c9c4423b10bc"
   Description = "Conode_3"
@@ -126,7 +126,7 @@ export function activateTesting() {
       Public = "58eaa4086f9033bb6398a8d4a6e6a7c136aa19e85c452f0ae069eb5a008e220305f726a056451ae0cb2c8deec820d6b5ad6585684122c38199403fa49bafeda06734432240cac370d70a5be9799258d044fb04f6aa634fed5d4c7080b340e08359142bbbd602323924ee97db1dbf6e3fb19b941880156cb98552fbe957115743"
       Suite = "bn256.adapter"
 [[servers]]
-  Address = "tls://localhost:7772"
+  Address = "tls://192.168.100.1:7772"
   Suite = "Ed25519"
   Public = "5f1a868b2dfa1e799c958a2dd5d850a660e3596a5ceb4fe7ff9dcf9c2efd419b"
   Description = "Conode_2"
@@ -138,7 +138,7 @@ export function activateTesting() {
       Public = "7dafa5bc547beb1ecb26267df3b5294e1a641c356d1039cc5c94acc0048a56fb2e2d6dc7507291cf4fe03418e1e16f0810637a67e9a31edf8d06cca399f0f5c85e3dbe740bd564968467b0cc1792688791bd59a61eb98723ab30ab3f784e2225054437110ea972c43f633dc510fd07d50871ec346ee1c088e5441d415dd9e95e"
       Suite = "bn256.adapter"
 [[servers]]
-  Address = "tls://localhost:7770"
+  Address = "tls://192.168.100.1:7770"
   Suite = "Ed25519"
   Public = "3de71200e7ecaeb49dc7f824317fb4ef6890e90018c49617139b6e61075f0247"
   Description = "Conode_1"

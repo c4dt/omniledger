@@ -74,7 +74,7 @@ export async function goRecover(args: EventData){
         title: "Start Recovery",
         message: "Did you lose your identity and have set up contacts to recover it?",
         okButtonText: "Recover",
-        cancelButtonText: "Abort"
+        cancelButtonText: "Cancel"
     });
     if (doit){
         try {

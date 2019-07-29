@@ -224,7 +224,7 @@ export class Data {
         Log.lvl2("Credential id should be", CredentialsInstance.credentialIID(idBuf));
         await d.contact.updateOrConnect(bc);
         await d.connectByzcoin();
-        Log.lvl2("done");
+        Log.lvl2("done creating first user on chain", bc.genesisID.toString("hex"));
         return d;
     }
 
@@ -350,8 +350,12 @@ export class Data {
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
         const obj = this.constructorObj;
+        var chain = Defaults.ByzCoinID;
+        if (obj && obj.bcID) {
+            chain = <InstanceID>obj.bcID;
+        }
         if (this.bc == null) {
-            this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
+            this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, chain);
         }
 
         if (obj) {
@@ -371,13 +375,13 @@ export class Data {
                     new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
             }
             if (obj.polls) {
-                this.polls = obj.polls.map((rps: any) => PollStruct.fromObject(rps));
+                this.polls = obj.polls.map((p: any) => PollStruct.fromObject(p));
             }
 
+            Log.lvl2("Getting contacts");
             if (obj.contact) {
                 this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
             }
-            Log.lvl2("Getting contact informations");
         }
 
         this.contact.data = this;

@@ -11,8 +11,7 @@ This is the presentation screen when the user is not signed up yet.
             <Label text="Personhood.online is an experimental application that is used to try out new ideas for identity management and troll-resistance. It is based on research from the DEDIS lab at EPFL and actively developed by Linus Gasser. The current version should run without too many bugs and its goal is to start a discussion of what is possible."
                    class="h3" textWrap="true"/>
             <StackLayout orientation="horizontal" style="horizontal-align: center;">
-                <HtmlView html="Personhood is brought to you by <u>https://personhood.online</u>:" class="h3" textWrap="true"
-                width="60%" style="vertical-align: center;" tap="goPersonhood"/>
+                <HtmlView html="Personhood is brought to you by <u>https://personhood.online</u>:" class="h3" textWrap="true" width="60%" style="vertical-align: center;" tap="goPersonhood"/>
                 <Image src="~/images/icon-personhood-64.png" width="20%" tap="goPersonhood"/>
             </StackLayout>
             <Button text="Create BC" tap="goInitTest" class="btn btn-test"

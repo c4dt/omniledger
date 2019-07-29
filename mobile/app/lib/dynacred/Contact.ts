@@ -454,7 +454,7 @@ export class Contact {
             await this.getContacts();
         }
 
-        Log.lvl2("done for", this.alias);
+        Log.lvl2("updateOrConnect done for", this.alias);
         return this;
     }
 

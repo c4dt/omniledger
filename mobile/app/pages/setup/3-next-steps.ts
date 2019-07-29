@@ -11,6 +11,7 @@ import { Defaults } from "~/lib/dynacred/Defaults";
 import { msgOK } from "~/lib/messages";
 import { qrcodeIdentity, qrcodeIdentityStr } from "~/lib/qrcode";
 import { uData } from "~/user-data";
+import { Button } from "tns-core-modules/ui/button";
 
 export function navigatingTo(args: EventData) {
     let page = <Page> args.object;
@@ -20,6 +21,11 @@ export function navigatingTo(args: EventData) {
         testing: Defaults.Testing,
     });
     Log.lvl1("Waiting to activate:\n", qrcodeIdentityStr(uData.contact));
+}
+
+export async function goMain(args: any) {
+	const button: Button = <Button>args.object;
+    button.page.frame.navigate("pages/home/home-page");
 }
 
 export async function deleteAll(args: any) {

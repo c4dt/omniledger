@@ -8,17 +8,10 @@ ldflags=-s -w -X main.gitTag=$(TAG)
 
 all: docker
 
-onet:
-	git clone --depth 1 https://github.com/dedis/onet
-
-onet_patch: onet
-	@( cd onet; git reset --hard; git pull; \
-	perl -pi -e "s/EnableCompression: true/EnableCompression: false/" websocket.go );
-
 cothority:
 	git clone --depth 1 https://github.com/dedis/cothority
 
-conode: onet_patch cothority
+conode: cothority
 	@( cd cothority; git pull )
 	echo "Compiling binaries"; \
 	GO111MODULE=on go build -o build/conode; \
@@ -40,12 +33,15 @@ newdb: conode
 	echo; echo "Shutting down conodes"; pkill -x conode; rm conodes/running
 
 # Use this target to build from local source
-docker: build/Dockerfile onet_patch cothority
+docker: build/Dockerfile cothority
 	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o build/conode
+	cd cothority; \
+		GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/bcadmin ./byzcoin/bcadmin; \
+		GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/csadmin ./calypso/csadmin
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-docker_run:
+docker_run: docker
 	docker rm -f $(CONTAINER) || echo nothing to stop
 	cp build/conodes/public.toml ../webapp/src/assets/conodes.toml
 	docker run --rm -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev

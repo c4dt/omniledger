@@ -6,10 +6,16 @@ purpose of the file is to pass control to the app’s first module.
 
 import * as application from "tns-core-modules/application";
 import Log from "~/lib/cothority/log";
+import { isIOS } from "tns-core-modules/platform";
 
 application.on("orientationChanged", (evt) => {
     Log.lvl3("Orientation-change:", evt);
 });
+
+// iOS has one less frame that needs to be unwound than Android does.
+if (isIOS) {
+	Log.stackFrameOffset = -1;
+}
 
 application.run({moduleName: "app-root"});
 

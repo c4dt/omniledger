@@ -3,10 +3,10 @@
  */
 
 const FileSystem = require("tns-core-modules/file-system");
-export const Documents = FileSystem.knownFolders.documents();
+const Documents = FileSystem.knownFolders.documents();
 import Log from "~/lib/cothority/log";
 
-export class FileIO {
+export default class FileIO {
 
     /**
      * Gets the string of the file at filePath and returns a promise with the content.
@@ -17,9 +17,7 @@ export class FileIO {
         let str = "";
         try {
             str = await Documents.getFile(filePath).readText();
-            Log.lvl2("read file", filePath);
         } catch (error) {
-            // await this.lslr("");
             return Log.rcatch(error, "Reading error");
         }
         return str;
@@ -36,7 +34,6 @@ export class FileIO {
         try {
             await Documents.getFile(filePath).writeText(content);
         } catch (error) {
-            // await this.lslr(filePath);
             Log.catch("WRITING ERROR:", error);
         }
     }

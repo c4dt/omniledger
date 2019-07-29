@@ -1,7 +1,5 @@
-onet/
 cothority/
 build/conode
 build/conodes/log/
-bcadmin
-phapp
-csadmin
+build/bcadmin
+build/csadmin

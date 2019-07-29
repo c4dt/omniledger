@@ -9,9 +9,12 @@ export class Logger {
 
     constructor(lvl: number) {
         this._lvl = lvl === undefined ? defaultLvl : lvl;
+		this.stackFrameOffset = 0;
     }
 
     _lvl: number;
+    // stackFrameOffset can be adjusted by the platform depending on the need.
+    stackFrameOffset: number;
 
     get lvl() {
         return this._lvl;
@@ -90,7 +93,7 @@ export class Logger {
         indent = indent >= 5 ? 0 : indent;
         if (l <= this._lvl) {
             // tslint:disable-next-line
-            this.out(lvlStr[l + 7] + ": " + this.printCaller(new Error(), 3) +
+            this.out(lvlStr[l + 7] + ": " + this.printCaller(new Error(), 3+this.stackFrameOffset) +
                 " -> " + " ".repeat(indent * 2) + this.joinArgs(args));
         }
     }
@@ -184,5 +187,5 @@ export class Logger {
 }
 
 // tslint:disable-next-line
-let Log = new Logger(2);
+let Log = new Logger(defaultLvl);
 export default Log;

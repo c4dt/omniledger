@@ -64,15 +64,32 @@ The tests suppose you have the following tools available:
 
 ## Tests Overview
 
-For the tests, you need to run your own little cothority locally on your computer. The mobile app will then
-contact this cothority to send its transactions. To start your local cothority, do the following:
+For the tests, you need to run your own 4-node Cothority on your computer. The mobile app will then
+contact this Cothority.
+
+When in test mode, your app will contact this Cothority on the address 192.168.100.1, on ports 7771, 7773,
+7775, and 7777. You need to have an additional IP address on your default interface. For example, if your
+default interface on a Mac is en0, you'll do:
+
+```
+sudo ifconfig en0 inet 192.168.100.1 add
+```
+
+To start your local Cothority, do the following:
 
 ```bash
 make -C ../conode docker_run
 ```
 
-This should give out a list of logging messages while it starts up 4 nodes locally on your computer. Once
-this is done, you can start the actual app:
+This should give out a list of logging messages while it starts up 4 nodes locally on your computer.
+
+You can test your conode and the extra IP address with curl:
+
+```
+curl http://192.168.100.1:7771/ok
+```
+
+To start the actual app:
 
 ```bash
 make
@@ -80,6 +97,3 @@ tns run ios
 # or
 tns run android
 ```
-
-Currently only the ios version has been tested. There are still bugs that prevent the app from being it
-used like the old, v2, app.
