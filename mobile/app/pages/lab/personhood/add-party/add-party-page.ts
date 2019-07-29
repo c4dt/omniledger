@@ -1,17 +1,18 @@
-import {EventData, fromObject, Observable} from "tns-core-modules/data/observable";
-import {Page} from "tns-core-modules/ui/page";
-import Log from "~/lib/cothority/log";
-import * as dialogs from "tns-core-modules/ui/dialogs";
-import {ObservableArray} from "tns-core-modules/data/observable-array";
-import {topmost} from "tns-core-modules/ui/frame";
-import { PopDesc } from "~/lib/cothority/personhood/proto";
-import { Party } from "~/lib/dynacred/Party";
-import {uData} from "~/user-data";
-import {Defaults} from "~/lib/dynacred/Defaults";
-import {sprintf} from "sprintf-js";
-import {msgFailed} from "~/lib/messages";
-import {dismissSoftKeyboard} from "~/lib/users";
 import Long from "long";
+import Moment from "moment";
+import { sprintf } from "sprintf-js";
+import { fromObject } from "tns-core-modules/data/observable";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
+import * as dialogs from "tns-core-modules/ui/dialogs";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
+import Log from "~/lib/cothority/log";
+import { PopDesc } from "~/lib/cothority/personhood/proto";
+import { Defaults } from "~/lib/dynacred/Defaults";
+import { Party } from "~/lib/dynacred/Party";
+import { msgFailed } from "~/lib/messages";
+import { dismissSoftKeyboard } from "~/lib/users";
+import { uData } from "~/user-data";
 
 let NewParty: PopDesc = undefined;
 let newConfig = undefined;
@@ -34,21 +35,28 @@ let viewModel = fromObject({
 });
 
 export function onNavigatingTo(args) {
-    Log.lvl1("starting config-page");
-    page = <Page>args.object;
-    page.bindingContext = viewModel;
-    if (Defaults.Testing) {
-        NewParty = new PopDesc({name:"test " + NewParty.uniqueName, purpose:"testing",
-            datetime: Long.fromNumber(new Date().getTime()), location: "cloud"});
-    } else {
-        NewParty = new PopDesc({name:"", purpose:"",
-            datetime: Long.fromNumber(new Date().getTime()), location: ""});
+    try {
+        Log.lvl1("starting config-page");
+        page = <Page> args.object;
+        page.bindingContext = viewModel;
+        if (Defaults.Testing) {
+            NewParty = new PopDesc({
+                name: "test " + Moment(new Date()).format("YY-MM-DD HH:mm"), purpose: "testing",
+                datetime: Long.fromNumber(new Date().getTime()), location: "cloud"
+            });
+        } else {
+            NewParty = new PopDesc({
+                name: "", purpose: "",
+                datetime: Long.fromNumber(new Date().getTime()), location: ""
+            });
+        }
+        viewModel.get("orgList").splice(0);
+        viewModel.get("orgList").push(uData.contact);
+        copyPartyToViewModel();
+    } catch (e) {
+        Log.catch(e);
     }
-    viewModel.get("orgList").splice(0);
-    viewModel.get("orgList").push(uData.contact);
-    copyPartyToViewModel();
 }
-
 
 /**
  * Parse the date from the data form and return it as date.
@@ -72,10 +80,11 @@ function copyViewModelToParty() {
     time.map(parseInt);
 
     let unix = new Date(date[0], date[1] - 1, date[2], time[0], time[1], 0, 0).getTime();
-    NewParty = new PopDesc({name:dataForm.get("name"), purpose:dataForm.get("purpose"),
-        datetime: Long.fromNumber(unix), location: dataForm.get("location")});
+    NewParty = new PopDesc({
+        name: dataForm.get("name"), purpose: dataForm.get("purpose"),
+        datetime: Long.fromNumber(unix), location: dataForm.get("location")
+    });
 }
-
 
 function copyPartyToViewModel() {
     let date = new Date(NewParty.datetime.toNumber());
@@ -102,7 +111,8 @@ export async function save() {
         setProgress("Creating Party on ByzCoin", 50);
         let ppi = await uData.spawnerInstance.spawnPopParty({
             coin: uData.coinInstance, signers: [uData.keyIdentitySigner],
-            orgs: orgs, desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))});
+            orgs: orgs, desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))
+        });
         let p = new Party(ppi);
         p.isOrganizer = true;
         setProgress("Storing Parties", 75);
