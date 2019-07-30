@@ -44,7 +44,6 @@ export async function navigatingTo(args: EventData) {
         return mainViewRegistered(args);
     } catch (e) {
         Log.catch("couldn't load:", e);
-        return mainViewRegister(args);
         await msgFailed("Error when setting up communication: " + e.toString());
         let again = await dialogs.confirm({
             title: "Network error",
@@ -103,9 +102,10 @@ export function activateTesting() {
     // Paste in config info here to sync two emulators to the same byzcoin.
     //
     // *******
-    Defaults.ByzCoinID = Buffer.from("bda4198dd8b575d4e00cff6e408a5a7c7cf515032fb3afba8a13a1bdeb3893bf", "hex");
-    Defaults.AdminDarc = Buffer.from("72e94134229f9bb6e74864a5742e8d25b8a65e93c33f5b1dbd365865458b1eaf", "hex");
-    Defaults.Ephemeral = Buffer.from("e4882b7e9043e2b291136ca7ca585f9740b749dea45043dd40f41702901cef01", "hex");
+
+    Defaults.ByzCoinID = Buffer.from("fb40bb6970bc54bce7a30d093eedc60f393abd3ed7815718a02282c863587f51", "hex");
+    Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
+    Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"
   Suite = "Ed25519"

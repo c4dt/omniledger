@@ -1,4 +1,6 @@
 import { Point, PointFactory, Scalar, sign } from "@dedis/kyber";
+import Log from "~/lib/cothority/log";
+import { Contact } from "~/lib/dynacred/Contact";
 import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "../byzcoin/client-transaction";
 import DarcInstance from "../byzcoin/contracts/darc-instance";
@@ -7,12 +9,27 @@ import Darc from "../darc/darc";
 import IdentityDarc from "../darc/identity-darc";
 import { Rule } from "../darc/rules";
 import Signer from "../darc/signer";
-import CredentialsInstance from "./credentials-instance";
 import { FinalStatement, PopPartyStruct } from "./proto";
 
 const {anon} = sign;
 
 export class PopPartyInstance extends Instance {
+
+    static readonly contractID = "popParty";
+    static readonly PRE_BARRIER = 1;
+    static readonly SCANNING = 2;
+    static readonly FINALIZED = 3;
+    popPartyStruct: PopPartyStruct;
+    tmpAttendees: Point[] = [];
+
+    constructor(private rpc: ByzCoinRPC, inst: Instance) {
+        super(inst);
+        if (inst.contractID.toString() !== PopPartyInstance.contractID) {
+            throw new Error(`mismatch contract name: ${inst.contractID} vs ${PopPartyInstance.contractID}`);
+        }
+
+        this.popPartyStruct = PopPartyStruct.decode(this.data);
+    }
 
     /**
      * Getter for the final statement. It throws if the party
@@ -30,10 +47,6 @@ export class PopPartyInstance extends Instance {
             desc: this.popPartyStruct.description,
         });
     }
-    static readonly contractID = "popParty";
-    static readonly PRE_BARRIER = 1;
-    static readonly SCANNING = 2;
-    static readonly FINALIZED = 3;
 
     /**
      * Helper to create a PoP party darc
@@ -66,18 +79,6 @@ export class PopPartyInstance extends Instance {
     static async fromByzcoin(bc: ByzCoinRPC, iid: InstanceID, waitMatch: number = 0, interval: number = 1000):
         Promise<PopPartyInstance> {
         return new PopPartyInstance(bc, await Instance.fromByzcoin(bc, iid, waitMatch, interval));
-    }
-    popPartyStruct: PopPartyStruct;
-
-    tmpAttendees: Point[] = [];
-
-    constructor(private rpc: ByzCoinRPC, inst: Instance) {
-        super(inst);
-        if (inst.contractID.toString() !== PopPartyInstance.contractID) {
-            throw new Error(`mismatch contract name: ${inst.contractID} vs ${PopPartyInstance.contractID}`);
-        }
-
-        this.popPartyStruct = PopPartyStruct.decode(this.data);
     }
 
     /**
@@ -173,14 +174,15 @@ export class PopPartyInstance extends Instance {
      * Update the party data
      * @returns a promise that resolves with an updaed instance
      */
-    async update(): Promise<PopPartyInstance> {
+    async update(contacts: Contact[] = null): Promise<PopPartyInstance> {
         const inst = await Instance.fromByzcoin(this.rpc, this.id);
         this.data = inst.data;
         this.popPartyStruct = PopPartyStruct.decode(this.data);
 
         if (this.popPartyStruct.state === PopPartyInstance.SCANNING &&
-            this.tmpAttendees.length === 0) {
-            this.tmpAttendees = await this.fetchOrgKeys();
+            this.tmpAttendees.length === 0 &&
+            contacts) {
+            this.tmpAttendees = await this.fetchOrgKeys(contacts);
         }
         return this;
     }
@@ -226,23 +228,24 @@ export class PopPartyInstance extends Instance {
         await this.update();
     }
 
-    async fetchOrgKeys(): Promise<Point[]> {
+    async fetchOrgKeys(contacts: Contact[]): Promise<Point[]> {
         const piDarc = await DarcInstance.fromByzcoin(this.rpc, this.darcID);
         const orgDarcs = piDarc.darc.rules.list.find((l) => l.action === "invoke:popParty.finalize").getIdentities();
         const orgPers: Point[] = [];
 
         for (let orgDarc of orgDarcs) {
             // Remove leading "darc:" from expression
-            orgDarc = orgDarc.substr(5);
-            const orgCred = CredentialsInstance.credentialIID(Buffer.from(orgDarc, "hex"));
-            const cred = await CredentialsInstance.fromByzcoin(this.rpc, orgCred);
-            const credPers = cred.getAttribute("personhood", "ed25519");
-            if (!credPers) {
+            const orgDarcID = Buffer.from(orgDarc.substr(5), "hex");
+            const contact = contacts.find(c => c.darcInstance.darcID.equals(orgDarcID));
+            if (contact == undefined) {
+                return Promise.reject("didn't find organizer in contacts");
+            }
+            const pub = contact.personhoodPub;
+            if (!pub) {
                 throw new Error("found organizer without personhood credential");
             }
 
-            const pub = PointFactory.fromProto(credPers);
-            orgPers.push(pub);
+            orgPers.push(pub.point);
         }
 
         return orgPers;

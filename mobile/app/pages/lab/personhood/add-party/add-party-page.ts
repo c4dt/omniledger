@@ -109,15 +109,12 @@ export async function save() {
         await copyViewModelToParty();
 
         const orgs = <Contact[]>viewModel.get("orgList").slice();        
-        const orgsci = await Promise.all(orgs.map((c: Contact) : Promise<CredentialsInstance> => {
-            return CredentialsInstance.fromByzcoin(uData.bc, c.credentialIID);
-        }));
 
         // Create the party
         setProgress("Creating Party on ByzCoin", 50);
         let ppi = await uData.spawnerInstance.spawnPopParty({
             coin: uData.coinInstance, signers: [uData.keyIdentitySigner],
-            orgs: orgsci,
+            orgs,
             desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))
         });
         let p = new Party(ppi);

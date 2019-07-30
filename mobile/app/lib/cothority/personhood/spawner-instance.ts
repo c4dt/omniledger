@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
+import { Contact } from "~/lib/dynacred/Contact";
 import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "../byzcoin/client-transaction";
 import CoinInstance, { Coin } from "../byzcoin/contracts/coin-instance";
@@ -309,12 +310,12 @@ export default class SpawnerInstance extends Instance {
 
         // Verify that all organizers have published their personhood public key
         for (const org of orgs) {
-            if (!org.getAttribute("personhood", "ed25519")) {
+            if (!org.personhoodPub) {
                 throw new Error(`One of the organisers didn't publish his personhood key`);
             }
         }
 
-        const orgDarcIDs = orgs.map((org) => org.darcID);
+        const orgDarcIDs = orgs.map((org) => org.darcInstance.id);
         const valueBuf = this.struct.costDarc.value.add(this.struct.costParty.value).toBytesLE();
         const orgDarc = PopPartyInstance.preparePartyDarc(orgDarcIDs, "party-darc " + desc.name);
         const ctx = new ClientTransaction({
@@ -602,7 +603,7 @@ interface ICreateRoPaSci {
 interface ICreatePopParty {
     coin: CoinInstance;
     signers: Signer[];
-    orgs: CredentialsInstance[];
+    orgs: Contact[];
     desc: PopDesc;
     reward: Long;
 

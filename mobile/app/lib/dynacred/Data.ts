@@ -380,7 +380,12 @@ export class Data {
 
             Log.lvl2("Getting contacts");
             if (obj.contact) {
-                this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
+                this.contact = Contact.fromObject(obj.contact);
+                try {
+                    await this.contact.updateOrConnect(this.bc);
+                } catch (e){
+                    Log.info("Contact not found in ByzCoin - not stored yet?");
+                }
             }
         }
 
@@ -426,8 +431,7 @@ export class Data {
         if (publish) {
             try {
                 Log.lvl2("Personhood not yet stored - adding to credential");
-                this.contact.credential.setAttribute("personhood",
-                    "ed25519", this.keyPersonhood._public.toBuffer());
+                this.contact.personhoodPub = this.keyPersonhood._public;
                 await this.contact.sendUpdate();
             } catch (e) {
                 Log.catch(e);
@@ -457,8 +461,7 @@ export class Data {
         Log.lvl1("Saving data to", this.dataFileName);
         await StorageFile.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
-            this.contact.credential.setAttribute("personhood",
-                "ed25519", this.keyPersonhood._public.toBuffer());
+            this.contact.personhoodPub = this.keyPersonhood._public;
         }
         if (this.contact.isRegistered()) {
             Log.lvl2("Sending update to chain");
@@ -691,7 +694,7 @@ export class Data {
                 Log.lvl2("Found new party id");
                 const ppi = await PopPartyInstance.fromByzcoin(this.bc, php.instanceID);
                 Log.lvl2("Found new party", ppi.popPartyStruct.description.name);
-                const orgKeys = await ppi.fetchOrgKeys();
+                const orgKeys = await ppi.fetchOrgKeys(this.contacts.concat(this.contact));
                 const p = new Party(ppi);
                 p.isOrganizer = !!orgKeys.find((k) => k.equals(this.keyPersonhood._public.point));
                 this.parties.push(p);
@@ -703,7 +706,8 @@ export class Data {
     }
 
     async updateParties(): Promise<Party[]> {
-        await Promise.all(this.parties.map(async (p) => p.partyInstance.update()));
+        await Promise.all(this.parties.map(async (p) =>
+            p.partyInstance.update(this.contacts.concat(this.contact))));
         // Move all finalized parties into badges
         const parties: Party[] = [];
         this.parties.forEach((p) => {

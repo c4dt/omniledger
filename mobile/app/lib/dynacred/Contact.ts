@@ -136,6 +136,17 @@ export class Contact {
         }
     }
 
+    get personhoodPub(): Public {
+        return Public.fromBuffer(this.credential.getAttribute("1-public", "personhood"));
+    }
+
+    set personhoodPub(pub: Public) {
+        if (pub) {
+            this.credential.setAttribute("1-public", "personhood", pub.toBuffer());
+            this.incVersion();
+        }
+    }
+
     get coinID(): InstanceID {
         return this.credential.getAttribute("1-public", "coin");
     }

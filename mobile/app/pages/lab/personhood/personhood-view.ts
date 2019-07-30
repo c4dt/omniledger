@@ -58,8 +58,8 @@ export class PersonhoodView extends Observable {
         this.parties = uData.parties.map(p => new PartyView(p))
             .sort((a, b) => a.party.partyInstance.popPartyStruct.description.datetime.sub(
                 b.party.partyInstance.popPartyStruct.description.datetime).toNumber());
-
         if (this.parties.length > 0) {
+
             this.parties[0].setChosen(true);
         }
         this.notifyPropertyChange("elements", this.elements);
