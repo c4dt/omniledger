@@ -1,10 +1,9 @@
-// import {scan} from "~/lib/Scan";
+import {scan} from "~/lib/dynacred/Scan";
 import Log from "~/lib/cothority/log";
 import {Data} from "~/lib/dynacred/Data";
 import {Contact} from "~/lib/dynacred/Contact";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import Long from "long";
-import {msgFailed, msgOK} from "~/lib/messages";
 
 import * as utils from "tns-core-modules/utils/utils";
 import {isIOS, isAndroid} from "tns-core-modules/platform";
@@ -20,8 +19,8 @@ export function dismissSoftKeyboard() {
 }
 
 export async function scanNewUser(d: Data): Promise<Contact> {
-    // let str = await scan("Scan Identity Code");
-    const str = {text: "test from qrcode"};
+    let str = await scan("Scan Identity Code");
+    //const str = {text: "test from qrcode"};
     Log.lvl2("Got string scanned:", str);
     let user = await Contact.fromQR(d.bc, str.text);
     await d.addContact(user);

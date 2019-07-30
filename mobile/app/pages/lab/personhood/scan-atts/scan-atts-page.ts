@@ -5,7 +5,7 @@ import {PopPartyInstance} from "~/lib/cothority/personhood/pop-party-instance";
 import {Page} from "tns-core-modules/ui/page";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import {uData} from "~/user-data";
-import {parseQRCode, scan} from "~/lib/Scan";
+import {parseQRCode, scan} from "~/lib/dynacred/Scan";
 import {msgFailed, msgOK} from "~/lib/messages";
 import {topmost} from "tns-core-modules/ui/frame";
 

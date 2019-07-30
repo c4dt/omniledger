@@ -2,7 +2,7 @@ import {fromObject} from "tns-core-modules/data/observable";
 import {Page} from "tns-core-modules/ui/page";
 import {Contact} from "~/lib/dynacred/Contact";
 import {topmost} from "tns-core-modules/ui/frame";
-import {createQrcode, parseQRCode, scan} from "~/lib/Scan";
+import {createQrcode, scan} from "~/lib/dynacred/Scan";
 import {msgFailed} from "~/lib/messages";
 import Log from "~/lib/cothority/log";
 import { uData } from "~/user-data";

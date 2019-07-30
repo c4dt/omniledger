@@ -28,14 +28,10 @@ export function friendsUpdateList() {
 }
 
 export async function addFriend(args: GestureEventData) {
-    try {
-        let u = await scanNewUser(uData);
-        await assertRegistered(u, setProgress);
-        friendsUpdateList();
-        await uData.save();
-    } catch (e){
-        Log.error(e);
-    }
+    let u = await scanNewUser(uData);
+    await assertRegistered(u, setProgress);
+    friendsUpdateList();
+    await uData.save();
 }
 
 export function setProgress(text: string = "", width: number = 0) {

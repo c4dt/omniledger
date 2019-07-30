@@ -235,10 +235,10 @@ export class PartyView extends Observable {
     }
 
     async onTap(arg: GestureEventData) {
-        let DELETE = "Delete Party";
-        let BARRIER = "Activate Barrier Point";
-        let SCAN = "Scan attendees";
-        let FINALIZE = "Finalize Party";
+        const DELETE = "Delete Party";
+        const BARRIER = "Activate Barrier Point";
+        const SCAN = "Scan attendees";
+        const FINALIZE = "Finalize Party";
         let actions = [];
         if (this.party.isOrganizer) {
             switch (this.party.state) {

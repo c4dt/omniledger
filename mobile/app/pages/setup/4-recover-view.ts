@@ -3,7 +3,7 @@ import {Contact} from "~/lib/dynacred/Contact";
 import Log from "~/lib/cothority/log";
 import {topmost} from "tns-core-modules/ui/frame";
 import {ItemEventData} from "tns-core-modules/ui/list-view";
-import {createQrcode, parseQRCode, scan} from "~/lib/scan";
+import {createQrcode, scan} from "~/lib/dynacred/Scan";
 import {msgFailed} from "~/lib/messages";
 import {mainViewRegistered} from "~/main-page";
 import { uData } from "~/user-data";
