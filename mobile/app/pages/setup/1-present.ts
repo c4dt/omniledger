@@ -49,14 +49,17 @@ export async function goInitTest(args: EventData) {
     } catch (e) {
         await Log.rcatch(e);
     }
+
+    console.log("// To be pasted into main-page.ts")
+    console.log("Defaults.ByzCoinID = Buffer.from(\""+Defaults.ByzCoinID.toString("hex")+"\", \"hex\");\n\
+Defaults.AdminDarc = Buffer.from(\""+Defaults.AdminDarc.toString("hex")+"\", \"hex\");\n\
+Defaults.Ephemeral = Buffer.from(\""+Defaults.Ephemeral.toString("hex")+"\", \"hex\");");
+
     return goAlias(args);
 }
 
 export async function goReloadBC(args: EventData) {
     try {
-        // let ts = await TestStore.load(Defaults.Roster);
-        // Defaults.ByzCoinID = ts.bcID;
-        // Defaults.SpawnerIID = ts.spawnerIID.iid;
         uData.delete();
         await uData.connectByzcoin();
     } catch (e) {

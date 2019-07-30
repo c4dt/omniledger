@@ -98,6 +98,11 @@ export async function onChangeTab(args: SelectedIndexChangedEventData) {
 
 export function activateTesting() {
     Defaults.Testing = true;
+    // *******
+    //
+    // Paste in config info here to sync two emulators to the same byzcoin.
+    //
+    // *******
     Defaults.ByzCoinID = Buffer.from("bda4198dd8b575d4e00cff6e408a5a7c7cf515032fb3afba8a13a1bdeb3893bf", "hex");
     Defaults.AdminDarc = Buffer.from("72e94134229f9bb6e74864a5742e8d25b8a65e93c33f5b1dbd365865458b1eaf", "hex");
     Defaults.Ephemeral = Buffer.from("e4882b7e9043e2b291136ca7ca585f9740b749dea45043dd40f41702901cef01", "hex");
