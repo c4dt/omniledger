@@ -44,9 +44,6 @@ export class Logger {
                     if (a.constructor) {
                         type = a.constructor.name;
                     }
-                } else if (type === "o") {
-                    // tslint:disable-next-line
-                    console.dir(a);
                 }
 
                 // Have some special cases for the content
@@ -54,7 +51,6 @@ export class Logger {
                 if (a.toString) {
                     content = a.toString();
                 }
-                console.log(util.inspect(a))
                 if (type === "Uint8Array" || type === "Buffer") {
                     content = Buffer.from(a).toString("hex");
                 } else if (content === "[object Object]" || content === "unparsable") {

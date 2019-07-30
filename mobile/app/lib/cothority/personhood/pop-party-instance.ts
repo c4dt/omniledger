@@ -182,7 +182,6 @@ export class PopPartyInstance extends Instance {
             this.tmpAttendees.length === 0) {
             this.tmpAttendees = await this.fetchOrgKeys();
         }
-
         return this;
     }
 

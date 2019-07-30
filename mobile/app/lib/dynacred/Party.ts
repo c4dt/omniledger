@@ -32,28 +32,6 @@ export class Party {
         return p;
     }
 
-    static fromDescription(name: string, purpose: string, location: string, date: Long): Party {
-        const pd = new PopDesc({
-            datetime: date,
-            location,
-            name,
-            purpose,
-        });
-        const pps = new PopPartyStruct({
-            attendees: null,
-            description: pd,
-            finalizations: null,
-            miners: [],
-            miningReward: Long.fromNumber(0),
-            next: null,
-            organizers: 1,
-            previous: null,
-            state: 1,
-        });
-        const ppi = new PopPartyInstance(null, null);
-        ppi.popPartyStruct = pps;
-        return new Party(ppi);
-    }
     isOrganizer = false;
 
     constructor(public partyInstance: PopPartyInstance) {

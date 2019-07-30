@@ -36,8 +36,8 @@ export async function updateParties() {
         await elements.updateBadges();
         elements.setProgress()
     } catch(e){
-        elements.setProgress("Error: " + e, -100);
-        await msgFailed("Error: " + e);
+        elements.setProgress(e, -100);
+        await msgFailed("Error loading parties: " + e);
         elements.setProgress();
         Log.catch(e);
     }

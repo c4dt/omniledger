@@ -13,7 +13,7 @@ import {Folder, knownFolders, path} from "tns-core-modules/file-system";
 import {sprintf} from "sprintf-js";
 import {msgFailed, msgOK} from "~/lib/messages";
 import * as dialogs from "tns-core-modules/ui/dialogs";
-import {getFrameById, topmost} from "tns-core-modules/ui/frame";
+import {topmost} from "tns-core-modules/ui/frame";
 import {mainViewRegistered} from "~/main-page";
 
 export class PersonhoodView extends Observable {

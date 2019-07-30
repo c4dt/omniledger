@@ -13,6 +13,8 @@ import { Party } from "~/lib/dynacred/Party";
 import { msgFailed } from "~/lib/messages";
 import { dismissSoftKeyboard } from "~/lib/users";
 import { uData } from "~/user-data";
+import { Contact } from "~/lib/dynacred/Contact";
+import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 
 let NewParty: PopDesc = undefined;
 let newConfig = undefined;
@@ -105,13 +107,18 @@ export async function save() {
         dismissSoftKeyboard();
         setProgress("Saving", 30);
         await copyViewModelToParty();
-        let orgs = viewModel.get("orgList").slice();
-        
+
+        const orgs = <Contact[]>viewModel.get("orgList").slice();        
+        const orgsci = await Promise.all(orgs.map((c: Contact) : Promise<CredentialsInstance> => {
+            return CredentialsInstance.fromByzcoin(uData.bc, c.credentialIID);
+        }));
+
         // Create the party
         setProgress("Creating Party on ByzCoin", 50);
         let ppi = await uData.spawnerInstance.spawnPopParty({
             coin: uData.coinInstance, signers: [uData.keyIdentitySigner],
-            orgs: orgs, desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))
+            orgs: orgsci,
+            desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))
         });
         let p = new Party(ppi);
         p.isOrganizer = true;
