@@ -43,6 +43,9 @@ export class BcviewerComponent implements OnInit {
         setInterval(async () => {
             await this.updateBlocks();
         }, 30000);
+        setTimeout(async () => {
+            await this.updateBlocks();
+        }, 1000);
     }
 
     async updateBlocks(): Promise<any> {
@@ -208,7 +211,7 @@ class LinkInstance {
     constructor(bc: ByzCoinRPC, public inst: Instruction, public contractID: string) {
         this.instanceID = inst.instanceID;
         this.description = "loading...";
-        bc.getProof(this.instanceID).then((p) => {
+        bc.getProofFromLatest(this.instanceID).then((p) => {
             this.instanceProof = p;
             switch (contractID) {
                 case "config":
