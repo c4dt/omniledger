@@ -132,7 +132,6 @@ export async function update() {
                 await uData.save()
             } catch(e){
                 Log.lvl2("user is definitely not on byzcoin: ", e.toString());
-                return;
             }
         }
         identity.set("qrcode", qrcodeIdentity(uData.contact));

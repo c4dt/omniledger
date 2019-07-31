@@ -528,7 +528,6 @@ export class Data {
             Log.lvl2("Registered user for darc::coin::credential:", darcInstances[0].id, coinInstance.id,
                 CredentialsInstance.id);
             await contact.updateOrConnect(this.bc, false);
-            Log.print("update contact ok");
             progress("Done", 100);
         } catch (e) {
             Log.catch(e);
