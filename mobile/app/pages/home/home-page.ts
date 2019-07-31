@@ -10,14 +10,13 @@ import { mainView } from "~/main-page";
 import {uData} from "~/user-data";
 import {Page} from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import {scanNewUser, sendCoins} from "~/lib/users";
+import {scanNewUser} from "~/lib/users";
 import {SelectedIndexChangedEventData} from "tns-core-modules/ui/tab-view";
-import {Label} from "tns-core-modules/ui/label";
 import {msgFailed, msgOK} from "~/lib/messages";
 import {Defaults} from "~/lib/dynacred/Defaults";
 import {ObservableArray} from "tns-core-modules/data/observable-array";
-import {Frame, topmost} from "tns-core-modules/ui/frame";
-// import {frame} from "~/pages/identity/identity-page";
+import {topmost} from "tns-core-modules/ui/frame";
+import { UserView } from "../identity/contacts/contacts-view";
 
 let attributes = new ObservableArray();
 let identity = fromObject({
@@ -125,14 +124,15 @@ export async function update() {
         identity.set("alias", uData.contact.alias);
         if (!uData.contact.isRegistered()) {
             try {
-                await uData.contact.updateOrConnect(uData.bc);
+                await uData.contact.updateOrConnect(uData.bc, false);
                 if (uData.contact.isRegistered()) {
                     // Need to send new credential to byzcoin
                     await uData.contact.sendUpdate([uData.keyIdentitySigner]);
                 }
                 await uData.save()
             } catch(e){
-                Log.lvl2("user is definitely not on byzcoin");
+                Log.lvl2("user is definitely not on byzcoin: ", e.toString());
+                return;
             }
         }
         identity.set("qrcode", qrcodeIdentity(uData.contact));
@@ -160,7 +160,7 @@ export async function update() {
 export async function coins(args: EventData) {
     try {
         let u = await scanNewUser(uData);
-        await sendCoins(u, setProgress);
+        await UserView.payUser(u, setProgress);
         await update();
         await uData.save();
     } catch (e) {

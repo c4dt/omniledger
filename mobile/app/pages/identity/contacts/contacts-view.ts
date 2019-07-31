@@ -2,12 +2,12 @@ import {Observable} from "tns-core-modules/data/observable";
 import {Contact} from "~/lib/dynacred/Contact";
 import Log from "~/lib/cothority/log";
 import {uData} from "~/user-data";
-import {contacts, friendsUpdateList, setProgress} from "~/pages/identity/contacts/contacts-page";
+import {setProgress, friendsUpdateList} from "~/pages/identity/contacts/contacts-page";
 import {topmost} from "tns-core-modules/ui/frame";
 import {ItemEventData} from "tns-core-modules/ui/list-view";
 import * as dialogs from "tns-core-modules/ui/dialogs";
-import {assertRegistered, sendCoins} from "~/lib/users";
 import {msgFailed, msgOK} from "~/lib/messages";
+import Long from "long";
 
 export class ContactsView extends Observable {
     private _users: UserView[];
@@ -85,16 +85,64 @@ export class UserView extends Observable {
             }, false, false, false);
     }
 
-    public async payUser(args: ItemEventData) {
+    public async payThisUser(arg: ItemEventData) {
+        UserView.payUser(this._user, setProgress);
+    }
+
+    public static async payUser(u: Contact, progress: any) {
+        Log.print("payUser");
         try {
-            await sendCoins(this._user, setProgress);
-            contacts.notifyUpdate();
-            this.notifyPropertyChange("isRegistered", this.isRegistered);
+            if (!u.isRegistered()) {
+                if (await uData.canPay(uData.spawnerInstance.signupCost)) {
+                    let pay = await dialogs.confirm({
+                        title: "Register user",
+                        message: "This user is not registered yet - do you want to pay " +
+                            uData.spawnerInstance.signupCost.toString() + " for the registration of user " + u.alias + "?",
+                        okButtonText: "Yes, pay",
+                        cancelButtonText: "No, don't pay"
+                    });
+                    if (pay) {
+                        await uData.registerContact(u, Long.fromNumber(0), progress);
+                    }
+                    await u.isRegistered();
+                    await msgOK(u.alias + " is now registered and can be paid.");
+                    await uData.save();
+                } else {
+                    await msgFailed("The use you want to pay is unregistered. You do not have enough coins to invite an unregistered user.");
+                    return;
+                }
+            }
+            let reply = await dialogs.prompt({
+                title: "Send coins",
+                message: "How many coins do you want to send to " + u.alias,
+                okButtonText: "Send",
+                cancelButtonText: "Cancel",
+                defaultText: "10000",
+            });
+            if (reply.result) {
+                let coins = Long.fromString(reply.text);
+                if (await uData.canPay(coins)) {
+                    let target = u.getCoinAddress();
+                    if (target) {
+                        progress("Transferring coin", 50);
+                        await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
+                        progress("Success", 100);
+                        await msgOK("Transferred " + coins.toString() + " to " + u.alias);
+                        progress();
+                    } else {
+                        await msgFailed("couldn't get targetAddress");
+                    }
+                } else {
+                    await msgFailed("Cannot pay " + coins.toString() + " coins.");
+                }
+            }
+            
+            //contacts.notifyUpdate();
         } catch (e) {
             Log.catch(e);
-            await msgFailed(e, "Error");
+            await msgFailed(e.toString(), "Error");
         }
-        setProgress();
+        progress();
     }
 
     public async credUser(arg: ItemEventData) {

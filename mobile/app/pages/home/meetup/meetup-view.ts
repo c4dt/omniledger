@@ -3,7 +3,7 @@ import {Contact} from "~/lib/dynacred/Contact";
 import {uData} from "~/user-data";
 import {topmost} from "tns-core-modules/ui/frame";
 import {ItemEventData} from "tns-core-modules/ui/list-view";
-import {Meetup, UserLocation} from "~/lib/dynacred/personhood-rpc";
+import {UserLocation} from "~/lib/dynacred/personhood-rpc";
 
 export class MeetupView extends Observable {
     _userViews: UserView[];

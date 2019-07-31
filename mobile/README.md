@@ -101,3 +101,8 @@ tns run ios
 # or
 tns run android
 ```
+
+Please note that there are [options](https://docs.nativescript.org/tooling/docs-cli/project/testing/run) you
+can add to `tns run` in order to modify it's behavior, including
+`--device` to have it talk to one specific emulator. By default it will build and launch the
+app on all currently running emulators.

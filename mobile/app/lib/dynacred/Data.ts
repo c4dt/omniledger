@@ -37,6 +37,7 @@ import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
 import { StorageFile } from "./StorageDB";
+import { uData } from "~/user-data";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -524,7 +525,8 @@ export class Data {
             await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
             Log.lvl2("Registered user for darc::coin::credential:", darcInstances[0].id, coinInstance.id,
                 CredentialsInstance.id);
-            await contact.updateOrConnect();
+            await contact.updateOrConnect(this.bc, false);
+            Log.print("update contact ok");
             progress("Done", 100);
         } catch (e) {
             Log.catch(e);

@@ -11,6 +11,7 @@ import Log from "~/lib/cothority/log";
 import {GestureEventData} from "tns-core-modules/ui/gestures";
 import {assertRegistered, scanNewUser} from "~/lib/users";
 import {ContactsView} from "~/pages/identity/contacts/contacts-view";
+import { msgFailed } from "~/lib/messages";
 
 export let contacts: ContactsView;
 let page: Page;
@@ -28,10 +29,15 @@ export function friendsUpdateList() {
 }
 
 export async function addFriend(args: GestureEventData) {
-    let u = await scanNewUser(uData);
-    await assertRegistered(u, setProgress);
-    friendsUpdateList();
-    await uData.save();
+    try {
+        let u = await scanNewUser(uData);
+        await assertRegistered(u, setProgress);
+        friendsUpdateList();
+        await uData.save();
+    } catch (e) {
+        Log.catch(e);
+        await msgFailed(e);
+    }
 }
 
 export function setProgress(text: string = "", width: number = 0) {
