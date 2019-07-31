@@ -59,7 +59,7 @@ export async function addContacts(){
     clearInterval(interval);
     interval = null;
     if (identity.users.length == 0){
-        await msgFailed("Need at least one other attendee to count meetup", "Empty Meetup");
+        await msgFailed("Need at least one other attendee to have a meetup", "Empty Meetup");
     } else {
         uData.meetups.push(new SocialNode(identity.users));
         for (let i = 0; i < identity.users.length; i++) {

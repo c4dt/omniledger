@@ -495,8 +495,8 @@ export class Contact {
                     Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
                     this.contactsCache.push(cont);
                 } catch (e) {
-                    Log.error("couldn't get contact - deleting");
-                    hasFaulty = false;
+                    Log.error("couldn't get contact - removing contact from the list");
+                    hasFaulty = true;
                 }
             }
             if (hasFaulty) {
