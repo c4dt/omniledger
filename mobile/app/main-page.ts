@@ -54,6 +54,10 @@ export async function navigatingTo(args: EventData) {
         if (again) {
             await navigatingTo(args);
         } else {
+            if (Defaults.Testing){
+                uData.delete();
+                return mainViewRegister(args);
+            }
             if (application.android) {
                 application.android.foregroundActivity.finish();
             } else {
@@ -103,8 +107,8 @@ export function activateTesting() {
     //
     // *******
 
-    Defaults.ByzCoinID = Buffer.from("95369233278a0481302b2288a2b4dfe7aa9a59310b401c4bb9487377cca547bc", "hex");
-    Defaults.SpawnerID = Buffer.from("9065685855232fd7b8c5d79568ba2094bcea7c87c9018f7a98f680bc234c6624", "hex");
+    Defaults.ByzCoinID = Buffer.from("9251766b59bd6bfc7e96139b9e1db82c38b1b319d2e5463c57e79dffd6ad940f", "hex");
+    Defaults.SpawnerID = Buffer.from("9256eac9c4f95732326548b463af670187001db0c65e2ad150a470f2bc498f41", "hex");
 
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"
