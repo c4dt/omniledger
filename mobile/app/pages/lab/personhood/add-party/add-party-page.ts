@@ -89,8 +89,7 @@ function copyViewModelToParty() {
 }
 
 function copyPartyToViewModel() {
-    let date = new Date(NewParty.datetime.toNumber());
-
+    const date = new Date(NewParty.datetime.toNumber());
     dataForm.set("date", sprintf("%04d-%02d-%02d", date.getFullYear(), date.getMonth() + 1, date.getDate()));
     dataForm.set("time", sprintf("%02d:%02d", date.getHours(), date.getMinutes()));
     dataForm.set("name", NewParty.name);

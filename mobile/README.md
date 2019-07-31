@@ -47,9 +47,13 @@ locally and help debug it, here are the steps to do so.
 
 The tests suppose you have the following tools available:
 
-- Node == 8.16.0
+- npm == 6.9.0
+    - to check: `npm --version`
+    - to install on Mac: `brew install npm`
+
+- Node == 10.16.0
     - to check: `node -v`
-    - to install on Mac: `brew install node@8`, then update your PATH so that `/usr/local/opt/node@8/bin` is at the front.
+    - to install on Mac: `brew install node@10.16`, then update your PATH so that `/usr/local/opt/node@10/bin` is at the front.
 
 - Mac: XCode >= 10.2
     - command-line tools: `xcode-select --install`
