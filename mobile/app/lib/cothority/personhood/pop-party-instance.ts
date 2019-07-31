@@ -193,7 +193,7 @@ export class PopPartyInstance extends Instance {
 
     /**
      * Mine coins for a person using either an existing coinIID, or a
-     * new darc that yet has to be instantiated.
+     * new darc + a coin that yet has to be instantiated.
      *
      * @param secret The secret key of the miner
      * @param coinID The coin instance ID of the miner

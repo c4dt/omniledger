@@ -50,10 +50,9 @@ export async function goInitTest(args: EventData) {
         await Log.rcatch(e);
     }
 
-    console.log("// To be pasted into main-page.ts")
+    console.log("// To be pasted into main-page.ts");
     console.log("Defaults.ByzCoinID = Buffer.from(\""+Defaults.ByzCoinID.toString("hex")+"\", \"hex\");\n\
-Defaults.AdminDarc = Buffer.from(\""+Defaults.AdminDarc.toString("hex")+"\", \"hex\");\n\
-Defaults.Ephemeral = Buffer.from(\""+Defaults.Ephemeral.toString("hex")+"\", \"hex\");");
+Defaults.SpawnerID = Buffer.from(\""+Defaults.SpawnerID.toString("hex")+"\", \"hex\");\n");
 
     return goAlias(args);
 }

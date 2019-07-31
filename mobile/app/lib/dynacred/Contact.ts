@@ -192,7 +192,8 @@ export class Contact {
     }
 
     get ltsX(): Point {
-        return PointFactory.fromProto(this.credential.getAttribute("1-config", "ltsX"));
+        const lx = this.credential.getAttribute("1-config", "ltsX");
+        return lx ? PointFactory.fromProto(lx) : null;
     }
 
     set ltsX(X: Point) {

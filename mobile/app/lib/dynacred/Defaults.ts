@@ -7,6 +7,7 @@ export const Defaults = {
     AdminDarc: Buffer.alloc(0), // darc of root user -> ? config.toml
     ByzCoinID: Buffer.alloc(0), // genesis block -> config.toml
     Ephemeral: Buffer.alloc(0), // new user init pass -> by User
+    SpawnerID: Buffer.alloc(0), // IID of the SpawnerInstance
 
     // - Testing settings - all settings here are set for the non-testing case. If testing == true, then the
     // settings should be set in the below 'if'. This ensures that we don't forget any testing setting.

@@ -103,9 +103,9 @@ export function activateTesting() {
     //
     // *******
 
-    Defaults.ByzCoinID = Buffer.from("b99c3592c437bbd18b6283432ed27ba1efa5e411cc1f10932c4c28cc368452b2", "hex");
-    Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
-    Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
+    Defaults.ByzCoinID = Buffer.from("95369233278a0481302b2288a2b4dfe7aa9a59310b401c4bb9487377cca547bc", "hex");
+    Defaults.SpawnerID = Buffer.from("9065685855232fd7b8c5d79568ba2094bcea7c87c9018f7a98f680bc234c6624", "hex");
+
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"
   Suite = "Ed25519"

@@ -6,6 +6,7 @@ logic, and to set up your page’s data binding.
 
 import {EventData, fromObject} from "tns-core-modules/data/observable";
 import { qrcodeIdentity } from "~/lib/qrcode";
+import { mainView } from "~/main-page";
 import {uData} from "~/user-data";
 import {Page} from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
@@ -40,6 +41,7 @@ let page: Page;
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingToHome(args: EventData) {
     Log.lvl2("navigatingTo: home");
+    mainView.set("showGroup", 2);
     page = <Page>args.object;
     try {
         page.bindingContext = identity;
