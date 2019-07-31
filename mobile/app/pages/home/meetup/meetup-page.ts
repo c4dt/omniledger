@@ -4,15 +4,15 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import {EventData, fromObject} from "tns-core-modules/data/observable";
-import {uData} from "~/user-data";
-import {Page} from "tns-core-modules/ui/page";
+import { EventData } from "tns-core-modules/data/observable";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import {Meetup, PersonhoodRPC, UserLocation} from "~/lib/dynacred/personhood-rpc";
-import {MeetupView} from "~/pages/home/meetup/meetup-view";
-import {topmost} from "tns-core-modules/ui/frame";
-import {SocialNode} from "~/lib/dynacred/SocialNode";
-import {msgFailed} from "~/lib/messages";
+import { Meetup, PersonhoodRPC, UserLocation } from "~/lib/dynacred/personhood-rpc";
+import { SocialNode } from "~/lib/dynacred/SocialNode";
+import { msgFailed } from "~/lib/messages";
+import { MeetupView } from "~/pages/home/meetup/meetup-view";
+import { uData } from "~/user-data";
 import Timeout = NodeJS.Timeout;
 
 let identity: MeetupView;
@@ -24,7 +24,7 @@ let counter: number;
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
     identity = new MeetupView();
-    page = <Page>args.object;
+    page = <Page> args.object;
     page.bindingContext = identity;
     phrpc = new PersonhoodRPC(uData.bc);
     setProgress("Broadcasting position", 30);
@@ -32,18 +32,18 @@ export async function navigatingTo(args: EventData) {
         let userLocation = UserLocation.fromContact(uData.contact);
         await phrpc.meetups(new Meetup({userLocation}));
         await meetupUpdate();
-        if (interval){
+        if (interval) {
             clearInterval(interval);
         }
         counter = 0;
-        interval = setInterval(() => {
-            meetupUpdate();
+        interval = setInterval(async () => {
+            await meetupUpdate();
             counter++;
-            if (counter >= 12){
+            if (counter >= 12) {
                 clearInterval(interval);
             }
         }, 5000);
-    } catch (e){
+    } catch (e) {
         Log.error(e);
     }
 }
@@ -55,10 +55,10 @@ export async function meetupUpdate() {
     setProgress();
 }
 
-export async function addContacts(){
+export async function addContacts() {
     clearInterval(interval);
     interval = null;
-    if (identity.users.length == 0){
+    if (identity.users.length == 0) {
         await msgFailed("Need at least one other attendee to have a meetup", "Empty Meetup");
     } else {
         uData.meetups.push(new SocialNode(identity.users));

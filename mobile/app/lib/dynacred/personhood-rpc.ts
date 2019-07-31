@@ -56,19 +56,17 @@ export class PersonhoodRPC {
 
     // meetups interfaces the meetup endpoint from the personhood service. It will always return the
     // currently stored meetups, but can either add a new meetup, or wipe  all meetups.
-    async meetups(meetup: Meetup = null): Promise<UserLocation[]> {
+    async meetups(meetup: Meetup = new Meetup()): Promise<UserLocation[]> {
         const uls: UserLocation[] = [];
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             let resp = (await socket.send(meetup, MeetupResponse)) as MeetupResponse;
-            try {
-                resp.users.forEach(ul => uls.push(UserLocation.fromObject(ul)));
-            } catch (e) {
-                Log.error(e);
+            if (resp.users){
+                uls.push(...resp.users);
             }
         }));
         return uls.filter((m) => m != null).filter((userlocation, i) => {
-            return uls.findIndex((ul) => ul.toProto().equals(userlocation.toProto())) === i;
+            return uls.findIndex((ul) => ul.equals(userlocation)) === i;
         });
     }
 
@@ -320,17 +318,40 @@ export class PollResponse {
 }
 
 // UserLocation is one user in one location, either a registered one, or an unregistered one.
-export class UserLocation {
+export class UserLocation extends Message<UserLocation>{
+    static register(){
+        registerMessage("UserLocation", UserLocation);
+    }
+    readonly credential: CredentialStruct;
+    readonly location: string;
+    readonly publicKey: Buffer;
+    readonly credentialIID: InstanceID;
+    readonly time: Long;
 
-    static readonly protoName = "UserLocation";
+    constructor(props?: Properties<UserLocation>) {
+        super(props);
 
-    constructor(public credential: CredentialStruct, public location: string,
-                public publicKey: Point = null,
-                public credentialIID: InstanceID = null, public time: Long = Long.fromNumber(0)) {
+        Object.defineProperty(this, "publickey", {
+            get(): Buffer {
+                return this.publicKey;
+            },
+            set(value: Buffer) {
+                this.publicKey = value;
+            },
+        });
+        Object.defineProperty(this, "credentialiid", {
+            get(): InstanceID {
+                return this.credentialIID;
+            },
+            set(value: InstanceID) {
+                this.credentialIID = value;
+            },
+        });
     }
 
     get alias(): string {
-        return this.credential.getAttribute("personal", "alias").toString();
+        const aliasbuf =this.credential.getAttribute("1-public", "alias");
+        return aliasbuf ? aliasbuf.toString() : "unknown";
     }
 
     get unique(): Buffer {
@@ -340,55 +361,13 @@ export class UserLocation {
         return Buffer.from(this.alias);
     }
 
-    static fromObject(o: any): UserLocation {
-        let crediid: InstanceID = null;
-        let pubkey: Point = null;
-        if (o.credentialiid && o.credentialiid.length === 32) {
-            crediid = Buffer.from(o.credentialiid);
-        }
-        if (o.publickey) {
-            pubkey = ed25519.point();
-            pubkey.unmarshalBinary(Buffer.from(o.publickey));
-        }
-        return new UserLocation(CredentialStruct.fromObject(o.credential),
-            o.location, pubkey, crediid, o.time);
-    }
-
-    static fromProto(p: Buffer): UserLocation {
-        throw new Error("not yet implemented");
-        // return UserLocation.fromObject(root.lookup(UserLocation.protoName).decode(p));
-    }
-
     static fromContact(c: Contact): UserLocation {
-        return new UserLocation(c.credential, "somewhere", c.seedPublic.point, c.credentialIID);
-    }
-
-    toObject(): any {
-        const o: {
-            credential: Buffer,
-            credentialiid: Buffer,
-            location: string,
-            publickey: Buffer,
-            time: Long,
-        } = {
-            credential: this.credential.toBytes(),
-            credentialiid: null,
-            location: this.location,
-            publickey: null,
-            time: this.time,
-        };
-        if (this.credentialIID) {
-            o.credentialiid = this.credentialIID;
-        }
-        if (this.publicKey) {
-            o.publickey = this.publicKey.marshalBinary();
-        }
-        return o;
-    }
-
-    toProto(): Buffer {
-        throw new Error("not yet implemented");
-        // return objToProto(this.toObject(), UserLocation.protoName);
+        return new UserLocation({
+            credential: c.credential,
+            location: "somewhere",
+            publicKey: c.seedPublic.point.toProto(),
+            credentialIID: c.credentialIID,
+        });
     }
 
     equals(ul: UserLocation): boolean {
@@ -403,7 +382,7 @@ export class UserLocation {
                 c.credential = c.CredentialsInstance.credential.copy();
                 c.darcInstance = await DarcInstance.fromByzcoin(bc, c.CredentialsInstance.darcID);
             } else {
-                c.seedPublic = new Public(this.publicKey);
+                c.seedPublic = Public.fromProto(this.publicKey);
             }
             return c;
         } catch (e) {
@@ -493,18 +472,19 @@ export class Meetup extends Message<Meetup>{
     }
 }
 
-export class MeetupResponse extends Message<Meetup>{
+export class MeetupResponse extends Message<MeetupResponse>{
     static register(){
-        registerMessage("Meetup", Meetup);
+        registerMessage("MeetupResponse", MeetupResponse);
     }
 
     readonly users: UserLocation[];
 
-    constructor(props?: Properties<Meetup>) {
+    constructor(props?: Properties<MeetupResponse>) {
         super(props);
     }
 }
 
+UserLocation.register();
 Party.register();
 PartyList.register();
 PartyListResponse.register();

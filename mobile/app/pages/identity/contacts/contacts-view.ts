@@ -74,8 +74,8 @@ export class UserView extends Observable {
             cancelButtonText: "Keep",
         })) {
             uData.rmContact(this._user);
-            await uData.save();
             friendsUpdateList();
+            await uData.save();
         }
     }
 
