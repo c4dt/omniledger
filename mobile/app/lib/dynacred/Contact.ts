@@ -298,6 +298,7 @@ export class Contact {
         const u = new Contact();
         switch (qr.url) {
             case Contact.urlRegistered:
+                u.bc = bc;
                 u.CredentialsInstance = await CredentialsInstance.fromByzcoin(bc,
                     Buffer.from(qr.credentialIID, "hex"));
                 u.credential = u.CredentialsInstance.credential.copy();
