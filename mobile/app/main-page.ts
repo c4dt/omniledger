@@ -109,8 +109,8 @@ export function activateTesting() {
     //
     // *******
 
-    Defaults.ByzCoinID = Buffer.from("95369233278a0481302b2288a2b4dfe7aa9a59310b401c4bb9487377cca547bc", "hex");
-    Defaults.SpawnerID = Buffer.from("9065685855232fd7b8c5d79568ba2094bcea7c87c9018f7a98f680bc234c6624", "hex");
+    Defaults.ByzCoinID = Buffer.from("9d55af6c7b74b9b6810cc8dc3304180475fbe92ea36656944f0a6d0c67924e6a", "hex");
+    Defaults.SpawnerID = Buffer.from("0f4604a889178fe0358f18fd2ba21a4708254c224fd1a791f5ab2af5d567cc07", "hex");
 
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"

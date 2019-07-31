@@ -11,9 +11,10 @@ import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import Instance, { InstanceID } from "~/lib/cothority/byzcoin/instance";
 import { LongTermSecret } from "~/lib/cothority/calypso/calypso-rpc";
-import { Rule } from "~/lib/cothority/darc";
+import { IIdentity, Rule } from "~/lib/cothority/darc";
 import Darc from "~/lib/cothority/darc/darc";
 import IdentityDarc from "~/lib/cothority/darc/identity-darc";
+import IdentityEd25519 from "~/lib/cothority/darc/identity-ed25519";
 import ISigner from "~/lib/cothority/darc/signer";
 import Signer from "~/lib/cothority/darc/signer";
 import SignerEd25519 from "~/lib/cothority/darc/signer-ed25519";
@@ -497,37 +498,14 @@ export class Data {
     async registerContact(contact: Contact, balance: Long = Long.fromNumber(0),
                           progress: (text: string, width: number) => void = this.dummyProgress): Promise<any> {
         try {
-            progress("Verifying Registration", 10);
-            if (contact.isRegistered()) {
-                return Promise.reject("cannot register already registered contact");
-            }
-            const pub = contact.seedPublic;
-            Log.lvl2("Registering contact", contact.alias,
-                "with public key:", pub.toHex());
-            Log.lvl2("Registering darc");
-            progress("Creating Darc", 20);
-            const d = Contact.prepareUserDarc(pub.point, contact.alias);
-            const darcInstances = await this.spawnerInstance.spawnDarcs(this.coinInstance,
-                [this.keyIdentitySigner], d);
-
-            progress("Creating Coin", 50);
-            Log.lvl2("Registering coin");
-            const coinInstance = await this.spawnerInstance.spawnCoin(this.coinInstance,
-                [this.keyIdentitySigner], darcInstances[0].darc.getBaseID(), contact.seedPublic.toBuffer());
-            let referral = null;
-            if (this.contact.CredentialsInstance) {
-                referral = this.contact.CredentialsInstance.id;
-                Log.lvl2("Adding a referral to the credentials");
-            }
-            Log.lvl2("Registering credential");
-
-            progress("Creating Credential", 80);
-            const CredentialsInstance = await this.createUserCredentials(pub, darcInstances[0].id, coinInstance.id,
-                referral, contact);
-            await this.coinInstance.transfer(balance, coinInstance.id, [this.keyIdentitySigner]);
-            Log.lvl2("Registered user for darc::coin::credential:", darcInstances[0].id, coinInstance.id,
-                CredentialsInstance.id);
-            await contact.updateOrConnect(this.bc, false);
+            const d = new Data();
+            d.contact = contact;
+            d.contact.credential = Contact.prepareInitialCred(contact.alias, contact.seedPublic, this.spawnerInstance.id,
+                null, this.lts);
+            d.bc = this.bc;
+            d.spawnerInstance = this.spawnerInstance;
+            progress("Writing credential to chain", 50);
+            await d.registerSelf(this.coinInstance, [this.keyIdentitySigner]);
             progress("Done", 100);
         } catch (e) {
             Log.catch(e);
@@ -827,13 +805,15 @@ export class Data {
             null, this.lts);
         d.bc = this.bc;
         d.spawnerInstance = this.spawnerInstance;
-        return d.registerUser(this.coinInstance, [this.keyIdentitySigner]);
+        return d.registerSelf(this.coinInstance, [this.keyIdentitySigner]);
     }
 
     // registerUser stores this data in ByzCoin. It uses the given coin to pay
     // for all the instances.
-    async registerUser(coin: CoinInstance, signers: [ISigner]): Promise<Data> {
-        const darcDevice = Darc.createBasic([this.keyIdentitySigner], [this.keyIdentitySigner],
+    async registerSelf(coin: CoinInstance, signers: [ISigner]): Promise<Data> {
+        const pub = this.contact.seedPublic.point;
+        const iident = [IdentityEd25519.fromPoint(pub)];
+        const darcDevice = Darc.createBasic(iident, iident,
             Buffer.from("device"));
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
         const darcSign = Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
@@ -851,9 +831,9 @@ export class Data {
                 ...this.spawnerInstance.spawnDarcInstructions(coin,
                     darcDevice, darcSign, darcCred, darcCoin),
                 ...this.spawnerInstance.spawnCoinInstructions(coin,
-                    darcCoin.getBaseID(), this.keyIdentity._public.toBuffer()),
+                    darcCoin.getBaseID(), pub.marshalBinary()),
                 ...this.spawnerInstance.spawnCredentialInstruction(coin,
-                    darcCred.getBaseID(), this.contact.credential, this.keyIdentity._public.toBuffer()),
+                    darcCred.getBaseID(), this.contact.credential, pub.marshalBinary()),
             ],
         });
         await ctx.updateCountersAndSign(this.bc, [signers]);

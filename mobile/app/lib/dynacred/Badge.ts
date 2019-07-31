@@ -61,7 +61,7 @@ export class Badge {
             d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, Defaults.SpawnerID);
             // Use the coin and the darc to create a new user
             const ci = await CoinInstance.fromByzcoin(d.bc, CoinInstance.coinIID(darc.getBaseID()));
-            await d.registerUser(ci, [d.keyIdentitySigner]);
+            await d.registerSelf(ci, [d.keyIdentitySigner]);
             // Now move over the coins
             await ci.update();
             await ci.transfer(ci.value, d.coinInstance.id, [d.keyIdentitySigner]);
