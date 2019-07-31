@@ -33,7 +33,7 @@ import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { PartyItem } from "./PartyItem";
-import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
+import { PersonhoodRPC, Poll, PollStruct, RoPaSci } from "./personhood-rpc";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
 import { StorageFile } from "./StorageDB";
@@ -377,7 +377,7 @@ export class Data {
                     new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
             }
             if (obj.polls) {
-                this.polls = obj.polls.map((p: any) => PollStruct.fromObject(p));
+                this.polls = obj.polls.map((p: any) => PollStruct.decode(p));
             }
 
             Log.lvl2("Getting contacts");
@@ -425,7 +425,9 @@ export class Data {
             v.parties = this.parties ? this.parties.map((p) => p.toObject()) : null;
             v.badges = this.badges ? this.badges.map((b) => b.toObject()) : null;
             v.ropascis = this.ropascis ? this.ropascis.map((rps) => rps.toBytes()) : null;
-            v.polls = this.polls ? this.polls.map((rps) => rps.toObject()) : null;
+            v.polls = this.polls ? this.polls.map((pollStruct) => {
+                return Buffer.from(PollStruct.encode(pollStruct).finish())
+            }) : null;
         }
         return v;
     }
@@ -724,7 +726,7 @@ export class Data {
                 if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
                     k.equals(this.keyPersonhood._public.point.toProto()))) {
                     this.badges.push(new Badge(p, this.keyPersonhood));
-                    Log.lvl2("added party to our badges")
+                    Log.lvl2("added party to our badges");
                 } else {
                     Log.lvl2("removing party that doesn't have our key stored");
                 }
@@ -748,9 +750,9 @@ export class Data {
         const phrpc = new PersonhoodRPC(this.bc);
         const phRoPaScis = await phrpc.listRPS();
         await Promise.all(phRoPaScis.map(async (rps) => {
-            if (this.ropascis.find((r) => r.id.equals(rps.instanceID)) == null) {
+            if (this.ropascis.find((r) => r.id.equals(rps.roPaSciID)) == null) {
                 Log.lvl2("Found new ropasci");
-                const rpsInst = await RoPaSciInstance.fromByzcoin(this.bc, rps.instanceID);
+                const rpsInst = await RoPaSciInstance.fromByzcoin(this.bc, rps.roPaSciID);
                 Log.lvl2("RoPaSciInstance is:", rpsInst.struct.description, rpsInst.struct.firstPlayer,
                     rpsInst.struct.secondPlayer);
                 this.ropascis.push(rpsInst);
@@ -773,7 +775,10 @@ export class Data {
         this.ropascis.push(rps);
         const phrpc = new PersonhoodRPC(this.bc);
         await this.save();
-        await phrpc.listRPS(rps.id);
+        await phrpc.listRPS(new RoPaSci({
+            byzcoinID: this.bc.genesisID,
+            roPaSciID: rps.id,
+        }));
     }
 
     async delRoPaSci(rps: RoPaSciInstance) {
@@ -819,16 +824,16 @@ export class Data {
         } else {
             d.keyIdentity = new KeyPair(ephemeral.toHex());
         }
-        d.contact.credential =  Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id,
+        d.contact.credential = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id,
             null, this.lts);
         d.bc = this.bc;
         d.spawnerInstance = this.spawnerInstance;
-        return d.registerUser(this.coinInstance, [this.keyIdentitySigner])
+        return d.registerUser(this.coinInstance, [this.keyIdentitySigner]);
     }
 
     // registerUser stores this data in ByzCoin. It uses the given coin to pay
     // for all the instances.
-    async registerUser(coin: CoinInstance, signers: [ISigner]): Promise<Data>{
+    async registerUser(coin: CoinInstance, signers: [ISigner]): Promise<Data> {
         const darcDevice = Darc.createBasic([this.keyIdentitySigner], [this.keyIdentitySigner],
             Buffer.from("device"));
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});

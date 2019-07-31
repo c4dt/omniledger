@@ -47,7 +47,8 @@ export class UserView extends Observable {
     }
 
     get alias(): string {
-        return this._user.credential.getAttribute("personal", "alias").toString();
+        const aliasbuf = this._user.credential.getAttribute("1-public", "alias");
+        return aliasbuf ? aliasbuf.toString() : "unknown";
     }
 
     public async showUser(arg: ItemEventData) {

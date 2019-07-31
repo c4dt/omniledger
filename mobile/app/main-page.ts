@@ -59,6 +59,10 @@ export async function navigatingTo(args: EventData) {
         if (again) {
             await navigatingTo(args);
         } else {
+            if (Defaults.Testing){
+                uData.delete();
+                return mainViewRegister(args);
+            }
             if (application.android) {
                 application.android.foregroundActivity.finish();
             } else {

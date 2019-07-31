@@ -1,22 +1,20 @@
-import { Point, Scalar } from "@dedis/kyber";
+import { Scalar } from "@dedis/kyber";
 import * as crypto from "crypto-browserify";
-import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
+import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { IConnection, RosterWSConnection, WebSocketConnection } from "~/lib/cothority/network/connection";
-import { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
+import CredentialsInstance, { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
-import { ed25519, Sign } from "~/lib/cothority/personhood/ring-sig";
-import Log from "~/lib/cothority/log";
+import { Sign } from "~/lib/cothority/personhood/ring-sig";
 import { registerMessage } from "~/lib/cothority/protobuf";
 import { Contact } from "~/lib/dynacred/Contact";
-import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import { Public } from "~/lib/dynacred/KeyPair";
-import { PartyItem } from "~/lib/dynacred/Party";
+import {randomBytes} from "crypto-browserify";
 
 export class PersonhoodRPC {
     static serviceID = "Personhood";
@@ -56,19 +54,17 @@ export class PersonhoodRPC {
 
     // meetups interfaces the meetup endpoint from the personhood service. It will always return the
     // currently stored meetups, but can either add a new meetup, or wipe  all meetups.
-    async meetups(meetup: Meetup = null): Promise<UserLocation[]> {
+    async meetups(meetup: Meetup = new Meetup()): Promise<UserLocation[]> {
         const uls: UserLocation[] = [];
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             let resp = (await socket.send(meetup, MeetupResponse)) as MeetupResponse;
-            try {
-                resp.users.forEach(ul => uls.push(UserLocation.fromObject(ul)));
-            } catch (e) {
-                Log.error(e);
+            if (resp.users) {
+                uls.push(...resp.users);
             }
         }));
         return uls.filter((m) => m != null).filter((userlocation, i) => {
-            return uls.findIndex((ul) => ul.toProto().equals(userlocation.toProto())) === i;
+            return uls.findIndex((ul) => ul.equals(userlocation)) === i;
         });
     }
 
@@ -82,47 +78,59 @@ export class PersonhoodRPC {
         return this.meetups(new Meetup({wipe: true}));
     }
 
-    async listRPS(id: InstanceID = null): Promise<RoPaSci[]> {
-        const ropasci: { newropasci: any } = {newropasci: null};
-        if (id) {
-            ropasci.newropasci = new RoPaSci(this.rpc.genesisID, id).toObject();
-        }
+    async listRPS(newRoPaSci: RoPaSci = null): Promise<RoPaSci[]> {
         const ropascis: RoPaSci[] = [];
+        let rpsList = new RoPaSciList();
+        if (newRoPaSci) {
+            rpsList = new RoPaSciList({newRoPaSci});
+        }
         await Promise.all(this.list.map(async (addr) => {
-            const socket = new WebSocket(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            // let resp = await socket.send("RoPaSciList", "RoPaSciListResponse", ropasci);
-            // if (resp && resp.ropascis) {
-            //     ropascis = ropascis.concat(resp.ropascis.map(r => RoPaSci.fromObject(r)));
-            // }
+            const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
+            let resp: RoPaSciListResponse = await socket.send(rpsList, RoPaSciListResponse);
+            if (resp && resp.roPaScis) {
+                ropascis.push(...resp.roPaScis);
+            }
         }));
         return ropascis.filter((rps, i) => {
-            return ropascis.findIndex((p) => p.instanceID.equals(rps.instanceID)) === i;
+            return ropascis.findIndex((p) => p.roPaSciID.equals(rps.roPaSciID)) === i;
         });
     }
 
     async wipeRPS() {
-        const ropasci = {wipe: true};
+        const ropasci = new RoPaSciList({wipe: true});
         await Promise.all(this.list.map(async (addr) => {
-            const socket = new WebSocket(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            // let resp = await socket.send("RoPaSciList", "RoPaSciListResponse", ropasci);
+            const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
+            return socket.send(ropasci, RoPaSciListResponse);
         }));
     }
 
     async pollNew(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
-        const np = new PollStruct(personhood, null, title, description, choices);
-        const ps = await this.callPoll(new Poll(this.rpc.genesisID, np, null, null));
+        const newPoll = new PollStruct({
+            personhood,
+            pollID: randomBytes(32),
+            title,
+            description,
+            choices
+        });
+        const ps = await this.callPoll(new Poll({
+            byzcoinID: this.rpc.genesisID,
+            newPoll,
+        }));
         return ps[0];
     }
 
     async pollList(partyIDs: InstanceID[]): Promise<PollStruct[]> {
-        return this.callPoll(new Poll(this.rpc.genesisID, null, new PollList(partyIDs), null));
+        return this.callPoll(new Poll({
+            byzcoinID: this.rpc.genesisID,
+            list: new PollList({partyIDs}),
+        }));
     }
 
-    async pollAnswer(priv: Scalar, personhood: PopPartyInstance, pollId: Buffer, choice: number): Promise<PollStruct> {
+    async pollAnswer(priv: Scalar, personhood: PopPartyInstance, pollID: Buffer, choice: number): Promise<PollStruct> {
         const context = Buffer.alloc(68);
         context.write("Poll");
         this.rpc.genesisID.copy(context, 4);
-        pollId.copy(context, 36);
+        pollID.copy(context, 36);
         const msg = Buffer.alloc(7);
         msg.write("Choice");
         msg.writeUInt8(choice, 6);
@@ -130,18 +138,26 @@ export class PersonhoodRPC {
         contextHash.update(context);
         const points = personhood.popPartyStruct.attendees.publics;
         const lrs = await Sign(msg, points, contextHash.digest(), priv);
-        const pa = new PollAnswer(pollId, choice, lrs.encode());
-        const ps = await this.callPoll(new Poll(this.rpc.genesisID, null, null, pa));
+        const answer = new PollAnswer({
+            pollID,
+            choice,
+            lrs: lrs.encode()
+        });
+        const ps = await this.callPoll(new Poll({
+                byzcoinID: this.rpc.genesisID,
+                answer,
+            }
+        ));
         return ps[0];
     }
 
     async pollWipe() {
-        return this.callPoll(new Poll(this.rpc.genesisID, null, null, null));
+        return this.callPoll(new Poll({byzcoinID: this.rpc.genesisID}));
     }
 
     async callPoll(p: Poll): Promise<PollStruct[]> {
         const resp: PollResponse[] = [];
-        await this.callAllPoll("Poll", "PollResponse", p.toObject(), resp);
+        await this.callAllPoll(p, resp);
         const str: PollStruct[] = [];
         resp.forEach((r) => {
             if (r) {
@@ -155,99 +171,182 @@ export class PersonhoodRPC {
         return str;
     }
 
-    async callAllPoll(req: string, resp: string, query: any, response: PollResponse[]): Promise<any> {
+    async callAllPoll(query: Poll, response: PollResponse[]): Promise<any> {
         return await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            // response.push(PollResponse.fromObject(await socket.send(req, resp, query)));
+            response.push(await socket.send(query, PollResponse));
         }));
     }
 }
 
-export class RoPaSci {
+export class RoPaSci extends Message<RoPaSci> {
+    readonly byzcoinID: InstanceID;
+    readonly roPaSciID: InstanceID;
 
-    constructor(public byzcoinID: InstanceID, public instanceID: InstanceID) {
+    constructor(props?: Properties<RoPaSci>) {
+        super(props);
+
+        Object.defineProperty(this, "byzcoinid", {
+            get(): InstanceID {
+                return this.byzcoinID;
+            },
+            set(value: InstanceID) {
+                this.byzcoinID = value;
+            },
+        });
+        Object.defineProperty(this, "ropasciid", {
+            get(): Buffer {
+                return this.roPaSciID;
+            },
+            set(value: Buffer) {
+                this.roPaSciID = value;
+            },
+        });
     }
 
-    static fromObject(obj: any): RoPaSci {
-        return new RoPaSci(Buffer.from(obj.byzcoinid),
-            Buffer.from(obj.ropasciid));
+    static register() {
+        registerMessage("RoPaSci", RoPaSci);
+    }
+}
+
+/**
+ * // RoPaSciList can either store a new RockPaperScissors in the list, or just
+ // return the available RoPaScis.
+ type RoPaSciList struct {
+	NewRoPaSci *RoPaSci
+	Wipe       *bool
+}
+
+ // RoPaSciListResponse returns a list of all known, unfinished RockPaperScissors
+ // games.
+ type RoPaSciListResponse struct {
+	RoPaScis []RoPaSci
+}
+
+ */
+
+export class RoPaSciList extends Message<RoPaSciList> {
+    readonly newRoPaSci: RoPaSci;
+    readonly wipe: boolean;
+
+    constructor(props?: Properties<RoPaSciList>) {
+        super(props);
+
+        Object.defineProperty(this, "newropasci", {
+            get(): RoPaSci {
+                return this.newRoPaSci;
+            },
+            set(value: RoPaSci) {
+                this.newRoPaSci = value;
+            },
+        });
     }
 
-    toObject(): any {
-        return {
-            byzcoinid: this.byzcoinID,
-            ropasciid: this.instanceID,
-        };
+    static register() {
+        registerMessage("RoPaSciList", RoPaSciList);
+    }
+}
+
+export class RoPaSciListResponse extends Message<RoPaSciListResponse> {
+    readonly roPaScis: RoPaSci[];
+
+    constructor(props?: Properties<RoPaSciListResponse>) {
+        super(props);
+
+        Object.defineProperty(this, "ropascis", {
+            get(): RoPaSci[] {
+                return this.roPaScis;
+            },
+            set(value: RoPaSci[]) {
+                this.roPaScis = value;
+            },
+        });
+    }
+
+    static register() {
+        registerMessage("RoPaSciListResponse", RoPaSciListResponse);
     }
 }
 
 // Poll allows for adding, listing, and answering to polls
-export class Poll {
+export class Poll extends Message<Poll> {
+    readonly byzcoinID: Buffer;
+    readonly newPoll: PollStruct;
+    readonly list: PollList;
+    readonly answer: PollAnswer;
 
-    constructor(public byzcoinID: Buffer, public newPoll: PollStruct, public list: PollList,
-                public answer: PollAnswer) {
+    constructor(props?: Properties<Poll>) {
+        super(props);
+
+        Object.defineProperty(this, "byzcoinid", {
+            get(): Buffer {
+                return this.byzcoinID;
+            },
+            set(value: Buffer) {
+                this.byzcoinID = value;
+            },
+        });
+        Object.defineProperty(this, "newpoll", {
+            get(): PollStruct {
+                return this.newPoll;
+            },
+            set(value: PollStruct) {
+                this.newPoll = value;
+            },
+        });
     }
 
-    static fromObject(obj: any): Poll {
-        return new Poll(Buffer.from(obj.byzcoinid), PollStruct.fromObject(obj.newpoll),
-            PollList.fromObject(obj.list), PollAnswer.fromObject(obj.answer));
-    }
-
-    toObject(): any {
-        return {
-            answer: this.answer ? this.answer.toObject() : null,
-            byzcoinid: this.byzcoinID,
-            list: this.list ? this.list.toObject() : null,
-            newpoll: this.newPoll ? this.newPoll.toObject() : null,
-        };
+    static register() {
+        registerMessage("Poll", Poll);
     }
 }
 
 // Empty class to request the list of polls available.
-export class PollList {
+export class PollList extends Message<PollList> {
+    readonly partyIDs: InstanceID[];
 
-    constructor(public partyIDs: InstanceID[]) {
+    constructor(props?: Properties<PollList>) {
+        super(props);
+
+        Object.defineProperty(this, "partyids", {
+            get(): InstanceID[] {
+                return this.partyIDs;
+            },
+            set(value: InstanceID[]) {
+                this.partyIDs = value;
+            },
+        });
     }
 
-    static fromObject(obj: any): PollList {
-        if (obj == null) {
-            return null;
-        }
-        return new PollList(obj.partyids.map((pi: any) => Buffer.from(pi)));
-    }
-
-    toObject(): any {
-        return {partyids: this.partyIDs};
+    static register() {
+        registerMessage("PollList", PollList);
     }
 }
 
 // PollStruct represents one poll with answers.
-export class PollStruct {
+export class PollStruct extends Message<PollStruct> {
+    readonly personhood: InstanceID;
+    readonly pollID: Buffer;
+    readonly title: string;
+    readonly description: string;
+    readonly choices: string[];
+    readonly chosen: PollChoice[];
 
-    constructor(public personhood: InstanceID, public pollID: Buffer, public title: string,
-                public description: string, public choices: string[], public chosen: PollChoice[] = []) {
-        if (this.pollID == null) {
-            this.pollID = randomBytes(32);
-        }
+    constructor(props?: Properties<PollStruct>) {
+        super(props);
+
+        Object.defineProperty(this, "pollid", {
+            get(): Buffer {
+                return this.pollID;
+            },
+            set(value: Buffer) {
+                this.pollID = value;
+            },
+        });
     }
 
-    static fromObject(obj: any): PollStruct {
-        if (obj == null) {
-            return null;
-        }
-        return new PollStruct(Buffer.from(obj.personhood), Buffer.from(obj.pollid),
-            obj.title, obj.description, obj.choices, obj.chosen.map((c: any) => PollChoice.fromObject(c)));
-    }
-
-    toObject(): any {
-        return {
-            choices: this.choices,
-            chosen: this.chosen.map((c) => c.toObject()),
-            description: this.description,
-            personhood: this.personhood,
-            pollid: this.pollID,
-            title: this.title,
-        };
+    static register() {
+        registerMessage("PollStruct", PollStruct);
     }
 
     choiceCount(c: number): number {
@@ -262,75 +361,88 @@ export class PollStruct {
 //   'Poll' + ByzCoinID + PollID
 // And the message must be
 //   'Choice' + byte(Choice)
-export class PollAnswer {
+export class PollAnswer extends Message<PollAnswer> {
+    readonly pollID: Buffer;
+    readonly choice: number;
+    readonly lrs: Buffer;
 
-    constructor(public pollID: Buffer, public choice: number, public lrs: Buffer) {
+    constructor(props?: Properties<PollAnswer>) {
+        super(props);
+
+        Object.defineProperty(this, "pollid", {
+            get(): Buffer {
+                return this.pollID;
+            },
+            set(value: Buffer) {
+                this.pollID = value;
+            },
+        });
     }
 
-    static fromObject(obj: any): PollAnswer {
-        if (obj == null) {
-            return null;
-        }
-        return new PollAnswer(Buffer.from(obj.pollid), obj.choice, Buffer.from(obj.lrs));
-    }
-
-    toObject(): any {
-        return {
-            choice: this.choice,
-            lrs: this.lrs,
-            pollid: this.pollID,
-        };
+    static register() {
+        registerMessage("PollAnswer", PollAnswer);
     }
 }
 
 // PollChoice represents one choice of one participant.
-export class PollChoice {
+export class PollChoice extends Message<PollChoice> {
+    readonly choice: number;
+    readonly lrstag: Buffer;
 
-    constructor(public choice: number, public lrstag: Buffer) {
+    constructor(props?: Properties<PollChoice>) {
+        super(props);
     }
 
-    static fromObject(obj: any): PollChoice {
-        return new PollChoice(obj.choice, Buffer.from(obj.lrstag));
-    }
-
-    toObject(): any {
-        return {
-            choice: this.choice,
-            lrstag: this.lrstag,
-        };
+    static register() {
+        registerMessage("PollChoice", PollChoice);
     }
 }
 
 // PollResponse is sent back to the client and contains all known polls.
-export class PollResponse {
+export class PollResponse extends Message<PollResponse> {
+    readonly polls: PollStruct[];
 
-    constructor(public polls: PollStruct[]) {
+    constructor(props?: Properties<PollResponse>) {
+        super(props);
     }
 
-    static fromObject(obj: any): PollResponse {
-        return new PollResponse(obj.polls.map((p: any) =>
-            PollStruct.fromObject(p)));
-    }
-
-    toObject(): any {
-        return {
-            polls: this.polls.map((p) => p.toObject()),
-        };
+    static register() {
+        registerMessage("PollResponse", PollResponse);
     }
 }
 
 // UserLocation is one user in one location, either a registered one, or an unregistered one.
-export class UserLocation {
+export class UserLocation extends Message<UserLocation> {
+    readonly credential: CredentialStruct;
+    readonly location: string;
+    readonly publicKey: Buffer;
+    readonly credentialIID: InstanceID;
+    readonly time: Long;
 
-    static readonly protoName = "UserLocation";
+    constructor(props?: Properties<UserLocation>) {
+        super(props);
 
-    constructor(public credential: CredentialStruct, public location: string,
-                public publicKey: Point = null,
-                public credentialIID: InstanceID = null, public time: Long = Long.fromNumber(0)) {
+        Object.defineProperty(this, "publickey", {
+            get(): Buffer {
+                return this.publicKey;
+            },
+            set(value: Buffer) {
+                this.publicKey = value;
+            },
+        });
+        Object.defineProperty(this, "credentialiid", {
+            get(): InstanceID {
+                return this.credentialIID;
+            },
+            set(value: InstanceID) {
+                this.credentialIID = value;
+            },
+        });
     }
 
     get alias(): string {
-        return this.credential.getAttribute("personal", "alias").toString();
+        const aliasbuf = this.credential.getAttribute("1-public", "alias");
+        return aliasbuf ? aliasbuf.toString() : "unknown";
     }
 
     get unique(): Buffer {
@@ -340,55 +452,17 @@ export class UserLocation {
         return Buffer.from(this.alias);
     }
 
-    static fromObject(o: any): UserLocation {
-        let crediid: InstanceID = null;
-        let pubkey: Point = null;
-        if (o.credentialiid && o.credentialiid.length === 32) {
-            crediid = Buffer.from(o.credentialiid);
-        }
-        if (o.publickey) {
-            pubkey = ed25519.point();
-            pubkey.unmarshalBinary(Buffer.from(o.publickey));
-        }
-        return new UserLocation(CredentialStruct.fromObject(o.credential),
-            o.location, pubkey, crediid, o.time);
-    }
-
-    static fromProto(p: Buffer): UserLocation {
-        throw new Error("not yet implemented");
-        // return UserLocation.fromObject(root.lookup(UserLocation.protoName).decode(p));
+    static register() {
+        registerMessage("UserLocation", UserLocation);
     }
 
     static fromContact(c: Contact): UserLocation {
-        return new UserLocation(c.credential, "somewhere", c.seedPublic.point, c.credentialIID);
-    }
-
-    toObject(): any {
-        const o: {
-            credential: Buffer,
-            credentialiid: Buffer,
-            location: string,
-            publickey: Buffer,
-            time: Long,
-        } = {
-            credential: this.credential.toBytes(),
-            credentialiid: null,
-            location: this.location,
-            publickey: null,
-            time: this.time,
-        };
-        if (this.credentialIID) {
-            o.credentialiid = this.credentialIID;
-        }
-        if (this.publicKey) {
-            o.publickey = this.publicKey.marshalBinary();
-        }
-        return o;
-    }
-
-    toProto(): Buffer {
-        throw new Error("not yet implemented");
-        // return objToProto(this.toObject(), UserLocation.protoName);
+        return new UserLocation({
+            credential: c.credential,
+            location: "somewhere",
+            publicKey: c.seedPublic.point.toProto(),
+            credentialIID: c.credentialIID,
+        });
     }
 
     equals(ul: UserLocation): boolean {
@@ -403,7 +477,7 @@ export class UserLocation {
                 c.credential = c.CredentialsInstance.credential.copy();
                 c.darcInstance = await DarcInstance.fromByzcoin(bc, c.CredentialsInstance.darcID);
             } else {
-                c.seedPublic = new Public(this.publicKey);
+                c.seedPublic = Public.fromProto(this.publicKey);
             }
             return c;
         } catch (e) {
@@ -412,11 +486,7 @@ export class UserLocation {
     }
 }
 
-export class Party extends Message<Party>{
-    static register(){
-        registerMessage("Party", Party)
-    }
-
+export class Party extends Message<Party> {
     readonly roster: Roster;
     // ByzCoinID represents the ledger where the pop-party is stored.
     readonly byzCoinID: InstanceID;
@@ -443,39 +513,39 @@ export class Party extends Message<Party>{
             },
         });
     }
+
+    static register() {
+        registerMessage("Party", Party);
+    }
 }
 
-export class PartyList extends Message<PartyList>{
-    static register(){
-        registerMessage("PartyList", PartyList);
-    }
-
+export class PartyList extends Message<PartyList> {
     readonly newparty: Party;
     readonly wipeparties: boolean;
 
-    constructor(props?: Properties<PartyList>){
+    constructor(props?: Properties<PartyList>) {
         super(props);
+    }
+
+    static register() {
+        registerMessage("PartyList", PartyList);
     }
 }
 
-export class PartyListResponse extends Message<PartyListResponse>{
-    static register(){
-        registerMessage("PartyListResponse", PartyListResponse);
-    }
-
+export class PartyListResponse extends Message<PartyListResponse> {
     readonly parties: Party[];
 
-    constructor(props?: Properties<PartyListResponse>){
+    constructor(props?: Properties<PartyListResponse>) {
         super(props);
+    }
+
+    static register() {
+        registerMessage("PartyListResponse", PartyListResponse);
     }
 }
 
 // Meetup contains one user that wants to meet others.
-export class Meetup extends Message<Meetup>{
-    static register(){
-        registerMessage("Meetup", Meetup);
-    }
-
+export class Meetup extends Message<Meetup> {
     readonly userLocation: UserLocation;
     readonly wipe: boolean;
 
@@ -491,20 +561,34 @@ export class Meetup extends Message<Meetup>{
             },
         });
     }
-}
 
-export class MeetupResponse extends Message<Meetup>{
-    static register(){
+    static register() {
         registerMessage("Meetup", Meetup);
     }
+}
 
+export class MeetupResponse extends Message<MeetupResponse> {
     readonly users: UserLocation[];
 
-    constructor(props?: Properties<Meetup>) {
+    constructor(props?: Properties<MeetupResponse>) {
         super(props);
+    }
+
+    static register() {
+        registerMessage("MeetupResponse", MeetupResponse);
     }
 }
 
+RoPaSci.register();
+RoPaSciList.register();
+RoPaSciListResponse.register();
+Poll.register();
+PollList.register();
+PollStruct.register();
+PollAnswer.register();
+PollChoice.register();
+PollResponse.register();
+UserLocation.register();
 Party.register();
 PartyList.register();
 PartyListResponse.register();

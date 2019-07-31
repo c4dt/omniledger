@@ -1,13 +1,14 @@
-import {fromObject, Observable} from "tns-core-modules/data/observable";
-import {uData} from "~/user-data";
-import {GestureEventData} from "tns-core-modules/ui/gestures";
-import {msgFailed, msgOK} from "~/lib/messages";
+import { Observable } from "tns-core-modules/data/observable";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
-import {getFrameById, topmost} from "tns-core-modules/ui/frame";
-import {elPoll, updatePoll} from "~/pages/lab/poll/poll-page";
-import {ObservableArray} from "tns-core-modules/data/observable-array";
-import {PersonhoodRPC, PollChoice, PollStruct} from "~/lib/dynacred/personhood-rpc";
-import {Defaults} from "~/lib/dynacred/Defaults";
+import { topmost } from "tns-core-modules/ui/frame";
+import { GestureEventData } from "tns-core-modules/ui/gestures";
+import { Defaults } from "~/lib/dynacred/Defaults";
+import { PersonhoodRPC, PollChoice, PollStruct } from "~/lib/dynacred/personhood-rpc";
+import { msgFailed } from "~/lib/messages";
+import { elPoll, updatePoll } from "~/pages/lab/poll/poll-page";
+import { uData } from "~/user-data";
+import Log from "~/lib/cothority/log";
 
 export class PollView extends Observable {
     polls = new ObservableArray();
@@ -45,13 +46,6 @@ export class PollViewElement extends Observable {
 
     constructor(public poll: PollStruct) {
         super();
-        if (Defaults.Testing) {
-            poll.choices.forEach((_, c) => {
-                for (let i = 0; i < c; i++) {
-                    poll.chosen.push(new PollChoice(c, Buffer.alloc(0)));
-                }
-            });
-        }
         poll.choices.forEach((_, c) => {
             this.choices.push(new PollChoiceElement(poll, c));
         });
@@ -79,13 +73,14 @@ export class PollViewElement extends Observable {
                     let index = choices.findIndex(c => c == action);
                     let phr = new PersonhoodRPC(uData.bc);
                     let badge = uData.badges.find(p => {
-                        return p.party.partyInstance.id.equals(this.poll.personhood)
+                        return p.party.partyInstance.id.equals(this.poll.personhood);
                     });
                     if (badge == null) {
                         await msgFailed("Invalid poll with invalid partyID");
                         return;
                     }
-                    await phr.pollAnswer(uData.keyPersonhood._private.scalar, badge.party.partyInstance, this.poll.pollID, index);
+                    await phr.pollAnswer(uData.keyPersonhood._private.scalar, badge.party.partyInstance,
+                        this.poll.pollID, index);
             }
         } catch (e) {
             await msgFailed(e.toString(), "Error");

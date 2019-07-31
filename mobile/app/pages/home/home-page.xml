@@ -80,13 +80,11 @@
                     </GridLayout>
                 </StackLayout>
 
-                <!--
                 <StackLayout row="3">
                     <Button text="Start Meetup" tap="meetup" class="btn"/>
                     <Button text="Cycle personhood" tap="cyclePersonhood" class="btn btn-test"
                             visibility="{{ testing ? 'visible' : 'collapse' }}"/>
                 </StackLayout>
-                -->
             </GridLayout>
         </ScrollView>
 
