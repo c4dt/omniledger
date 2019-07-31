@@ -90,7 +90,6 @@ export class UserView extends Observable {
     }
 
     public static async payUser(u: Contact, progress: any) {
-        Log.print("payUser");
         try {
             if (!u.isRegistered()) {
                 if (await uData.canPay(uData.spawnerInstance.signupCost)) {

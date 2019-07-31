@@ -44,11 +44,6 @@ export async function navigatingTo(args: EventData) {
         return mainViewRegistered(args);
     } catch (e) {
         Log.catch("couldn't load:", e);
-        if (Defaults.Testing) {
-          // During testing, it is common to be unable to connect, and to want to
-          // create a new ledger.
-          return mainViewRegister(args);
-        }
         await msgFailed("Error when setting up communication: " + e.toString());
         let again = await dialogs.confirm({
             title: "Network error",
@@ -60,6 +55,8 @@ export async function navigatingTo(args: EventData) {
             await navigatingTo(args);
         } else {
             if (Defaults.Testing){
+                // During testing, it is common to be unable to connect, and to want to
+                // create a new ledger.
                 uData.delete();
                 return mainViewRegister(args);
             }
