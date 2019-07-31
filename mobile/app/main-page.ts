@@ -34,12 +34,12 @@ export async function navigatingTo(args: EventData) {
         Log.lvl2("navigatingTo: main-page");
         let page = <Page> args.object;
         page.bindingContext = mainView;
-        setFactory((path: string):WebSocketAdapter => new NativescriptWebSocketAdapter(path));
+        setFactory((path: string): WebSocketAdapter => new NativescriptWebSocketAdapter(path));
         activateTesting();
         Log.lvl1("loading");
         await uData.load();
         if (!uData.contact.alias || uData.contact.alias == "new identity") {
-          return mainViewRegister(args);
+            return mainViewRegister(args);
         }
         return mainViewRegistered(args);
     } catch (e) {
@@ -103,7 +103,7 @@ export function activateTesting() {
     //
     // *******
 
-    Defaults.ByzCoinID = Buffer.from("fb40bb6970bc54bce7a30d093eedc60f393abd3ed7815718a02282c863587f51", "hex");
+    Defaults.ByzCoinID = Buffer.from("ba7ec48ad389c88045dc1bb86a61d7a2a49f2c3bc2e7a066654248de9fabb8db", "hex");
     Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
     Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]

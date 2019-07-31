@@ -2,6 +2,7 @@ import { Point, Scalar } from "@dedis/kyber";
 import * as crypto from "crypto-browserify";
 import { randomBytes } from "crypto-browserify";
 import Long from "long";
+import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
@@ -11,9 +12,11 @@ import { CredentialStruct } from "~/lib/cothority/personhood/credentials-instanc
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { ed25519, Sign } from "~/lib/cothority/personhood/ring-sig";
 import Log from "~/lib/cothority/log";
+import { registerMessage } from "~/lib/cothority/protobuf";
 import { Contact } from "~/lib/dynacred/Contact";
 import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import { Public } from "~/lib/dynacred/KeyPair";
+import { Party } from "~/lib/dynacred/Party";
 
 export class PersonhoodRPC {
     static serviceID = "Personhood";
@@ -27,17 +30,14 @@ export class PersonhoodRPC {
 
     /**
      */
-    async listParties(id: InstanceID = null): Promise<PersonhoodParty[]> {
-        const party: { newparty: any } = {newparty: null};
-        if (id) {
-            const p = new PersonhoodParty(this.rpc.getConfig().roster, this.rpc.genesisID, id);
-            party.newparty = p.toObject();
-        }
+    async listParties(newParty: Party = null): Promise<PersonhoodParty[]> {
+        const partyList = new PartyList({newparty: newParty});
         const parties: PersonhoodParty[] = [];
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            // let resp = await socket.send("PartyList", "PartyListResponse", party);
-            // parties = parties.concat(resp.parties.map(r => PersonhoodParty.fromObject(r)));
+            let resp = await socket.send(partyList, PartyListResponse) as PartyListResponse;
+            Log.print("got response", resp);
+            parties.push(...parties.concat(resp.parties.map(r => PersonhoodParty.fromObject(r))));
         }));
         return parties.filter((py, i) => {
             return parties.findIndex((p) => p.instanceID.equals(py.instanceID)) === i;
@@ -48,26 +48,22 @@ export class PersonhoodRPC {
     async wipeParties() {
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            // await socket.send("PartyList", "PartyListResponse", {wipeparties: true});
+            await socket.send(new PartyList({wipeparties: true}), PartyListResponse);
         }));
     }
 
     // meetups interfaces the meetup endpoint from the personhood service. It will always return the
     // currently stored meetups, but can either add a new meetup, or wipe  all meetups.
     async meetups(meetup: Meetup = null): Promise<UserLocation[]> {
-        let data = {};
-        if (meetup != null) {
-            data = meetup.toObject();
-        }
         const uls: UserLocation[] = [];
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            // let resp = await socket.send("Meetup", "MeetupResponse", data);
-            // try {
-            //     resp.users.forEach(ul => uls.push(UserLocation.fromObject(ul)));
-            // } catch (e) {
-            //     Log.error(e);
-            // }
+            let resp = (await socket.send(meetup, MeetupResponse)) as MeetupResponse;
+            try {
+                resp.users.forEach(ul => uls.push(UserLocation.fromObject(ul)));
+            } catch (e) {
+                Log.error(e);
+            }
         }));
         return uls.filter((m) => m != null).filter((userlocation, i) => {
             return uls.findIndex((ul) => ul.toProto().equals(userlocation.toProto())) === i;
@@ -81,7 +77,7 @@ export class PersonhoodRPC {
 
     // wipeMeetups removes all meetups from the servers. This is mainly for tests.
     async wipeMeetups() {
-        return this.meetups(new Meetup(null, true));
+        return this.meetups(new Meetup({wipe: true}));
     }
 
     async listRPS(id: InstanceID = null): Promise<RoPaSci[]> {
@@ -341,28 +337,6 @@ export class PollResponse {
     }
 }
 
-// Meetup contains one user that wants to meet others.
-export class Meetup {
-
-    constructor(public userLocation: UserLocation, public wipe: boolean = false) {
-    }
-
-    static fromObject(obj: any): Meetup {
-        return new Meetup(UserLocation.fromObject(obj.userlocation), obj.wipe);
-    }
-
-    toObject(): any {
-        const o: { userlocation: any, wipe: boolean } = {
-            userlocation: null,
-            wipe: this.wipe,
-        };
-        if (this.userLocation) {
-            o.userlocation = this.userLocation.toObject();
-        }
-        return o;
-    }
-}
-
 // UserLocation is one user in one location, either a registered one, or an unregistered one.
 export class UserLocation {
 
@@ -455,3 +429,66 @@ export class UserLocation {
         }
     }
 }
+
+export class PartyList extends Message<PartyList>{
+    static register(){
+        registerMessage("PartyList", PartyList);
+    }
+
+    readonly newparty: Party;
+    readonly wipeparties: boolean;
+
+    constructor(props?: Properties<PartyList>){
+        super(props);
+    }
+}
+
+export class PartyListResponse extends Message<PartyListResponse>{
+    static register(){
+        registerMessage("PartyListResponse", PartyListResponse);
+    }
+
+    readonly parties: Party[];
+
+    constructor(props?: Properties<PartyListResponse>){
+        super(props);
+    }
+}
+
+// Meetup contains one user that wants to meet others.
+export class Meetup extends Message<Meetup>{
+    static register(){
+        registerMessage("Meetup", Meetup);
+    }
+
+    readonly userLocation: UserLocation;
+    readonly wipe: boolean;
+
+    constructor(props?: Properties<Meetup>) {
+        super(props);
+
+        Object.defineProperty(this, "userlocation", {
+            get(): UserLocation {
+                return this.userLocation;
+            },
+            set(value: UserLocation) {
+                this.userLocation = value;
+            },
+        });
+    }
+}
+
+export class MeetupResponse extends Message<Meetup>{
+    static register(){
+        registerMessage("Meetup", Meetup);
+    }
+
+    readonly users: UserLocation[];
+
+    constructor(props?: Properties<Meetup>) {
+        super(props);
+    }
+}
+
+PartyList.register();
+PartyListResponse.register();

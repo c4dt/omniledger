@@ -689,6 +689,7 @@ export class Data {
     async reloadParties(): Promise<Party[]> {
         const phrpc = new PersonhoodRPC(this.bc);
         const phParties = await phrpc.listParties();
+        Log.print("showing the following parties:", phParties);
         await Promise.all(phParties.map(async (php) => {
             if (this.parties.find((p) => p.partyInstance.id.equals(php.instanceID)) == null) {
                 Log.lvl2("Found new party id");
@@ -730,7 +731,7 @@ export class Data {
         this.parties.push(p);
         const phrpc = new PersonhoodRPC(this.bc);
         await this.save();
-        await phrpc.listParties(p.partyInstance.id);
+        await phrpc.listParties(p);
     }
 
     async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
