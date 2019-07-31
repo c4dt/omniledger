@@ -16,7 +16,7 @@ import { registerMessage } from "~/lib/cothority/protobuf";
 import { Contact } from "~/lib/dynacred/Contact";
 import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import { Public } from "~/lib/dynacred/KeyPair";
-import { Party } from "~/lib/dynacred/Party";
+import { PartyItem } from "~/lib/dynacred/Party";
 
 export class PersonhoodRPC {
     static serviceID = "Personhood";
@@ -30,18 +30,20 @@ export class PersonhoodRPC {
 
     /**
      */
-    async listParties(newParty: Party = null): Promise<PersonhoodParty[]> {
+    async listParties(newParty: Party = null): Promise<Party[]> {
         const partyList = new PartyList({newparty: newParty});
-        const parties: PersonhoodParty[] = [];
+        let parties: Party[] = [];
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             let resp = await socket.send(partyList, PartyListResponse) as PartyListResponse;
-            Log.print("got response", resp);
-            parties.push(...parties.concat(resp.parties.map(r => PersonhoodParty.fromObject(r))));
+            parties.push(...resp.parties);
         }));
-        return parties.filter((py, i) => {
+        // Filter out double parties
+        parties = parties.filter((py, i) => {
             return parties.findIndex((p) => p.instanceID.equals(py.instanceID)) === i;
         });
+        // Only take parties from our byzcoin
+        return parties.filter(party => party.byzCoinID.equals(this.rpc.genesisID));
     }
 
     // this removes all parties from the list, but not from byzcoin.
@@ -158,26 +160,6 @@ export class PersonhoodRPC {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             // response.push(PollResponse.fromObject(await socket.send(req, resp, query)));
         }));
-    }
-}
-
-export class PersonhoodParty {
-
-    constructor(public roster: Roster, public byzcoinID: InstanceID, public instanceID: InstanceID) {
-    }
-
-    static fromObject(obj: any): PersonhoodParty {
-        return new PersonhoodParty(Roster.fromBytes(Buffer.from(obj.roster)),
-            Buffer.from(obj.byzcoinid),
-            Buffer.from(obj.instanceid));
-    }
-
-    toObject(): any {
-        return {
-            byzcoinid: this.byzcoinID,
-            instanceid: this.instanceID,
-            roster: this.roster.toBytes(),
-        };
     }
 }
 
@@ -430,6 +412,39 @@ export class UserLocation {
     }
 }
 
+export class Party extends Message<Party>{
+    static register(){
+        registerMessage("Party", Party)
+    }
+
+    readonly roster: Roster;
+    // ByzCoinID represents the ledger where the pop-party is stored.
+    readonly byzCoinID: InstanceID;
+    // InstanceID is where to find the party in the ledger.
+    readonly instanceID: InstanceID;
+
+    constructor(props?: Properties<Party>) {
+        super(props);
+
+        Object.defineProperty(this, "byzcoinid", {
+            get(): InstanceID {
+                return this.byzCoinID;
+            },
+            set(value: InstanceID) {
+                this.byzCoinID = value;
+            },
+        });
+        Object.defineProperty(this, "instanceid", {
+            get(): InstanceID {
+                return this.instanceID;
+            },
+            set(value: InstanceID) {
+                this.instanceID = value;
+            },
+        });
+    }
+}
+
 export class PartyList extends Message<PartyList>{
     static register(){
         registerMessage("PartyList", PartyList);
@@ -490,5 +505,8 @@ export class MeetupResponse extends Message<Meetup>{
     }
 }
 
+Party.register();
 PartyList.register();
 PartyListResponse.register();
+Meetup.register();
+MeetupResponse.register();

@@ -1,4 +1,4 @@
-import { Party } from "~/lib/dynacred/Party";
+import { PartyItem } from "~/lib/dynacred/PartyItem";
 import {ScanAttsView} from "~/pages/lab/personhood/scan-atts/scan-atts-view";
 import {PopPartyInstance} from "~/lib/cothority/personhood/pop-party-instance";
 
@@ -10,7 +10,7 @@ import {msgFailed, msgOK} from "~/lib/messages";
 import {topmost} from "tns-core-modules/ui/frame";
 
 export let viewScanModel: ScanAttsView;
-let party: Party = undefined;
+let party: PartyItem = undefined;
 
 export async function onLoaded(args) {
     const page = <Page>args.object;
@@ -79,7 +79,7 @@ async function addScan() {
     try {
         let result = await scan("Please scan attendee");
         let qrcode = parseQRCode(result.text, 2);
-        if (qrcode.url == Party.url) {
+        if (qrcode.url == PartyItem.url) {
             if (qrcode.public.length == 64) {
                 await viewScanModel.addAttendee(qrcode.public);
             } else {

@@ -1,4 +1,4 @@
-import { Point, PointFactory, Scalar, sign } from "@dedis/kyber";
+import { Point, Scalar, sign } from "@dedis/kyber";
 import Log from "~/lib/cothority/log";
 import { Contact } from "~/lib/dynacred/Contact";
 import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
@@ -120,7 +120,7 @@ export class PopPartyInstance extends Instance {
      * @param signers The list of signers for the transaction
      * @returns a promise that resolves with the state of the party
      */
-    async activateBarrier(signers: Signer[]): Promise<number> {
+    async activateBarrier(signers: Signer[], c: Contact): Promise<number> {
         if (this.popPartyStruct.state !== PopPartyInstance.PRE_BARRIER) {
             throw new Error("barrier point has already been passed");
         }
@@ -136,7 +136,7 @@ export class PopPartyInstance extends Instance {
         await ctx.updateCountersAndSign(this.rpc, [signers]);
 
         await this.rpc.sendTransactionAndWait(ctx);
-        await this.update();
+        await this.update([c].concat(...c.contacts));
 
         return this.popPartyStruct.state;
     }
@@ -182,7 +182,11 @@ export class PopPartyInstance extends Instance {
         if (this.popPartyStruct.state === PopPartyInstance.SCANNING &&
             this.tmpAttendees.length === 0 &&
             contacts) {
-            this.tmpAttendees = await this.fetchOrgKeys(contacts);
+            try {
+                this.tmpAttendees = await this.fetchOrgKeys(contacts);
+            } catch (e) {
+                Log.info("Couldn't get organizers");
+            }
         }
         return this;
     }
@@ -236,7 +240,7 @@ export class PopPartyInstance extends Instance {
         for (let orgDarc of orgDarcs) {
             // Remove leading "darc:" from expression
             const orgDarcID = Buffer.from(orgDarc.substr(5), "hex");
-            const contact = contacts.find(c => c.darcInstance.darcID.equals(orgDarcID));
+            const contact = contacts.find(c => c.CredentialsInstance.darcID.equals(orgDarcID));
             if (contact == undefined) {
                 return Promise.reject("didn't find organizer in contacts");
             }

@@ -3,7 +3,7 @@ import Log from "~/lib/cothority/log";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { PopDesc } from "~/lib/cothority/personhood/proto";
 import { Badge } from "~/lib/dynacred/Badge";
-import { Party } from "~/lib/dynacred/Party";
+import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { partyQrcode } from "~/lib/qrcode";
 import {uData} from "~/user-data";
 import {GestureEventData} from "tns-core-modules/ui/gestures";
@@ -167,7 +167,7 @@ export class PartyView extends Observable {
     showDetails = true;
     qrCache: ImageSource = undefined;
 
-    constructor(public party: Party) {
+    constructor(public party: PartyItem) {
         super();
         this.desc = party.partyInstance.popPartyStruct.description;
     }
@@ -281,7 +281,7 @@ export class PartyView extends Observable {
                     break;
                 case BARRIER:
                     elements.setProgress("Activating Barrier Point", 50);
-                    await this.party.partyInstance.activateBarrier([uData.keyIdentitySigner]);
+                    await this.party.partyInstance.activateBarrier([uData.keyIdentitySigner], uData.contact);
                     elements.setProgress();
                     break;
                 case SCAN:

@@ -69,7 +69,6 @@ export async function goReloadBC(args: EventData) {
 }
 
 export function goAlias(args: EventData) {
-    Log.print("going to alias");
     return getFrameById("setup").navigate("pages/setup/2-alias");
 }
 

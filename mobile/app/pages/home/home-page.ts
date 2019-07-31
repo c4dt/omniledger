@@ -122,12 +122,16 @@ export async function update() {
         identity.set("hasCoins", false);
         identity.set("alias", uData.contact.alias);
         if (!uData.contact.isRegistered()) {
-            await uData.contact.isRegistered();
-            if (uData.contact.isRegistered()) {
-                // Need to send new credential to byzcoin
-                await uData.contact.sendUpdate([uData.keyIdentitySigner]);
+            try {
+                await uData.contact.updateOrConnect(uData.bc);
+                if (uData.contact.isRegistered()) {
+                    // Need to send new credential to byzcoin
+                    await uData.contact.sendUpdate([uData.keyIdentitySigner]);
+                }
+                await uData.save()
+            } catch(e){
+                Log.lvl2("user is definitely not on byzcoin");
             }
-            await uData.save()
         }
         identity.set("qrcode", qrcodeIdentity(uData.contact));
         attributes.splice(0);

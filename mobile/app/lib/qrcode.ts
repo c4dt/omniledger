@@ -5,7 +5,7 @@ import { sprintf } from "sprintf-js";
 import { screen } from "tns-core-modules/platform";
 import { Contact } from "~/lib/dynacred/Contact";
 import { Public } from "~/lib/dynacred/KeyPair";
-import { Party } from "~/lib/dynacred/Party";
+import { PartyItem } from "~/lib/dynacred/PartyItem";
 
 export function qrcodeIdentityStr(c: Contact): string {
     let str = Contact.urlUnregistered + "?";
@@ -29,7 +29,7 @@ export function qrcodeIdentity(c: Contact): ImageSource {
 }
 
 export function partyQrcode(key: Public, desc: string): ImageSource {
-    let url = Party.url + "?public=" + key.toHex();
+    let url = PartyItem.url + "?public=" + key.toHex();
     url += "&name=" + desc;
     const sideLength = screen.mainScreen.widthPixels / 4;
     const qrcode = QRGenerator.createBarcode({

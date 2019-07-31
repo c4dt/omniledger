@@ -60,7 +60,7 @@ export class Party {
     }
 
     // qrcode(key: Public): ImageSource {
-    //     let url = Party.url + "?public=" + key.toHex();
+    //     let url = PartyItem.url + "?public=" + key.toHex();
     //     url += "&name=" + this.partyInstance.popPartyStruct.description.name;
     //     const sideLength = screen.mainScreen.widthPixels / 4;
     //     const qrcode = QRGenerator.createBarcode({

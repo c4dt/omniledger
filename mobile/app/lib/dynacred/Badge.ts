@@ -1,8 +1,9 @@
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
+import Log from "~/lib/cothority/log";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";
-import { Party } from "./Party";
+import { PartyItem } from "./PartyItem";
 
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
@@ -21,7 +22,7 @@ export class Badge {
     // }
 
     static fromObject(bc: ByzCoinRPC, obj: any): Badge {
-        const p = Party.fromObject(bc, obj.party);
+        const p = PartyItem.fromObject(bc, obj.party);
         const kp = KeyPair.fromObject(obj.keypair);
         const b = new Badge(p, kp);
         b.mined = obj.mined;
@@ -29,7 +30,7 @@ export class Badge {
     }
     mined = false;
 
-    constructor(public party: Party, public keypair: KeyPair) {
+    constructor(public party: PartyItem, public keypair: KeyPair) {
     }
 
     toObject(): any {
@@ -42,7 +43,7 @@ export class Badge {
 
     async mine(d: Data, setProgress: (text?: string, width?: number) => void = null) {
         this.mined = true;
-        if (d.coinInstance) {
+        if (d.contact.isRegistered()) {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
                 d.coinInstance.id, null);
         } else {

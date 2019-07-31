@@ -1,5 +1,5 @@
 import { Public } from "~/lib/dynacred/KeyPair";
-import { Party } from "~/lib/dynacred/Party";
+import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { partyQrcode } from "~/lib/qrcode";
 import {viewScanModel} from "~/pages/lab/personhood/scan-atts/scan-atts-page";
 
@@ -14,7 +14,7 @@ export class ScanAttsView extends Observable {
     networkStatus: string;
     canAddParty: boolean;
 
-    constructor(public party: Party) {
+    constructor(public party: PartyItem) {
         super();
     }
 

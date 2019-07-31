@@ -29,8 +29,8 @@ export async function navigatingTo(args: EventData) {
     phrpc = new PersonhoodRPC(uData.bc);
     setProgress("Broadcasting position", 30);
     try {
-        let ul = UserLocation.fromContact(uData.contact);
-        await phrpc.meetups(new Meetup(ul));
+        let userLocation = UserLocation.fromContact(uData.contact);
+        await phrpc.meetups(new Meetup({userLocation}));
         await meetupUpdate();
         if (interval){
             clearInterval(interval);

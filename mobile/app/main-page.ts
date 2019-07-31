@@ -103,7 +103,7 @@ export function activateTesting() {
     //
     // *******
 
-    Defaults.ByzCoinID = Buffer.from("ba7ec48ad389c88045dc1bb86a61d7a2a49f2c3bc2e7a066654248de9fabb8db", "hex");
+    Defaults.ByzCoinID = Buffer.from("b99c3592c437bbd18b6283432ed27ba1efa5e411cc1f10932c4c28cc368452b2", "hex");
     Defaults.AdminDarc = Buffer.from("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a", "hex");
     Defaults.Ephemeral = Buffer.from("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c", "hex");
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]

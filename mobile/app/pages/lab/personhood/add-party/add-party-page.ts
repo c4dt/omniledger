@@ -9,7 +9,7 @@ import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
 import { PopDesc } from "~/lib/cothority/personhood/proto";
 import { Defaults } from "~/lib/dynacred/Defaults";
-import { Party } from "~/lib/dynacred/Party";
+import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { msgFailed } from "~/lib/messages";
 import { dismissSoftKeyboard } from "~/lib/users";
 import { uData } from "~/user-data";
@@ -117,7 +117,7 @@ export async function save() {
             orgs,
             desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))
         });
-        let p = new Party(ppi);
+        let p = new PartyItem(ppi);
         p.isOrganizer = true;
         setProgress("Storing Parties", 75);
         await uData.addParty(p);

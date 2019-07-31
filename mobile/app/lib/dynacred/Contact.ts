@@ -1,3 +1,6 @@
+import { Point, PointFactory } from "@dedis/kyber";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
@@ -10,9 +13,6 @@ import Signer from "~/lib/cothority/darc/signer";
 import Log from "~/lib/cothority/log";
 import CredentialsInstance, { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
-import { Point, PointFactory } from "@dedis/kyber";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import { Data } from "./Data";
 import { Public } from "./KeyPair";
 import { parseQRCode } from "./Scan";
@@ -31,6 +31,28 @@ import { SecureData } from "./SecureData";
  */
 export class Contact {
     static readonly structVersionLatest = 1;
+    static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
+    static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
+    CredentialsInstance: CredentialsInstance = null;
+    darcInstance: DarcInstance = null;
+    coinInstance: CoinInstance = null;
+    spawnerInstance: SpawnerInstance = null;
+    recover: Recover = null;
+    calypso: Calypso = null;
+    bc: ByzCoinRPC = null;
+    contactsCache: Contact[] = [];
+    actionsCache: DarcInstance[] = [];
+    groupsCache: DarcInstance[] = [];
+
+    constructor(public credential: CredentialStruct = null,
+                public data: Data = null) {
+        if (credential == null) {
+            this.credential = new CredentialStruct();
+            Contact.setVersion(this.credential, 0);
+        }
+        this.recover = new Recover(this);
+        this.calypso = new Calypso(this);
+    }
 
     get version(): number {
         return Contact.getVersion(this.credential);
@@ -215,9 +237,6 @@ export class Contact {
         this.incVersion();
     }
 
-    static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
-    static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
-
     /**
      * Helper to create a user darc
      *
@@ -226,7 +245,7 @@ export class Contact {
      * @returns the new darc
      */
     static prepareUserDarc(pubKey: Point, alias: string): Darc {
-        const id = new IdentityEd25519({point: pubKey.marshalBinary()});
+        const id = IdentityEd25519.fromPoint(pubKey);
 
         const darc = Darc.createBasic([id], [id], Buffer.from(`user ${alias}`));
         darc.addIdentity("invoke:coin.update", id, Rule.AND);
@@ -322,26 +341,6 @@ export class Contact {
 
     static sortAlias(cs: IHasAlias[]): IHasAlias[] {
         return cs.sort((a, b) => a.alias.toLocaleLowerCase().localeCompare(b.alias.toLocaleLowerCase()));
-    }
-    CredentialsInstance: CredentialsInstance = null;
-    darcInstance: DarcInstance = null;
-    coinInstance: CoinInstance = null;
-    spawnerInstance: SpawnerInstance = null;
-    recover: Recover = null;
-    calypso: Calypso = null;
-    bc: ByzCoinRPC = null;
-    contactsCache: Contact[] = null;
-    actionsCache: DarcInstance[] = null;
-    groupsCache: DarcInstance[] = null;
-
-    constructor(public credential: CredentialStruct = null,
-                public data: Data = null) {
-        if (credential == null) {
-            this.credential = new CredentialStruct();
-            Contact.setVersion(this.credential, 0);
-        }
-        this.recover = new Recover(this);
-        this.calypso = new Calypso(this);
     }
 
     incVersion() {
@@ -439,7 +438,7 @@ export class Contact {
                 this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID);
             }
         } else {
-            if (this.CredentialsInstance == null){
+            if (this.CredentialsInstance == null) {
                 throw new Error("contact not initialized");
             }
             Log.lvl2("Updating user", this.alias);
@@ -662,6 +661,14 @@ class Recover {
 
 class Calypso {
 
+    others: Map<InstanceID, SecureData[]>;
+    ours: Map<string, SecureData>;
+
+    constructor(public contact: Contact) {
+        this.ours = new Map();
+        this.others = new Map();
+    }
+
     /**
      * fromObject converts a stored object of Calypso into a new calypso.
      *
@@ -682,14 +689,6 @@ class Calypso {
                 cal.ours.set(id, SecureData.fromObject(obj.ours[id])));
         }
         return cal;
-    }
-
-    others: Map<InstanceID, SecureData[]>;
-    ours: Map<string, SecureData>;
-
-    constructor(public contact: Contact) {
-        this.ours = new Map();
-        this.others = new Map();
     }
 
     /**

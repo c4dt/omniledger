@@ -10,7 +10,7 @@ import ClientTransaction, { Argument, Instruction } from "~/lib/cothority/byzcoi
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import Instance, { InstanceID } from "~/lib/cothority/byzcoin/instance";
-import { LongTermSecret, OnChainSecretRPC } from "~/lib/cothority/calypso/calypso-rpc";
+import { LongTermSecret } from "~/lib/cothority/calypso/calypso-rpc";
 import { Rule } from "~/lib/cothority/darc";
 import Darc from "~/lib/cothority/darc/darc";
 import IdentityDarc from "~/lib/cothority/darc/identity-darc";
@@ -31,7 +31,7 @@ import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { activateTesting, Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
-import { Party } from "./Party";
+import { PartyItem } from "./PartyItem";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
 import { parseQRCode } from "./Scan";
 import { SocialNode } from "./SocialNode";
@@ -57,7 +57,7 @@ export class Data {
     lts: LongTermSecret = null;
     constructorObj: any;
     contact: Contact;
-    parties: Party[] = [];
+    parties: PartyItem[] = [];
     badges: Badge[] = [];
     ropascis: RoPaSciInstance[] = [];
     polls: PollStruct[] = [];
@@ -352,7 +352,7 @@ export class Data {
         const obj = this.constructorObj;
         var chain = Defaults.ByzCoinID;
         if (obj && obj.bcID) {
-            chain = <InstanceID>obj.bcID;
+            chain = <InstanceID> obj.bcID;
         }
         if (this.bc == null) {
             this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, chain);
@@ -361,7 +361,7 @@ export class Data {
         if (obj) {
             Log.lvl2("getting parties and badges");
             if (obj.parties) {
-                this.parties = obj.parties.map((p: any) => Party.fromObject(this.bc, p));
+                this.parties = obj.parties.map((p: any) => PartyItem.fromObject(this.bc, p));
             }
             if (obj.badges) {
                 this.badges = obj.badges.map((b: any) => Badge.fromObject(this.bc, b));
@@ -383,7 +383,7 @@ export class Data {
                 this.contact = Contact.fromObject(obj.contact);
                 try {
                     await this.contact.updateOrConnect(this.bc);
-                } catch (e){
+                } catch (e) {
                     Log.info("Contact not found in ByzCoin - not stored yet?");
                 }
             }
@@ -686,18 +686,21 @@ export class Data {
         this.contacts = this.contacts.filter((u) => !u.equals(nu));
     }
 
-    async reloadParties(): Promise<Party[]> {
+    async reloadParties(): Promise<PartyItem[]> {
         const phrpc = new PersonhoodRPC(this.bc);
         const phParties = await phrpc.listParties();
-        Log.print("showing the following parties:", phParties);
         await Promise.all(phParties.map(async (php) => {
             if (this.parties.find((p) => p.partyInstance.id.equals(php.instanceID)) == null) {
-                Log.lvl2("Found new party id");
+                Log.lvl2("Found new party id", php.instanceID, this.bc.genesisID);
                 const ppi = await PopPartyInstance.fromByzcoin(this.bc, php.instanceID);
                 Log.lvl2("Found new party", ppi.popPartyStruct.description.name);
-                const orgKeys = await ppi.fetchOrgKeys(this.contacts.concat(this.contact));
-                const p = new Party(ppi);
-                p.isOrganizer = !!orgKeys.find((k) => k.equals(this.keyPersonhood._public.point));
+                const p = new PartyItem(ppi);
+                try {
+                    const orgKeys = await ppi.fetchOrgKeys(this.contacts.concat(this.contact));
+                    p.isOrganizer = !!orgKeys.find((k) => k.equals(this.keyPersonhood._public.point));
+                } catch (e) {
+                    Log.info("One or more of the organizers are not known");
+                }
                 this.parties.push(p);
             }
         }));
@@ -706,18 +709,20 @@ export class Data {
         return this.parties;
     }
 
-    async updateParties(): Promise<Party[]> {
+    async updateParties(): Promise<PartyItem[]> {
         await Promise.all(this.parties.map(async (p) =>
             p.partyInstance.update(this.contacts.concat(this.contact))));
         // Move all finalized parties into badges
-        const parties: Party[] = [];
+        const parties: PartyItem[] = [];
         this.parties.forEach((p) => {
-            if (p.state === Party.finalized) {
+            if (p.state === PartyItem.finalized) {
                 if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
-                    k.equals(this.keyPersonhood._public.point.marshalBinary()))) {
+                    k.equals(this.keyPersonhood._public.point.toProto()))) {
                     this.badges.push(new Badge(p, this.keyPersonhood));
+                    Log.lvl2("added party to our badges")
+                } else {
+                    Log.lvl2("removing party that doesn't have our key stored");
                 }
-                Log.lvl2("removing party that doesn't have our key stored");
             } else {
                 parties.push(p);
             }
@@ -727,11 +732,11 @@ export class Data {
         return this.parties;
     }
 
-    async addParty(p: Party) {
+    async addParty(p: PartyItem) {
         this.parties.push(p);
         const phrpc = new PersonhoodRPC(this.bc);
         await this.save();
-        await phrpc.listParties(p);
+        await phrpc.listParties(p.toParty(this.bc));
     }
 
     async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
