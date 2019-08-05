@@ -19,7 +19,9 @@ export class AdminViewModel extends Observable {
 
     updateNodes(){
         this.nodes.splice(0);
-        uData.bc.getConfig().roster.list.forEach((si, i) => this.nodes.push(new Node(si, this)));
+        if (uData.bc) {
+            uData.bc.getConfig().roster.list.forEach((si, i) => this.nodes.push(new Node(si, this)));
+        }
     }
 
     set admin(value: Admin) {
