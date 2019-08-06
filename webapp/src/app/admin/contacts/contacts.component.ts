@@ -38,9 +38,9 @@ export class ContactsComponent implements OnInit {
 
     constructor(
         protected dialog: MatDialog,
-        protected snackBar: MatSnackBar,
-        protected bcvs: BcviewerService,
-        protected location: Location,
+        private snackBar: MatSnackBar,
+        private bcvs: BcviewerService,
+        private location: Location,
         public uData: UserData,
     ) {
         this.calypsoOtherKeys = new Map();
@@ -67,15 +67,15 @@ export class ContactsComponent implements OnInit {
      * If any of the view or groups parameter is the non-default, it will not be asked
      * by the dialog.
      *
-     * @param view - must be either "" or one of Data.views
-     * @param groups - must be either [] or one of the user's available groups
+     * @param view - must be either undefined or one of Data.views
+     * @param groups - must be either undefined or one of the user's available groups
      */
-    async createContact(view: string = "", groups: string[] = []) {
+    async createContact(view?: string, groups?: string[]) {
         const groupsInstAvail = await this.uData.contact.getGroups();
         const groupsAvail = groupsInstAvail.map((g) => g.darc.description.toString());
         const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail};
         // Search if the proposed groups are really available to the user
-        if (groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
+        if (groups && groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
             return Promise.reject("unknown group");
         }
         const ac = this.dialog.open(UserCredComponent, {
@@ -405,8 +405,8 @@ export class UserCredComponent {
     constructor(
         public dialogRef: MatDialogRef<TransferCoinComponent>,
         @Inject(MAT_DIALOG_DATA) public data: IUserCred) {
-        this.showGroups = data.groups.length === 0;
-        this.showViews = data.view === "";
+        this.showGroups = data.groups === undefined;
+        this.showViews = data.view === undefined;
         if (this.showViews) {
             data.view = Data.views[0];
         }
