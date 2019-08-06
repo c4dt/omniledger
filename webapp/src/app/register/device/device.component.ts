@@ -1,12 +1,13 @@
 import { Component, OnInit } from "@angular/core";
-import { MatSnackBar } from "@angular/material";
-import { Router } from "@angular/router";
+import { MatDialog, MatSnackBar } from "@angular/material";
 
 import Log from "@dedis/cothority/log";
 
 import { Data } from "@c4dt/dynacred";
 
-import { showSnack } from "../../../lib/Ui";
+import { Router } from "@angular/router";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import { showTransactions, TProgress } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
 @Component({
@@ -21,17 +22,22 @@ export class DeviceComponent implements OnInit {
         private router: Router,
         private snack: MatSnackBar,
         private uData: UserData,
+        private dialog: MatDialog,
     ) {
         this.text = "Please wait";
     }
 
     async ngOnInit() {
         try {
-            return showSnack(this.snack, "Attaching to existing user", async () => {
-                const newData = await Data.attachDevice(this.uData.bc, window.location.href);
-                await newData.save();
-                await this.router.navigate([]);
-            });
+            await showTransactions(this.dialog, "Attaching to existing user",
+                async (progress: TProgress) => {
+                    progress(50, "Attaching new device");
+                    const newData = await Data.attachDevice(this.uData.bc, window.location.href);
+                    await newData.save();
+                    progress(-75, "Storing Credential");
+                    await this.uData.load();
+                });
+            await this.router.navigate(["/"]);
         } catch (e) {
             Log.catch("Couldn't register:", e);
             this.text = e.toString();

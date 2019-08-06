@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { DialogOKCancelComponent } from "../lib/Ui";
+import { DialogOKCancelComponent, DialogTransactionComponent } from "../lib/Ui";
 import { DemoMaterialModule } from "../material-module";
 import { AdminComponent } from "./admin/admin.component";
 import {
@@ -64,6 +64,7 @@ export function loadUserDataConfig(d: UserData) {
         ProfileComponent,
         AdminComponent,
         DialogOKCancelComponent,
+        DialogTransactionComponent,
         BcviewerComponent,
         ShowBlockComponent,
         DevicesComponent,
@@ -90,6 +91,7 @@ export function loadUserDataConfig(d: UserData) {
         RetryLoadComponent,
         CreateComponent,
         DialogOKCancelComponent,
+        DialogTransactionComponent,
         ShowBlockComponent,
         DeviceAddComponent,
         DeviceShowComponent,

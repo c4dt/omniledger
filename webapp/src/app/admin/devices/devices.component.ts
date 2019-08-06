@@ -3,11 +3,11 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
 
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Darc, IIdentity } from "@dedis/cothority/darc";
+import { Darc } from "@dedis/cothority/darc";
 
 import { Device } from "@c4dt/dynacred";
 
-import { showDialogInfo, showSnack } from "../../../lib/Ui";
+import { showDialogInfo, showTransactions, TProgress } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
 @Component({
@@ -47,10 +47,13 @@ export class DevicesComponent implements OnInit {
             return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                 "reasons.", "Understood");
         }
-        await showSnack(this.snack, "Deleting device " + device.name, async () => {
-            await this.uData.deleteDevice(device.name);
-            this.updateDevices();
-        });
+        await showTransactions(this.dialog, "Deleting device " + device.name,
+            async (progress: TProgress) => {
+                progress(30, "Deleting Device");
+                await this.uData.deleteDevice(device.name);
+                progress(-60, "Fetching all devices");
+                this.updateDevices();
+            });
     }
 
     async add() {
@@ -59,9 +62,11 @@ export class DevicesComponent implements OnInit {
             if (result) {
                 // const result = "phone" + this.uData.contact.credential.getCredential("1-devices").attributes.length;
                 let device: string;
-                await showSnack(this.snack, "Adding new device", async () => {
-                    device = await this.uData.createDevice(result);
-                });
+                await showTransactions(this.dialog, "Adding new device",
+                    async (progress: TProgress) => {
+                        progress(50, "Creating Device");
+                        device = await this.uData.createDevice(result);
+                    });
                 this.updateDevices();
                 if (device) {
                     const url = window.location.protocol + "//" + window.location.host +
