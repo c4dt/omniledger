@@ -37,10 +37,10 @@ export class ContactsComponent implements OnInit {
     groups: DarcInstance[] = [];
 
     constructor(
-        private dialog: MatDialog,
-        private snackBar: MatSnackBar,
-        private bcvs: BcviewerService,
-        private location: Location,
+        protected dialog: MatDialog,
+        protected snackBar: MatSnackBar,
+        protected bcvs: BcviewerService,
+        protected location: Location,
         public uData: UserData,
     ) {
         this.calypsoOtherKeys = new Map();
@@ -62,10 +62,22 @@ export class ContactsComponent implements OnInit {
         await this.updateGroups();
     }
 
-    async createContact(view?: string) {
-        const creds: IUserCred = {alias: "", email: "", view: "default", groups: []};
-        const groups = await this.uData.contact.getGroups();
-        creds.groups = groups.map((group) => group.darc.description.toString());
+    /**
+     * Pops up a dialog and asks for the alias and email of the new user to be created.
+     * If any of the view or groups parameter is the non-default, it will not be asked
+     * by the dialog.
+     *
+     * @param view - must be either "" or one of Data.views
+     * @param groups - must be either [] or one of the user's available groups
+     */
+    async createContact(view: string = "", groups: string[] = []) {
+        const groupsInstAvail = await this.uData.contact.getGroups();
+        const groupsAvail = groupsInstAvail.map((g) => g.darc.description.toString());
+        const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail};
+        // Search if the proposed groups are really available to the user
+        if (groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
+            return Promise.reject("unknown group");
+        }
         const ac = this.dialog.open(UserCredComponent, {
             data: creds,
             width: "400px",
@@ -79,8 +91,9 @@ export class ContactsComponent implements OnInit {
 
                     if (newUser) {
                         newUser.contact.email = result.email;
-                        if (view) {
-                            newUser.contact.view = view;
+                        if (result.view !== "") {
+                            Log.lvl2("Setting default view of", result.view);
+                            newUser.contact.view = result.view;
                         }
                         newUser.addContact(this.uData.contact);
 
@@ -93,7 +106,8 @@ export class ContactsComponent implements OnInit {
 
                         // Update all chosen group-darcs to include the new user
                         const addedGroups = await Promise.all(result.groups.map(async (group) => {
-                            const gInst = groups.find((g) => group === g.darc.description.toString());
+                            Log.lvl2("Adding group", group, "to user", result.alias);
+                            const gInst = groupsInstAvail.find((g) => group === g.darc.description.toString());
                             const newDarc = gInst.darc.evolve();
                             const signID = (await newUser.contact.getDarcSignIdentity());
                             newDarc.rules.appendToRule(Darc.ruleSign, signID, Rule.OR);
@@ -376,6 +390,7 @@ export interface IUserCred {
     email: string;
     view: string;
     groups: string[];
+    groupsAvail: string[];
 }
 
 @Component({
@@ -384,13 +399,17 @@ export interface IUserCred {
 })
 export class UserCredComponent {
     views = Data.views;
-    groupsAvail: string[];
+    showGroups: boolean;
+    showViews: boolean;
 
     constructor(
         public dialogRef: MatDialogRef<TransferCoinComponent>,
         @Inject(MAT_DIALOG_DATA) public data: IUserCred) {
-        this.groupsAvail = data.groups;
-        data.groups = [];
+        this.showGroups = data.groups.length === 0;
+        this.showViews = data.view === "";
+        if (this.showViews) {
+            data.view = Data.views[0];
+        }
     }
 
     show(): void {
