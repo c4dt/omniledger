@@ -1,4 +1,4 @@
-CONTAINER = conode
+CONTAINER = conode-ol
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
 
@@ -13,23 +13,31 @@ docker: clean build/Dockerfile
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
+cothority:
+	git clone --depth 1 https://github.com/c4dt/cothority
+
+cothority-pull: cothority
+	cd cothority && git pull
+
 newdb:
-	make -C .. cothority-pull
+	make cothority-pull
 	@echo "Compiling binaries"; \
 	rm -f build/conodes/*db; \
-	GO111MODULE=on go build -o build/conode; \
-	cd ../cothority; \
-		go build -o conode/bcadmin ./byzcoin/bcadmin; \
-		go build -o conode/phapp ./personhood/phapp
-	@echo "Starting nodes"; \
-	cp ../cothority/conode/run_nodes.sh build; \
+	export GO111MODULE=on; \
+	cd cothority; \
+		go build -o ../build/conode ./conode ; \
+		go build -o ../build/bcadmin ./byzcoin/bcadmin
+	echo "Starting nodes"; \
+	cp cothority/conode/run_nodes.sh build; \
 	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & )
 	@echo "Waiting for nodes to start up"; sleep 10; \
 	echo "Creating new ByzCoin and printing out important variables"; echo; \
 	rm -f *.cfg; \
-	( ./bcadmin -c . create build/conodes/public.toml --interval 500ms; \
-	  ./bcadmin latest --bc bc-*; \
-	  ./bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee variables.txt
+	( build/bcadmin -c . create build/conodes/public.toml --interval 500ms; \
+	  build/bcadmin latest --bc bc-*; \
+	  build/bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee variables.txt
+	build/bcadmin -c . config --interval 400ms bc-* key-*
+	@sleep 5
 	@echo; echo "Shutting down conodes"; pkill -x conode; rm build/conodes/running
 
 docker_run:

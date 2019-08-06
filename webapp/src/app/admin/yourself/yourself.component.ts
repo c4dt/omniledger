@@ -5,7 +5,7 @@ import { Router } from "@angular/router";
 
 import { Data } from "@c4dt/dynacred";
 
-import { showSnack } from "../../../lib/Ui";
+import { showSnack, storeCredential } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
 
@@ -45,7 +45,7 @@ export class YourselfComponent implements OnInit {
     }
 
     async updateContact() {
-        await showSnack(this.snack, "Updating User Data", async () => {
+        await storeCredential(this.dialog, "Updating User Data", async () => {
             this.uData.contact.alias = this.contactForm.controls.alias.value;
             this.uData.contact.email = this.contactForm.controls.email.value;
             this.uData.contact.phone = this.contactForm.controls.phone.value;

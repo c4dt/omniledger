@@ -1,0 +1,20 @@
+<div class="mat-body">
+    <h1>{{data.title}}</h1>
+    <div #main class="window" *ngIf="!error">
+        <img src="assets/imgs/client.png" class="client"/>
+        <img src="assets/imgs/cothority.png" class="cothority"/>
+
+        <div class="progress-box">
+            <div [style.width.%]="percentage" class="progress-bar">
+                {{text}}
+            </div>
+        </div>
+    </div>
+    <div *ngIf="error">
+        <div class="error" >Error: {{ error }}</div>
+
+        <p>
+            <button mat-raised-button color='primary' [mat-dialog-close]="error" cdkFocusInitial>Close</button>
+        </p>
+    </div>
+</div>

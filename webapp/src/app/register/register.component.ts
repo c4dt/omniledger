@@ -8,7 +8,7 @@ import { Data, Private, StorageDB } from "@c4dt/dynacred";
 import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 import Log from "@dedis/cothority/log";
 
-import { showDialogOKC, showSnack } from "../../lib/Ui";
+import { showDialogOKC, showSnack, showTransactions, TProgress } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 import { UserData } from "../user-data.service";
 
@@ -67,21 +67,26 @@ export class RegisterComponent implements OnInit {
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {
         if (ephemeral.length === 64) {
-            await showSnack(this.snack, "Creating new user", async () => {
+            await showTransactions(this.dialog, "Creating new user",
+                async (progress: TProgress) => {
                 Log.lvl1("creating user");
                 const ekStr = ephemeral;
                 const ek = Private.fromHex(ekStr);
                 if (darcID.length === 64 && alias.length > 0) {
                     Log.lvl2("creating FIRST user");
-                    const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar, alias);
+                    progress(30, "Creating First User");
+                    const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar,
+                        alias);
                     this.uData.contact = d.contact;
                     this.uData.keyIdentity = d.keyIdentity;
                     await this.uData.connectByzcoin();
                 } else {
                     Log.lvl2("attaching to existing user and replacing password");
+                    progress(30, "Creating User");
                     await this.uData.attachAndEvolve(ek);
                 }
                 Log.lvl1("verifying registration");
+                progress(60, "Storing Credential");
                 await this.uData.save();
                 Log.lvl1("done registering");
             });

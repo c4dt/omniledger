@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
     async getParam(p: string, s: number): Promise<Buffer> {
         const param = this.route.snapshot.queryParamMap.get(p);
         if (!param || param.length !== s) {
-            Log.print("invalid", p, param);
+            Log.error("invalid", p, param);
             return Promise.reject(p + ": not a valid param");
         }
         return Buffer.from(param, "hex");
