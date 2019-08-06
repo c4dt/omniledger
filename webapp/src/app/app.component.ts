@@ -4,8 +4,6 @@ import { Router } from "@angular/router";
 
 import Log from "@dedis/cothority/log";
 
-import { Defaults } from "@c4dt/dynacred/Defaults";
-
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
 
