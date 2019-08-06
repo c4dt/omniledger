@@ -23,10 +23,6 @@ export class PartnerComponent extends ContactsComponent {
         super(dialog, snackBar, bcvs, location, uData);
     }
 
-    async ngOnInit() {
-        await super.ngOnInit();
-    }
-
     async createSimpleContact() {
         const groups = await this.uData.contact.getGroups();
         if (groups.length === 0) {
