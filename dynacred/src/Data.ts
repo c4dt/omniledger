@@ -406,6 +406,11 @@ export class Data {
         return this;
     }
 
+    async isAvailableInStorageDB() {
+        const got = await StorageDB.getObject(this.dataFileName);
+        return got !== {};
+    }
+
     async save(): Promise<Data> {
         Log.lvl1("Saving data to", this.dataFileName);
         await StorageDB.putObject(this.dataFileName, this.toObject());

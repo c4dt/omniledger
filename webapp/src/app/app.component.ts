@@ -31,16 +31,16 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        try {
-            await this.uData.load();
+        if (!this.uData.isAvailableInStorageDB()) {
+            // No data saved - show how to get a new user
             this.loading = false;
-            this.bcs.updateBlocks();
-        } catch (e) {
-            if (!this.uData.constructorObj) {
-                // No data saved - show how to get a new user
+            await this.router.navigate(["/newuser"]);
+        } else {
+            try {
+                await this.uData.load();
                 this.loading = false;
-                await this.router.navigate(["/newuser"]);
-            } else {
+                this.bcs.updateBlocks();
+            } catch (e) {
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {
                     width: "300px",
