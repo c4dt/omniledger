@@ -283,7 +283,6 @@ export class Data {
     keyPersonhood: KeyPair;
     keyIdentity: KeyPair;
     lts: LongTermSecret = null;
-    constructorObj: any;
     contact: Contact;
     parties: Party[] = [];
     badges: Badge[] = [];
@@ -311,9 +310,6 @@ export class Data {
     }
 
     setValues(obj: any) {
-        if (Object.keys(obj).length > 0) {
-            this.constructorObj = obj;
-        }
         this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
         this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
         this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
@@ -334,37 +330,25 @@ export class Data {
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
-        const obj = this.constructorObj;
+        Log.lvl2("getting parties and badges");
+        this.parties = this.parties.map((p: any) => Party.fromObject(this.bc, p));
 
-        if (obj) {
-            Log.lvl2("getting parties and badges");
-            if (obj.parties) {
-                this.parties = obj.parties.map((p: any) => Party.fromObject(this.bc, p));
-            }
-            if (obj.badges) {
-                this.badges = obj.badges.map((b: any) => Badge.fromObject(this.bc, b));
-                this.badges = this.badges.filter((badge, i) =>
-                    this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
-            }
+        this.badges = this.badges.map((b: any) => Badge.fromObject(this.bc, b));
+        this.badges = this.badges.filter((badge, i) =>
+            this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
 
-            Log.lvl2("Getting rock-paper-scissors and polls");
-            if (obj.ropascis) {
-                this.ropascis = obj.ropascis.map((rps: any) =>
-                    new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
-            }
-            if (obj.polls) {
-                this.polls = obj.polls.map((rps: any) => PollStruct.fromObject(rps));
-            }
+        Log.lvl2("Getting rock-paper-scissors");
+        this.ropascis = this.ropascis.map((rps: any) =>
+            new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
 
-            if (obj.contact) {
-                this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
-            }
-            Log.lvl2("Getting contact informations");
-        }
+        Log.lvl2("Getting polls");
+        this.polls = this.polls.map((rps: any) => PollStruct.fromObject(rps));
 
+        Log.lvl2("Getting contact informations");
         this.contact.data = this;
-        await this.contact.updateOrConnect();
+        await this.contact.updateOrConnect(this.bc);
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
+
         return this.bc;
     }
 
