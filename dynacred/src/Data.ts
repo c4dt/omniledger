@@ -161,7 +161,7 @@ export class Data {
         try {
             await (new OnChainSecretRPC(bc)).authorizeRoster();
         } catch (e) {
-            if (e.toString().indexOf("already authorised") < 0){
+            if (e.toString().indexOf("already authorised") < 0) {
                 throw new Error(e.toString());
             }
         }
