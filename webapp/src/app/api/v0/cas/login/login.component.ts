@@ -49,7 +49,7 @@ export class LoginComponent implements OnInit {
     }
 
     async deny() {
-        await this.router.navigate([]);
+        await this.router.navigate(["/"]);
     }
 
 }

@@ -31,7 +31,7 @@ export class DeviceComponent implements OnInit {
                 const newData = await Data.attachDevice(window.location.href);
                 await this.uData.overwrite(newData);
                 await this.uData.save();
-                await this.router.navigate([]);
+                await this.router.navigate(["/"]);
             });
         } catch (e) {
             Log.catch("Couldn't register:", e);
