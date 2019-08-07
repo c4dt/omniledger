@@ -61,7 +61,6 @@ export class RegisterComponent implements OnInit {
                 ephemeralKey: new FormControl(undefined,
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
-            await this.uData.load();
             this.bcs.updateBlocks();
         }
     }
