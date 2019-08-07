@@ -52,7 +52,6 @@ export class YourselfComponent implements OnInit {
             this.uData.contact.view = this.contactForm.controls.view.value;
             await this.uData.contact.sendUpdate();
             this.bcs.updateBlocks();
-            await this.router.navigate([]);
         });
     }
 }
