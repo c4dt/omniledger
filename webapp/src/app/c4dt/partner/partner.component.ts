@@ -1,7 +1,6 @@
 import { Location } from "@angular/common";
 import { Component } from "@angular/core";
 import { MatDialog, MatSnackBar } from "@angular/material";
-import Log from "@dedis/cothority/log";
 import { showDialogInfo } from "../../../lib/Ui";
 import { ContactsComponent } from "../../admin/contacts/contacts.component";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
