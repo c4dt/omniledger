@@ -158,7 +158,13 @@ export class Data {
             signers: [adminSigner],
         });
 
-        await (new OnChainSecretRPC(bc)).authorizeRoster();
+        try {
+            await (new OnChainSecretRPC(bc)).authorizeRoster();
+        } catch (e) {
+            if (e.toString().indexOf("already authorised") < 0){
+                throw new Error(e.toString());
+            }
+        }
         const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], await Defaults.RosterCalypso);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);
