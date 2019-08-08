@@ -50,11 +50,7 @@ jobs:
       before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
       deploy:
         provider: script
-        script: >
-          cd dynacred &&
-          npm ci &&
-          npm version prerelease --preid=p`date +%Y%m%d%H%M%S` &&
-          npm publish --tag dev
+        script: cd dynacred && npm ci && npm version prerelease --preid=p`date +%Y%m%d%H%M%S` && npm publish --tag dev
 
 notifications:
   email: false
