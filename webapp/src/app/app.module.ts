@@ -5,7 +5,8 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { DialogOKCancelComponent, DialogTransactionComponent } from "../lib/Ui";
+import { DialogTransactionComponent } from "../lib/dialog-transaction";
+import { DialogOKCancelComponent } from "../lib/Ui";
 import { DemoMaterialModule } from "../material-module";
 import { AdminComponent } from "./admin/admin.component";
 import {

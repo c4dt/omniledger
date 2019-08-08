@@ -19,15 +19,14 @@ cothority:
 cothority-pull: cothority
 	cd cothority && git pull
 
-newdb:
-	make cothority-pull
+newdb: cothority-pull
 	@echo "Compiling binaries"; \
 	rm -f build/conodes/*db; \
 	export GO111MODULE=on; \
 	cd cothority; \
 		go build -o ../build/conode ./conode ; \
 		go build -o ../build/bcadmin ./byzcoin/bcadmin
-	echo "Starting nodes"; \
+	@echo "Starting nodes"; \
 	cp cothority/conode/run_nodes.sh build; \
 	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & )
 	@echo "Waiting for nodes to start up"; sleep 10; \
