@@ -16,9 +16,7 @@ This is the presentation screen when the user is not signed up yet.
             </StackLayout>
             <Button text="Create BC" tap="goInitTest" class="btn btn-test"
                     visibility="{{ testing ? 'visible' : 'collapse' }}"/>
-            <Button text="Reload BC Config" tap="goReloadBC" class="btn btn-test"
-                    visibility="{{ testing ? 'visible' : 'collapse' }}"/>
-            <Button text="Continue" tap="goAlias" class="btn"/>
+            <Button text="Continue" tap="goAlias" class="btn btn-primary"/>
             <Button text="Recover" tap="goRecover" class="btn"/>
         </StackLayout>
 

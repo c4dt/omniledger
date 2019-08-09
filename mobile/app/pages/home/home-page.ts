@@ -6,16 +6,16 @@ logic, and to set up your page’s data binding.
 
 import {EventData, fromObject} from "tns-core-modules/data/observable";
 import { qrcodeIdentity } from "~/lib/qrcode";
-import { mainView } from "~/main-page";
+import { showTabs } from "~/main-page";
 import {uData} from "~/user-data";
 import {Page} from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
 import {scanNewUser} from "~/lib/users";
-import {SelectedIndexChangedEventData} from "tns-core-modules/ui/tab-view";
+import { SelectedIndexChangedEventData, TabView } from "tns-core-modules/ui/tab-view";
 import {msgFailed, msgOK} from "~/lib/messages";
 import {Defaults} from "~/lib/dynacred/Defaults";
 import {ObservableArray} from "tns-core-modules/data/observable-array";
-import {topmost} from "tns-core-modules/ui/frame";
+import { Frame, getFrameById, topmost } from "tns-core-modules/ui/frame";
 import { UserView } from "../identity/contacts/contacts-view";
 
 let attributes = new ObservableArray();
@@ -40,7 +40,6 @@ let page: Page;
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingToHome(args: EventData) {
     Log.lvl2("navigatingTo: home");
-    mainView.set("showGroup", 2);
     page = <Page>args.object;
     try {
         page.bindingContext = identity;
@@ -170,5 +169,11 @@ export async function coins(args: EventData) {
 }
 
 export async function switchHome(args: SelectedIndexChangedEventData) {
+    // This is only done for the "switchHome", not for the other "switch*", as "switchHome" is
+    // used as an entry-point by different code-paths to go from the "loading/setup"-view to the
+    // tab-view.
+    let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
+    tv.selectedIndex = 0;
+    showTabs(true);
     await page.frame.navigate("pages/home/home-page");
 }

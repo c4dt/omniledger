@@ -1,9 +1,13 @@
 import Log from "~/lib/cothority/log";
 import {GestureEventData} from "tns-core-modules/ui/gestures";
-import {Frame, getFrameById, topmost} from "tns-core-modules/ui/frame";
+import { EventData, Frame, getFrameById, topmost } from "tns-core-modules/ui/frame";
 import {SelectedIndexChangedEventData} from "tns-core-modules/ui/tab-view";
 
 export let frame: Frame;
+
+export function navigatingToIdentity(args: EventData){
+    Log.lvl2("Navigating to identity");
+}
 
 export function goIdentity(args: GestureEventData) {
     frame = args.view.page.frame;

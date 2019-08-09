@@ -1,4 +1,5 @@
-FROM c4dt/conode:dev
+#FROM c4dt/conode:dev
+FROM debian:stretch-slim
 WORKDIR /root/
 COPY conodes /root/conodes
 COPY conode bcadmin csadmin run_nodes.sh /root/

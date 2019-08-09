@@ -10,6 +10,7 @@ import Log from "~/lib/cothority/log";
 import { Defaults } from "~/lib/dynacred/Defaults";
 import { msgOK } from "~/lib/messages";
 import { qrcodeIdentity, qrcodeIdentityStr } from "~/lib/qrcode";
+import { switchHome } from "~/pages/home/home-page";
 import { uData } from "~/user-data";
 import { Button } from "tns-core-modules/ui/button";
 
@@ -24,8 +25,7 @@ export function navigatingTo(args: EventData) {
 }
 
 export async function goMain(args: any) {
-	const button: Button = <Button>args.object;
-    button.page.frame.navigate("pages/home/home-page");
+    return switchHome(null);
 }
 
 export async function deleteAll(args: any) {

@@ -7,9 +7,9 @@ logic, and to set up your page’s data binding.
 require("nativescript-nodeify");
 
 import * as application from "tns-core-modules/application";
-import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
-import { getFrameById, Page } from "tns-core-modules/ui/frame";
+import { Frame, getFrameById, Page } from "tns-core-modules/ui/frame";
 import { SelectedIndexChangedEventData, TabView } from "tns-core-modules/ui/tab-view";
 import Log from "~/lib/cothority/log";
 import { Roster, WebSocketAdapter } from "~/lib/cothority/network";
@@ -25,15 +25,12 @@ import { uData } from "~/user-data";
 
 declare const exit: (code: number) => void;
 
-export let mainView = fromObject({showGroup: 0});
-
 // Verify if we already have data or not. If it's a new installation, present the project
 // and ask for an alias, and set up keys.
 export async function navigatingTo(args: EventData) {
     try {
         Log.lvl2("navigatingTo: main-page");
         let page = <Page> args.object;
-        page.bindingContext = mainView;
         setFactory((path: string): WebSocketAdapter => new NativescriptWebSocketAdapter(path));
         activateTesting();
         Log.lvl1("loading");
@@ -43,6 +40,13 @@ export async function navigatingTo(args: EventData) {
         }
         return mainViewRegistered(args);
     } catch (e) {
+        if (Defaults.Testing) {
+            // This is a little bit dangerous, as a testing-setup could be destroyed if not handled
+            // carefully. But as it's just a testing, this should be OK...
+            uData.delete();
+            await uData.save();
+            return mainViewRegister(args);
+        }
         Log.catch("couldn't load:", e);
         await msgFailed("Error when setting up communication: " + e.toString());
         let again = await dialogs.confirm({
@@ -54,12 +58,6 @@ export async function navigatingTo(args: EventData) {
         if (again) {
             await navigatingTo(args);
         } else {
-            if (Defaults.Testing){
-                // During testing, it is common to be unable to connect, and to want to
-                // create a new ledger.
-                uData.delete();
-                return mainViewRegister(args);
-            }
             if (application.android) {
                 application.android.foregroundActivity.finish();
             } else {
@@ -71,16 +69,22 @@ export async function navigatingTo(args: EventData) {
 
 export function mainViewRegistered(args: any) {
     Log.lvl1("mainViewRegistered");
-    mainView.set("showGroup", 2);
-    let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
-    tv.selectedIndex = 0;
     return switchHome(args);
 }
 
 export function mainViewRegister(args: any) {
     Log.lvl1("mainViewRegister");
-    mainView.set("showGroup", 1);
+    showTabs(false);
     return getFrameById("setup").navigate("pages/setup/1-present");
+}
+
+// This should usually work with an inline of the view in the xml - but for some reason it
+// only works on iOS, but not on Android, and I'm tired of searching why...
+export function showTabs(show: boolean) {
+    let f = <Frame> getFrameById("setup");
+    f.visibility = show ? "collapse" : "visible";
+    let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
+    tv.visibility = show ? "visible" : "collapse";
 }
 
 export async function onChangeTab(args: SelectedIndexChangedEventData) {
@@ -109,8 +113,8 @@ export function activateTesting() {
     //
     // *******
 
-    Defaults.ByzCoinID = Buffer.from("1eec75c7697480a7b7698650bf6ecfdfa80e1a223f5d2dad85bd237e8ff1f777", "hex");
-    Defaults.SpawnerID = Buffer.from("f833df6b33500511914ddb9cd07d069303fedf3fa21f5f5ce18313bb2222c4e9", "hex");
+    Defaults.ByzCoinID = Buffer.from("1ea70623df77fcd24553937727aa44d0c760eb368799b413e47218a11b552353", "hex");
+    Defaults.SpawnerID = Buffer.from("755b24f9a4264f4a4f76fdbe934748fc743f97d5c789aa98900c49440af6506c", "hex");
 
     Defaults.Roster = Promise.resolve(Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"

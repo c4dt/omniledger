@@ -6,15 +6,12 @@ http://docs.nativescript.org/cookbook/ui/tab-view
 -->
 <Page actionBarHidden="true" navigatingTo="navigatingTo">
     <StackLayout>
-        <Frame defaultPage="pages/loading/loading-page"
-               visibility="{{ showGroup ? 'collapse' : 'visible' }}"
-               id="loading"/>
-        <Frame defaultPage="pages/loading/loading-page"
-               visibility="{{ showGroup == 1 ? 'visible' : 'collapse' }}"
-               id="setup"/>
+        <Frame defaultPage="pages/loading/loading-page" id="setup"/>
+
         <TabView androidTabsPosition="bottom" androidOffscreenTabLimit="0" selectedIndex="0"
                  selectedIndexChanged="onChangeTab" id="mainTabView"
-                 visibility="{{ showGroup == 2 ? 'visible' : 'collapse' }}">
+                 visibility="hidden">
+
             <TabViewItem title="Home" ios:iconSource="res://tabIcons/home" android:iconSource="res://home">
                 <Frame defaultPage="pages/home/home-page"/>
             </TabViewItem>

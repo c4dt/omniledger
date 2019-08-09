@@ -10,9 +10,8 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import Log from "~/lib/cothority/log";
 import { TestData } from "~/lib/dynacred/Data";
 import {Defaults} from "~/lib/dynacred/Defaults";
-import {Label} from "tns-core-modules/ui/label";
-import {mainView} from "~/main-page";
-import {openUrl} from "tns-core-modules/utils/utils";
+import { openUrl } from "tns-core-modules/utils/utils";
+import { switchHome } from "~/pages/home/home-page";
 import { uData } from "~/user-data";
 
 let view: Observable = fromObjectRecursive({
@@ -26,12 +25,6 @@ export async function navigatingTo(args: EventData) {
     page = <Page>args.object;
     page.bindingContext = view;
     setProgress();
-    try {
-        var ret = await uData.connectByzcoin();
-        return ret;
-    } catch (e) {
-        Log.error(e);
-    }
 }
 
 export async function goInitTest(args: EventData) {
@@ -45,25 +38,15 @@ export async function goInitTest(args: EventData) {
 
         setProgress("saving", 100);
         await uData.save();
-        mainView.set("showGroup", 2);
+        await switchHome(null);
     } catch (e) {
         await Log.rcatch(e);
     }
 
     console.log("// To be pasted into main-page.ts");
-    console.log("Defaults.ByzCoinID = Buffer.from(\""+Defaults.ByzCoinID.toString("hex")+"\", \"hex\");\n\
+    console.log("\nDefaults.ByzCoinID = Buffer.from(\""+Defaults.ByzCoinID.toString("hex")+"\", \"hex\");\n\
 Defaults.SpawnerID = Buffer.from(\""+Defaults.SpawnerID.toString("hex")+"\", \"hex\");\n");
 
-    return goAlias(args);
-}
-
-export async function goReloadBC(args: EventData) {
-    try {
-        uData.delete();
-        await uData.connectByzcoin();
-    } catch (e) {
-        return Log.rcatch(e);
-    }
     return goAlias(args);
 }
 

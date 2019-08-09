@@ -13,7 +13,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import {Defaults} from "~/lib/dynacred/Defaults";
 import {SelectedIndexChangedEventData} from "tns-core-modules/ui/tab-view";
 import {msgFailed, msgOK} from "~/lib/messages";
-import {mainView, mainViewRegister} from "~/main-page";
+import { mainViewRegister, showTabs } from "~/main-page";
 import {dismissSoftKeyboard} from "~/lib/users";
 
 let page: Page;
@@ -38,7 +38,7 @@ export async function tapClear(args: EventData) {
             await uData.delete();
             await uData.save();
             await msgOK("ALL YOUR DATA HAS BEEN DELETED!");
-            mainView.set("showGroup", 1);
+            showTabs(false);
             return getFrameById("setup").navigate({
                 moduleName: "pages/setup/1-present",
                 // Page navigation, without saving navigation history.
