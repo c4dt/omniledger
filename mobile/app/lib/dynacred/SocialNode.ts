@@ -2,11 +2,10 @@ import { UserLocation } from "./personhood-rpc";
 
 export class SocialNode {
 
-    constructor(public users: UserLocation[]) {
-    }
-
     static fromObject(o: any): SocialNode {
         return new SocialNode(o.users.map((u: any) => UserLocation.decode(u)));
+    }
+    constructor(public users: UserLocation[]) {
     }
 
     toObject(): any {

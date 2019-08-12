@@ -1,20 +1,20 @@
-import {Observable} from "tns-core-modules/data/observable";
+import { sprintf } from "sprintf-js";
+import { Observable } from "tns-core-modules/data/observable";
+import { Folder, knownFolders, path } from "tns-core-modules/file-system";
+import { fromFile, ImageSource } from "tns-core-modules/image-source";
+import * as dialogs from "tns-core-modules/ui/dialogs";
+import { topmost } from "tns-core-modules/ui/frame";
+import { GestureEventData } from "tns-core-modules/ui/gestures";
+import { appRootMain } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { PopDesc } from "~/lib/cothority/personhood/proto";
 import { Badge } from "~/lib/dynacred/Badge";
 import { PartyItem } from "~/lib/dynacred/PartyItem";
+import { msgFailed, msgOK } from "~/lib/messages";
 import { partyQrcode } from "~/lib/qrcode";
-import {uData} from "~/user-data";
-import {GestureEventData} from "tns-core-modules/ui/gestures";
-import {fromFile, ImageSource} from "tns-core-modules/image-source";
-import {elements} from "~/pages/lab/personhood/personhood-page";
-import {Folder, knownFolders, path} from "tns-core-modules/file-system";
-import {sprintf} from "sprintf-js";
-import {msgFailed, msgOK} from "~/lib/messages";
-import * as dialogs from "tns-core-modules/ui/dialogs";
-import {topmost} from "tns-core-modules/ui/frame";
-import {mainViewRegistered} from "~/main-page";
+import { uData } from "~/lib/user-data";
+import { elements } from "~/pages/lab/personhood/personhood-page";
 
 export class PersonhoodView extends Observable {
     parties: PartyView[] = [];
@@ -26,21 +26,21 @@ export class PersonhoodView extends Observable {
         this.updateBadges();
     }
 
-    get elements(): ViewElement[] {
+    get elements(): IViewElement[] {
         return this.sortUnique(this.parties).concat(this.sortUnique(this.badges));
     }
 
-    sortUnique(input: ViewElement[]): ViewElement[] {
-        let c = input.map(i => i).sort((a, b) => a.desc.datetime.compare(b.desc.datetime) * -1);
+    sortUnique(input: IViewElement[]): IViewElement[] {
+        const c = input.map((i) => i).sort((a, b) => a.desc.datetime.compare(b.desc.datetime) * -1);
         return c.filter((re, i) =>
-            c.findIndex(r => r.desc.uniqueName == re.desc.uniqueName) == i);
+            c.findIndex((r) => r.desc.uniqueName === re.desc.uniqueName) === i);
     }
 
     async updateAddParty() {
         try {
             this.canAddParty = uData.spawnerInstance &&
                 uData.personhoodPublished &&
-                await uData.canPay(uData.spawnerInstance.struct.costParty.value);
+                await uData.canPay(uData.spawnerInstance.costs.costParty.value);
         } catch (e) {
             Log.catch(e);
             this.canAddParty = false;
@@ -48,14 +48,14 @@ export class PersonhoodView extends Observable {
     }
 
     updateBadges() {
-        this.badges = uData.badges.map(b => new BadgeView(b))
+        this.badges = uData.badges.map((b) => new BadgeView(b))
             .sort((a, b) => a.desc.datetime.sub(b.desc.datetime).toNumber());
         this.notifyPropertyChange("elements", this.elements);
     }
 
     async updateParties() {
         await uData.updateParties();
-        this.parties = uData.parties.map(p => new PartyView(p))
+        this.parties = uData.parties.map((p) => new PartyView(p))
             .sort((a, b) => a.party.partyInstance.popPartyStruct.description.datetime.sub(
                 b.party.partyInstance.popPartyStruct.description.datetime).toNumber());
         if (this.parties.length > 0) {
@@ -67,14 +67,14 @@ export class PersonhoodView extends Observable {
 
     setProgress(text: string = "", width: number = 0) {
         Log.lvl2("setting progress to", text, width);
-        if (width == 0) {
+        if (width === 0) {
             elements.set("networkStatus", null);
         } else {
             let color = "#308080;";
             if (width < 0) {
                 color = "#a04040";
             }
-            let pb = topmost().getViewById("progress_bar");
+            const pb = topmost().getViewById("progress_bar");
             if (pb) {
                 pb.setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
             }
@@ -83,7 +83,7 @@ export class PersonhoodView extends Observable {
     }
 }
 
-interface ViewElement {
+interface IViewElement {
     desc: PopDesc;
     qrcode: ImageSource;
     icon: ImageSource;
@@ -92,13 +92,13 @@ interface ViewElement {
     nextStep: string;
     stepWidth: string;
 
-    onTap(arg: GestureEventData)
+    onTap(arg: GestureEventData);
 }
 
 function getImage(name: string): ImageSource {
-    const folder: Folder = <Folder>knownFolders.currentApp();
+    const folder: Folder = knownFolders.currentApp() as Folder;
     const folderPath: string = path.join(folder.path, "images", name);
-    return <ImageSource>fromFile(folderPath);
+    return fromFile(folderPath) as ImageSource;
 }
 
 export class BadgeView extends Observable {
@@ -138,20 +138,27 @@ export class BadgeView extends Observable {
     }
 
     async onTap(arg: GestureEventData) {
-        let p = this.badge.party.partyInstance.popPartyStruct.description;
-        let details = [p.name, p.purpose, p.dateString, p.location].join("\n");
+        const p = this.badge.party.partyInstance.popPartyStruct.description;
+        const details = [p.name, p.purpose, p.dateString, p.location].join("\n");
         if (this.badge.mined) {
             return msgOK(details, "Details for badge");
         }
         try {
-            let registered = uData.contact.isRegistered();
+            const registered = uData.contact.isRegistered();
+            if (registered) {
+                elements.setProgress("Mining coins", 50);
+            } else {
+                elements.setProgress("Registering contact", 50);
+            }
             await this.badge.mine(uData, elements.setProgress);
+            elements.setProgress("Done", 100);
             await msgOK("Successfully mined\n" + details, "Details for badge");
             if (!registered) {
-                return mainViewRegistered(arg);
+                appRootMain();
             }
         } catch (e) {
             Log.catch(e);
+            elements.setProgress(e.toString(), -100);
             await msgFailed("Couldn't mine:\n" + e.toString());
             this.badge.mined = true;
         }
@@ -174,7 +181,7 @@ export class PartyView extends Observable {
 
     get qrcode(): ImageSource {
         if (this.chosen &&
-            this.party.state == PopPartyInstance.SCANNING &&
+            this.party.state === PopPartyInstance.SCANNING &&
             !this.party.isOrganizer) {
             if (!this.qrCache) {
                 this.qrCache = partyQrcode(uData.keyPersonhood._public,
@@ -219,19 +226,19 @@ export class PartyView extends Observable {
         return sprintf("%d%%", (this.party.state * 25));
     }
 
-    showQrcode(){
+    showQrcode() {
         topmost().showModal("pages/modal/modal-key", partyQrcode(uData.keyPersonhood._public,
             this.party.partyInstance.popPartyStruct.description.name),
-            ()=>{}, false, false, false);
+            () => {Log.lvl3("done"); }, false, false, false);
     }
 
     setChosen(c: boolean) {
         if (c) {
-            elements.parties.forEach(p => p.setChosen(false));
+            elements.parties.forEach((p) => p.setChosen(false));
         }
         this.chosen = c;
         ["bgcolor", "qrcode", "nextStep", "stepWidth"].forEach(
-            key => this.notifyPropertyChange(key, this[key]));
+            (key) => this.notifyPropertyChange(key, this[key]));
     }
 
     async onTap(arg: GestureEventData) {
@@ -239,7 +246,7 @@ export class PartyView extends Observable {
         const BARRIER = "Activate Barrier Point";
         const SCAN = "Scan attendees";
         const FINALIZE = "Finalize Party";
-        let actions = [];
+        const actions = [];
         if (this.party.isOrganizer) {
             switch (this.party.state) {
                 case 1:
@@ -258,10 +265,11 @@ export class PartyView extends Observable {
         }
         actions.push(DELETE);
         try {
+            // tslint:disable:object-literal-sort-keys
             switch (await dialogs.action({
                 title: "Action for " + this.party.partyInstance.popPartyStruct.description.name,
                 cancelButtonText: "Don't do anything",
-                actions: actions,
+                actions,
             })) {
                 case DELETE:
                     if (await dialogs.confirm({
@@ -269,8 +277,9 @@ export class PartyView extends Observable {
                         message: "Are you sure to delete that party? There is no way back.",
                         okButtonText: "Delete Party",
                         cancelButtonText: "Cancel",
+                        // tslint:enable:object-literal-sort-keys
                     })) {
-                        let index = uData.parties.findIndex(p => this.party == p);
+                        const index = uData.parties.findIndex((p) => this.party === p);
                         uData.parties.splice(index, 1);
                         elements.setProgress("Updating parties", 50);
                         await elements.updateParties();
@@ -281,19 +290,21 @@ export class PartyView extends Observable {
                     break;
                 case BARRIER:
                     elements.setProgress("Activating Barrier Point", 50);
-                    await this.party.partyInstance.activateBarrier([uData.keyIdentitySigner], uData.contact);
+                    await this.party.partyInstance.activateBarrier([uData.keyIdentitySigner]);
+                    const orgKeys = await uData.fetchOrgKeys(this.party.partyInstance);
+                    orgKeys.forEach((key) => this.party.partyInstance.addAttendee(key));
                     elements.setProgress();
                     break;
                 case SCAN:
                     return topmost().navigate({
-                        moduleName: "pages/lab/personhood/scan-atts/scan-atts-page",
                         context: this.party,
+                        moduleName: "pages/lab/personhood/scan-atts/scan-atts-page",
                     });
                     break;
                 case FINALIZE:
                     elements.setProgress("Finalizing party", 40);
                     await this.party.partyInstance.finalize([uData.keyIdentitySigner]);
-                    if (this.party.partyInstance.popPartyStruct.state == PopPartyInstance.FINALIZED) {
+                    if (this.party.partyInstance.popPartyStruct.state === PopPartyInstance.FINALIZED) {
                         elements.setProgress("Updating parties", 70);
                         await elements.updateParties();
                         await msgOK("Finalized the party");
@@ -306,7 +317,9 @@ export class PartyView extends Observable {
 
             this.setChosen(true);
         } catch (e) {
+            Log.catch(e);
             await msgFailed("Error occured: " + e.toString());
+            elements.setProgress();
         }
     }
 }

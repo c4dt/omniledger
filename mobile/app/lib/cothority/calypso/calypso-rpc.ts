@@ -33,13 +33,12 @@ export class OnChainSecretRPC {
     // then it asks the Calypso cothority to start the DKG.
     async createLTS(r: Roster, darcID: InstanceID, signers: Signer[]): Promise<CreateLTSReply> {
         const buf = Buffer.from(LtsInstanceInfo.encode(new LtsInstanceInfo({roster: r})).finish());
-        const ctx = new ClientTransaction({
-            instructions: [
-                Instruction.createSpawn(darcID, OnChainSecretInstance.contractID, [
-                    new Argument({name: "lts_instance_info", value: buf}),
-                ]),
-            ],
-        });
+        const ctx = ClientTransaction.make(
+            this.bc.getProtocolVersion(),
+            Instruction.createSpawn(darcID, OnChainSecretInstance.contractID, [
+                new Argument({name: "lts_instance_info", value: buf}),
+            ]),
+        );
         await ctx.updateCountersAndSign(this.bc, [signers]);
         await this.bc.sendTransactionAndWait(ctx);
         // Ask for the full proof which is easier to verify.
@@ -106,7 +105,13 @@ export class LongTermSecret extends OnChainSecretRPC {
             roster = bc.getConfig().roster;
         }
         const ocs = new OnChainSecretRPC(bc);
-        await ocs.authorizeRoster(roster);
+        try {
+            await ocs.authorizeRoster(roster);
+        } catch (e) {
+            if (e.toString().indexOf("already authorised") < 0) {
+                throw new Error(e);
+            }
+        }
         const lr = await ocs.createLTS(roster, darcID, signers);
         return new LongTermSecret(bc, lr.instanceid, lr.X, roster);
     }

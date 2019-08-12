@@ -1,7 +1,9 @@
+// tslint:disable-next-line
 const ZXing = require("nativescript-zxing");
+// tslint:disable-next-line
 const QRGenerator = new ZXing();
-import { fromNativeSource, ImageSource } from "image-source";
 import { sprintf } from "sprintf-js";
+import { fromNativeSource, ImageSource } from "tns-core-modules/image-source";
 import { screen } from "tns-core-modules/platform";
 import { Contact } from "~/lib/dynacred/Contact";
 import { Public } from "~/lib/dynacred/KeyPair";
@@ -23,7 +25,7 @@ export function qrcodeIdentity(c: Contact): ImageSource {
         encode: qrcodeIdentityStr(c),
         format: ZXing.QR_CODE,
         height: sideLength,
-        width: sideLength
+        width: sideLength,
     });
     return fromNativeSource(qrcode);
 }
@@ -36,8 +38,7 @@ export function partyQrcode(key: Public, desc: string): ImageSource {
         encode: url,
         format: ZXing.QR_CODE,
         height: sideLength,
-        width: sideLength
+        width: sideLength,
     });
     return fromNativeSource(qrcode);
 }
-

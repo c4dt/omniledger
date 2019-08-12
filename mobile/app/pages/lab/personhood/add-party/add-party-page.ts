@@ -7,49 +7,51 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
+import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import { PopDesc } from "~/lib/cothority/personhood/proto";
-import { Defaults } from "~/lib/dynacred/Defaults";
+import { Contact } from "~/lib/dynacred/Contact";
 import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { msgFailed } from "~/lib/messages";
+import { testingMode, uData } from "~/lib/user-data";
 import { dismissSoftKeyboard } from "~/lib/users";
-import { uData } from "~/user-data";
-import { Contact } from "~/lib/dynacred/Contact";
-import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 
-let NewParty: PopDesc = undefined;
-let newConfig = undefined;
-let page: Page = undefined;
+let newParty: PopDesc;
+let page: Page;
 
-let dataForm = fromObject({
-    name: "",
+const dataForm = fromObject({
     date: "",
-    time: "",
-    purpose: "",
     location: "",
+    name: "",
+    purpose: "",
     reward: 1e6,
+    time: "",
 });
 
-let viewModel = fromObject({
-    dataForm: dataForm,
+const viewModel = fromObject({
+    dataForm,
+    networkStatus: null,
     orgList: new ObservableArray(),
     readOnly: false,
-    networkStatus: null,
 });
 
 export function onNavigatingTo(args) {
     try {
         Log.lvl1("starting config-page");
-        page = <Page> args.object;
+        page = args.object as Page;
         page.bindingContext = viewModel;
-        if (Defaults.Testing) {
-            NewParty = new PopDesc({
-                name: "test " + Moment(new Date()).format("YY-MM-DD HH:mm"), purpose: "testing",
-                datetime: Long.fromNumber(new Date().getTime()), location: "cloud"
+        if (testingMode) {
+            newParty = new PopDesc({
+                datetime: Long.fromNumber(new Date().getTime()),
+                location: "cloud",
+                name: "test " + Moment(new Date()).format("YY-MM-DD HH:mm"),
+                purpose: "testing",
             });
         } else {
-            NewParty = new PopDesc({
-                name: "", purpose: "",
-                datetime: Long.fromNumber(new Date().getTime()), location: ""
+            newParty = new PopDesc({
+                datetime: Long.fromNumber(new Date().getTime()),
+                location: "",
+                name: "",
+                purpose: "",
             });
         }
         viewModel.get("orgList").splice(0);
@@ -65,36 +67,40 @@ export function onNavigatingTo(args) {
  * @return {Date}
  */
 function copyViewModelToParty() {
-    let date = dataForm.get("date").split("-");
-    let time = dataForm.get("time").split(":");
+    const date = dataForm.get("date").split("-");
+    const time = dataForm.get("time").split(":");
 
     if (date.length !== 3 || time.length !== 2) {
+        // tslint:disable:object-literal-sort-keys
         return dialogs.alert({
             title: "Internal error",
             message: "Cannot parse date or time.",
-            okButtonText: "Ok"
+            okButtonText: "Ok",
         }).then(() => {
             throw new Error("Cannot parse date or time");
         });
+        // tslint:enable:object-literal-sort-keys
     }
 
     date.map(parseInt);
     time.map(parseInt);
 
-    let unix = new Date(date[0], date[1] - 1, date[2], time[0], time[1], 0, 0).getTime();
-    NewParty = new PopDesc({
-        name: dataForm.get("name"), purpose: dataForm.get("purpose"),
-        datetime: Long.fromNumber(unix), location: dataForm.get("location")
+    const unix = new Date(date[0], date[1] - 1, date[2], time[0], time[1], 0, 0).getTime();
+    newParty = new PopDesc({
+        datetime: Long.fromNumber(unix),
+        location: dataForm.get("location"),
+        name: dataForm.get("name"),
+        purpose: dataForm.get("purpose"),
     });
 }
 
 function copyPartyToViewModel() {
-    const date = new Date(NewParty.datetime.toNumber());
+    const date = new Date(newParty.datetime.toNumber());
     dataForm.set("date", sprintf("%04d-%02d-%02d", date.getFullYear(), date.getMonth() + 1, date.getDate()));
     dataForm.set("time", sprintf("%02d:%02d", date.getHours(), date.getMinutes()));
-    dataForm.set("name", NewParty.name);
-    dataForm.set("purpose", NewParty.purpose);
-    dataForm.set("location", NewParty.location);
+    dataForm.set("name", newParty.name);
+    dataForm.set("purpose", newParty.purpose);
+    dataForm.set("location", newParty.location);
 }
 
 export function goBack() {
@@ -107,16 +113,24 @@ export async function save() {
         setProgress("Saving", 30);
         await copyViewModelToParty();
 
-        const orgs = <Contact[]>viewModel.get("orgList").slice();        
+        const orgs = viewModel.get("orgList").slice() as Contact[];
+        // Verify that all organizers have published their personhood public key
+        for (const org of orgs) {
+            if (!org.personhoodPub) {
+                throw new Error(`One of the organisers didn't publish his personhood key`);
+            }
+        }
 
         // Create the party
         setProgress("Creating Party on ByzCoin", 50);
-        let ppi = await uData.spawnerInstance.spawnPopParty({
-            coin: uData.coinInstance, signers: [uData.keyIdentitySigner],
-            orgs,
-            desc: NewParty, reward: Long.fromNumber(dataForm.get("reward"))
+        const ppi = await uData.spawnerInstance.spawnPopParty({
+            coin: uData.coinInstance,
+            desc: newParty,
+            orgs: orgs.map((org) => org.darcInstance.id),
+            reward: Long.fromNumber(dataForm.get("reward")),
+            signers: [uData.keyIdentitySigner],
         });
-        let p = new PartyItem(ppi);
+        const p = new PartyItem(ppi);
         p.isOrganizer = true;
         setProgress("Storing Parties", 75);
         await uData.addParty(p);
@@ -131,20 +145,22 @@ export async function save() {
 }
 
 export async function addOrg(args: any) {
-    let result = await dialogs.action({
+    // tslint:disable:object-literal-sort-keys
+    const result = await dialogs.action({
         title: "Chose organizer",
         cancelButtonText: "Abort",
-        actions: uData.contacts.map(f => f.alias)
+        actions: uData.contacts.map((f) => f.alias),
     });
-    let org = uData.contacts.find(f => f.alias == result);
+    // tslint:enable:object-literal-sort-keys
+    const org = uData.contacts.find((f) => f.alias === result);
     if (org != null) {
         viewModel.get("orgList").push(org);
     }
 }
 
 export function setProgress(text: string = "", width: number = 0) {
-    viewModel.set("networkStatus", width == 0 ? undefined : text);
-    if (width != 0) {
+    viewModel.set("networkStatus", width === 0 ? undefined : text);
+    if (width !== 0) {
         let color = "#308080;";
         if (width < 0) {
             color = "#a04040";
@@ -152,4 +168,3 @@ export function setProgress(text: string = "", width: number = 0) {
         page.getViewById("progress_bar").setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
     }
 }
-

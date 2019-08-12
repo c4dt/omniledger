@@ -95,6 +95,7 @@ export class WebSocketConnection implements IConnection {
 
                 try {
                     const ret = reply.decode(buf) as T;
+
                     resolve(ret);
                 } catch (err) {
                     if (err instanceof util.ProtocolError) {
@@ -105,19 +106,22 @@ export class WebSocketConnection implements IConnection {
                         );
                     }
                 }
+
                 ws.close(1000);
             });
 
             ws.onClose((code: number, reason: string) => {
-                // iOS doesn't return error-code 1002 in case of error, but sets the 'reason' to non-null in
-                // case of error.
+                // nativescript-websocket on iOS doesn't return error-code 1002 in case of error, but sets the 'reason'
+                // to non-null in case of error.
                 if (code !== 1000 || reason) {
+                    Log.error("Got close:", code, reason);
                     reject(new Error(reason));
                 }
             });
 
             ws.onError((err: Error) => {
                 clearTimeout(timer);
+
                 reject(new Error("error in websocket " + path + ": " + err));
             });
         });

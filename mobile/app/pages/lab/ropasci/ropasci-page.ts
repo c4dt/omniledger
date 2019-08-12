@@ -4,24 +4,24 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import {EventData, fromObject} from "tns-core-modules/data/observable";
-import {uData} from "~/user-data";
-import {Page} from "tns-core-modules/ui/page";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { topmost } from "tns-core-modules/ui/frame";
+import { GestureEventData } from "tns-core-modules/ui/gestures";
+import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import {GestureEventData} from "tns-core-modules/ui/gestures";
-import {topmost} from "tns-core-modules/ui/frame";
-import {RopasciView} from "~/pages/lab/ropasci/ropasci-view";
+import { uData } from "~/lib/user-data";
+import { RopasciView } from "~/pages/lab/ropasci/ropasci-view";
 
 export let elRoPaSci: RopasciView;
 let page: Page;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
-    page = <Page>args.object;
+    page = args.object as Page;
     elRoPaSci = new RopasciView();
     page.bindingContext = elRoPaSci;
     await elRoPaSci.updateRoPaScis();
-    setTimeout(()=>updateRoPaSci(), 1);
+    setTimeout(() => updateRoPaSci(), 1);
 }
 
 export async function updateRoPaSci() {
@@ -32,7 +32,7 @@ export async function updateRoPaSci() {
         await uData.updateRoPaScis();
         await uData.save();
         await elRoPaSci.updateRoPaScis();
-    } catch(e){
+    } catch (e) {
         Log.catch(e);
     }
     RopasciView.setProgress();

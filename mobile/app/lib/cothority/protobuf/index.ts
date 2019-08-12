@@ -4,7 +4,7 @@ import Log from "../log";
 
 import * as protobuf from "protobufjs/light";
 
-import models from "./models";
+import models from "./models.json";
 
 /**
  * ProtobufJS uses Uint8Array for a browser environment but we want the Buffer

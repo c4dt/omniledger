@@ -1,20 +1,20 @@
-import {EventData, Page, topmost} from "tns-core-modules/ui/frame";
+import { sprintf } from "sprintf-js";
+import { fromObject } from "tns-core-modules/data/observable";
+import { EventData, Page, topmost } from "tns-core-modules/ui/frame";
 import Log from "~/lib/cothority/log";
-import {fromObject} from "tns-core-modules/data/observable";
-import {sprintf} from "sprintf-js";
-import {uData} from "~/user-data";
+import { uData } from "~/lib/user-data";
 
 let page: Page;
-let rundown = fromObject({});
+const rundown = fromObject({});
 
 export async function navigatingTo(args: EventData) {
     Log.lvl2("navigatingTo: home");
-    page = <Page>args.object;
+    page = args.object as Page;
     try {
         let atts = 1;
-        atts += uData.contact.email != "" ? 1 : 0;
-        atts += uData.contact.phone != "" ? 1 : 0;
-        atts += uData.contact.url != "" ? 1 : 0;
+        atts += uData.contact.email !== "" ? 1 : 0;
+        atts += uData.contact.phone !== "" ? 1 : 0;
+        atts += uData.contact.url !== "" ? 1 : 0;
         addRundown(atts, 4, "attributes",
             "Add more information to your identity.", "Well done.");
         addRundown(uData.coinInstance != null ? 1 : 0, 1, "registrations",
@@ -33,7 +33,7 @@ export async function navigatingTo(args: EventData) {
 }
 
 function addRundown(now: number, max: number, attribute: string, improve: string, done: string) {
-    let label = attribute + "_rundown";
+    const label = attribute + "_rundown";
     let text = sprintf("You got all %d %s. %s", max, attribute, done);
     if (now < max) {
         text = sprintf("You got %d out of %d %s. %s", now, max, attribute, improve);

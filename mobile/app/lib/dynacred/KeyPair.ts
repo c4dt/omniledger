@@ -1,4 +1,5 @@
-import { curve, Point } from "@dedis/kyber";
+import { curve, Point, PointFactory } from "@dedis/kyber";
+import { Buffer } from "buffer";
 import { randomBytes } from "crypto-browserify";
 
 const curve25519 = curve.newCurve("edwards25519");
@@ -111,9 +112,7 @@ export class Public {
     }
 
     static fromProto(buf: Buffer): Public {
-        const p = curve25519.point();
-        p.unmarshalBinary(Buffer.from(buf.subarray(16)));
-        return new Public(p);
+        return new Public(PointFactory.fromProto(buf));
     }
 
     static fromHex(hex: string): Public {

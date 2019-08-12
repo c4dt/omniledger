@@ -1,15 +1,14 @@
-import {Observable} from "tns-core-modules/data/observable";
-import { ServerIdentity, Roster } from "~/lib/cothority/network";
-import { Data } from "~/lib/dynacred";
-import {ObservableArray} from "tns-core-modules/data/observable-array";
-import {Defaults} from "~/lib/dynacred/Defaults";
-import { uData } from "~/user-data";
-import { StatusRPC } from "~/lib/cothority/status";
+import { Observable } from "tns-core-modules/data/observable";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
 import Log from "~/lib/cothority/log";
+import { Roster, ServerIdentity } from "~/lib/cothority/network";
+import { StatusRPC } from "~/lib/cothority/status";
+import { Data } from "~/lib/dynacred";
+import { testingMode, uData } from "~/lib/user-data";
 
 export class AdminViewModel extends Observable {
-    nodes:ObservableArray<Node> = new ObservableArray();
-    testing:boolean = Defaults.Testing;
+    nodes: ObservableArray<Node> = new ObservableArray();
+    testing: boolean = testingMode;
 
     constructor(d: Data) {
         super();
@@ -17,7 +16,7 @@ export class AdminViewModel extends Observable {
         this.updateNodes();
     }
 
-    updateNodes(){
+    updateNodes() {
         this.nodes.splice(0);
         if (uData.bc) {
             uData.bc.getConfig().roster.list.forEach((si, i) => this.nodes.push(new Node(si, this)));
@@ -46,15 +45,15 @@ export class Node {
         this.address = si.address;
         this.status = "unknown";
 
-        const s = new StatusRPC(new Roster({ list: [ si ]}));
-        const st = s.getStatus().then((s)=> {
+        const status = new StatusRPC(new Roster({ list: [ si ]}));
+        status.getStatus().then((s) => {
             // got status, put it into the right spot
-            this.status = "ok, up " + s.getStatus("Generic")["field"]["Uptime"];
+            this.status = "ok, up " + s.getStatus("Generic").field.Uptime;
             // trigger an update.
-            am.nodes.splice(0, 0)
+            am.nodes.splice(0, 0);
         }).catch((e) => {
             this.status = "error";
             Log.catch(e);
-        })
+        });
     }
 }

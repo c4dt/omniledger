@@ -4,56 +4,30 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import {EventData} from "tns-core-modules/data/observable";
-import {getFrameById, Page, topmost} from "tns-core-modules/ui/frame";
-import {uData} from "~/user-data";
-import {Identity, AttributesViewModel} from "./attributes-view";
-import Log from "~/lib/cothority/log"
-import * as dialogs from "tns-core-modules/ui/dialogs";
-import {Defaults} from "~/lib/dynacred/Defaults";
-import {SelectedIndexChangedEventData} from "tns-core-modules/ui/tab-view";
-import {msgFailed, msgOK} from "~/lib/messages";
-import { mainViewRegister, showTabs } from "~/main-page";
-import {dismissSoftKeyboard} from "~/lib/users";
+import { EventData } from "tns-core-modules/data/observable";
+import { getFrameById, Page, topmost } from "tns-core-modules/ui/frame";
+import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
+import Log from "~/lib/cothority/log";
+import { msgFailed, msgOK } from "~/lib/messages";
+import { testingMode, uData } from "~/lib/user-data";
+import { dismissSoftKeyboard } from "~/lib/users";
+import { AttributesViewModel, Identity } from "./attributes-view";
 
 let page: Page;
 export let adminView: AttributesViewModel;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export function navigatingTo(args: EventData) {
-    page = <Page>args.object;
+    page = args.object as Page;
     adminView = new AttributesViewModel(uData);
     page.bindingContext = adminView;
-}
-
-export async function tapClear(args: EventData) {
-    const page = <Page>args.object;
-    if (Defaults.Testing) {
-        uData.delete();
-        await uData.save();
-        mainViewRegister(args);
-    } else {
-        if (await dialogs.confirm("Do you really want to delete everything? There is no way back!") &&
-            await dialogs.confirm("You will lose all your data! No way back!")) {
-            await uData.delete();
-            await uData.save();
-            await msgOK("ALL YOUR DATA HAS BEEN DELETED!");
-            showTabs(false);
-            return getFrameById("setup").navigate({
-                moduleName: "pages/setup/1-present",
-                // Page navigation, without saving navigation history.
-                backstackVisible: false
-            });
-
-        }
-    }
 }
 
 export async function tapSave(args: EventData) {
     try {
         dismissSoftKeyboard();
         adminView.setProgress("Saving Attributes", 10);
-        let uid: Identity = page.bindingContext.userId;
+        const uid: Identity = page.bindingContext.userId;
         uData.contact.alias = uid.alias;
         uData.contact.email = uid.email;
         uData.contact.phone = uid.phone;
@@ -75,4 +49,3 @@ export async function tapSave(args: EventData) {
 export async function switchSettings(args: SelectedIndexChangedEventData) {
     Log.lvl3("switchSettings", args);
 }
-

@@ -1,9 +1,9 @@
 import * as dialogs from "tns-core-modules/ui/dialogs";
 
-let okStrs = ['Cool', 'Nice', 'This rocks', 'Wonderful', 'Fantastic', 'Best', ':stars:'];
+const okStrs = ["Cool", "Nice", "This rocks", "Wonderful", "Fantastic", "Best", ":stars:"];
 let okIndex = -1;
 
-let failedStrs = ['Too bad', 'Shame', 'Try later', 'Dang', 'Why?', "Life's hard", 'This sucks'];
+const failedStrs = ["Too bad", "Shame", "Try later", "Dang", "Why?", "Life's hard", "This sucks"];
 let failedIndex = -1;
 
 export function getOK(): string {
@@ -11,12 +11,12 @@ export function getOK(): string {
     return okStrs[okIndex];
 }
 
-export async function msgOK(msg: string, title?: string){
+export async function msgOK(msg: string, title?: string) {
     return dialogs.alert({
-        title: title ? title : "Success",
         message: msg,
         okButtonText: getOK(),
-    })
+        title: title ? title : "Success",
+    });
 }
 
 export function getFailed(): string {
@@ -24,11 +24,10 @@ export function getFailed(): string {
     return failedStrs[failedIndex];
 }
 
-export async function msgFailed(msg: string, title?: string){
+export async function msgFailed(msg: string, title?: string) {
     return dialogs.alert({
-        title: title ? title : "Failure",
         message: msg,
         okButtonText: getFailed(),
-    })
+        title: title ? title : "Failure",
+    });
 }
-

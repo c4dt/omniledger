@@ -1,28 +1,28 @@
-import {EventData, fromObject, Observable} from "tns-core-modules/data/observable";
-import {Page} from "tns-core-modules/ui/page";
-import Log from "~/lib/cothority/log";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
-import {topmost} from "tns-core-modules/ui/frame";
-import {uData} from "~/user-data";
-import {msgFailed} from "~/lib/messages";
-import {randomBytes} from "crypto-browserify";
+import { fromObject } from "tns-core-modules/data/observable";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
+import Log from "~/lib/cothority/log";
+import { msgFailed } from "~/lib/messages";
+import { uData } from "~/lib/user-data";
 
-let page: Page = undefined;
+let page: Page;
 
-let dataForm = fromObject({
+const dataForm = fromObject({
+    choice: "Rock",
     description: "",
     stake: 100,
-    choice: "Rock",
 });
 
-let viewModel = fromObject({
-    dataForm: dataForm,
+const viewModel = fromObject({
+    dataForm,
     networkStatus: "",
 });
 
 export function onNavigatingTo(args) {
     Log.lvl1("new ropasci");
-    page = <Page>args.object;
+    page = args.object as Page;
     dataForm.set("description", uData.contact.alias);
     page.bindingContext = viewModel;
 }
@@ -33,17 +33,18 @@ export function goBack() {
 
 export async function save() {
     try {
-        let stake = Long.fromNumber(dataForm.get("stake"));
-        let choice = ["Rock", "Paper", "Scissors"].findIndex(c => c == dataForm.get("choice"));
-        let fillup = randomBytes(31);
+        const stake = Long.fromNumber(dataForm.get("stake"));
+        const choice = ["Rock", "Paper", "Scissors"].findIndex((c) => c === dataForm.get("choice"));
+        const fillup = randomBytes(31);
         setProgress("Creating game", 33);
-        let rps = await uData.spawnerInstance.spawnRoPaSci({
-            desc: dataForm.get("description"),
-            coin: uData.coinInstance,
-            signers: [uData.keyIdentitySigner],
-            stake: stake,
+        const rps = await uData.spawnerInstance.spawnRoPaSci({
             choice,
-            fillup});
+            coin: uData.coinInstance,
+            desc: dataForm.get("description"),
+            fillup,
+            signers: [uData.keyIdentitySigner],
+            stake,
+        });
         setProgress("Publishing game", 66);
         await uData.addRoPaSci(rps);
         await uData.save();
@@ -56,8 +57,8 @@ export async function save() {
 }
 
 export function setProgress(text: string = "", width: number = 0) {
-    viewModel.set("networkStatus", width == 0 ? undefined : text);
-    if (width != 0) {
+    viewModel.set("networkStatus", width === 0 ? undefined : text);
+    if (width !== 0) {
         let color = "#308080;";
         if (width < 0) {
             color = "#a04040";
@@ -65,4 +66,3 @@ export function setProgress(text: string = "", width: number = 0) {
         page.getViewById("progress_bar").setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
     }
 }
-

@@ -7,27 +7,23 @@ const lvlStr = ["E ", "W ", "I ", "!4", "!3", "!2", "!1", "P ", " 1", " 2", " 3"
 
 export class Logger {
 
-    constructor(lvl: number) {
-        this._lvl = lvl === undefined ? defaultLvl : lvl;
-		this.stackFrameOffset = 0;
-    }
-
-    _lvl: number;
-    // stackFrameOffset can be adjusted by the platform depending on the need.
-    stackFrameOffset: number;
-
-    get lvl() {
-        return this._lvl;
-    }
-
     set lvl(l) {
         this._lvl = l;
     }
 
+    get lvl() {
+        return this._lvl;
+    }
+    _lvl: number;
+    stackFrameOffset: number = 0;
+
+    constructor(lvl: number) {
+        this._lvl = lvl === undefined ? defaultLvl : lvl;
+    }
     out = (...str: string[]) => {
         // tslint:disable-next-line
         console.log(str.join(" "));
-    };
+    }
 
     joinArgs(args: any) {
         return args.map((a: any) => {
@@ -47,13 +43,10 @@ export class Logger {
                 }
 
                 // Have some special cases for the content
-                let content = "unparsable";
-                if (a.toString) {
-                    content = a.toString();
-                }
+                let content = a.toString();
                 if (type === "Uint8Array" || type === "Buffer") {
                     content = Buffer.from(a).toString("hex");
-                } else if (content === "[object Object]" || content === "unparsable") {
+                } else if (content === "[object Object]") {
                     content = util.inspect(a);
                 }
                 return "{" + type + "}: " + content;
@@ -80,7 +73,7 @@ export class Logger {
             // @ts-ignore
             return (file).padEnd(20);
         } catch (e) {
-            return this.printCaller(new Error("Couldn't get stack - " + e), i + 2);
+            return this.out("Couldn't get stack - " + e.toString(), (i + 2).toString());
         }
     }
 

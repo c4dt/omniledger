@@ -1,4 +1,3 @@
-import Log from "~/lib/cothority/log";
 import Long from "long";
 import { Rule } from "../darc";
 import Darc from "../darc/darc";
@@ -13,6 +12,7 @@ import ChainConfig from "./config";
 import DarcInstance from "./contracts/darc-instance";
 import { InstanceID } from "./instance";
 import Proof from "./proof";
+import { DataHeader } from "./proto";
 import CheckAuthorization, { CheckAuthorizationResponse } from "./proto/check-auth";
 import {
     AddTxRequest,
@@ -30,11 +30,6 @@ export const currentVersion = 1;
 const CONFIG_INSTANCE_ID = Buffer.alloc(32, 0);
 
 export default class ByzCoinRPC implements ICounterUpdater {
-
-    get genesisID(): InstanceID {
-        return this.genesis.computeHash();
-    }
-
     /**
      * Helper to create a genesis darc
      * @param signers       Authorized signers
@@ -121,6 +116,10 @@ export default class ByzCoinRPC implements ICounterUpdater {
 
     protected constructor() {}
 
+    get genesisID(): InstanceID {
+        return this.genesis.computeHash();
+    }
+
     /**
      * Getter for the genesis darc
      * @returns the genesis darc
@@ -146,6 +145,16 @@ export default class ByzCoinRPC implements ICounterUpdater {
     }
 
     /**
+     * Getter for the ByzCoin protocol version of the
+     * latest block known by the RPC client.
+     */
+    getProtocolVersion(): number {
+        const header = DataHeader.decode(this.latest.data);
+
+        return header.version;
+    }
+
+    /**
      * Sends a transaction to byzcoin and waits for up to 'wait' blocks for the
      * transaction to be included in the global state. If more than 'wait' blocks
      * are created and the transaction is not included, an exception will be raised.
@@ -156,7 +165,7 @@ export default class ByzCoinRPC implements ICounterUpdater {
      * transaction to be included
      * @returns a promise that gets resolved if the block has been included
      */
-    sendTransactionAndWait(transaction: ClientTransaction, wait: number = 10): Promise<AddTxResponse> {
+    async sendTransactionAndWait(transaction: ClientTransaction, wait: number = 10): Promise<AddTxResponse> {
         const req = new AddTxRequest({
             inclusionwait: wait,
             skipchainID: this.genesis.hash,
@@ -164,7 +173,12 @@ export default class ByzCoinRPC implements ICounterUpdater {
             version: currentVersion,
         });
 
-        return this.conn.send(req, AddTxResponse);
+        // The error might be in the response, so we look for it and then reject the promise.
+        const resp = await this.conn.send(req, AddTxResponse) as AddTxResponse;
+        if (resp.error.length === 0) {
+            return Promise.resolve(resp);
+        }
+        return Promise.reject(new Error(resp.error));
     }
 
     /**

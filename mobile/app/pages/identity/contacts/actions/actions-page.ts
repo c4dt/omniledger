@@ -1,22 +1,22 @@
-import {fromObject} from "tns-core-modules/data/observable";
-import {Page} from "tns-core-modules/ui/page";
-import {Contact} from "~/lib/dynacred/Contact";
-import {compose, available} from "nativescript-email";
-import {msgFailed} from "~/lib/messages";
-import {openUrl} from "tns-core-modules/utils/utils";
-import {dial, requestCallPermission} from "nativescript-phone";
-import {topmost} from "tns-core-modules/ui/frame";
+import { available, compose } from "nativescript-email";
+import { dial, requestCallPermission } from "nativescript-phone";
+import { fromObject } from "tns-core-modules/data/observable";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
+import { openUrl } from "tns-core-modules/utils/utils";
+import { Contact } from "~/lib/dynacred/Contact";
+import { msgFailed } from "~/lib/messages";
 
 let user: Contact;
 
 export function navigatingTo(args) {
-    const page: Page = <Page>args.object;
-    user = <Contact>page.navigationContext;
+    const page: Page = args.object as Page;
+    user = page.navigationContext as Contact;
     page.bindingContext = fromObject({
         alias: user.alias,
         email: user.email,
         phone: user.phone,
-        url: user.url
+        url: user.url,
     });
 }
 
@@ -25,8 +25,8 @@ export async function tapEmail() {
         if (await available()) {
             await compose({
                 subject: "From Personhood",
-                to: [user.email]
-            })
+                to: [user.email],
+            });
         } else {
             openUrl("mailto:test@test.com");
             // await msgFailed("Email not available");
@@ -43,7 +43,7 @@ export async function tapPhone() {
         })
         .catch(() => {
             dial(user.phone, true);
-        })
+        });
 }
 
 export async function tapUrl() {
