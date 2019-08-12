@@ -35,11 +35,9 @@ export class ProfileComponent implements OnInit {
     }
 
     async updateContact() {
-        await storeCredential(this.dialog, "Updating User Data", async () => {
-            this.uData.contact.alias = this.contactForm.controls.alias.value;
-            this.uData.contact.email = this.contactForm.controls.email.value;
-            this.uData.contact.subscribe = this.contactForm.controls.subscribe.value;
-            await this.uData.contact.sendUpdate();
-        });
+        this.uData.contact.alias = this.contactForm.controls.alias.value;
+        this.uData.contact.email = this.contactForm.controls.email.value;
+        this.uData.contact.subscribe = this.contactForm.controls.subscribe.value;
+        await storeCredential(this.dialog, "Updating User Data", this.uData);
     }
 }

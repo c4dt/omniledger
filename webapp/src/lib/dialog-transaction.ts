@@ -69,7 +69,7 @@ export class DialogTransactionComponent<T> implements OnInit {
 
     addBlock(index: number = this.blockIndex): Element {
         if (!this.main) {
-            return null;
+            return undefined;
         }
         const block = this.renderer.createElement("DIV");
         const txt = this.renderer.createText(index.toString());
