@@ -1,6 +1,7 @@
 CONTAINER = conode-ol
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
+WEBAPP_ASSET := ../webapp/src/assets/config.toml
 
 # -s -w are for smaller binaries
 # -X compiles the git tag into the binary
@@ -41,7 +42,9 @@ newdb: cothority-pull
 
 docker_run:
 	docker rm -f $(CONTAINER) || echo nothing to stop
-	cp build/conodes/public.toml ../webapp/src/assets/conodes.toml
+	echo "ByzCoinID = \"$$( grep ByzCoinID variables.txt | sed -e 's/.* //' )\"" > $(WEBAPP_ASSET)
+	echo >> $(WEBAPP_ASSET)
+	cat build/conodes/public.toml >> $(WEBAPP_ASSET)
 	docker run --rm -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_stop:

@@ -4,9 +4,9 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
 import { BcviewerService } from "../app/bcviewer/bcviewer.component";
 import { TWorker } from "./Ui";
 
-export interface IDialogTransactionConfig {
+export interface IDialogTransactionConfig<T> {
     title: string;
-    worker: TWorker;
+    worker: TWorker<T>;
 }
 
 @Component({
@@ -14,27 +14,7 @@ export interface IDialogTransactionConfig {
     styleUrls: ["./dialog-transaction.scss"],
     templateUrl: "dialog-transaction.html",
 })
-export class DialogTransactionComponent implements OnInit {
-
-    static progress(dtc: DialogTransactionComponent, percentage: number, text: string) {
-        dtc.percentage = percentage >= 0 ? percentage : percentage * -1;
-
-        if (dtc.percentage >= 100) {
-            clearTimeout(dtc.ubTimer);
-            dtc.blockIndex++;
-            dtc.addBlock();
-            setTimeout(() => {
-                dtc.dialogRef.close();
-            }, 1000);
-        }
-
-        if (percentage >= 0) {
-            dtc.text = "";
-            dtc.addTransaction(text);
-        } else {
-            dtc.text = text;
-        }
-    }
+export class DialogTransactionComponent<T> implements OnInit {
 
     percentage: number;
     blockIndex: number;
@@ -47,10 +27,10 @@ export class DialogTransactionComponent implements OnInit {
     private ubTimer: Timer;
 
     constructor(
-        readonly dialogRef: MatDialogRef<DialogTransactionComponent>,
+        readonly dialogRef: MatDialogRef<DialogTransactionComponent<T>>,
         private readonly bcv: BcviewerService,
         private readonly renderer: Renderer2,
-        @Inject(MAT_DIALOG_DATA) public data: IDialogTransactionConfig) {
+        @Inject(MAT_DIALOG_DATA) public data: IDialogTransactionConfig<T>) {
     }
 
     async ngOnInit() {
@@ -72,16 +52,25 @@ export class DialogTransactionComponent implements OnInit {
         for (let i = -2; i <= 0; i++) {
             this.addBlock(this.blockIndex + i);
         }
-        const prog = (p: number, t: string) => DialogTransactionComponent.progress(this, p, t);
+        const prog = (p: number, t: string) => this.progress(p, t);
         try {
-            await this.data.worker(prog);
+            const result = await this.data.worker(prog);
             prog(-100, "Done");
+            clearTimeout(this.ubTimer);
+            this.blockIndex++;
+            this.addBlock();
+            setTimeout(() => {
+                this.dialogRef.close(result);
+            }, 1000);
         } catch (e) {
             this.error = e.toString();
         }
     }
 
     addBlock(index: number = this.blockIndex): Element {
+        if (!this.main) {
+            return null;
+        }
         const block = this.renderer.createElement("DIV");
         const txt = this.renderer.createText(index.toString());
         block.appendChild(txt);
@@ -117,4 +106,16 @@ export class DialogTransactionComponent implements OnInit {
         this.transaction.classList.add("transaction");
         this.transaction.classList.add("tx-send");
     }
+
+    progress(percentage: number, text: string) {
+        this.percentage = percentage >= 0 ? percentage : percentage * -1;
+
+        if (percentage >= 0) {
+            this.text = "";
+            this.addTransaction(text);
+        } else {
+            this.text = text;
+        }
+    }
+
 }

@@ -78,21 +78,20 @@ export class ContactsComponent implements OnInit {
         });
         ac.afterClosed().subscribe(async (result: IUserCred) => {
             if (result && result.alias !== "") {
-                let newUser: Data;
-                const txResult = await showTransactions(this.dialog, "Creating new user " + result.alias,
+                const newUser = await showTransactions(this.dialog, "Creating new user " + result.alias,
                     async (progress: TProgress) => {
                         const ek = Private.fromRand();
                         progress(30, "Creating User Instance");
-                        newUser = await this.uData.createUser(result.alias, ek);
+                        const nu = await this.uData.createUser(result.alias, ek);
                         progress(-50, "Collecting User Information");
 
-                        if (newUser) {
-                            newUser.contact.email = result.email;
+                        if (nu) {
+                            nu.contact.email = result.email;
                             if (result.view !== "") {
                                 Log.lvl2("Setting default view of", result.view);
-                                newUser.contact.view = result.view;
+                                nu.contact.view = result.view;
                             }
-                            newUser.addContact(this.uData.contact);
+                            nu.addContact(this.uData.contact);
 
                             // Concatenate multiple instructions into one clientTransaction, so that
                             // the update is faster, as there won't be a wait for all transactions to
@@ -107,7 +106,7 @@ export class ContactsComponent implements OnInit {
                                 const gInst = groupsInstAvail.find((g) => group === g.darc.description.toString());
                                 await gInst.update();
                                 const newDarc = gInst.darc.evolve();
-                                const signID = (await newUser.contact.getDarcSignIdentity());
+                                const signID = (await nu.contact.getDarcSignIdentity());
                                 newDarc.rules.appendToRule(Darc.ruleSign, signID, Rule.OR);
                                 const args = [new Argument({
                                     name: DarcInstance.argumentDarc,
@@ -124,7 +123,7 @@ export class ContactsComponent implements OnInit {
                             const coins = Long.fromNumber(5 * 100);
                             const argsTransfer = [
                                 new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(coins.toBytesLE())}),
-                                new Argument({name: CoinInstance.argumentDestination, value: newUser.coinInstance.id}),
+                                new Argument({name: CoinInstance.argumentDestination, value: nu.coinInstance.id}),
                             ];
                             instructions.push(Instruction.createInvoke(this.uData.coinInstance.id,
                                 CoinInstance.contractID,
@@ -132,47 +131,46 @@ export class ContactsComponent implements OnInit {
                             signers.push([this.uData.keyIdentitySigner]);
 
                             // Update the new user
-                            newUser.contact.setGroups(addedGroups);
-                            newUser.contact.view = result.view;
+                            nu.contact.setGroups(addedGroups);
+                            nu.contact.view = result.view;
                             const instrUpdate = Instruction.createInvoke(
-                                newUser.contact.credentialIID,
+                                nu.contact.credentialIID,
                                 CredentialsInstance.contractID,
                                 CredentialsInstance.commandUpdate,
                                 [new Argument({
                                     name: CredentialsInstance.argumentCredential,
-                                    value: newUser.contact.credential.toBytes(),
+                                    value: nu.contact.credential.toBytes(),
                                 })],
                             );
                             instructions.push(instrUpdate);
-                            signers.push([newUser.keyIdentitySigner]);
+                            signers.push([nu.keyIdentitySigner]);
                             const ctx = new ClientTransaction({instructions});
                             await ctx.updateCountersAndSign(this.uData.bc, signers);
                             progress(60, "Updating User Information");
                             await this.uData.bc.sendTransactionAndWait(ctx);
 
                             progress(80, "Adding User to Contacts");
-                            this.uData.addContact(newUser.contact);
+                            this.uData.addContact(nu.contact);
                             await this.uData.save();
                         }
+                        return nu;
                     });
-                if (!txResult || txResult.toString().length === 0) {
-                    const url = this.location.prepareExternalUrl("/register?ephemeral=" +
-                        newUser.keyIdentity._private.toHex());
-                    let host = window.location.host;
-                    if (false) {
-                        if (host.match(/local[1-9]?/)) {
-                            let index = parseInt(host.slice(5, 6), 10);
-                            if (!index) {
-                                index = 0;
-                            }
-                            host = "local" + (index + 1) + ":4200";
+                const url = this.location.prepareExternalUrl("/register?ephemeral=" +
+                    newUser.keyIdentity._private.toHex());
+                let host = window.location.host;
+                if (false) {
+                    if (host.match(/local[1-9]?/)) {
+                        let index = parseInt(host.slice(5, 6), 10);
+                        if (!index) {
+                            index = 0;
                         }
+                        host = "local" + (index + 1) + ":4200";
                     }
-                    this.dialog.open(SignupLinkComponent, {
-                        data: `${window.location.protocol}//${host + url}`,
-                        width: "400px",
-                    });
                 }
+                this.dialog.open(SignupLinkComponent, {
+                    data: `${window.location.protocol}//${host + url}`,
+                    width: "400px",
+                });
             }
         });
     }
@@ -206,11 +204,11 @@ export class ContactsComponent implements OnInit {
                 if (coins.greaterThan(0)) {
                     await showTransactions(this.dialog, "Transferring coins",
                         async (progress: TProgress) => {
-                        await c.updateOrConnect(this.uData.bc);
-                        progress(50, "Transferring Coins");
-                        await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
-                            [this.uData.keyIdentitySigner]);
-                    });
+                            await c.updateOrConnect(this.uData.bc);
+                            progress(50, "Transferring Coins");
+                            await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
+                                [this.uData.keyIdentitySigner]);
+                        });
                     await this.bcvs.updateBlocks();
                 }
             }
