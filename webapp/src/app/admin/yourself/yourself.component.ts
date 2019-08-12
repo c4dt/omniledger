@@ -45,13 +45,10 @@ export class YourselfComponent implements OnInit {
     }
 
     async updateContact() {
-        await storeCredential(this.dialog, "Updating User Data", async () => {
-            this.uData.contact.alias = this.contactForm.controls.alias.value;
-            this.uData.contact.email = this.contactForm.controls.email.value;
-            this.uData.contact.phone = this.contactForm.controls.phone.value;
-            this.uData.contact.view = this.contactForm.controls.view.value;
-            await this.uData.contact.sendUpdate();
-            this.bcs.updateBlocks();
-        });
+        this.uData.contact.alias = this.contactForm.controls.alias.value;
+        this.uData.contact.email = this.contactForm.controls.email.value;
+        this.uData.contact.phone = this.contactForm.controls.phone.value;
+        this.uData.contact.view = this.contactForm.controls.view.value;
+        await storeCredential(this.dialog, "Updating User Data", this.uData);
     }
 }

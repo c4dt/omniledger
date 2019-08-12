@@ -158,14 +158,12 @@ export class ContactsComponent implements OnInit {
                 const url = this.location.prepareExternalUrl("/register?ephemeral=" +
                     newUser.keyIdentity._private.toHex());
                 let host = window.location.host;
-                if (false) {
-                    if (host.match(/local[1-9]?/)) {
-                        let index = parseInt(host.slice(5, 6), 10);
-                        if (!index) {
-                            index = 0;
-                        }
-                        host = "local" + (index + 1) + ":4200";
+                if (host.match(/^local[1-9]?:4200$/)) {
+                    let index = parseInt(host.slice(5, 6), 10);
+                    if (!index) {
+                        index = 0;
                     }
+                    host = "local" + (index + 1) + ":4200";
                 }
                 this.dialog.open(SignupLinkComponent, {
                     data: `${window.location.protocol}//${host + url}`,
@@ -182,11 +180,8 @@ export class ContactsComponent implements OnInit {
                 Log.lvl1("Got new contact:", result);
                 const userID = Buffer.from(result, "hex");
                 if (userID.length === 32) {
-                    await storeCredential(this.dialog, "Adding contact", async () => {
-                        this.uData.addContact(await Contact.fromByzcoin(this.uData.bc, userID));
-                        await this.uData.save();
-                    });
-                    await this.bcvs.updateBlocks();
+                    this.uData.addContact(await Contact.fromByzcoin(this.uData.bc, userID));
+                    await storeCredential(this.dialog, "Adding contact", this.uData);
                 }
             }
         });
@@ -216,11 +211,8 @@ export class ContactsComponent implements OnInit {
     }
 
     async contactDelete(toDelete: Contact) {
-        await storeCredential(this.dialog, "Deleting contact " + toDelete.alias, async () => {
-            this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
-            await this.uData.save();
-        });
-        await this.bcvs.updateBlocks();
+        this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
+        await storeCredential(this.dialog, "Deleting contact " + toDelete.alias, this.uData);
     }
 
     async calypsoSearch(c: Contact) {
@@ -263,12 +255,10 @@ export class ContactsComponent implements OnInit {
     }
 
     async actionDelete(a: DarcInstance) {
-        await storeCredential(this.dialog, "Deleting action", async () => {
-            this.uData.contact.setActions((await this.uData.contact.getActions())
-                .filter((aDI) => !aDI.id.equals(a.id)));
-            await this.uData.save();
-            await this.updateActions();
-        });
+        this.uData.contact.setActions((await this.uData.contact.getActions())
+            .filter((aDI) => !aDI.id.equals(a.id)));
+        await storeCredential(this.dialog, "Deleting action", this.uData);
+        await this.updateActions();
         await this.bcvs.updateBlocks();
     }
 
@@ -281,7 +271,9 @@ export class ContactsComponent implements OnInit {
     }
 
     async actionAdd() {
-        this.darcInstanceAdd(this.actions, "Action");
+        await this.getDarcInstance(this.actions, "Action");
+        this.uData.contact.setActions(this.actions);
+        await storeCredential(this.dialog, `Adding Action`, this.uData);
     }
 
     async actionShow(inst: DarcInstance) {
@@ -313,11 +305,9 @@ export class ContactsComponent implements OnInit {
     }
 
     async groupDelete(g: DarcInstance) {
-        await storeCredential(this.dialog, "Deleting action", async () => {
-            this.uData.contact.setGroups((await this.uData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
-            await this.uData.save();
-            await this.updateGroups();
-        });
+        this.uData.contact.setGroups((await this.uData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
+        await storeCredential(this.dialog, "Deleting action", this.uData);
+        await this.updateGroups();
         await this.bcvs.updateBlocks();
     }
 
@@ -330,7 +320,9 @@ export class ContactsComponent implements OnInit {
     }
 
     async groupAdd() {
-        this.darcInstanceAdd(this.groups, "Group");
+        await this.getDarcInstance(this.groups, "Group");
+        this.uData.contact.setGroups(this.groups);
+        await storeCredential(this.dialog, `Adding Group`, this.uData);
     }
 
     async groupShow(inst: DarcInstance) {
@@ -351,29 +343,28 @@ export class ContactsComponent implements OnInit {
         });
     }
 
-    private async darcInstanceAdd(array: DarcInstance[], type: string) {
-        this.dialog.open(DarcInstanceAddComponent, {data: {type}})
-            .afterClosed().subscribe(async (darcID: string | undefined) => {
-            if (darcID === "" || darcID === undefined) {
-                return; // cancel yield empty string, escape yield undef
-            }
-            const id = Buffer.from(darcID, "hex");
+    private async getDarcInstance(array: DarcInstance[], type: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.dialog.open(DarcInstanceAddComponent, {data: {type}})
+                .afterClosed().subscribe(async (darcID: string | undefined) => {
+                if (darcID === "" || darcID === undefined) {
+                    return; // cancel yield empty string, escape yield undef
+                }
+                const id = Buffer.from(darcID, "hex");
 
-            // TODO might be movable to AsyncValidator
-            await storeCredential(this.dialog, `Adding ${type}`, async () => {
                 try {
                     const inst = await DarcInstance.fromByzcoin(this.uData.bc, id);
                     if (array.some((a) => a.darc.id.equals(id))) {
-                        throw new Error(`Given ${type} is already added under the name "${inst.darc.description}"`);
+                        reject(`Given ${type} is already added under the name "${inst.darc.description}"`);
                     }
                     array.push(inst);
-                    await this.uData.save();
                 } catch (e) {
                     if (e.message === `key not in proof: ${darcID}`) {
                         e = new Error(`Given ${type}'s ID was not found`);
                     }
-                    throw e;
+                    reject(e);
                 }
+                resolve();
             });
         });
     }

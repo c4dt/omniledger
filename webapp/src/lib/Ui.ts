@@ -1,5 +1,6 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import { Data } from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 import { DialogTransactionComponent } from "./dialog-transaction";
 
@@ -75,11 +76,10 @@ export async function showDialogInfo(dialog: MatDialog, title: string, text: str
  * @param title shown in h1 in the dialog
  * @param store the callback to the actual storing of the credential.
  */
-export async function storeCredential(dialog: MatDialog, title: string,
-                                      store: <T>() => Promise<T | void>) {
+export async function storeCredential(dialog: MatDialog, title: string, uData: Data) {
     return showTransactions(dialog, title, async (progress: TProgress) => {
         progress(50, "Storing Credential");
-        return store();
+        await uData.save();
     });
 }
 
@@ -115,7 +115,7 @@ export async function showTransactions<T>(dialog: MatDialog, title: string, work
 
     return new Promise((resolve) => {
         tc.afterClosed().subscribe((res) => {
-            resolve(res as T);
+            resolve(res);
         });
     });
 }
