@@ -86,7 +86,7 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
 // Progress type to be used in showTransactions.
 export type TProgress = (percentage: number, text: string) => void;
 // Worker callback that implements multiple steps and calls progress before each step.
-export type TWorker<T> = (progress: TProgress) => Promise<T | void>;
+export type TWorker<T> = (progress: TProgress) => Promise<T>;
 
 /**
  * Shows a nice pop-up with some animation of the blockchain and the transaction being processed.
