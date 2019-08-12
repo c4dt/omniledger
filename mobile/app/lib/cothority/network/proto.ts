@@ -317,6 +317,6 @@ export class ServiceIdentity extends Message<ServiceIdentity> {
     }
 }
 
-// Roster.register();
-// ServerIdentity.register();
-// ServiceIdentity.register();
+Roster.register();
+ServerIdentity.register();
+ServiceIdentity.register();

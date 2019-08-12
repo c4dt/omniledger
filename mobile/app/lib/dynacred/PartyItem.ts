@@ -1,14 +1,9 @@
 // const ZXing = require("nativescript-zxing");
 // const QRGenerator = new ZXing();
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
-import Log from "~/lib/cothority/log";
 import Instance from "~/lib/cothority/byzcoin/instance";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
-import { PopDesc, PopPartyStruct } from "~/lib/cothority/personhood/proto";
-import Long from "long";
-import { Party } from "~/lib/dynacred/personhood-rpc";
-// import {screen} from "tns-core-modules/platform";
-// import {fromNativeSource, ImageSource} from "tns-core-modules/image-source";
+import { Party } from "./personhood-rpc";
 
 export class PartyItem {
 
@@ -46,11 +41,11 @@ export class PartyItem {
         };
     }
 
-    toParty(rpc: ByzCoinRPC): Party{
+    toParty(rpc: ByzCoinRPC): Party {
         return new Party({
-            roster: rpc.getConfig().roster,
             byzCoinID: rpc.genesisID,
             instanceID: this.partyInstance.id,
-        })
+            roster: rpc.getConfig().roster,
+        });
     }
 }

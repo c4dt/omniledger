@@ -1,2 +1,3 @@
-<Frame defaultPage="main-page" id="app-root">
-</Frame>
+<Page>
+    <Frame defaultPage="pages/loading/loading-page" id="app-root"/>
+</Page>

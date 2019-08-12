@@ -1,3 +1,4 @@
+// tslint:disable-next-line
 const WS = require("nativescript-websockets");
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
@@ -12,7 +13,7 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
     constructor(path: string) {
         Log.lvl4("new ns-ws with path", path);
         super(path);
-        //this.ws = new WS(path, {debug: true, timeout: 1000});
+        // this.ws = new WS(path, {debug: true, timeout: 1000});
         this.ws = new WS(path, {timeout: 1000});
         // to prevent the browser to use blob
         this.ws.binaryType = "arraybuffer";
@@ -36,7 +37,7 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
                 // allow protobuf encoded messages
                 Log.lvl2(`got an unknown websocket message type: ${typeof msg}`);
             }
-        })
+        });
     }
 
     /** @inheritdoc */

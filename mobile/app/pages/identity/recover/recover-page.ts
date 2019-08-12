@@ -4,23 +4,23 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import {EventData, fromObject} from "tns-core-modules/data/observable";
-import {Page} from "tns-core-modules/ui/page";
-import {topmost} from "tns-core-modules/ui/frame";
-import {RecoverView} from "~/pages/identity/recover/recover-view";
-import {Contact} from "~/lib/dynacred/Contact";
-import {uData} from "~/user-data";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
-import {msgFailed} from "~/lib/messages";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import {viewScanModel} from "~/pages/lab/personhood/scan-atts/scan-atts-page";
+import { Contact } from "~/lib/dynacred/Contact";
+import { msgFailed } from "~/lib/messages";
+import { uData } from "~/lib/user-data";
+import { RecoverView } from "~/pages/identity/recover/recover-view";
+import { viewScanModel } from "~/pages/lab/personhood/scan-atts/scan-atts-page";
 
 let page: Page;
 export let recoverView: RecoverView;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export function navigatingTo(args: EventData) {
-    page = <Page>args.object;
+    page = args.object as Page;
     recoverView = new RecoverView();
     page.bindingContext = recoverView;
 }
@@ -28,9 +28,9 @@ export function navigatingTo(args: EventData) {
 export function sliderLoaded(args) {
     const slider = args.object;
 
-    slider.on("valueChange", (args) => {
-        recoverView.sliderChange(args.value);
-    })
+    slider.on("valueChange", (a) => {
+        recoverView.sliderChange(a.value);
+    });
 }
 
 export function goBack() {
@@ -38,32 +38,33 @@ export function goBack() {
 }
 
 export async function addTrustee() {
-    let contacts: Contact[] = [];
-    uData.contacts.forEach(f => {
+    const contacts: Contact[] = [];
+    uData.contacts.forEach((f) => {
         if (f.isRegistered()) {
-            if (uData.recoverySignatures.filter(rs => {
+            if (uData.recoverySignatures.filter((rs) => {
                 rs.credentialIID.equals(f.credentialIID);
-            }).length == 0) {
+            }).length === 0) {
                 contacts.push(f);
             }
         }
     });
-    if (contacts.length == 0) {
+    if (contacts.length === 0) {
         return msgFailed("No untrusted but registered contact found");
     }
-    let ret = await dialogs.action({
+    // tslint:disable:object-literal-sort-keys
+    const ret = await dialogs.action({
         message: "Chose trustee",
         cancelButtonText: "Cancel",
-        actions: contacts.map(c => c.alias),
+        actions: contacts.map((c) => c.alias),
     });
-    let contact = contacts.filter(c => c.alias == ret);
+    const contact = contacts.filter((c) => c.alias === ret);
     switch (contact.length) {
         case 0:
             return;
         case 1:
             try {
                 await contact[0].updateOrConnect(uData.bc);
-                let recover = uData.contact.recover;
+                const recover = uData.contact.recover;
                 await recover.addTrustee(contact[0]);
                 recoverView._changed = true;
                 recover.threshold += 1;
@@ -79,8 +80,8 @@ export async function addTrustee() {
 }
 
 export function setProgress(text: string = "", width: number = 0) {
-    recoverView._networkStatus = width == 0 ? undefined : text;
-    if (width != 0) {
+    recoverView._networkStatus = width === 0 ? undefined : text;
+    if (width !== 0) {
         let color = "#308080;";
         if (width < 0) {
             color = "#a04040";
@@ -97,23 +98,23 @@ export async function save() {
 }
 
 export async function recoverUser() {
-    let contacts = await uData.searchRecovery();
-    let aliases = contacts.map(c => c.alias);
-    let userAlias = await dialogs.action({
+    const contacts = await uData.searchRecovery();
+    const aliases = contacts.map((c) => c.alias);
+    const userAlias = await dialogs.action({
         title: "Recover user",
         message: "Chose which user you want to recover",
         cancelButtonText: "Cancel",
         actions: aliases,
     });
-    if (userAlias == "Cancel") {
+    if (userAlias === "Cancel") {
         return;
     }
-    let user = contacts.filter(c => c.alias == userAlias);
-    if (user.length == 0) {
+    const user = contacts.filter((c) => c.alias === userAlias);
+    if (user.length === 0) {
         return msgFailed("Couldn't find user", userAlias);
     }
     topmost().navigate({
         moduleName: "pages/identity/recover/showRecovery/showRecovery-page",
-        context: user[0]
+        context: user[0],
     });
 }

@@ -1,10 +1,54 @@
+// tslint:disable-next-line
+const fileSystem = require("tns-core-modules/file-system");
+const documents = fileSystem.knownFolders.documents();
+import Log from "~/lib/cothority/log";
+
+/**
+ * Implements a storage using the nativescript file-system
+ */
+export class StorageFile {
+    static fileName = "dyna.json";
+    static keyValues: any = {};
+
+    static async set(key: string, value: string) {
+        this.keyValues[key] = value;
+        await FileIO.writeFile(this.fileName, JSON.stringify(this.keyValues));
+    }
+
+    static async get(key: string): Promise<string> {
+        if (Object.keys(this.keyValues).length === 0) {
+            try {
+                this.keyValues = strToObject(await FileIO.readFile(this.fileName));
+            } catch (e) {
+                Log.warn("probably empty storage...", e);
+                this.keyValues = {};
+            }
+        }
+        return this.keyValues[key];
+    }
+
+    static async putObject(key: string, obj: any) {
+        await StorageFile.set(key, JSON.stringify(obj));
+    }
+
+    static async getObject(entry: string): Promise<any> {
+        return strToObject(await this.get(entry));
+    }
+}
+
+function strToObject(str: string): any {
+    const obj = JSON.parse(str, (key, value) => {
+        if (value && typeof value === "object" && value.type === "Buffer") {
+            return Buffer.from(value);
+        }
+        return value;
+    });
+    return obj == null ? {} : obj;
+}
+
 /**
  * @file Library to ease file I/O using promises.
  */
-
-const FileSystem = require("tns-core-modules/file-system");
-const Documents = FileSystem.knownFolders.documents();
-import Log from "~/lib/cothority/log";
 
 export default class FileIO {
 
@@ -16,7 +60,7 @@ export default class FileIO {
     static async readFile(filePath: string): Promise<string> {
         let str = "";
         try {
-            str = await Documents.getFile(filePath).readText();
+            str = await documents.getFile(filePath).readText();
         } catch (error) {
             return Log.rcatch(error, "Reading error");
         }
@@ -32,7 +76,7 @@ export default class FileIO {
     static async writeFile(filePath: string, content: string): Promise<void> {
         Log.lvl2("writing to: " + filePath);
         try {
-            await Documents.getFile(filePath).writeText(content);
+            await documents.getFile(filePath).writeText(content);
         } catch (error) {
             Log.catch("WRITING ERROR:", error);
         }
@@ -45,11 +89,11 @@ export default class FileIO {
      * statuc (elementName: string)
      */
     static forEachFolderElement(folder: string, closure: any) {
-        Documents.getFolder(folder).eachEntity(function (entity) {
+        documents.getFolder(folder).eachEntity((entity) => {
             closure(entity);
             // continue until the last file
             return true;
-        })
+        });
     }
 
     /**
@@ -59,7 +103,7 @@ export default class FileIO {
      */
     static async removeFolder(folder: string): Promise<void> {
         try {
-            await Documents.getFolder(folder).remove();
+            await documents.getFolder(folder).remove();
         } catch (error) {
             Log.catch(error, "REMOVING ERROR :");
         }
@@ -72,7 +116,7 @@ export default class FileIO {
      * @returns {Promise<void>}
      */
     static async rmrf(dir: string): Promise<void> {
-        await Documents.getFolder(dir).clear();
+        await documents.getFolder(dir).clear();
     }
 
     /**
@@ -82,16 +126,16 @@ export default class FileIO {
      */
     static async lslr(dir: string, rec = false): Promise<void> {
         if (!rec) {
-            dir = FileSystem.path.join(Documents.path, dir);
+            dir = fileSystem.path.join(documents.path, dir);
         }
-        let folders = [];
-        let files = [];
-        let entities = await FileSystem.Folder.fromPath(dir).getEntities();
+        const folders = [];
+        const files = [];
+        const entities = await fileSystem.Folder.fromPath(dir).getEntities();
         // entities is array with the document's files and folders.
         entities.forEach((entity) => {
             const fullPath = entity.path;
             // const fullPath = FileSystem.path.join(entity.path, entity.name);
-            const isFolder = FileSystem.Folder.exists(fullPath);
+            const isFolder = fileSystem.Folder.exists(fullPath);
             const e = {
                 name: entity.name,
                 path: entity.path,
@@ -104,13 +148,13 @@ export default class FileIO {
         });
         Log.lvl2("");
         Log.lvl2("Directory:", dir);
-        folders.forEach(folder => {
+        folders.forEach((folder) => {
             Log.lvl2("d ", folder.name);
         });
-        files.forEach(file => {
+        files.forEach((file) => {
             Log.lvl2("f ", file.name);
         });
-        folders.forEach(folder => {
+        folders.forEach((folder) => {
             this.lslr(folder.path, true);
         });
     }
@@ -120,7 +164,7 @@ export default class FileIO {
      * @param path
      */
     static folderExists(path): boolean {
-        return FileSystem.Folder.exists(FileSystem.path.join(Documents.path, path));
+        return fileSystem.Folder.exists(fileSystem.path.join(documents.path, path));
     }
 
     /**
@@ -128,6 +172,6 @@ export default class FileIO {
      * @param path
      */
     static fileExists(path): boolean {
-        return FileSystem.Folder.exists(FileSystem.path.join(Documents.path, path));
+        return fileSystem.Folder.exists(fileSystem.path.join(documents.path, path));
     }
 }

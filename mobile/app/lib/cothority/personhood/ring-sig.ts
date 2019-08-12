@@ -1,7 +1,6 @@
 "use strict";
 
 import { curve, Point, Scalar } from "@dedis/kyber";
-import Log from "../log";
 import { BLAKE2Xs } from "@stablelib/blake2xs";
 import { cloneDeep } from "lodash";
 

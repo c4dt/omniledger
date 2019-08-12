@@ -1,9 +1,9 @@
-import {Observable} from "tns-core-modules/data/observable";
-import {Data} from "~/lib/dynacred/Data";
-import {ImageSource} from "tns-core-modules/image-source";
-import {topmost} from "tns-core-modules/ui/frame";
+import { Observable } from "tns-core-modules/data/observable";
+import { ImageSource } from "tns-core-modules/image-source";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Data } from "~/lib/dynacred/Data";
 import { qrcodeIdentity } from "~/lib/qrcode";
-import { uData } from "~/user-data";
+import { uData } from "~/lib/user-data";
 
 export class AttributesViewModel extends Observable {
 
@@ -29,14 +29,14 @@ export class AttributesViewModel extends Observable {
     }
 
     setProgress(text: string = "", width: number = 0) {
-        if (width == 0) {
+        if (width === 0) {
             this.set("networkStatus", null);
         } else {
             let color = "#308080;";
             if (width < 0) {
                 color = "#a04040";
             }
-            let pb = topmost().getViewById("progress_bar");
+            const pb = topmost().getViewById("progress_bar");
             if (pb) {
                 pb.setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
             }

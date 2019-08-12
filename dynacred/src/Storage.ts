@@ -1,5 +1,15 @@
-import Log from "@dedis/cothority/log";
+import { Buffer } from "buffer";
 import Dexie from "dexie";
+
+export interface IStorage {
+    set(key: string, buffer: string);
+
+    get(key: string): Promise<string>;
+
+    putObject(key: string, obj: any);
+
+    getObject(entry: string): Promise<any>;
+}
 
 export class StorageDB {
     static db: Dexie = null;
@@ -45,30 +55,4 @@ export class StorageDB {
 interface IContact {
     key: string;
     buffer: string;
-}
-
-export class StorageLocalStorage {
-    static pre = "dyna_";
-
-    static set(key: string, value: string) {
-        localStorage.setItem(this.pre + key, value);
-    }
-
-    static get(key: string): string {
-        return localStorage.getItem(this.pre + key);
-    }
-
-    static putObject(key: string, obj: any) {
-        StorageDB.set(key, JSON.stringify(obj));
-    }
-
-    static getObject(entry: string): any {
-        const obj = JSON.parse(this.get(entry), (key, value) => {
-            if (value && typeof value === "object" && value.type === "Buffer") {
-                return Buffer.from(value);
-            }
-            return value;
-        });
-        return obj == null ? {} : obj;
-    }
 }

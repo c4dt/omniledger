@@ -1,7 +1,6 @@
 import { Properties } from "protobufjs";
 import ByzCoinRPC from "./byzcoin-rpc";
 import Proof from "./proof";
-import Log from "~/lib/cothority/log";
 
 export type InstanceID = Buffer;
 
@@ -11,6 +10,7 @@ export type InstanceID = Buffer;
 export default class Instance {
     /**
      * Create an instance from a proof
+     * @param id the instance-id to extract
      * @param p The proof
      * @returns the instance
      */

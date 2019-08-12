@@ -4,35 +4,34 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import {EventData, fromObject} from "tns-core-modules/data/observable";
-import { qrcodeIdentity } from "~/lib/qrcode";
-import { showTabs } from "~/main-page";
-import {uData} from "~/user-data";
-import {Page} from "tns-core-modules/ui/page";
-import Log from "~/lib/cothority/log";
-import {scanNewUser} from "~/lib/users";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
+import { getFrameById, topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
 import { SelectedIndexChangedEventData, TabView } from "tns-core-modules/ui/tab-view";
-import {msgFailed, msgOK} from "~/lib/messages";
-import {Defaults} from "~/lib/dynacred/Defaults";
-import {ObservableArray} from "tns-core-modules/data/observable-array";
-import { Frame, getFrameById, topmost } from "tns-core-modules/ui/frame";
+import Log from "~/lib/cothority/log";
+import { msgFailed, msgOK } from "~/lib/messages";
+import { qrcodeIdentity } from "~/lib/qrcode";
+import { testingMode, uData } from "~/lib/user-data";
+import { scanNewUser } from "~/lib/users";
+import { frame } from "~/pages/identity/identity-page";
 import { UserView } from "../identity/contacts/contacts-view";
 
-let attributes = new ObservableArray();
-let identity = fromObject({
+const attributes = new ObservableArray();
+const identity = fromObject({
     alias: "unknown",
-    qrcode: undefined,
+    attributes,
     coins: "0",
+    hasCoins: false,
     networkStatus: undefined,
-    testing: Defaults.Testing,
     passport: "default",
-    attributes: attributes,
+    personhoodScore: 0,
+    qrcode: undefined,
+    testing: testingMode,
     widthAttributes: "0%",
-    widthRegistered: "0%",
     widthMeetups: "0%",
     widthParty: "0%",
-    personhoodScore: 0,
-    hasCoins: false,
+    widthRegistered: "0%",
 });
 
 let page: Page;
@@ -40,9 +39,13 @@ let page: Page;
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingToHome(args: EventData) {
     Log.lvl2("navigatingTo: home");
-    page = <Page>args.object;
+    page = args.object as Page;
+    page.bindingContext = identity;
+    if (!uData) {
+        Log.lvl2("uData not yet ready");
+        return;
+    }
     try {
-        page.bindingContext = identity;
         setTimeout(() => update(), 1);
     } catch (e) {
         Log.catch(e);
@@ -51,7 +54,7 @@ export async function navigatingToHome(args: EventData) {
 
 export function meetup() {
     return topmost().navigate({
-        moduleName: "pages/home/meetup/meetup-page"
+        moduleName: "pages/home/meetup/meetup-page",
     });
 }
 
@@ -67,7 +70,7 @@ let identityShow = 0;
 
 export function personhoodDesc() {
     return topmost().navigate({
-        moduleName: "pages/home/personhood/personhood-page"
+        moduleName: "pages/home/personhood/personhood-page",
     });
 }
 
@@ -94,8 +97,8 @@ export function cyclePersonhood() {
 }
 
 export function setProgress(text: string = "", width: number = 0) {
-    identity.set("networkStatus", width == 0 ? undefined : text);
-    if (width != 0) {
+    identity.set("networkStatus", width === 0 ? undefined : text);
+    if (width !== 0) {
         let color = "#308080;";
         if (width < 0) {
             color = "#a04040";
@@ -105,13 +108,13 @@ export function setProgress(text: string = "", width: number = 0) {
 }
 
 function setScore(att: number, reg: boolean, meet: number, party: number) {
-    let attWidth = Math.floor(10 * att / 4);
+    const attWidth = Math.floor(10 * att / 4);
     identity.set("widthAttributes", attWidth + "%");
-    let regWidth = reg ? 10 : 0;
+    const regWidth = reg ? 10 : 0;
     identity.set("widthRegistered", regWidth + "%");
-    let meetWidth = Math.min(meet, 6) * 5;
+    const meetWidth = Math.min(meet, 6) * 5;
     identity.set("widthMeetups", meetWidth + "%");
-    let partyWidth = party > 0 ? 50 : 0;
+    const partyWidth = party > 0 ? 50 : 0;
     identity.set("widthParty", partyWidth + "%");
     identity.set("personhoodScore", (attWidth + regWidth + meetWidth + partyWidth) + "%");
 }
@@ -121,25 +124,25 @@ export async function update() {
         setProgress("Updating", 50);
         identity.set("hasCoins", false);
         identity.set("alias", uData.contact.alias);
-        if (!uData.contact.isRegistered()) {
+        if (!uData.contact.isRegistered() && await uData.contact.isRegisteredByzCoin(uData.bc)) {
             try {
                 await uData.contact.updateOrConnect(uData.bc);
                 if (uData.contact.isRegistered()) {
                     // Need to send new credential to byzcoin
                     await uData.contact.sendUpdate([uData.keyIdentitySigner]);
                 }
-                await uData.save()
-            } catch(e){
-                Log.lvl2("user is definitely not on byzcoin: ", e.toString());
+                await uData.save();
+            } catch (e) {
+                await msgFailed("Error while trying to activate your profile: " + e.toString());
             }
         }
         identity.set("qrcode", qrcodeIdentity(uData.contact));
         attributes.splice(0);
         attributes.push({name: "alias", value: uData.contact.alias});
-        if (uData.contact.email != "") {
+        if (uData.contact.email !== "") {
             attributes.push({name: "email", value: uData.contact.email});
         }
-        if (uData.contact.phone != "") {
+        if (uData.contact.phone !== "") {
             attributes.push({name: "phone", value: uData.contact.phone});
         }
         setScore(attributes.length, uData.coinInstance != null, uData.uniqueMeetings, uData.badges.length);
@@ -150,14 +153,14 @@ export async function update() {
             identity.set("coins", uData.coinInstance.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
         }
         setProgress();
-    } catch (e){
+    } catch (e) {
         Log.catch(e);
     }
 }
 
 export async function coins(args: EventData) {
     try {
-        let u = await scanNewUser(uData);
+        const u = await scanNewUser(uData);
         await UserView.payUser(u, setProgress);
         await update();
         await uData.save();
@@ -172,8 +175,6 @@ export async function switchHome(args: SelectedIndexChangedEventData) {
     // This is only done for the "switchHome", not for the other "switch*", as "switchHome" is
     // used as an entry-point by different code-paths to go from the "loading/setup"-view to the
     // tab-view.
-    let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
-    tv.selectedIndex = 0;
-    showTabs(true);
-    await page.frame.navigate("pages/home/home-page");
+    // let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
+    // tv.selectedIndex = 0;
 }

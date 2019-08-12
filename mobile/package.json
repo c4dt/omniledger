@@ -8,6 +8,10 @@
       "version": "5.1.1"
     }
   },
+  "scripts": {
+    "lint": "tslint 'app/{,**/}*.ts'",
+    "lint:fix": "tslint --fix 'app/{,**/}*.ts'"
+  },
   "main": "app.js",
   "description": "NativeScript Application",
   "license": "SEE LICENSE IN <your-license-filename>",
@@ -62,6 +66,7 @@
     "nativescript-dev-sass": "^1.6.1",
     "nativescript-dev-typescript": "~0.7.0",
     "nativescript-dev-webpack": "^0.18.0",
+    "tslint": "^5.18.0",
     "typescript": "^3.3.3333",
     "webpack": "^4.29.6"
   },

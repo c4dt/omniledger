@@ -18,7 +18,7 @@ export default class CredentialsInstance extends Instance {
     /**
      * Generate the credential instance ID for a given public key
      *
-     * @param buf The public key
+     * @param buf the public key in marshalBinary form
      * @returns the id as a buffer
      */
     static credentialIID(buf: Buffer): InstanceID {
@@ -61,12 +61,12 @@ export default class CredentialsInstance extends Instance {
         );
         await inst.updateCounters(bc, signers);
 
-        const ctx = new ClientTransaction({instructions: [inst]});
+        const ctx = ClientTransaction.make(bc.getProtocolVersion(), inst);
         ctx.signWith([signers]);
 
         await bc.sendTransactionAndWait(ctx, 10);
 
-        return CredentialsInstance.fromByzcoin(bc, inst.deriveId());
+        return CredentialsInstance.fromByzcoin(bc, ctx.instructions[0].deriveId());
     }
 
     /**
@@ -173,7 +173,7 @@ export default class CredentialsInstance extends Instance {
             CredentialsInstance.commandUpdate,
             [new Argument({name: CredentialsInstance.argumentCredential, value: this.credential.toBytes()})],
         );
-        const ctx = new ClientTransaction({instructions: [instr]});
+        const ctx = ClientTransaction.make(this.rpc.getProtocolVersion(), instr);
         await ctx.updateCountersAndSign(this.rpc, [owners]);
 
         await this.rpc.sendTransactionAndWait(ctx);
@@ -191,16 +191,18 @@ export default class CredentialsInstance extends Instance {
     async recoverIdentity(pubKey: Point, signatures: RecoverySignature[]): Promise<any> {
         const sigBuf = Buffer.alloc(RecoverySignature.pubSig * signatures.length);
         signatures.forEach((s, i) => s.signature.copy(sigBuf, RecoverySignature.pubSig * i));
-        const ctx = new ClientTransaction({
-            instructions: [
-                Instruction.createInvoke(
-                    this.id,
-                    CredentialsInstance.contractID,
-                    "recover",
-                    [new Argument({name: "signatures", value: sigBuf}),
-                        new Argument({name: "public", value: pubKey.toProto()})]),
-            ],
-        });
+        const ctx = ClientTransaction.make(
+            this.rpc.getProtocolVersion(),
+            Instruction.createInvoke(
+                this.id,
+                CredentialsInstance.contractID,
+                "recover",
+                [
+                    new Argument({name: "signatures", value: sigBuf}),
+                    new Argument({name: "public", value: pubKey.toProto()}),
+                ],
+            ),
+        );
         await this.rpc.sendTransactionAndWait(ctx);
     }
 }
@@ -272,7 +274,7 @@ export class CredentialStruct extends Message<CredentialStruct> {
 
     /**
      * Set or update a credential attribute locally. The update is not sent to the blockchain.
-     * For this you need to call CredentialsInstance.sendUpdate().
+     * For this you need to call CredentialInstance.sendUpdate().
      *
      * @param owner         Signer to use for the transaction
      * @param credential    Name of the credential

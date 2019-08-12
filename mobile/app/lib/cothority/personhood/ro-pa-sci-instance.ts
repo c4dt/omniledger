@@ -49,8 +49,8 @@ export default class RoPaSciInstance extends Instance {
     }
 
     struct: RoPaSciStruct;
-    fillUp: Buffer;
-    firstMove: number;
+    private fillUp: Buffer;
+    private firstMove: number;
 
     constructor(private rpc: ByzCoinRPC, inst: Instance) {
         super(inst);
@@ -70,6 +70,13 @@ export default class RoPaSciInstance extends Instance {
     setChoice(choice: number, fillup: Buffer) {
         this.firstMove = choice;
         this.fillUp = fillup;
+    }
+
+    /**
+     * Returns the firstMove and the fillUp values.
+     */
+    getChoice(): [number, Buffer] {
+        return [this.firstMove, this.fillUp ? Buffer.from(this.fillUp) : undefined];
     }
 
     /**
@@ -97,29 +104,29 @@ export default class RoPaSciInstance extends Instance {
             throw new Error("don't have enough coins to match stake");
         }
 
-        const ctx = new ClientTransaction({
-            instructions: [
-                Instruction.createInvoke(
-                    coin.id,
-                    CoinInstance.contractID,
-                    CoinInstance.commandFetch,
-                    [
-                        new Argument({name: CoinInstance.argumentCoins,
-                            value: Buffer.from(this.struct.stake.value.toBytesLE())}),
-                    ],
-                ),
-                Instruction.createInvoke(
-                    this.id,
-                    RoPaSciInstance.contractID,
-                    "second",
-                    [
-                        new Argument({name: "account", value: coin.id}),
-                        new Argument({name: "choice", value: Buffer.from([choice % 3])}),
-                    ],
-                ),
-            ],
-        });
-
+        const ctx = ClientTransaction.make(
+            this.rpc.getProtocolVersion(),
+            Instruction.createInvoke(
+                coin.id,
+                CoinInstance.contractID,
+                CoinInstance.commandFetch,
+                [
+                    new Argument({
+                        name: CoinInstance.argumentCoins,
+                        value: Buffer.from(this.struct.stake.value.toBytesLE()),
+                    }),
+                ],
+            ),
+            Instruction.createInvoke(
+                this.id,
+                RoPaSciInstance.contractID,
+                "second",
+                [
+                    new Argument({name: "account", value: coin.id}),
+                    new Argument({name: "choice", value: Buffer.from([choice % 3])}),
+                ],
+            ),
+        );
         await ctx.updateCountersAndSign(this.rpc, [[signer], []]);
 
         await this.rpc.sendTransactionAndWait(ctx);
@@ -140,20 +147,15 @@ export default class RoPaSciInstance extends Instance {
         const preHash = Buffer.alloc(32, 0);
         preHash[0] = this.firstMove % 3;
         this.fillUp.copy(preHash, 1);
-        const ctx = new ClientTransaction({
-            instructions: [
-                Instruction.createInvoke(
-                    this.id,
-                    RoPaSciInstance.contractID,
-                    "confirm",
-                    [
-                        new Argument({name: "prehash", value: preHash}),
-                        new Argument({name: "account", value: coin.id}),
-                    ],
-                ),
+        const ctx = ClientTransaction.make(this.rpc.getProtocolVersion(), Instruction.createInvoke(
+            this.id,
+            RoPaSciInstance.contractID,
+            "confirm",
+            [
+                new Argument({name: "prehash", value: preHash}),
+                new Argument({name: "account", value: coin.id}),
             ],
-        });
-
+        ));
         await this.rpc.sendTransactionAndWait(ctx);
         await this.update();
     }

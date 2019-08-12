@@ -5,6 +5,7 @@ hooks/
 node_modules/
 platforms/
 releases/
+/cothority/
 archive/
 release
 .vscode

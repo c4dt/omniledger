@@ -13,6 +13,8 @@ jobs:
   include:
 
     - stage: build
+      language: go
+      go: "1.12.x"
       name: conode
       script:
         - cd conode
@@ -26,6 +28,7 @@ jobs:
         - npm run build
         - npm run test
     - name: webapp
+      if: branch = master
       language: node_js
       node_js: 10
       before_install: cd dynacred && npm ci && npm run build && cd ..
@@ -36,6 +39,12 @@ jobs:
       script:
         - npm run build --prod
         - npm run test --no-watch
+    - name: mobile
+      language: node_js
+      node_js: 10
+      install: cd mobile && make && npm i -g nativescript@5.4.1
+      script:
+        - npm run lint
 
     - stage: deploy
       name: demo.c4dt.org

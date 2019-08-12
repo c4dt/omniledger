@@ -1,8 +1,6 @@
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
-import Log from "~/lib/cothority/log";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
-import { Defaults } from "~/lib/dynacred/Defaults";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";
@@ -13,17 +11,6 @@ import { PartyItem } from "./PartyItem";
 
 export class Badge {
 
-    // get qrcode(): ImageSource {
-    //     const sideLength = screen.mainScreen.widthPixels / 4;
-    //     const qrcode = QRGenerator.createBarcode({
-    //         encode: this.party.partyInstance.popPartyStruct.description.name,
-    //         format: ZXing.QR_CODE,
-    //         height: sideLength,
-    //         width: sideLength
-    //     });
-    //     return fromNativeSource(qrcode);
-    // }
-
     static fromObject(bc: ByzCoinRPC, obj: any): Badge {
         const p = PartyItem.fromObject(bc, obj.party);
         const kp = KeyPair.fromObject(obj.keypair);
@@ -31,6 +18,7 @@ export class Badge {
         b.mined = obj.mined;
         return b;
     }
+
     mined = false;
 
     constructor(public party: PartyItem, public keypair: KeyPair) {
@@ -56,9 +44,9 @@ export class Badge {
             await this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
                 null, darc);
             // Setting spawner-id
-            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, Defaults.SpawnerID,
+            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, d.spawnerInstance.id,
                 null, null);
-            d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, Defaults.SpawnerID);
+            d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, d.spawnerInstance.id);
             // Use the coin and the darc to create a new user
             const ci = await CoinInstance.fromByzcoin(d.bc, CoinInstance.coinIID(darc.getBaseID()));
             await d.registerSelf(ci, [d.keyIdentitySigner]);

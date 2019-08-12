@@ -1,17 +1,17 @@
-import {fromObject} from "tns-core-modules/data/observable";
-import {Page} from "tns-core-modules/ui/page";
-import {Contact} from "~/lib/dynacred/Contact";
+import { fromObject } from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
+import { Contact } from "~/lib/dynacred/Contact";
 import { qrcodeIdentity } from "~/lib/qrcode";
 
-let closeCallback: Function;
+let closeCallback: () => null;
 
 export function onShownModally(args) {
-    const user = <Contact>args.context;
+    const user = args.context as Contact;
     closeCallback = args.closeCallback;
-    const page: Page = <Page>args.object;
+    const page: Page = args.object as Page;
     page.bindingContext = fromObject({
+        alias: user.alias,
         qrcode: qrcodeIdentity(user),
-        alias: user.alias
     });
 }
 

@@ -3,7 +3,7 @@ apply-patches: npm-install
 
 npm-install: clean
 	npm ci
-	find app -name "*js" | xargs rm
+	find app -name "*js" | xargs rm -f
 
 clean:
 	rm -rf node_modules platforms hooks
@@ -87,7 +87,7 @@ kyber_npm:
 
 dynacred_src: app/lib/dynacred
 
-app/lib/dynacred: dynacred
+app/lib/dynacred: ../dynacred/src
 	@cp -a $< $@
 	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/dynacred:~/lib/dynacred:"
 	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
@@ -100,8 +100,8 @@ dynacred_npm: cothority_npm
 	fi; \
 	find app/lib/dynacred -name "*.js" | xargs rm ; \
 	find app/lib/dynacred -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh remove; \
-	diff -Naurq dynacred/ app/lib/dynacred/ || \
-		( echo "Moving changes to dynacred"; cp -a app/lib/dynacred/ dynacred ); \
+	diff -Naurq ../dynacred/src/ app/lib/dynacred/ || \
+		( echo "Moving changes to dynacred"; cp -a app/lib/dynacred/* ../dynacred/src ); \
 	rm -rf app/lib/dynacred; \
 	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:"
 
