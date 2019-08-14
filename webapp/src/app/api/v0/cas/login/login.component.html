@@ -1,11 +1,10 @@
 <h1>Logging service</h1>
-<div *ngIf="authorized">
-<p>An external app coming from <strong>{{ server }}</strong> asked to log you in - do you want to accept
-or deny the request?</p>
-        <button mat-raised-button (click)="login()">Login</button>
-        <button mat-raised-button (click)="deny()">Deny</button>
-</div>
-<div *ngIf="!authorized">
-<p>An external app coming from <strong>{{ server }}</strong> asked to log you in - unfortunately you don't
-have access :(</p>
+
+<p>An external app coming from <strong>{{ service }}</strong> asked to log you in</p>
+<p *ngIf="state == 0">we are checking if you have access</p>
+<p *ngIf="state == 1">unfortunately you don't have access :(</p>
+<div *ngIf="state == 2">
+	<p>do you want to accept or deny the request?</p>
+	<button mat-raised-button (click)="login()">Login</button>
+	<button mat-raised-button (click)="deny()">Deny</button>
 </div>
