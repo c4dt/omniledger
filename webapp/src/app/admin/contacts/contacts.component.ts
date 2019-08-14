@@ -1,20 +1,21 @@
 import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { Contact, Data, FileBlob, Private } from "@c4dt/dynacred";
+import { Contact, Data, FileBlob, Private } from "src/lib/dynacred";
 
-import { Argument, Instruction } from "@dedis/cothority/byzcoin";
-import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import ISigner from "@dedis/cothority/darc/signer";
-import Log from "@dedis/cothority/log";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import Long from "long";
+import { Argument, Instruction } from "src/lib/cothority/byzcoin";
+import ClientTransaction from "src/lib/cothority/byzcoin/client-transaction";
+import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
+import { Rule } from "src/lib/cothority/darc";
+import Darc from "src/lib/cothority/darc/darc";
+import ISigner from "src/lib/cothority/darc/signer";
+import Log from "src/lib/cothority/log";
+import CredentialsInstance from "src/lib/cothority/personhood/credentials-instance";
 
 import { showTransactions, storeCredential, TProgress } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";

@@ -11,8 +11,10 @@
   "scripts": {
     "build": "tsc",
     "test": "ts-node --prefer-ts-exts node_modules/.bin/jasmine",
-    "prepare": "tslint --project . && npm run build",
-    "cover": "nyc jasmine"
+    "prepare": "npm run lint && npm run build",
+    "cover": "nyc jasmine",
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --fix --project ."
   },
   "keywords": [
     "cothority",

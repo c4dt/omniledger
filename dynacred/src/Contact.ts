@@ -260,6 +260,12 @@ export class Contact {
         return u;
     }
 
+    static async fromObjectBC(bc: ByzCoinRPC, obj: any): Promise<Contact> {
+        const u = Contact.fromObject(obj);
+        await u.updateOrConnect(bc);
+        return u;
+    }
+
     static async fromQR(bc: ByzCoinRPC, str: string): Promise<Contact> {
         const qr = await parseQRCode(str, 5);
         const u = new Contact();

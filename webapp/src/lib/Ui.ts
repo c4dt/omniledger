@@ -1,7 +1,8 @@
 import { Component, Inject } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
-import { Data } from "@c4dt/dynacred";
-import Log from "@dedis/cothority/log";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import Log from "src/lib/cothority/log";
+import { Data } from "src/lib/dynacred";
 import { DialogTransactionComponent } from "./dialog-transaction";
 
 /**

@@ -13,6 +13,7 @@ import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import Signer from "@dedis/cothority/darc/signer";
 import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
 import Log from "@dedis/cothority/log";
+import { Roster } from "@dedis/cothority/network";
 import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
@@ -30,6 +31,7 @@ import Long from "long";
 import { sprintf } from "sprintf-js";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
+import { activateTesting, Defaults } from "./Defaults";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { Party } from "./Party";
 import { PersonhoodRPC, PollStruct } from "./personhood-rpc";
@@ -105,8 +107,8 @@ export class Data {
      * @param alias for the new user
      * @param unrestricted whether the adminDarcID needs evolve_unrestricted
      */
-    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar,
-                                 alias: string, unrestricted: boolean = false):
+    static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar, alias: string,
+                                 unrestricted: boolean = false):
         Promise<Data> {
 
         // Prepare adminDarc to have all necessary rules
@@ -124,7 +126,7 @@ export class Data {
             await adminDarcInst.evolveDarcAndWait(newAdminDarc, [adminSigner], 10, unrestricted);
         }
 
-        const d = new Data(bc, {alias});
+        const d = new Data({alias, bc});
 
         const darcDevice = Darc.createBasic([d.keyIdentitySigner]
             , [d.keyIdentitySigner], Buffer.from("device"));
@@ -156,14 +158,8 @@ export class Data {
             signers: [adminSigner],
         });
 
-        try {
-            await (new OnChainSecretRPC(bc)).authorizeRoster();
-        } catch (e) {
-            if (e.toString().indexOf("already authorised") < 0) {
-                throw new Error(e.toString());
-            }
-        }
-        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner]);
+        const ocs = new OnChainSecretRPC(bc);
+        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner], await Defaults.RosterCalypso);
 
         const cred = Contact.prepareInitialCred(alias, d.keyIdentity._public, spawner.id, darcDevice.getBaseID(), lts);
 
@@ -201,6 +197,7 @@ export class Data {
 
         Log.lvl2("Linking new data to Data-structure");
         d.contact = new Contact(cred, d);
+        d.bc = bc;
         Log.lvl2("Credential id should be", CredentialsInstance.credentialIID(idBuf));
         await d.contact.updateOrConnect(bc);
         await d.connectByzcoin();
@@ -225,7 +222,7 @@ export class Data {
         return DarcInstance.fromByzcoin(bc, signer[0]);
     }
 
-    static async attachDevice(bc: ByzCoinRPC, url: string): Promise<Data> {
+    static async attachDevice(url: string): Promise<Data> {
         const a = document.createElement("a");
         a.href = url;
         if (!a.pathname.includes(this.urlNewDevice)) {
@@ -245,11 +242,12 @@ export class Data {
         if (credentialIID.length !== 32 || ephemeral.length !== 32) {
             throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
         }
-        const d = new Data(bc);
+        const d = new Data();
+        d.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
         d.contact = await Contact.fromByzcoin(d.bc, credentialIID);
         d.contact.data = d;
         await d.contact.updateOrConnect(d.bc);
-        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX);
+        d.lts = new LongTermSecret(d.bc, d.contact.ltsID, d.contact.ltsX, await Defaults.RosterCalypso);
 
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = d.contact.darcInstance.getSignerDarcIDs()[0];
@@ -282,7 +280,9 @@ export class Data {
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;
     keyIdentity: KeyPair;
+    bc: ByzCoinRPC = null;
     lts: LongTermSecret = null;
+    constructorObj: any;
     contact: Contact;
     parties: Party[] = [];
     badges: Badge[] = [];
@@ -297,19 +297,33 @@ export class Data {
      * fields for initialization of the class.
      * @param obj (optional) object with all fields for the class.
      */
-    constructor(
-        readonly bc: ByzCoinRPC,
-        obj: any = {},
-    ) {
+    constructor(obj: any = {}) {
         this.setValues(obj);
         this.setFileName("data.json");
+    }
+
+    /**
+     * Initializes this Data with the given data. Useful because the global gData object
+     * cannot be overwritten. But with `gData.overwrite` you can copy another Data object
+     * over it.
+     *
+     * @param d the new data object.
+     */
+    async overwrite(d: Data) {
+        this.contact = d.contact;
+        this.keyIdentity = d.keyIdentity;
+        this.bc = d.bc;
+        return this.connectByzcoin();
     }
 
     setFileName(n: string) {
         this.dataFileName = `storage/${n}`;
     }
 
-    setValues(obj: any) {
+    async setValues(obj: any) {
+        if (Object.keys(obj).length > 0) {
+            this.constructorObj = obj;
+        }
         this.continuousScan = obj.continuousScan ? obj.continuousScan : false;
         this.personhoodPublished = obj.personhoodPublished ? obj.personhoodPublished : false;
         this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
@@ -329,26 +343,52 @@ export class Data {
         }
     }
 
+    delete() {
+        this.setValues({});
+        this.bc = null;
+        this.constructorObj = {};
+        this.meetups = [];
+        this.parties = [];
+        this.badges = [];
+        this.ropascis = [];
+        this.polls = [];
+    }
+
     async connectByzcoin(): Promise<ByzCoinRPC> {
-        Log.lvl2("getting parties and badges");
-        this.parties = this.parties.map((p: any) => Party.fromObject(this.bc, p));
+        const obj = this.constructorObj;
+        if (this.bc == null) {
+            this.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
+        }
 
-        this.badges = this.badges.map((b: any) => Badge.fromObject(this.bc, b));
-        this.badges = this.badges.filter((badge, i) =>
-            this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
+        if (obj) {
+            Log.lvl2("getting parties and badges");
+            if (obj.parties) {
+                this.parties = obj.parties.map((p: any) => Party.fromObject(this.bc, p));
+            }
+            if (obj.badges) {
+                this.badges = obj.badges.map((b: any) => Badge.fromObject(this.bc, b));
+                this.badges = this.badges.filter((badge, i) =>
+                    this.badges.findIndex((b) => b.party.uniqueName === badge.party.uniqueName) === i);
+            }
 
-        Log.lvl2("Getting rock-paper-scissors");
-        this.ropascis = this.ropascis.map((rps: any) =>
-            new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
+            Log.lvl2("Getting rock-paper-scissors and polls");
+            if (obj.ropascis) {
+                this.ropascis = obj.ropascis.map((rps: any) =>
+                    new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps))));
+            }
+            if (obj.polls) {
+                this.polls = obj.polls.map((rps: any) => PollStruct.fromObject(rps));
+            }
 
-        Log.lvl2("Getting polls");
-        this.polls = this.polls.map((rps: any) => PollStruct.fromObject(rps));
+            if (obj.contact) {
+                this.contact = await Contact.fromObjectBC(this.bc, obj.contact);
+            }
+            Log.lvl2("Getting contact informations");
+        }
 
-        Log.lvl2("Getting contact informations");
         this.contact.data = this;
-        await this.contact.updateOrConnect(this.bc);
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-
+        await this.contact.updateOrConnect();
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, await Defaults.RosterCalypso);
         return this.bc;
     }
 
@@ -401,14 +441,10 @@ export class Data {
      */
     async load(): Promise<Data> {
         Log.lvl1("Loading data from", this.dataFileName);
-        this.setValues(await StorageDB.getObject(this.dataFileName));
+        await this.setValues(await StorageDB.getObject(this.dataFileName));
+        this.bc = null;
         await this.connectByzcoin();
         return this;
-    }
-
-    async isAvailableInStorageDB() {
-        const got = await StorageDB.getObject(this.dataFileName);
-        return got !== {};
     }
 
     async save(): Promise<Data> {
@@ -756,8 +792,7 @@ export class Data {
     // the 'SpawnerInstance'.
     async createUser(alias: string, ephemeral?: Private): Promise<Data> {
         Log.lvl1("Starting to create user", alias);
-        const d = new Data(this.bc);
-
+        const d = new Data();
         if (!ephemeral) {
             d.keyIdentity = new KeyPair();
         } else {
@@ -793,6 +828,7 @@ export class Data {
         d.contact = new Contact(cred, d);
         Log.lvl2("updating contact");
         await d.contact.updateOrConnect(this.bc);
+        d.bc = this.bc;
         Log.lvl2("finalizing data");
         await d.connectByzcoin();
         return d;
@@ -810,7 +846,7 @@ export class Data {
         this.contact = await Contact.fromByzcoin(this.bc, CredentialInstance.credentialIID(pub.toBuffer()));
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
-        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
+        this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX, await Defaults.RosterCalypso);
         // Follow the links from the credential darc-instance to the signer-darc to the device-darc
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
@@ -875,5 +911,54 @@ export class Data {
         this.contact.credential.deleteAttribute("1-devices", name);
         this.contact.incVersion();
         await this.contact.sendUpdate();
+    }
+}
+
+export class TestData extends Data {
+
+    static async init(alias: string = "admin", r: Roster = null): Promise<TestData> {
+        try {
+            activateTesting();
+            if (!r) {
+                r = await Defaults.Roster;
+            }
+            const admin = SignerEd25519.random();
+            const d = ByzCoinRPC.makeGenesisDarc([admin], r, "genesis darc");
+            ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret", "spawn:calypsoWrite",
+                "spawn:calypsoRead",
+                "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"].forEach((rule) => {
+                d.rules.appendToRule(rule, admin, "|");
+            });
+            const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
+            Defaults.ByzCoinID = bc.genesisID;
+
+            const fu = await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias);
+            await fu.save();
+            const td = new TestData({});
+            await td.load();
+            td.admin = admin;
+            td.darc = d;
+            return td;
+        } catch (e) {
+            return Log.rcatch(e, "couldn't initialize ByzCoin");
+        }
+    }
+
+    admin: Signer;
+    darc: Darc;
+
+    constructor(obj: {}) {
+        super(obj);
+    }
+
+    async createTestUser(alias: string, ephemeral?: Private): Promise<Data> {
+        const d = await super.createUser(alias, ephemeral);
+        d.dataFileName = "user_" + alias;
+        await this.coinInstance.transfer(Long.fromNumber(1e6), d.coinInstance.id, [this.keyIdentitySigner]);
+        while (d.coinInstance.value.lessThan(1e6)) {
+            await d.coinInstance.update();
+        }
+        await d.save();
+        return d;
     }
 }

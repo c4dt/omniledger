@@ -2,7 +2,7 @@ import { APP_INITIALIZER, NgModule } from "@angular/core";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { MatDialogModule } from "@angular/material";
+import { MatDialogModule } from "@angular/material/dialog";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DialogTransactionComponent } from "../lib/dialog-transaction";

@@ -1,12 +1,13 @@
 import { Component, OnInit } from "@angular/core";
-import { MatDialog, MatSnackBar } from "@angular/material";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 
-import { Data } from "@c4dt/dynacred";
+import { Data } from "src/lib/dynacred";
 
 import { Router } from "@angular/router";
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
 import { showTransactions, TProgress } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 

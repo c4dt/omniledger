@@ -1,10 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog, MatSnackBar } from "@angular/material";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { Data, Private, StorageDB } from "@c4dt/dynacred";
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
+import { Data, Private, StorageDB } from "src/lib/dynacred";
 
 import { showDialogOKC, showTransactions, TProgress } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";

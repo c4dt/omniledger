@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 
-import Log from "@dedis/cothority/log";
+import Log from "src/lib/cothority/log";
 
 @Component({
     selector: "app-user",
