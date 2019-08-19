@@ -10,7 +10,7 @@ import { Argument, Instruction } from "@c4dt/cothority/byzcoin";
 import ClientTransaction from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Rule } from "@c4dt/cothority/darc";
+import { IdentityDarc, Rule } from "@c4dt/cothority/darc";
 import Darc from "@c4dt/cothority/darc/darc";
 import ISigner from "@c4dt/cothority/darc/signer";
 import Log from "@c4dt/cothority/log";
@@ -264,10 +264,43 @@ export class ContactsComponent implements OnInit {
     }
 
     async actionCreate() {
-        await this.diCreate("Action", async (newDI) => {
-            this.uData.contact.setActions((await this.uData.contact.getActions()).concat(newDI));
+        const name = await this.askNameOfNewDarcInstance("Action");
+        if (name === undefined) {
+            return;
+        }
+
+        await showTransactions(this.dialog, "Creating new Action", async (progress: TProgress) => {
+            progress(30, "Preparing new DARCs");
+            const userDarcSigner = await this.uData.contact.getDarcSignIdentity();
+            const signDarc = Darc.createBasic([userDarcSigner], [userDarcSigner], Buffer.from(name));
+            const signDarcID = new IdentityDarc({id: signDarc.id});
+            const coinDarc = Darc.createBasic([], [signDarcID], Buffer.from(`${name}:coin`),
+                [`invoke:${CoinInstance.contractID}.${CoinInstance.commandTransfer}`]);
+
+            const coinID = Buffer.from(`${name}:coin`);
+
+            const transaction = ClientTransaction.make(this.uData.bc.getProtocolVersion(),
+                ...this.uData.spawnerInstance.spawnDarcInstructions(
+                    this.uData.coinInstance,
+                    signDarc, coinDarc),
+                ...this.uData.spawnerInstance.spawnCoinInstructions(
+                    this.uData.coinInstance,
+                    coinDarc.id,
+                    coinID));
+            await transaction.updateCountersAndSign(this.uData.bc, [[this.uData.keyIdentitySigner]]);
+
+            progress(60, "Creating new DARC and coin");
+            Log.lvl2(`creating coin instance with id: ${CoinInstance.coinIID(coinID).toString("hex")}`);
+            await this.uData.bc.sendTransactionAndWait(transaction);
+
+            progress(90, "Storing credential");
+            const newDI = await DarcInstance.fromByzcoin(this.uData.bc, signDarc.id);
+            const actions = await this.uData.contact.getActions();
+            this.uData.contact.setActions(actions.concat(newDI));
             await this.updateActions();
+            await this.uData.save();
         });
+
         await this.bcvs.updateBlocks();
     }
 
@@ -281,30 +314,6 @@ export class ContactsComponent implements OnInit {
         this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
     }
 
-    async diCreate(title: string, store: (newDI: DarcInstance) => {}) {
-        const tc = this.dialog.open(CreateComponent, {data: title});
-        tc.afterClosed().subscribe(async (result) => {
-            if (result) {
-                Log.lvl1("Creating new darcInstance with description:", result, title);
-                await showTransactions(this.dialog, "Creating new " + title,
-                    async (progress: TProgress) => {
-                        progress(-30, "Getting Identity");
-                        const di = await this.uData.contact.getDarcSignIdentity();
-                        const nd = Darc.createBasic([di], [di], Buffer.from(result));
-                        progress(60, "Creating new DARCs");
-                        const ndInst = await this.uData.spawnerInstance.spawnDarcs(this.uData.coinInstance,
-                            [this.uData.keyIdentitySigner], nd);
-                        await store(ndInst[0]);
-                        progress(90, "Storing credential");
-                        await this.uData.save();
-                    },
-                )
-                ;
-                await this.bcvs.updateBlocks();
-            }
-        });
-    }
-
     async groupDelete(g: DarcInstance) {
         this.uData.contact.setGroups((await this.uData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
         await storeCredential(this.dialog, "Deleting action", this.uData);
@@ -313,10 +322,27 @@ export class ContactsComponent implements OnInit {
     }
 
     async groupCreate() {
-        await this.diCreate("Group", async (newDI) => {
-            this.uData.contact.setGroups((await this.uData.contact.getGroups()).concat(newDI));
+        const name = await this.askNameOfNewDarcInstance("Group");
+        if (name === undefined) {
+            return;
+        }
+
+        await showTransactions(this.dialog, "Creating new Group", async (progress: TProgress) => {
+            progress(-30, "Getting Identity");
+            const di = await this.uData.contact.getDarcSignIdentity();
+            const nd = Darc.createBasic([di], [di], Buffer.from(name));
+
+            progress(60, "Creating new DARCs");
+            const ndInst = await this.uData.spawnerInstance.spawnDarcs(this.uData.coinInstance,
+                [this.uData.keyIdentitySigner], nd);
+
+            progress(90, "Storing credential");
+            const groups = await this.uData.contact.getGroups();
+            this.uData.contact.setGroups(groups.concat(ndInst));
             await this.updateGroups();
+            await this.uData.save();
         });
+
         await this.bcvs.updateBlocks();
     }
 
@@ -368,6 +394,12 @@ export class ContactsComponent implements OnInit {
                 resolve();
             });
         });
+    }
+
+    private async askNameOfNewDarcInstance(title: string): Promise<string | undefined> {
+        return new Promise((resolve, _) =>
+            this.dialog.open(CreateComponent, {data: title})
+                .afterClosed().subscribe(resolve));
     }
 }
 
