@@ -30,7 +30,7 @@ export class LoginComponent implements OnInit {
         ["c4dt.org", ""],
         ["matrix.c4dt.org", ""],
     ].map((l) => [l[0], Buffer.from(l[1], "hex")]));
-    private static readonly cost = 1;
+    private static readonly coinCost = 1;
     private static readonly challengeSize = 20;
     private static readonly challengeHash = "sha256";
     private static readonly ticketEncoding = "base64";
@@ -100,7 +100,7 @@ export class LoginComponent implements OnInit {
             throw Error("no such service found");
         }
 
-        const coins = Buffer.from(new Long(LoginComponent.cost).toBytesLE());
+        const coins = Buffer.from(new Long(LoginComponent.coinCost).toBytesLE());
         const createInvoke = (src: InstanceID, args: Argument[]) =>
             Instruction.createInvoke(
                 src,

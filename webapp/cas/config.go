@@ -24,6 +24,7 @@ type Config struct {
 
 	ServiceToCoinInstanceIDs map[string]skipchain.SkipBlockID
 
+	CoinCost        uint
 	TicketDecoder   TicketDecoder
 	ChallengeSize   uint
 	ChallengeHasher ChallengeHasher
@@ -74,6 +75,7 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 
 		ServiceToCoinInstanceIDs map[string]string
 
+		CoinCost       uint
 		TicketEncoding string
 		ChallengeSize  uint
 		ChallengeHash  string
@@ -127,6 +129,7 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 
 		serviceToCoinInstanceIDs,
 
+		tomlConf.CoinCost,
 		ticketDecoder,
 		tomlConf.ChallengeSize,
 		challengeHash,
