@@ -13,7 +13,7 @@ import { appRootMain, appRootSetup } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
 import { setFactory } from "~/lib/cothority/network/connection";
-import { msgOK } from "~/lib/messages";
+import { msgFailed, msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { initBC, loadData, newByzCoin, testingMode, uData } from "~/lib/user-data";
 
@@ -40,7 +40,12 @@ export async function navigatingTo(args: EventData) {
                 cancelButtonText: "Quit",
                 // tslint:enable:object-literal-sort-keys
             })) {
-                await newByzCoin();
+                try {
+                    await newByzCoin();
+                } catch (e) {
+                    await msgFailed(e.toString(), "Failed to setup ByzCoin");
+                    quit();
+                }
                 await msgOK(
                     "A new byzcoin has been created - please update your user-data.ts",
                     "ByzCoin created",

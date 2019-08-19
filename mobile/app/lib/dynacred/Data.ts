@@ -180,34 +180,32 @@ export class Data {
 
         Log.lvl1("Creating coin from darc");
         const signers = [adminSigner];
-        const ctx = new ClientTransaction({
-            instructions:
-                [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
+        const instructions: Instruction[] = [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
                         return Instruction.createSpawn(adminDarcID, DarcInstance.contractID, [
                             new Argument({name: DarcInstance.argumentDarc, value: dar.toBytes()}),
                         ]);
                     },
-                ),
-        });
+                );
         const idBuf = d.keyIdentity._public.toBuffer();
-        ctx.instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
+        instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
             new Argument({name: CoinInstance.argumentCoinID, value: idBuf}),
             new Argument({name: CoinInstance.argumentDarcID, value: darcCoin.getBaseID()}),
             new Argument({name: CoinInstance.argumentType, value: SPAWNER_COIN}),
         ]));
-        ctx.instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
+        instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
             new Argument({name: CredentialsInstance.argumentCredID, value: idBuf}),
             new Argument({name: CredentialsInstance.argumentDarcID, value: darcCred.getBaseID()}),
             new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()}),
         ]));
         const amount = Long.fromNumber(1e9);
-        ctx.instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
+        instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
             CoinInstance.contractID,
             CoinInstance.commandMint,
             [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(amount.toBytesLE())})]));
 
+        const ctx = ClientTransaction.make(bc.getProtocolVersion(), ...instructions);
         await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers,
-            [d.keyIdentitySigner]]);
+                [d.keyIdentitySigner]]);
         await bc.sendTransactionAndWait(ctx, 5);
 
         Log.lvl2("Linking new data to Data-structure");
@@ -817,16 +815,14 @@ export class Data {
         this.contact.credential.setAttribute("1-devices", "initial", darcDevice.getBaseID());
 
         Log.lvl1("Creating identity from spawner");
-        const ctx = new ClientTransaction({
-            instructions: [
+        const ctx = ClientTransaction.make(this.bc.getProtocolVersion(),
                 ...this.spawnerInstance.spawnDarcInstructions(coin,
                     darcDevice, darcSign, darcCred, darcCoin),
                 ...this.spawnerInstance.spawnCoinInstructions(coin,
                     darcCoin.getBaseID(), pub.marshalBinary()),
                 ...this.spawnerInstance.spawnCredentialInstruction(coin,
                     darcCred.getBaseID(), this.contact.credential, pub.marshalBinary()),
-            ],
-        });
+            );
         await ctx.updateCountersAndSign(this.bc, [signers]);
         await this.bc.sendTransactionAndWait(ctx);
 
