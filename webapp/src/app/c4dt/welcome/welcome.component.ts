@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 
-import Log from "src/lib/cothority/log";
+import Log from "@dedis/cothority/log";
 import { UserData } from "../../user-data.service";
 
 @Component({

@@ -2,9 +2,11 @@ import "cross-fetch/polyfill";
 
 import { Injectable } from "@angular/core";
 
-import { ByzCoinRPC } from "src/lib/cothority/byzcoin";
+import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 
-import { Config, Data } from "src/lib/dynacred";
+import Log from "@dedis/cothority/log";
+import { Config, Data } from "@c4dt/dynacred";
+import { StorageDB } from "@c4dt/dynacred/Storage";
 
 @Injectable({
     providedIn: "root",
@@ -28,6 +30,19 @@ export class UserData extends Data {
         }
         const config = Config.fromTOML(await res.text());
         this.bc = await ByzCoinRPC.fromByzcoin(config.roster, config.byzCoinID);
+    }
+
+    async load() {
+        Log.lvl1("Loading data from", name);
+        const values = await this.storage.getObject(name);
+        if (!values || values === {}) {
+            throw new Error("No data available");
+        }
+        const d = new Data(this.bc, values);
+        if (d.contact && await d.contact.isRegisteredByzCoin(this.bc)) {
+            await d.connectByzcoin();
+        }
+        d.storage = StorageDB;
     }
 }
 

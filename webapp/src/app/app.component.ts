@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
-import Log from "src/lib/cothority/log";
+import Log from "@dedis/cothority/log";
 
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";

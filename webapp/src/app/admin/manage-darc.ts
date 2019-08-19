@@ -4,9 +4,9 @@ import { MatSelectChange } from "@angular/material/select";
 
 import { curve } from "@dedis/kyber";
 
-import { Darc, IdentityEd25519, IIdentity, Rule } from "src/lib/cothority/darc";
-import IdentityDarc from "src/lib/cothority/darc/identity-darc";
-import IdentityWrapper from "src/lib/cothority/darc/identity-wrapper";
+import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 import { UserData } from "../user-data.service";
 
 export interface IManageDarc {

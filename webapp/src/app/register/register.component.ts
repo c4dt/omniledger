@@ -4,8 +4,8 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import Log from "src/lib/cothority/log";
-import { Data, Private, StorageDB } from "src/lib/dynacred";
+import Log from "@dedis/cothority/log";
+import { Data, Private, StorageDB } from "@c4dt/dynacred";
 
 import { showDialogOKC, showTransactions, TProgress } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
@@ -53,10 +53,12 @@ export class RegisterComponent implements OnInit {
         } else {
             this.register = true;
             this.registerForm = new FormGroup({
-                alias: new FormControl(),
-                darcID: new FormControl(undefined,
+                // These values are only valid in the local byzcoin-docker, so it's not a problem to have a
+                // private key here.
+                alias: new FormControl("admin"),
+                darcID: new FormControl("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a",
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
-                ephemeralKey: new FormControl(undefined,
+                ephemeralKey: new FormControl("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c",
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
             this.bcs.updateBlocks();

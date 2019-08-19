@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { InstanceID } from "src/lib/cothority/byzcoin";
-import { IdentityWrapper } from "src/lib/cothority/darc";
-import Log from "src/lib/cothority/log";
+import { InstanceID } from "@dedis/cothority/byzcoin";
+import { IdentityWrapper } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
 
 import { UserData } from "../../../../user-data.service";
 

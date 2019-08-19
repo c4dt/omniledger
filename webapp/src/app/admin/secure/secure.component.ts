@@ -2,12 +2,12 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
-import { CalypsoReadInstance, CalypsoWriteInstance } from "src/lib/cothority/calypso";
-import Darc from "src/lib/cothority/darc/darc";
-import Log from "src/lib/cothority/log";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoReadInstance, CalypsoWriteInstance } from "@dedis/cothority/calypso";
+import Darc from "@dedis/cothority/darc/darc";
+import Log from "@dedis/cothority/log";
 
-import { Contact, FileBlob } from "src/lib/dynacred";
+import { Contact, FileBlob } from "@c4dt/dynacred";
 
 import { showSnack, showTransactions, TProgress } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";

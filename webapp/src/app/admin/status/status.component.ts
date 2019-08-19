@@ -1,10 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 
-import Log from "src/lib/cothority/log";
-import StatusRPC from "src/lib/cothority/status/status-rpc";
+import Log from "@dedis/cothority/log";
+import StatusRPC from "@dedis/cothority/status/status-rpc";
 
-import { Data } from "src/lib/dynacred";
+import { Data } from "@c4dt/dynacred";
 
 import { hexBuffer } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
