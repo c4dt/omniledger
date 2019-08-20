@@ -19,6 +19,10 @@ jobs:
       script:
         - cd conode
         - make docker
+        - docker run --rm -t -p 7770-7777:7770-7777 --name conode c4dt/conode:dev &
+        - make conode
+        - build/bcadmin latest --bc bc*cfg
+        - docker rm -f conode
     - name: dynacred
       language: node_js
       node_js: 10
@@ -33,6 +37,7 @@ jobs:
       before_script: npm run lint
       script:
         - npm run build --prod
+        - docker run --rm -d -p 7770-7777:7770-7777 --name conode c4dt/conode:dev
         - npm run test --no-watch
 
     - stage: deploy

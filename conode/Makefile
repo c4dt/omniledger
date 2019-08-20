@@ -11,7 +11,8 @@ cothority:
 conode: cothority
 	@( cd cothority; git pull )
 	echo "Compiling binaries"; \
-	GO111MODULE=on go build -o build/conode; \
+	export GO111MODULE=on; \
+	go build -o build/conode; \
 	cd cothority; \
 		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
 		go build -o ../build/csadmin ./calypso/csadmin
