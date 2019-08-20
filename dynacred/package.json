@@ -2,8 +2,6 @@
   "name": "@c4dt/dynacred",
   "version": "0.0.5",
   "description": "The library used by the omniledger-ui and the personhood.online app",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/c4dt/omniledger.git"
@@ -11,8 +9,10 @@
   "scripts": {
     "build": "tsc",
     "test": "ts-node --prefer-ts-exts node_modules/.bin/jasmine",
-    "prepare": "tslint --project . && npm run build",
-    "cover": "nyc jasmine"
+    "prepare": "npm run lint && npm run build",
+    "cover": "nyc jasmine",
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --fix --project ."
   },
   "keywords": [
     "cothority",
@@ -21,7 +21,7 @@
   "author": "C4DT",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@dedis/cothority": "^3.1.4",
+    "@c4dt/cothority": "^3.1.16",
     "cross-fetch": "^3.0.4",
     "dexie": "^2.0.4",
     "tweetnacl-ts": "^1.0.3"
@@ -40,5 +40,10 @@
     "require": [
       "ts-node/register"
     ]
-  }
+  },
+  "files": [
+    "build/*"
+  ],
+  "main": "build/index.js",
+  "types": "build/index.d.ts"
 }

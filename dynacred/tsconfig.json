@@ -3,7 +3,8 @@
     "declaration": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "target": "ES6"
+    "target": "ES6",
+    "outDir": "build"
   },
   "include": [
     "src/**/*.ts"

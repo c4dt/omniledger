@@ -1,35 +1,24 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";
-import { Party } from "./Party";
-
-// const ZXing = require("nativescript-zxing");
-// const QRGenerator = new ZXing();
+import { PartyItem } from "./PartyItem";
 
 export class Badge {
 
-    // get qrcode(): ImageSource {
-    //     const sideLength = screen.mainScreen.widthPixels / 4;
-    //     const qrcode = QRGenerator.createBarcode({
-    //         encode: this.party.partyInstance.popPartyStruct.description.name,
-    //         format: ZXing.QR_CODE,
-    //         height: sideLength,
-    //         width: sideLength
-    //     });
-    //     return fromNativeSource(qrcode);
-    // }
-
     static fromObject(bc: ByzCoinRPC, obj: any): Badge {
-        const p = Party.fromObject(bc, obj.party);
+        const p = PartyItem.fromObject(bc, obj.party);
         const kp = KeyPair.fromObject(obj.keypair);
         const b = new Badge(p, kp);
         b.mined = obj.mined;
         return b;
     }
+
     mined = false;
 
-    constructor(public party: Party, public keypair: KeyPair) {
+    constructor(public party: PartyItem, public keypair: KeyPair) {
     }
 
     toObject(): any {
@@ -40,15 +29,27 @@ export class Badge {
         };
     }
 
-    async mine(d: Data, setProgress: () => {} = null) {
+    async mine(d: Data) {
         this.mined = true;
-        if (d.coinInstance) {
+        if (d.contact.isRegistered()) {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
                 d.coinInstance.id, null);
         } else {
-            return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
-                null, Contact.prepareUserDarc(d.keyIdentity._public.point,
-                    d.alias));
+            const darc = Contact.prepareUserDarc(d.keyIdentity._public.point,
+                d.alias);
+            // Create a coin and a darc
+            await this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
+                null, darc);
+            // Setting spawner-id
+            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, d.spawnerInstance.id,
+                null, null);
+            d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, d.spawnerInstance.id);
+            // Use the coin and the darc to create a new user
+            const ci = await CoinInstance.fromByzcoin(d.bc, CoinInstance.coinIID(darc.getBaseID()));
+            await d.registerSelf(ci, [d.keyIdentitySigner]);
+            // Now move over the coins
+            await ci.update();
+            await ci.transfer(ci.value, d.coinInstance.id, [d.keyIdentitySigner]);
         }
     }
 }

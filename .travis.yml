@@ -14,6 +14,8 @@ jobs:
 
     - stage: build
       name: conode
+      language: go
+      go: "1.12.x"
       script:
         - cd conode
         - make docker
@@ -25,11 +27,9 @@ jobs:
     - name: webapp
       language: node_js
       node_js: 10
-      before_install: cd dynacred && npm ci && npm pack && cd ..
       install:
         - cd webapp && npm ci
-        - d=node_modules/@c4dt/dynacred; rm -r $d && mkdir $d
-        - tar -x -f ../dynacred/*.tgz --strip-components=1 -C node_modules/@c4dt/dynacred
+        - npm link ../dynacred
       before_script: npm run lint
       script:
         - npm run build --prod

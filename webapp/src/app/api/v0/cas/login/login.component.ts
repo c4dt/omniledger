@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
-import { MatDialog } from "@angular/material";
+import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
+import { Darc, IdentityWrapper } from "@c4dt/cothority/darc";
 
 import { showDialogInfo } from "../../../../../lib/Ui";
 import { UserData } from "../../../../user-data.service";

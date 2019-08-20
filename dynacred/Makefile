@@ -40,5 +40,3 @@ kyber_npm:
 	    ( echo "Moving changes to kyber"; cp -a src/lib/kyber/ cothority/external/js/kyber/src )
 	@rm -rf src/lib/kyber
 	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/kyber:\@dedis/kyber:"
-
-

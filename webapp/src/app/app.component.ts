@@ -1,8 +1,8 @@
 import { Component, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
-import Log from "@dedis/cothority/log";
+import Log from "@c4dt/cothority/log";
 
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        if (!this.uData.isAvailableInStorageDB()) {
+        if (!this.uData.isAvailableInStorage()) {
             // No data saved - show how to get a new user
             this.loading = false;
             await this.router.navigate(["/newuser"]);

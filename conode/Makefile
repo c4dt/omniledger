@@ -1,46 +1,44 @@
-CONTAINER = conode-ol
+CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
 WEBAPP_ASSET := ../webapp/src/assets/config.toml
 
-# -s -w are for smaller binaries
-# -X compiles the git tag into the binary
-ldflags=-s -w -X main.gitTag=$(TAG)
-
 all: docker
-
-# Use this target to build from local source
-docker: clean build/Dockerfile
-	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
-	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
 cothority:
 	git clone --depth 1 https://github.com/c4dt/cothority
 
-cothority-pull: cothority
-	cd cothority && git pull
-
-newdb: cothority-pull
-	@echo "Compiling binaries"; \
-	rm -f build/conodes/*db; \
-	export GO111MODULE=on; \
+conode: cothority
+	@( cd cothority; git pull )
+	echo "Compiling binaries"; \
+	GO111MODULE=on go build -o build/conode; \
 	cd cothority; \
-		go build -o ../build/conode ./conode ; \
-		go build -o ../build/bcadmin ./byzcoin/bcadmin
+		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
+		go build -o ../build/csadmin ./calypso/csadmin
+
+newdb: conode
+	rm -f build/conodes/*db;
 	@echo "Starting nodes"; \
-	cp cothority/conode/run_nodes.sh build; \
-	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & )
-	@echo "Waiting for nodes to start up"; sleep 10; \
+	cd build; \
+	COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & \
+	echo "Waiting for nodes to start up"; sleep 10; \
 	echo "Creating new ByzCoin and printing out important variables"; echo; \
 	rm -f *.cfg; \
-	( build/bcadmin -c . create build/conodes/public.toml --interval 500ms; \
-	  build/bcadmin latest --bc bc-*; \
-	  build/bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee variables.txt
-	build/bcadmin -c . config --interval 400ms bc-* key-*
-	@sleep 5
-	@echo; echo "Shutting down conodes"; pkill -x conode; rm build/conodes/running
+	( ./bcadmin -c . create conodes/public.toml --interval 500ms; \
+	  ./bcadmin latest --bc bc-*; \
+	  ./bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee ../variables.txt; \
+	echo; echo "Shutting down conodes"; pkill -x conode; rm conodes/running
 
-docker_run:
+# Use this target to build from local source
+docker: build/Dockerfile cothority
+	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o build/conode
+	cd cothority; \
+		GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/bcadmin ./byzcoin/bcadmin; \
+		GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/csadmin ./calypso/csadmin
+	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
+	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
+
+docker_run: docker
 	docker rm -f $(CONTAINER) || echo nothing to stop
 	echo "ByzCoinID = \"$$( grep ByzCoinID variables.txt | sed -e 's/.* //' )\"" > $(WEBAPP_ASSET)
 	echo >> $(WEBAPP_ASSET)
@@ -58,4 +56,4 @@ docker_clean:
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
 
 clean:
-	rm -rf build/conode
+	rm -rf build/conode cothority

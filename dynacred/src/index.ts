@@ -4,7 +4,7 @@ import { Data } from "./Data";
 import { Device } from "./Device";
 import { Private } from "./KeyPair";
 import { FileBlob } from "./SecureData";
-import { StorageDB } from "./StorageDB";
+import { StorageDB } from "./Storage";
 
 export {
     Config,

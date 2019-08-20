@@ -1,6 +1,6 @@
 import Timer = NodeJS.Timer;
 import { Component, ElementRef, Inject, OnInit, Renderer2, ViewChild } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { BcviewerService } from "../app/bcviewer/bcviewer.component";
 import { TWorker } from "./Ui";
 

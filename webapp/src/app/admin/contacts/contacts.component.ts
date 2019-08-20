@@ -1,19 +1,20 @@
 import { Location } from "@angular/common";
 import { Component, Inject, OnInit } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 import { Contact, Data, FileBlob, Private } from "@c4dt/dynacred";
 
-import { Argument, Instruction } from "@dedis/cothority/byzcoin";
-import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import ISigner from "@dedis/cothority/darc/signer";
-import Log from "@dedis/cothority/log";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
+import { Argument, Instruction } from "@c4dt/cothority/byzcoin";
+import ClientTransaction from "@c4dt/cothority/byzcoin/client-transaction";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { Rule } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import ISigner from "@c4dt/cothority/darc/signer";
+import Log from "@c4dt/cothority/log";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import Long from "long";
 
 import { showTransactions, storeCredential, TProgress } from "../../../lib/Ui";
@@ -144,7 +145,7 @@ export class ContactsComponent implements OnInit {
                             );
                             instructions.push(instrUpdate);
                             signers.push([nu.keyIdentitySigner]);
-                            const ctx = new ClientTransaction({instructions});
+                            const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(), ...instructions);
                             await ctx.updateCountersAndSign(this.uData.bc, signers);
                             progress(60, "Updating User Information");
                             await this.uData.bc.sendTransactionAndWait(ctx);
