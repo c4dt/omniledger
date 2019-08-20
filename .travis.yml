@@ -18,7 +18,6 @@ jobs:
       go: "1.12.x"
       script:
         - cd conode
-        - go version
         - make docker
     - name: dynacred
       language: node_js

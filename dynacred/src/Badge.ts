@@ -6,9 +6,6 @@ import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";
 import { PartyItem } from "./PartyItem";
 
-// const ZXing = require("nativescript-zxing");
-// const QRGenerator = new ZXing();
-
 export class Badge {
 
     static fromObject(bc: ByzCoinRPC, obj: any): Badge {

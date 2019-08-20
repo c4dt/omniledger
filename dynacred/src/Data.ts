@@ -91,12 +91,13 @@ export class Data {
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
     static readonly views = ["default", "c4dt_admin", "c4dt_partner", "c4dt_user"];
+    static readonly defaultStorage = "storage/data.json";
 
     /**
      * Returns a promise with the loaded Data in it, when available. If the file
      * is not found, it returns an empty data.
      */
-    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = "storage/data.json"): Promise<Data> {
+    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = Data.defaultStorage): Promise<Data> {
         Log.lvl1("Loading data from", name);
         const values = await storage.getObject(name);
         if (!values || values === {}) {
@@ -286,7 +287,7 @@ export class Data {
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [ephemeralSigner], 5);
         return d;
     }
-    dataFileName: string = "storage/data.json";
+    dataFileName: string = Data.defaultStorage;
     continuousScan: boolean;
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;

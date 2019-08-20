@@ -330,7 +330,6 @@ export class Contact {
                 c.credential = c.credentialInstance.credential.copy();
                 c.darcInstance = await DarcInstance.fromByzcoin(bc, c.credentialInstance.darcID);
             } else {
-                Log.print(ul.publicKey);
                 c.seedPublic = Public.fromProto(ul.publicKey);
             }
             return c;
