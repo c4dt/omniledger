@@ -1,10 +1,11 @@
-import { NgModule } from "@angular/core";
+import { APP_INITIALIZER, NgModule } from "@angular/core";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { MatDialogModule } from "@angular/material";
+import { MatDialogModule } from "@angular/material/dialog";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { DialogTransactionComponent } from "../lib/dialog-transaction";
 import { DialogOKCancelComponent } from "../lib/Ui";
 import { DemoMaterialModule } from "../material-module";
 import { AdminComponent } from "./admin/admin.component";
@@ -35,6 +36,11 @@ import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
+import { UserData } from "./user-data.service";
+
+export function loadUserDataConfig(d: UserData) {
+    return () => d.loadConfig();
+}
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -59,6 +65,7 @@ import { RegisterComponent } from "./register/register.component";
         ProfileComponent,
         AdminComponent,
         DialogOKCancelComponent,
+        DialogTransactionComponent,
         BcviewerComponent,
         ShowBlockComponent,
         DevicesComponent,
@@ -85,6 +92,7 @@ import { RegisterComponent } from "./register/register.component";
         RetryLoadComponent,
         CreateComponent,
         DialogOKCancelComponent,
+        DialogTransactionComponent,
         ShowBlockComponent,
         DeviceAddComponent,
         DeviceShowComponent,
@@ -99,7 +107,15 @@ import { RegisterComponent } from "./register/register.component";
         MatDialogModule,
         AppRoutingModule,
     ],
-    providers: [],
+    providers: [
+        UserData,
+        {
+            deps: [UserData],
+            multi: true,
+            provide: APP_INITIALIZER,
+            useFactory: loadUserDataConfig,
+        },
+    ],
 })
 export class AppModule {
 }

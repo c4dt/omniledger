@@ -1,14 +1,16 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { Roster, ServerIdentity } from "@dedis/cothority/network";
-import { IConnection, RosterWSConnection, WebSocketConnection } from "@dedis/cothority/network/connection";
-import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
-import { Sign } from "@dedis/cothority/personhood/ring-sig";
-import { registerMessage } from "@dedis/cothority/protobuf";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import Log from "@c4dt/cothority/log";
+import { Roster, ServerIdentity } from "@c4dt/cothority/network";
+import { IConnection, RosterWSConnection, WebSocketConnection } from "@c4dt/cothority/network/connection";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import { Sign } from "@c4dt/cothority/personhood/ring-sig";
+import { registerMessage } from "@c4dt/cothority/protobuf";
 import { Scalar } from "@dedis/kyber";
-import { randomBytes } from "crypto";
 import * as crypto from "crypto";
+import { randomBytes } from "crypto";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 
@@ -102,7 +104,7 @@ export class PersonhoodRPC {
         const ropasci = new RoPaSciList({wipe: true});
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            return socket.send(ropasci, RoPaSciListResponse);
+            await socket.send(ropasci, RoPaSciListResponse);
         }));
     }
 

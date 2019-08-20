@@ -57,6 +57,7 @@ dynacred_npm: cothority_npm
 		( echo "Moving changes to dynacred"; cp -a src/lib/dynacred/ ../dynacred/src ); \
 	rm -rf src/lib/dynacred; \
 	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/dynacred:\@c4dt/dynacred:"
+	cd ../dynacred; npm run lint:fix
 
 src: cothority_src
 

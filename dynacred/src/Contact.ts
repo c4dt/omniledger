@@ -1,15 +1,15 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@dedis/cothority/calypso";
-import { IdentityDarc, Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
-import Signer from "@dedis/cothority/darc/signer";
-import Log from "@dedis/cothority/log";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@c4dt/cothority/calypso";
+import { IdentityDarc, Rule } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
+import Signer from "@c4dt/cothority/darc/signer";
+import Log from "@c4dt/cothority/log";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
 import { Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import Long from "long";
@@ -270,21 +270,22 @@ export class Contact {
     }
 
     static async fromQR(bc: ByzCoinRPC, str: string): Promise<Contact> {
-        const qr = await Data.parseQRCode(str, 5);
+        const qrURL = new URL(str);
+        const params = qrURL.searchParams;
         const u = new Contact();
-        switch (qr.url) {
+        switch (qrURL.origin + qrURL.pathname) {
             case Contact.urlRegistered:
                 u.bc = bc;
                 u.credentialInstance = await CredentialsInstance.fromByzcoin(bc,
-                    Buffer.from(qr.credentialIID, "hex"));
+                    Buffer.from(params.get("credentialIID"), "hex"));
                 u.credential = u.credentialInstance.credential.copy();
                 u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
                 return await u.updateOrConnect();
             case Contact.urlUnregistered:
-                u.alias = qr.alias;
-                u.email = qr.email;
-                u.phone = qr.phone;
-                u.seedPublic = Public.fromHex(qr.public_ed25519);
+                u.alias = params.get("alias");
+                u.email = params.get("email");
+                u.phone = params.get("phone");
+                u.seedPublic = Public.fromHex(params.get("public_ed25519"));
                 return u;
             default:
                 return Promise.reject("invalid URL");
@@ -329,7 +330,6 @@ export class Contact {
                 c.credential = c.credentialInstance.credential.copy();
                 c.darcInstance = await DarcInstance.fromByzcoin(bc, c.credentialInstance.darcID);
             } else {
-                Log.print(ul.publicKey);
                 c.seedPublic = Public.fromProto(ul.publicKey);
             }
             return c;

@@ -91,12 +91,13 @@ export class Data {
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
     static readonly views = ["default", "c4dt_admin", "c4dt_partner", "c4dt_user"];
+    static readonly defaultStorage = "storage/data.json";
 
     /**
      * Returns a promise with the loaded Data in it, when available. If the file
      * is not found, it returns an empty data.
      */
-    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = "storage/data.json"): Promise<Data> {
+    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = Data.defaultStorage): Promise<Data> {
         Log.lvl1("Loading data from", name);
         const values = await storage.getObject(name);
         if (!values || values === {}) {
@@ -218,25 +219,6 @@ export class Data {
     }
 
     /**
-     * Parses a string that comes from a QRCode like a get-request.
-     * @param str coming from QRCode scanner
-     * @param maxArgs how many args to interpret
-     */
-    static parseQRCode(str: string, maxArgs: number): any {
-        const url = str.split("?", 2);
-        if (url.length !== 2) {
-            return Promise.reject("wrong QRCode");
-        }
-        const parts = url[1].split("&", maxArgs);
-        const ret: any = {url: url[0]};
-        parts.forEach((p) => {
-            const r = p.split("=", 2);
-            ret[r[0]] = r[1];
-        });
-        return ret;
-    }
-
-    /**
      * findSignerDarc takes a darc from a credential, coin, or writeInstance, and follows the first
      * signer. This is supposed to be the signer darc of whoever has the right to work on this
      * instance.
@@ -305,7 +287,7 @@ export class Data {
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [ephemeralSigner], 5);
         return d;
     }
-    dataFileName: string = "storage/data.json";
+    dataFileName: string = Data.defaultStorage;
     continuousScan: boolean;
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;
@@ -445,14 +427,14 @@ export class Data {
 
     async canPay(amount: Long): Promise<boolean> {
         if (!(this.coinInstance && this.spawnerInstance)) {
-            return Promise.reject("Cannot sign up a contact without coins and spawner");
+            throw new Error("Cannot sign up a contact without coins and spawner");
         }
         await this.coinInstance.update();
         if (amount.lessThanOrEqual(0)) {
-            return Promise.reject("Cannot send 0 or less coins");
+            throw new Error("Cannot send 0 or less coins");
         }
         if (amount.greaterThanOrEqual(this.coinInstance.value)) {
-            return Promise.reject("You only have " + this.coinInstance.value.toString() + " coins.");
+            throw new Error("You only have " + this.coinInstance.value.toString() + " coins.");
         }
         return true;
     }
@@ -462,9 +444,11 @@ export class Data {
     }
 
     async registerContact(contact: Contact, balance: Long = Long.fromNumber(0),
+                          storage: IStorage = this.storage,
                           progress: (text: string, width: number) => void = this.dummyProgress): Promise<any> {
         try {
-            const d = new Data(this.bc, this.storage);
+            const d = new Data(this.bc);
+            d.storage = storage;
             d.contact = contact;
             d.contact.credential =
                 Contact.prepareInitialCred(contact.alias, contact.seedPublic, this.spawnerInstance.id,
@@ -476,7 +460,7 @@ export class Data {
         } catch (e) {
             Log.catch(e);
             progress("Error: " + e.toString(), -100);
-            return Promise.reject(e);
+            throw new Error(e);
         }
     }
 
@@ -504,16 +488,16 @@ export class Data {
 
     async verifyRegistration() {
         if (this.bc == null) {
-            return Promise.reject("cannot verify if no byzCoin connection is set");
+            throw new Error("cannot verify if no byzCoin connection is set");
         }
         await this.contact.updateOrConnect(this.bc);
     }
 
     // setTrustees stores the given contacts in the credential, so that a threshold of these contacts
     // can recover the darc. Only one set of contacts for recovery can be stored.
-    setTrustees(threshold: number, cs: Contact[]): Promise<any> {
+    setTrustees(threshold: number, cs: Contact[]) {
         if (cs.filter((c) => c.isRegistered()).length !== cs.length) {
-            return Promise.reject("not all contacts are registered");
+            throw new Error("not all contacts are registered");
         }
         const recoverBuf = Buffer.alloc(32 * cs.length);
         cs.forEach((c, i) =>
@@ -544,16 +528,16 @@ export class Data {
     // RecoverySignature returns a string for a qrcode that holds the signature to be used to proof that this
     // trustee is OK with recovering a given account.
     async recoverySignature(request: string, user: Contact): Promise<string> {
-        const requestObj = Data.parseQRCode(request, 1);
-        if (requestObj.url !== Data.urlRecoveryRequest) {
-            return Promise.reject("not a recovery request");
+        const requestURL = new URL(request);
+        if (requestURL.origin + requestURL.pathname !== Data.urlRecoveryRequest) {
+            throw new Error("not a recovery request");
         }
-        if (!requestObj.public) {
-            return Promise.reject("recovery request is missing public argument");
+        if (!requestURL.searchParams.has("public")) {
+            throw new Error("recovery request is missing public argument");
         }
-        const publicKey = Buffer.from(requestObj.public, "hex");
+        const publicKey = Buffer.from(requestURL.searchParams.get("public"), "hex");
         if (publicKey.length !== RecoverySignature.pub) {
-            return Promise.reject("got wrong public key length");
+            throw new Error("got wrong public key length");
         }
 
         await user.updateOrConnect();
@@ -581,18 +565,20 @@ export class Data {
      *
      * @param signature the qrcode-string received from scanning.
      */
-    async recoveryStore(signature: string): Promise<string> {
-        const sigObj = Data.parseQRCode(signature, 2);
-        if (sigObj.url !== Data.urlRecoverySignature) {
-            return Promise.reject("not a recovery signature");
+    async recoveryStore(signature: string) {
+        const sigURL = new URL(signature);
+        if (sigURL.origin + sigURL.pathname !== Data.urlRecoverySignature) {
+            throw new Error("not a recovery signature");
         }
-        if (!sigObj.credentialIID || !sigObj.pubSig) {
-            return Promise.reject("credentialIID or signature missing");
+        const sigParams = sigURL.searchParams;
+        if (!sigParams.has("credentialIID") ||
+            !sigParams.has("pubSig")) {
+            throw new Error("credentialIID or signature missing");
         }
-        const credIID = Buffer.from(sigObj.credentialIID, "hex");
-        const pubSig = Buffer.from(sigObj.pubSig, "hex");
+        const credIID = Buffer.from(sigParams.get("credentialIID"), "hex");
+        const pubSig = Buffer.from(sigParams.get("pubSig"), "hex");
         if (pubSig.length !== RecoverySignature.pubSig) {
-            return Promise.reject("signature should be of length 64");
+            throw new Error("signature should be of length 64");
         }
 
         if (this.recoverySignatures.length > 0) {
@@ -606,7 +592,7 @@ export class Data {
     // recoveryUser returns the user that is currently being recovered.
     async recoveryUser(): Promise<Contact> {
         if (this.recoverySignatures.length === 0) {
-            return Promise.reject("don't have any recovery signatures stored yet.");
+            throw new Error("don't have any recovery signatures stored yet.");
         }
         return Contact.fromByzcoin(this.bc, this.recoverySignatures[0].credentialIID);
     }
@@ -670,7 +656,7 @@ export class Data {
             const orgDarcID = Buffer.from(orgDarc.substr(5), "hex");
             const contact = contacts.find((c) => c.credentialInstance.darcID.equals(orgDarcID));
             if (contact === undefined) {
-                return Promise.reject("didn't find organizer in contacts");
+                throw new Error("didn't find organizer in contacts");
             }
             const pub = contact.personhoodPub;
             if (!pub) {
@@ -782,9 +768,10 @@ export class Data {
     // - creates credential and coin
     // The user needs to have enough coins to pay for all the instances when using
     // the 'SpawnerInstance'.
-    async createUser(alias: string, ephemeral?: Private): Promise<Data> {
+    async createUser(alias: string, ephemeral?: Private, storage: IStorage = this.storage): Promise<Data> {
         Log.lvl1("Starting to create user", alias);
-        const d = new Data(this.bc, this.storage);
+        const d = new Data(this.bc);
+        d.storage = storage;
 
         if (!ephemeral) {
             d.keyIdentity = new KeyPair();

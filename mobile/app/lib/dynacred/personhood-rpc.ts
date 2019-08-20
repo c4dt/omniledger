@@ -104,7 +104,7 @@ export class PersonhoodRPC {
         const ropasci = new RoPaSciList({wipe: true});
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            return socket.send(ropasci, RoPaSciListResponse);
+            await socket.send(ropasci, RoPaSciListResponse);
         }));
     }
 

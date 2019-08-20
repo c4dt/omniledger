@@ -1,0 +1,171 @@
+$width: 400px;
+$height: 320px;
+
+$clientHeight: 64px;
+$clientWidth: 64px;
+$clientTop: ($height - $clientHeight) / 2;
+
+$cothorityWidth: 128px;
+$cothorityHeight: 128px;
+$cothorityLeft: ( ($width - $cothorityWidth) * 2 ) / 3;
+
+$blockWidth: 64px;
+$blockHeight: 32px;
+$blockPaddingTop: 8px;
+$blockRepeat: 64px;
+$blockRight: 16px;
+$blockLeft: $width - $blockWidth - $blockRight;
+$blockTop: ($cothorityHeight - $blockHeight) / 2;
+
+$txHeight: 80px;
+$txWidth: 80px;
+$txPadding: 4px;
+$txTop: $clientTop + ($clientHeight - $txHeight) / 2;
+$txSentTop: ($cothorityHeight - $txHeight) / 2;
+$txSentLeft: $cothorityLeft + ($cothorityWidth - $txWidth) / 2;
+
+$progressBoxHeight: 24px;
+$progressColor: #ccffcc;
+
+.window {
+  position: relative;
+  width: $width;
+  height: $height;
+  //border: 1px solid black;
+}
+
+.error {
+  background-color: orangered;
+  padding: 10px;
+  margin: 10px;
+}
+
+.hidden {
+  width: 0;
+  height: 0;
+}
+
+.client {
+  position: absolute;
+  top: $clientTop;
+  width: $clientWidth;
+  height: $clientHeight;
+}
+
+.cothority {
+  position: absolute;
+  top: 0;
+  left: $cothorityLeft;
+  width: $cothorityWidth;
+  height: $cothorityHeight;
+}
+
+.progress-box {
+  position: absolute;
+  top: $height - $progressBoxHeight;
+  height: $progressBoxHeight;
+  width: $width;
+  border: 1px solid black;
+}
+
+.progress-bar {
+  height: $progressBoxHeight;
+  background-color: $progressColor;
+  text-align: center;
+}
+
+.transaction {
+  position: absolute;
+  border: 1px solid black;
+  width: $txWidth - 2 * $txPadding;
+  height: $txHeight - 2 * $txPadding;
+  padding: $txPadding;
+  background-color: #fffffff0;
+  z-index: 1;
+}
+
+.block {
+  position: absolute;
+  width: $blockWidth;
+  height: $blockHeight - $blockPaddingTop;
+  left: $blockLeft;
+  padding-top: $blockPaddingTop;
+  border: 1px solid black;
+  text-align: center;
+}
+
+.tx-send {
+  top: $txTop;
+  left: $clientWidth;
+  animation: tx-send 1s both;
+}
+
+.tx-block {
+  top: $txSentTop;
+  left: $txSentLeft;
+  animation: tx-block 1s both;
+}
+
+.block1 {
+  top: $blockTop;
+  animation: block-in 1s both;
+}
+
+.block2 {
+  top: $blockTop;
+  animation: block-move-2 1s both;
+}
+
+.block3 {
+  top: $blockTop + $blockRepeat;
+  animation: block-move-3 1s both;
+}
+
+.block4 {
+  top: $blockTop + 2 * $blockRepeat;
+  animation: block-out 1s both;
+}
+
+@keyframes tx-send {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+  }
+  100% {
+    transform: translate($txSentLeft - $clientWidth, $txSentTop - $txTop) scale(1);
+  }
+}
+
+@keyframes tx-block {
+  100% {
+    transform: translate($blockLeft - $txSentLeft, 0px) scale(0);
+  }
+}
+
+@keyframes block-in {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes block-move-2 {
+  100% {
+    transform: translateY($blockRepeat);
+  }
+}
+
+@keyframes block-move-3 {
+  100% {
+    transform: translateY($blockRepeat);
+  }
+}
+
+@keyframes block-out {
+  100% {
+    transform: translateY($blockRepeat);
+    opacity: 0;
+  }
+}
+

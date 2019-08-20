@@ -150,7 +150,7 @@ export class BadgeView extends Observable {
             } else {
                 elements.setProgress("Registering contact", 50);
             }
-            await this.badge.mine(uData, elements.setProgress);
+            await this.badge.mine(uData);
             elements.setProgress("Done", 100);
             await msgOK("Successfully mined\n" + details, "Details for badge");
             if (!registered) {

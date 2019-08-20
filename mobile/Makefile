@@ -15,7 +15,7 @@ android-release: apply-patches
 	@if [ ! "$$PERSONHOOD_ANDROID_PASS" ]; then echo "Please set PERSONHOOD_ANDROID_PASS"; exit 1; fi
 	@if ! grep -q "Testing: false" app/lib/Defaults.ts; then echo "\nPUT TESTING TO FALSE IN Defaults.ts !!\n"; exit 1; fi
 	@tns build android --key-store-path dedis-development.jks --key-store-password $$PERSONHOOD_ANDROID_PASS \
-	    --key-store-alias personhood --key-store-alias-password $$PERSONHOOD_ANDROID_PASS --release
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 
 release-key:
@@ -43,7 +43,7 @@ cothority_src: dynacred_src cothority-pull app/lib/cothority
 
 app/lib/cothority: cothority/external/js/cothority/src
 	@cp -a $< $@
-	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/cothority:~/lib/cothority:"
+	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/cothority:~/lib/cothority:"
 	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
 
 cothority_npm: kyber_npm
@@ -57,7 +57,7 @@ cothority_npm: kyber_npm
 	diff -Naurq cothority/external/js/cothority/src/ app/lib/cothority/ || \
 		( echo "Moving changes to cothority"; cp -a app/lib/cothority/ cothority/external/js/cothority/src ); \
 	rm -rf app/lib/cothority; \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@dedis/cothority:"
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@c4dt/cothority:"
 
 cothority:
 	git clone --depth 1 https://github.com/dedis/cothority
@@ -103,7 +103,8 @@ dynacred_npm: cothority_npm
 	diff -Naurq ../dynacred/src/ app/lib/dynacred/ || \
 		( echo "Moving changes to dynacred"; cp -a app/lib/dynacred/* ../dynacred/src ); \
 	rm -rf app/lib/dynacred; \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:"
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:"; \
+	cd ../dynacred; npm run lint:fix
 
 src: cothority_src
 

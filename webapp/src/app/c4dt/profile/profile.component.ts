@@ -1,9 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog, MatSnackBar } from "@angular/material";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 
-import { showSnack } from "../../../lib/Ui";
+import { storeCredential } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
 
@@ -35,12 +36,9 @@ export class ProfileComponent implements OnInit {
     }
 
     async updateContact() {
-        await showSnack(this.snack, "Updating User Data", async () => {
-            this.uData.contact.alias = this.contactForm.controls.alias.value;
-            this.uData.contact.email = this.contactForm.controls.email.value;
-            this.uData.contact.subscribe = this.contactForm.controls.subscribe.value;
-            await this.uData.contact.sendUpdate();
-            this.bcs.updateBlocks();
-        });
+        this.uData.contact.alias = this.contactForm.controls.alias.value;
+        this.uData.contact.email = this.contactForm.controls.email.value;
+        this.uData.contact.subscribe = this.contactForm.controls.subscribe.value;
+        await storeCredential(this.dialog, "Updating User Data", this.uData);
     }
 }

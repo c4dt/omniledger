@@ -1,17 +1,13 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog, MatSnackBar } from "@angular/material";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { Data } from "@c4dt/dynacred/Data";
-import { Defaults } from "@c4dt/dynacred/Defaults";
-import { Private } from "@c4dt/dynacred/KeyPair";
-import { StorageDB } from "@c4dt/dynacred/StorageDB";
+import Log from "@c4dt/cothority/log";
+import { Data, Private, StorageDB } from "@c4dt/dynacred";
 
-import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
-import Log from "@dedis/cothority/log";
-
-import { showDialogOKC, showSnack } from "../../lib/Ui";
+import { showDialogOKC, showTransactions, TProgress } from "../../lib/Ui";
 import { BcviewerService } from "../bcviewer/bcviewer.component";
 import { UserData } from "../user-data.service";
 
@@ -37,63 +33,63 @@ export class RegisterComponent implements OnInit {
 
     async ngOnInit() {
         Log.llvl3("init register");
-        const darcID = Defaults.AdminDarc.toString("hex");
-        const ephemeral = Defaults.Ephemeral.toString("hex");
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
             const buf = await StorageDB.get(this.uData.dataFileName);
             if (buf.length > 0) {
-                await showDialogOKC(this.dialog, "Overwrite user?", "There seems to be a user already " +
-                    "stored in this browser - do you want to overwrite it?", async (overwrite: boolean) => {
-                    if (overwrite) {
-                        Log.lvl1("overwriting existing user");
-                        await StorageDB.set(this.uData.dataFileName, "");
-                        window.location.reload();
-                    } else {
-                        await this.router.navigate([]);
-                    }
-                });
+                const overwrite = await showDialogOKC(this.dialog, "Overwrite user?",
+                    "There seems to be a user already stored in this browser - do you want to overwrite it?");
+                if (overwrite) {
+                    Log.lvl1("overwriting existing user");
+                    await StorageDB.set(this.uData.dataFileName, "");
+                    window.location.reload();
+                } else {
+                    return await this.router.navigate(["/"]);
+                }
             } else {
                 this.registering = 1;
             }
         } else {
             this.register = true;
             this.registerForm = new FormGroup({
-                alias: new FormControl(),
-                darcID: new FormControl(darcID,
+                // These values are only valid in the local byzcoin-docker, so it's not a problem to have a
+                // private key here.
+                alias: new FormControl("admin"),
+                darcID: new FormControl("1cbc6c2c4da749020ffa838e262c952862f582d9730e14c8afe2a1954aa7c50a",
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
-                ephemeralKey: new FormControl(ephemeral,
+                ephemeralKey: new FormControl("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c",
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
-            await this.uData.load();
             this.bcs.updateBlocks();
         }
     }
 
     async addID(ephemeral: string, alias: string = "", darcID: string = "") {
-        this.uData.delete();
-        this.uData.bc = await ByzCoinRPC.fromByzcoin(await Defaults.Roster, Defaults.ByzCoinID);
         if (ephemeral.length === 64) {
-            await showSnack(this.snack, "Creating new user", async () => {
-                Log.lvl1("creating user");
-                const ekStr = ephemeral;
-                const ek = Private.fromHex(ekStr);
-                if (darcID.length === 64 && alias.length > 0) {
-                    Log.lvl2("creating FIRST user");
-                    const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar,
-                        alias);
-                    this.uData.contact = d.contact;
-                    this.uData.keyIdentity = d.keyIdentity;
-                    await this.uData.connectByzcoin();
-                } else {
-                    Log.lvl2("attaching to existing user and replacing password");
-                    await this.uData.attachAndEvolve(ek);
-                }
-                Log.lvl1("verifying registration");
-                await this.uData.save();
-                Log.lvl1("done registering");
-            });
+            await showTransactions(this.dialog, "Creating new user",
+                async (progress: TProgress) => {
+                    Log.lvl1("creating user");
+                    const ekStr = ephemeral;
+                    const ek = Private.fromHex(ekStr);
+                    if (darcID.length === 64 && alias.length > 0) {
+                        Log.lvl2("creating FIRST user");
+                        progress(30, "Creating First User");
+                        const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar,
+                            alias);
+                        this.uData.contact = d.contact;
+                        this.uData.keyIdentity = d.keyIdentity;
+                        await this.uData.connectByzcoin();
+                    } else {
+                        Log.lvl2("attaching to existing user and replacing password");
+                        progress(30, "Creating User");
+                        await this.uData.attachAndEvolve(ek);
+                    }
+                    Log.lvl1("verifying registration");
+                    progress(60, "Storing Credential");
+                    await this.uData.save();
+                    Log.lvl1("done registering");
+                });
         }
     }
 
@@ -119,6 +115,6 @@ export class RegisterComponent implements OnInit {
     }
 
     async start_demonstrator() {
-        this.router.navigate([]);
+        return this.router.navigate(["/"]);
     }
 }

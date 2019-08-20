@@ -81,10 +81,11 @@ export async function goBack() {
 async function addScan() {
     try {
         const result = await scan("Please scan attendee");
-        const qrcode = Data.parseQRCode(result.text, 2);
-        if (qrcode.url === PartyItem.url) {
-            if (qrcode.public.length === 64) {
-                await viewScanModel.addAttendee(qrcode.public);
+        const resURL = new URL(result.text);
+        if (resURL.origin + resURL.pathname === PartyItem.url) {
+            const pub = resURL.searchParams.get("public");
+            if (pub && pub.length === 64) {
+                await viewScanModel.addAttendee(pub);
             } else {
                 await msgFailed("Got wrong public key");
             }

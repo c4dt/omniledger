@@ -1,5 +1,3 @@
-// const ZXing = require("nativescript-zxing");
-// const QRGenerator = new ZXing();
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import Instance from "~/lib/cothority/byzcoin/instance";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";

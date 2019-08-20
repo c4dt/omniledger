@@ -1,10 +1,8 @@
 import { Component, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
-import Log from "@dedis/cothority/log";
-
-import { Defaults } from "@c4dt/dynacred/Defaults";
+import Log from "@c4dt/cothority/log";
 
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
@@ -33,16 +31,16 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        try {
-            await this.uData.load();
+        if (!this.uData.isAvailableInStorage()) {
+            // No data saved - show how to get a new user
             this.loading = false;
-            this.bcs.updateBlocks();
-        } catch (e) {
-            if (!this.uData.constructorObj) {
-                // No data saved - show how to get a new user
+            await this.router.navigate(["/newuser"]);
+        } else {
+            try {
+                await this.uData.load();
                 this.loading = false;
-                await this.router.navigate(["/newuser"]);
-            } else {
+                this.bcs.updateBlocks();
+            } catch (e) {
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {
                     width: "300px",
