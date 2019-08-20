@@ -6,9 +6,6 @@ import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";
 import { PartyItem } from "./PartyItem";
 
-// const ZXing = require("nativescript-zxing");
-// const QRGenerator = new ZXing();
-
 export class Badge {
 
     static fromObject(bc: ByzCoinRPC, obj: any): Badge {
@@ -32,7 +29,7 @@ export class Badge {
         };
     }
 
-    async mine(d: Data, setProgress: (text?: string, width?: number) => void = null) {
+    async mine(d: Data) {
         this.mined = true;
         if (d.contact.isRegistered()) {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,

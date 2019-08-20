@@ -270,21 +270,22 @@ export class Contact {
     }
 
     static async fromQR(bc: ByzCoinRPC, str: string): Promise<Contact> {
-        const qr = await Data.parseQRCode(str, 5);
+        const qrURL = new URL(str);
+        const params = qrURL.searchParams;
         const u = new Contact();
-        switch (qr.url) {
+        switch (qrURL.origin + qrURL.pathname) {
             case Contact.urlRegistered:
                 u.bc = bc;
                 u.credentialInstance = await CredentialsInstance.fromByzcoin(bc,
-                    Buffer.from(qr.credentialIID, "hex"));
+                    Buffer.from(params.get("credentialIID"), "hex"));
                 u.credential = u.credentialInstance.credential.copy();
                 u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
                 return await u.updateOrConnect();
             case Contact.urlUnregistered:
-                u.alias = qr.alias;
-                u.email = qr.email;
-                u.phone = qr.phone;
-                u.seedPublic = Public.fromHex(qr.public_ed25519);
+                u.alias = params.get("alias");
+                u.email = params.get("email");
+                u.phone = params.get("phone");
+                u.seedPublic = Public.fromHex(params.get("public_ed25519"));
                 return u;
             default:
                 return Promise.reject("invalid URL");
@@ -329,7 +330,6 @@ export class Contact {
                 c.credential = c.credentialInstance.credential.copy();
                 c.darcInstance = await DarcInstance.fromByzcoin(bc, c.credentialInstance.darcID);
             } else {
-                Log.print(ul.publicKey);
                 c.seedPublic = Public.fromProto(ul.publicKey);
             }
             return c;

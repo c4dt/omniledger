@@ -1,29 +1,29 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { LongTermSecret } from "@dedis/cothority/calypso/calypso-rpc";
-import { IdentityEd25519, Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import Signer from "@dedis/cothority/darc/signer";
-import ISigner from "@dedis/cothority/darc/signer";
-import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
-import Log from "@dedis/cothority/log";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
+import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
+import Signer from "@c4dt/cothority/darc/signer";
+import ISigner from "@c4dt/cothority/darc/signer";
+import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
+import Log from "@c4dt/cothority/log";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@dedis/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
+} from "@c4dt/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
 import { curve, Point, Scalar, sign } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import { randomBytes } from "crypto";
@@ -91,12 +91,13 @@ export class Data {
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
     static readonly views = ["default", "c4dt_admin", "c4dt_partner", "c4dt_user"];
+    static readonly defaultStorage = "storage/data.json";
 
     /**
      * Returns a promise with the loaded Data in it, when available. If the file
      * is not found, it returns an empty data.
      */
-    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = "storage/data.json"): Promise<Data> {
+    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = Data.defaultStorage): Promise<Data> {
         Log.lvl1("Loading data from", name);
         const values = await storage.getObject(name);
         if (!values || values === {}) {
@@ -180,34 +181,32 @@ export class Data {
 
         Log.lvl1("Creating coin from darc");
         const signers = [adminSigner];
-        const ctx = new ClientTransaction({
-            instructions:
-                [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
+        const instructions: Instruction[] = [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
                         return Instruction.createSpawn(adminDarcID, DarcInstance.contractID, [
                             new Argument({name: DarcInstance.argumentDarc, value: dar.toBytes()}),
                         ]);
                     },
-                ),
-        });
+                );
         const idBuf = d.keyIdentity._public.toBuffer();
-        ctx.instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
+        instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
             new Argument({name: CoinInstance.argumentCoinID, value: idBuf}),
             new Argument({name: CoinInstance.argumentDarcID, value: darcCoin.getBaseID()}),
             new Argument({name: CoinInstance.argumentType, value: SPAWNER_COIN}),
         ]));
-        ctx.instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
+        instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
             new Argument({name: CredentialsInstance.argumentCredID, value: idBuf}),
             new Argument({name: CredentialsInstance.argumentDarcID, value: darcCred.getBaseID()}),
             new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()}),
         ]));
         const amount = Long.fromNumber(1e9);
-        ctx.instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
+        instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
             CoinInstance.contractID,
             CoinInstance.commandMint,
             [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(amount.toBytesLE())})]));
 
+        const ctx = ClientTransaction.make(bc.getProtocolVersion(), ...instructions);
         await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers,
-            [d.keyIdentitySigner]]);
+                [d.keyIdentitySigner]]);
         await bc.sendTransactionAndWait(ctx, 5);
 
         Log.lvl2("Linking new data to Data-structure");
@@ -217,25 +216,6 @@ export class Data {
         await d.connectByzcoin();
         Log.lvl2("done creating first user on chain", bc.genesisID.toString("hex"));
         return d;
-    }
-
-    /**
-     * Parses a string that comes from a QRCode like a get-request.
-     * @param str coming from QRCode scanner
-     * @param maxArgs how many args to interpret
-     */
-    static parseQRCode(str: string, maxArgs: number): any {
-        const url = str.split("?", 2);
-        if (url.length !== 2) {
-            return Promise.reject("wrong QRCode");
-        }
-        const parts = url[1].split("&", maxArgs);
-        const ret: any = {url: url[0]};
-        parts.forEach((p) => {
-            const r = p.split("=", 2);
-            ret[r[0]] = r[1];
-        });
-        return ret;
     }
 
     /**
@@ -307,7 +287,7 @@ export class Data {
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [ephemeralSigner], 5);
         return d;
     }
-    dataFileName: string = "storage/data.json";
+    dataFileName: string = Data.defaultStorage;
     continuousScan: boolean;
     personhoodPublished: boolean;
     keyPersonhood: KeyPair;
@@ -447,14 +427,14 @@ export class Data {
 
     async canPay(amount: Long): Promise<boolean> {
         if (!(this.coinInstance && this.spawnerInstance)) {
-            return Promise.reject("Cannot sign up a contact without coins and spawner");
+            throw new Error("Cannot sign up a contact without coins and spawner");
         }
         await this.coinInstance.update();
         if (amount.lessThanOrEqual(0)) {
-            return Promise.reject("Cannot send 0 or less coins");
+            throw new Error("Cannot send 0 or less coins");
         }
         if (amount.greaterThanOrEqual(this.coinInstance.value)) {
-            return Promise.reject("You only have " + this.coinInstance.value.toString() + " coins.");
+            throw new Error("You only have " + this.coinInstance.value.toString() + " coins.");
         }
         return true;
     }
@@ -464,9 +444,11 @@ export class Data {
     }
 
     async registerContact(contact: Contact, balance: Long = Long.fromNumber(0),
+                          storage: IStorage = this.storage,
                           progress: (text: string, width: number) => void = this.dummyProgress): Promise<any> {
         try {
-            const d = new Data(this.bc, this.storage);
+            const d = new Data(this.bc);
+            d.storage = storage;
             d.contact = contact;
             d.contact.credential =
                 Contact.prepareInitialCred(contact.alias, contact.seedPublic, this.spawnerInstance.id,
@@ -478,7 +460,7 @@ export class Data {
         } catch (e) {
             Log.catch(e);
             progress("Error: " + e.toString(), -100);
-            return Promise.reject(e);
+            throw new Error(e);
         }
     }
 
@@ -506,16 +488,16 @@ export class Data {
 
     async verifyRegistration() {
         if (this.bc == null) {
-            return Promise.reject("cannot verify if no byzCoin connection is set");
+            throw new Error("cannot verify if no byzCoin connection is set");
         }
         await this.contact.updateOrConnect(this.bc);
     }
 
     // setTrustees stores the given contacts in the credential, so that a threshold of these contacts
     // can recover the darc. Only one set of contacts for recovery can be stored.
-    setTrustees(threshold: number, cs: Contact[]): Promise<any> {
+    setTrustees(threshold: number, cs: Contact[]) {
         if (cs.filter((c) => c.isRegistered()).length !== cs.length) {
-            return Promise.reject("not all contacts are registered");
+            throw new Error("not all contacts are registered");
         }
         const recoverBuf = Buffer.alloc(32 * cs.length);
         cs.forEach((c, i) =>
@@ -546,16 +528,16 @@ export class Data {
     // RecoverySignature returns a string for a qrcode that holds the signature to be used to proof that this
     // trustee is OK with recovering a given account.
     async recoverySignature(request: string, user: Contact): Promise<string> {
-        const requestObj = Data.parseQRCode(request, 1);
-        if (requestObj.url !== Data.urlRecoveryRequest) {
-            return Promise.reject("not a recovery request");
+        const requestURL = new URL(request);
+        if (requestURL.origin + requestURL.pathname !== Data.urlRecoveryRequest) {
+            throw new Error("not a recovery request");
         }
-        if (!requestObj.public) {
-            return Promise.reject("recovery request is missing public argument");
+        if (!requestURL.searchParams.has("public")) {
+            throw new Error("recovery request is missing public argument");
         }
-        const publicKey = Buffer.from(requestObj.public, "hex");
+        const publicKey = Buffer.from(requestURL.searchParams.get("public"), "hex");
         if (publicKey.length !== RecoverySignature.pub) {
-            return Promise.reject("got wrong public key length");
+            throw new Error("got wrong public key length");
         }
 
         await user.updateOrConnect();
@@ -583,18 +565,20 @@ export class Data {
      *
      * @param signature the qrcode-string received from scanning.
      */
-    async recoveryStore(signature: string): Promise<string> {
-        const sigObj = Data.parseQRCode(signature, 2);
-        if (sigObj.url !== Data.urlRecoverySignature) {
-            return Promise.reject("not a recovery signature");
+    async recoveryStore(signature: string) {
+        const sigURL = new URL(signature);
+        if (sigURL.origin + sigURL.pathname !== Data.urlRecoverySignature) {
+            throw new Error("not a recovery signature");
         }
-        if (!sigObj.credentialIID || !sigObj.pubSig) {
-            return Promise.reject("credentialIID or signature missing");
+        const sigParams = sigURL.searchParams;
+        if (!sigParams.has("credentialIID") ||
+            !sigParams.has("pubSig")) {
+            throw new Error("credentialIID or signature missing");
         }
-        const credIID = Buffer.from(sigObj.credentialIID, "hex");
-        const pubSig = Buffer.from(sigObj.pubSig, "hex");
+        const credIID = Buffer.from(sigParams.get("credentialIID"), "hex");
+        const pubSig = Buffer.from(sigParams.get("pubSig"), "hex");
         if (pubSig.length !== RecoverySignature.pubSig) {
-            return Promise.reject("signature should be of length 64");
+            throw new Error("signature should be of length 64");
         }
 
         if (this.recoverySignatures.length > 0) {
@@ -608,7 +592,7 @@ export class Data {
     // recoveryUser returns the user that is currently being recovered.
     async recoveryUser(): Promise<Contact> {
         if (this.recoverySignatures.length === 0) {
-            return Promise.reject("don't have any recovery signatures stored yet.");
+            throw new Error("don't have any recovery signatures stored yet.");
         }
         return Contact.fromByzcoin(this.bc, this.recoverySignatures[0].credentialIID);
     }
@@ -672,7 +656,7 @@ export class Data {
             const orgDarcID = Buffer.from(orgDarc.substr(5), "hex");
             const contact = contacts.find((c) => c.credentialInstance.darcID.equals(orgDarcID));
             if (contact === undefined) {
-                return Promise.reject("didn't find organizer in contacts");
+                throw new Error("didn't find organizer in contacts");
             }
             const pub = contact.personhoodPub;
             if (!pub) {
@@ -784,9 +768,10 @@ export class Data {
     // - creates credential and coin
     // The user needs to have enough coins to pay for all the instances when using
     // the 'SpawnerInstance'.
-    async createUser(alias: string, ephemeral?: Private): Promise<Data> {
+    async createUser(alias: string, ephemeral?: Private, storage: IStorage = this.storage): Promise<Data> {
         Log.lvl1("Starting to create user", alias);
-        const d = new Data(this.bc, this.storage);
+        const d = new Data(this.bc);
+        d.storage = storage;
 
         if (!ephemeral) {
             d.keyIdentity = new KeyPair();
@@ -817,16 +802,14 @@ export class Data {
         this.contact.credential.setAttribute("1-devices", "initial", darcDevice.getBaseID());
 
         Log.lvl1("Creating identity from spawner");
-        const ctx = new ClientTransaction({
-            instructions: [
+        const ctx = ClientTransaction.make(this.bc.getProtocolVersion(),
                 ...this.spawnerInstance.spawnDarcInstructions(coin,
                     darcDevice, darcSign, darcCred, darcCoin),
                 ...this.spawnerInstance.spawnCoinInstructions(coin,
                     darcCoin.getBaseID(), pub.marshalBinary()),
                 ...this.spawnerInstance.spawnCredentialInstruction(coin,
                     darcCred.getBaseID(), this.contact.credential, pub.marshalBinary()),
-            ],
-        });
+            );
         await ctx.updateCountersAndSign(this.bc, [signers]);
         await this.bc.sendTransactionAndWait(ctx);
 

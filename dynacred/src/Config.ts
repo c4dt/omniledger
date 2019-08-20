@@ -1,4 +1,4 @@
-import { Roster } from "@dedis/cothority/network/proto";
+import { Roster } from "@c4dt/cothority/network/proto";
 
 import toml from "toml";
 

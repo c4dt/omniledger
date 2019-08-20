@@ -7,7 +7,7 @@
         <mat-form-field class="width100">
             <input matInput [(ngModel)]="data.email" placeholder="Email for new user">
         </mat-form-field>
-        <mat-form-field class="width100">
+        <mat-form-field class="width100" *ngIf="showViews">
             <mat-label>Default view for user</mat-label>
             <mat-select [(value)]="data.view">
                 <mat-option *ngFor="let view of views" [value]="view">
@@ -15,10 +15,10 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field *ngIf="showGroups">
             <mat-label>Groups for user</mat-label>
             <mat-select [(value)]="data.groups" multiple>
-                <mat-option *ngFor="let group of groupsAvail" [value]="group">{{group}}</mat-option>
+                <mat-option *ngFor="let group of data.groupsAvail" [value]="group">{{group}}</mat-option>
             </mat-select>
         </mat-form-field>
     </p>

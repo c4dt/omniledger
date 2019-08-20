@@ -1,15 +1,15 @@
 import { Component, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatSnackBar } from "@angular/material";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { CalypsoReadInstance, CalypsoWriteInstance } from "@dedis/cothority/calypso";
-import Darc from "@dedis/cothority/darc/darc";
-import Log from "@dedis/cothority/log";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoReadInstance, CalypsoWriteInstance } from "@c4dt/cothority/calypso";
+import Darc from "@c4dt/cothority/darc/darc";
+import Log from "@c4dt/cothority/log";
 
-import { Contact } from "@c4dt/dynacred/Contact";
-import { FileBlob } from "@c4dt/dynacred/SecureData";
+import { Contact, FileBlob } from "@c4dt/dynacred";
 
-import { showSnack } from "../../../lib/Ui";
+import { showSnack, showTransactions, TProgress } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 import { ManageDarcComponent } from "../manage-darc";
 
@@ -54,11 +54,15 @@ export class SecureComponent implements OnInit {
     }
 
     async calypsoSearch(c: Contact) {
-        await showSnack(this.snackBar, "Searching new secure data for " + c.alias.toLocaleUpperCase(), async () => {
-            await this.uData.contact.calypso.read(c);
-            await this.uData.save();
-            this.updateCalypso();
-        });
+        await showTransactions(this.dialog, "Searching new secure data for " + c.alias.toLocaleUpperCase(),
+            async (progress: TProgress) => {
+                progress(30, "Reading secrets");
+                await this.uData.contact.calypso.read(c);
+                progress(60, "Storing Credential");
+                await this.uData.save();
+                progress(80, "Getting other secrets");
+                await this.updateCalypso();
+            });
     }
 
     async calypsoAccess(key: string) {
@@ -79,19 +83,25 @@ export class SecureComponent implements OnInit {
             });
         tc.afterClosed().subscribe(async (result: Darc) => {
             if (result) {
-                await showSnack(this.snackBar, "Updating Darc", async () => {
-                    await idDarc.evolveDarcAndWait(result, [this.uData.keyIdentitySigner], 5);
-                });
+                await showTransactions(this.dialog, "Updating Darc",
+                    async (progress: TProgress) => {
+                        progress(50, "Evolving DARC");
+                        await idDarc.evolveDarcAndWait(result, [this.uData.keyIdentitySigner], 5);
+                    });
             }
         });
     }
 
     async calypsoDelete(key: string) {
-        await showSnack(this.snackBar, "Deleting secret", async () => {
-            await this.uData.contact.calypso.remove(key);
-            await this.uData.save();
-            await this.updateCalypso();
-        });
+        await showTransactions(this.dialog, "Deleting secret",
+            async (progress: TProgress) => {
+                progress(30, "Removing key from access");
+                await this.uData.contact.calypso.remove(key);
+                progress(60, "Storing Credential");
+                await this.uData.save();
+                progress(80, "Fetching all secrets");
+                await this.updateCalypso();
+            });
     }
 
     async calypsoAddData() {
@@ -100,13 +110,20 @@ export class SecureComponent implements OnInit {
         });
         fileDialog.afterClosed().subscribe(async (result: File) => {
             if (result) {
-                await showSnack(this.snackBar, "Storing data encrypted", async () => {
-                    const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
-                    const fb = new FileBlob(result.name, data, [{name: "time", value: result.lastModified.toString()}]);
-                    await this.uData.contact.calypso.add(fb.toBuffer());
-                    await this.uData.save();
-                    this.updateCalypso();
-                });
+                await showTransactions(this.dialog, "Storing data encrypted",
+                    async (progress: TProgress) => {
+                        const data = Buffer.from(await (await new Response((result).slice())).arrayBuffer());
+                        const fb = new FileBlob(result.name, data, [{
+                            name: "time",
+                            value: result.lastModified.toString(),
+                        }]);
+                        progress(30, "Adding new Secret");
+                        await this.uData.contact.calypso.add(fb.toBuffer());
+                        progress(60, "Storing Credential");
+                        await this.uData.save();
+                        progress(80, "Updating secrets");
+                        await this.updateCalypso();
+                    });
             } else {
                 Log.lvl1("Didnt get any data");
             }

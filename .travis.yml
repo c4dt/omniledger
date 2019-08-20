@@ -13,36 +13,31 @@ jobs:
   include:
 
     - stage: build
+      name: conode
       language: go
       go: "1.12.x"
-      name: conode
       script:
         - cd conode
         - make docker
     - name: dynacred
       language: node_js
-      node_js: 10
+      node_js: "10"
       install: cd dynacred && npm ci
-      before_script: npm run linter
-      script:
-        - npm run build
-        - npm run test
+      script: npm run test
     - name: webapp
-      if: branch = master
       language: node_js
-      node_js: 10
-      before_install: cd dynacred && npm ci && npm run build && cd ..
-      install: cd webapp && npm ci
-      before_script:
-        - npm run lint
-        - d=node_modules/@c4dt/dynacred && rm -r $d && ln -s ../../../dynacred/dist $d
+      node_js: "10"
+      install:
+        - cd webapp && npm ci
+        - npm link ../dynacred
+      before_script: npm run lint
       script:
         - npm run build --prod
         - npm run test --no-watch
     - name: mobile
       language: node_js
-      node_js: 10
-      install: cd mobile && make && npm i -g nativescript@5.4.1
+      node_js: "10"
+      install: cd mobile && make
       script:
         - npm run lint
 
@@ -56,12 +51,12 @@ jobs:
         script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
     - name: NPM
       language: node_js
-      node_js: 10
+      node_js: "10"
       script: skip # node_js.script default to `make test`
       before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
       deploy:
         provider: script
-        script: cd dynacred && npm ci && npm version prerelease --preid=p`date +%Y%m%d%H%M%S` && ./publish.sh
+        script: cd dynacred && npm ci && npm version prerelease --preid=p`date +%Y%m%d%H%M%S` && npm publish --tag dev
 
 notifications:
   email: false

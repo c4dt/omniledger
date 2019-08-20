@@ -1,11 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { InstanceID } from "@dedis/cothority/byzcoin";
-import { IdentityWrapper } from "@dedis/cothority/darc";
-import Log from "@dedis/cothority/log";
+import { InstanceID } from "@c4dt/cothority/byzcoin";
+import { IdentityWrapper } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
 
-import { Defaults } from "@c4dt/dynacred/Defaults";
 import { UserData } from "../../../../user-data.service";
 
 @Component({
@@ -28,7 +27,7 @@ export class LoginComponent implements OnInit {
     async getParam(p: string, s: number): Promise<Buffer> {
         const param = this.route.snapshot.queryParamMap.get(p);
         if (!param || param.length !== s) {
-            Log.print("invalid", p, param);
+            Log.error("invalid", p, param);
             return Promise.reject(p + ": not a valid param");
         }
         return Buffer.from(param, "hex");
@@ -47,7 +46,7 @@ export class LoginComponent implements OnInit {
         let loginOK = false;
         try {
             const ident = IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner);
-            const reply = await this.uData.bc.checkAuthorization(Defaults.ByzCoinID, this.darcID, ident);
+            const reply = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, this.darcID, ident);
             if (!reply || reply.length === 0) {
                 this.failed = "You're not allowed to login";
             } else {
