@@ -1,29 +1,29 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { LongTermSecret } from "@dedis/cothority/calypso/calypso-rpc";
-import { IdentityEd25519, Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import ISigner from "@dedis/cothority/darc/signer";
-import Signer from "@dedis/cothority/darc/signer";
-import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
-import Log from "@dedis/cothority/log";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
+import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
+import ISigner from "@c4dt/cothority/darc/signer";
+import Signer from "@c4dt/cothority/darc/signer";
+import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
+import Log from "@c4dt/cothority/log";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@dedis/cothority/personhood/credentials-instance";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
+} from "@c4dt/cothority/personhood/credentials-instance";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
 import { curve, Point, Scalar, sign } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import { randomBytes } from "crypto";

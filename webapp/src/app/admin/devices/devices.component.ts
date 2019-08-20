@@ -3,8 +3,8 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Darc } from "@dedis/cothority/darc";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { Darc } from "@c4dt/cothority/darc";
 
 import { Device } from "@c4dt/dynacred";
 

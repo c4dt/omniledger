@@ -3,16 +3,16 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dial
 import Long from "long";
 import { sprintf } from "sprintf-js";
 
-import { ByzCoinRPC, Instruction } from "@dedis/cothority/byzcoin";
-import Instance from "@dedis/cothority/byzcoin/instance";
-import Proof from "@dedis/cothority/byzcoin/proof";
-import DataBody from "@dedis/cothority/byzcoin/proto/data-body";
-import DataHeader from "@dedis/cothority/byzcoin/proto/data-header";
-import TxResult from "@dedis/cothority/byzcoin/proto/tx-result";
-import Log from "@dedis/cothority/log";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import { ForwardLink, SkipBlock } from "@dedis/cothority/skipchain";
-import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
+import { ByzCoinRPC, Instruction } from "@c4dt/cothority/byzcoin";
+import Instance from "@c4dt/cothority/byzcoin/instance";
+import Proof from "@c4dt/cothority/byzcoin/proof";
+import DataBody from "@c4dt/cothority/byzcoin/proto/data-body";
+import DataHeader from "@c4dt/cothority/byzcoin/proto/data-header";
+import TxResult from "@c4dt/cothority/byzcoin/proto/tx-result";
+import Log from "@c4dt/cothority/log";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import { ForwardLink, SkipBlock } from "@c4dt/cothority/skipchain";
+import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
 import { UserData } from "../user-data.service";
 
 @Injectable({

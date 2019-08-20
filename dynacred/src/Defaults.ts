@@ -1,5 +1,5 @@
 // import { FileIO } from "./FileIO";
-import { Roster } from "@dedis/cothority/network";
+import { Roster } from "@c4dt/cothority/network";
 import "cross-fetch/polyfill";
 
 // tslint:disable-next-line

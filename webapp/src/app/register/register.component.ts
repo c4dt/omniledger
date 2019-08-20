@@ -4,7 +4,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import Log from "@dedis/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { Data, Private, StorageDB } from "@c4dt/dynacred";
 
 import { showDialogOKC, showTransactions, TProgress } from "../../lib/Ui";

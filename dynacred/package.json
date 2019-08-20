@@ -2,8 +2,6 @@
   "name": "@c4dt/dynacred",
   "version": "0.0.5",
   "description": "The library used by the omniledger-ui and the personhood.online app",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/c4dt/omniledger.git"
@@ -23,7 +21,7 @@
   "author": "C4DT",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@dedis/cothority": "^3.1.4",
+    "@c4dt/cothority": "^3.1.16",
     "cross-fetch": "^3.0.4",
     "dexie": "^2.0.4",
     "tweetnacl-ts": "^1.0.3"
@@ -42,5 +40,10 @@
     "require": [
       "ts-node/register"
     ]
-  }
+  },
+  "files": [
+    "build/*"
+  ],
+  "main": "build/index.js",
+  "types": "build/index.d.ts"
 }
