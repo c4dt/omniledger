@@ -21,6 +21,7 @@ export class UserData extends Data {
 
     constructor() {
         super(undefined); // poison
+        this.storage = StorageDB;
     }
 
     async loadConfig(): Promise<void> {
@@ -33,16 +34,13 @@ export class UserData extends Data {
     }
 
     async load() {
-        Log.lvl1("Loading data from", name);
-        const values = await this.storage.getObject(name);
+        Log.lvl1("Loading data from", this.dataFileName);
+        const values = await this.storage.getObject(this.dataFileName);
         if (!values || values === {}) {
             throw new Error("No data available");
         }
-        const d = new Data(this.bc, values);
-        if (d.contact && await d.contact.isRegisteredByzCoin(this.bc)) {
-            await d.connectByzcoin();
-        }
-        d.storage = StorageDB;
+        this.setValues(values);
+        await this.connectByzcoin();
     }
 }
 

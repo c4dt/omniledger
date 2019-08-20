@@ -1,6 +1,7 @@
 FROM debian:stretch-slim
 WORKDIR /root/
-COPY conodes conode bcadmin csadmin run_nodes.sh ./
+COPY conodes ./conodes
+COPY conode bcadmin csadmin run_nodes.sh ./
 
 EXPOSE 7770 7771 7772 7773 7774 7775 7776 7777
 
