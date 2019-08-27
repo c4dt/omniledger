@@ -32,7 +32,7 @@ export class RegisterComponent implements OnInit {
     }
 
     async ngOnInit() {
-        Log.llvl3("init register");
+        Log.lvl3("init register");
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {

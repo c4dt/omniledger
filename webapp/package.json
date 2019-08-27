@@ -27,6 +27,7 @@
     "@c4dt/cothority": "^3.1.16",
     "@c4dt/dynacred": "dev",
     "@dedis/kyber": "^3.0.8",
+    "angularx-qrcode": "^1.6.4",
     "core-js": "^2.6.9",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",

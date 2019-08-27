@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material/dialog";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { QRCodeModule } from "angularx-qrcode";
 import { DialogTransactionComponent } from "../lib/dialog-transaction";
 import { DialogOKCancelComponent } from "../lib/Ui";
 import { DemoMaterialModule } from "../material-module";
@@ -21,6 +22,7 @@ import {
 } from "./admin/contacts/contacts.component";
 import { DeviceAddComponent, DevicesComponent, DeviceShowComponent } from "./admin/devices/devices.component";
 import { ManageDarcComponent } from "./admin/manage-darc";
+import { PersonhoodComponent } from "./admin/personhood/personhood.component";
 import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./admin/secure/secure.component";
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
@@ -78,6 +80,7 @@ export function loadUserDataConfig(d: UserData) {
         CASLoginComponent,
         WPLoginComponent,
         WelcomeComponent,
+        PersonhoodComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
@@ -106,6 +109,7 @@ export function loadUserDataConfig(d: UserData) {
         ReactiveFormsModule,
         MatDialogModule,
         AppRoutingModule,
+        QRCodeModule,
     ],
     providers: [
         UserData,

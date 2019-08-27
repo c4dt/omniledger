@@ -4,6 +4,7 @@ import { Router } from "@angular/router";
 
 import Log from "@c4dt/cothority/log";
 
+import { Data } from "@c4dt/dynacred";
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
 
@@ -34,7 +35,7 @@ export class AppComponent implements OnInit {
         if (!this.uData.isAvailableInStorage()) {
             // No data saved - show how to get a new user
             this.loading = false;
-            await this.router.navigate(["/newuser"]);
+            return this.newUser();
         } else {
             try {
                 await this.uData.load();
@@ -50,10 +51,19 @@ export class AppComponent implements OnInit {
                         window.location.reload();
                     } else {
                         this.loading = false;
-                        await this.router.navigate(["/newuser"]);
+                        return this.newUser();
                     }
                 });
             }
+        }
+    }
+
+    async newUser() {
+        const roster = this.uData.bc.getConfig().roster;
+        if (roster && !roster.list[0].address.includes("localhost")) {
+            return this.router.navigate(["/newuser"]);
+        } else {
+            return this.router.navigate(["/register"]);
         }
     }
 }
