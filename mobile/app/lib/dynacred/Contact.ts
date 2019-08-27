@@ -2,6 +2,7 @@ import { Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import Long from "long";
 import { sprintf } from "sprintf-js";
+import URL from "url-parse";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
@@ -270,22 +271,22 @@ export class Contact {
     }
 
     static async fromQR(bc: ByzCoinRPC, str: string): Promise<Contact> {
-        const qrURL = new URL(str);
-        const params = qrURL.searchParams;
+        const qrURL = new URL(str, true);
+        const params = qrURL.query;
         const u = new Contact();
         switch (qrURL.origin + qrURL.pathname) {
             case Contact.urlRegistered:
                 u.bc = bc;
                 u.credentialInstance = await CredentialsInstance.fromByzcoin(bc,
-                    Buffer.from(params.get("credentialIID"), "hex"));
+                    Buffer.from(params.credentialIID, "hex"));
                 u.credential = u.credentialInstance.credential.copy();
                 u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
                 return await u.updateOrConnect();
             case Contact.urlUnregistered:
-                u.alias = params.get("alias");
-                u.email = params.get("email");
-                u.phone = params.get("phone");
-                u.seedPublic = Public.fromHex(params.get("public_ed25519"));
+                u.alias = params.alias;
+                u.email = params.email;
+                u.phone = params.phone;
+                u.seedPublic = Public.fromHex(params.public_ed25519);
                 return u;
             default:
                 return Promise.reject("invalid URL");

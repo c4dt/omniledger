@@ -46,7 +46,7 @@ export class TestData extends Data {
             td.admin = admin;
 
             // tslint:disable-next-line
-            console.log("// To be pasted into user-data.ts :: bcTest - line 60");
+            console.log("// To be pasted into user-data.ts :: bcTest - line 67");
             // tslint:disable-next-line
             console.log("\nbyzCoinID = Buffer.from(\"" + bc.genesisID.toString("hex") + "\", \"hex\");\n" +
                 "spawnerID = Buffer.from(\"" + td.spawnerInstance.id.toString("hex") + "\", \"hex\");\n");

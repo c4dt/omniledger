@@ -4,7 +4,11 @@ import { Page } from "tns-core-modules/ui/frame";
 import { openUrl } from "tns-core-modules/utils/utils";
 import { appRootMain, appRootNav } from "~/app-root";
 import Log from "~/lib/cothority/log";
-import { initData, newByzCoin, testingMode, uData } from "~/lib/user-data";
+import { Data } from "~/lib/dynacred";
+import { msgFailed } from "~/lib/messages";
+import { scan } from "~/lib/scan";
+import { StorageFile } from "~/lib/storage-file";
+import { attachDevice, initData, newByzCoin, testingMode, uData } from "~/lib/user-data";
 
 const view: Observable = fromObjectRecursive({
     networkStatus: undefined,
@@ -35,6 +39,28 @@ export async function goInitTest(args: EventData) {
     } catch (e) {
         await Log.rcatch(e);
     }
+}
+
+export async function scanDevice() {
+    const url = await scan("Scan device QRcode");
+    Log.print(url.text);
+    if (!url.text.includes(Data.urlNewDevice)) {
+        await msgFailed("Got wrong URL: " + url.text);
+    }
+    try {
+        setProgress("Attaching device", 33);
+        await attachDevice(url.text);
+        setProgress("Saving data", 66);
+        uData.storage = StorageFile;
+        await uData.save();
+        setProgress("Done", 100);
+    } catch (e) {
+        Log.catch(e);
+        setProgress();
+        return msgFailed("Got error: " + e.toString(), "Failed to attach to device");
+    }
+    setProgress();
+    return appRootMain();
 }
 
 export function goAlias(args: EventData) {

@@ -32,25 +32,29 @@ export async function navigatingTo(args: EventData) {
     } catch (e) {
         Log.catch(e);
         if (testingMode) {
+            const actions = ["Setup", "Init Byzcoin"];
             // tslint:disable:object-literal-sort-keys
-            if (await dialogs.confirm({
+            switch (await dialogs.action({
                 title: "ByzCoin error",
                 message: "Couldn't contact ByzCoin, you should perhaps create a new one",
-                okButtonText: "Init ByzCoin",
                 cancelButtonText: "Quit",
+                actions,
                 // tslint:enable:object-literal-sort-keys
             })) {
-                try {
-                    await newByzCoin();
-                } catch (e) {
-                    await msgFailed(e.toString(), "Failed to setup ByzCoin");
-                    quit();
-                }
-                await msgOK(
-                    "A new byzcoin has been created - please update your user-data.ts",
-                    "ByzCoin created",
-                );
-                return appRootMain();
+                case actions[0]:
+                    return appRootSetup();
+                case actions[1]:
+                    try {
+                        await newByzCoin();
+                    } catch (e) {
+                        await msgFailed(e.toString(), "Failed to setup ByzCoin");
+                        quit();
+                    }
+                    await msgOK(
+                        "A new byzcoin has been created - please update your user-data.ts",
+                        "ByzCoin created",
+                    );
+                    return appRootMain();
             }
             return quit();
         } else {
