@@ -41,6 +41,13 @@ export async function loadData() {
     uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
 }
 
+// Attaches to an existing identity as a new device. The passed string contains an
+// ephemeral private key that will be used to set up the identity.
+export async function attachDevice(url: string) {
+    uData = await Data.attachDevice(bc, url);
+    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+}
+
 // Creates a new byzcoin on the test-roster.
 export async function newByzCoin(): Promise<Data> {
     uData = await TestData.init("admin", testRoster);
@@ -57,8 +64,8 @@ async function bcTest(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("343959a545ed607d4c476e97e3d7764fae84cd91f2fbf7420d9fadbcb40a617f", "hex");
-    spawnerID = Buffer.from("60a688694ef3c812605aa590acbadf6bbcc16b4cb285d927f493164e4122d2c4", "hex");
+    byzCoinID = Buffer.from("08b52090c8eaf28b377dc8d142a39068e5383addfeb3a125c89a6d5379c38d2d", "hex");
+    spawnerID = Buffer.from("99442118918da17bb97a31d903acce8b06e554f6932151532299a68bdb12d89a", "hex");
 
     return ByzCoinRPC.fromByzcoin(testRoster, byzCoinID);
 }

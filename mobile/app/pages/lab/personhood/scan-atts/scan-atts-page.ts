@@ -2,8 +2,8 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 
 import { Page } from "tns-core-modules/ui/page";
+import URL from "url-parse";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
-import { Data } from "~/lib/dynacred";
 import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { scan } from "~/lib/scan";
@@ -81,9 +81,9 @@ export async function goBack() {
 async function addScan() {
     try {
         const result = await scan("Please scan attendee");
-        const resURL = new URL(result.text);
+        const resURL = new URL(result.text, true);
         if (resURL.origin + resURL.pathname === PartyItem.url) {
-            const pub = resURL.searchParams.get("public");
+            const pub = resURL.query.public;
             if (pub && pub.length === 64) {
                 await viewScanModel.addAttendee(pub);
             } else {
