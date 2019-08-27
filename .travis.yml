@@ -19,7 +19,7 @@ jobs:
       script:
         - cd conode
         - make docker
-        - docker run --rm -t -p 7770-7777:7770-7777 --name conode c4dt/conode:dev &
+        - make docker_run &
         - make conode
         - build/bcadmin latest --bc bc*cfg
         - docker rm -f conode
