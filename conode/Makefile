@@ -11,7 +11,6 @@ cothority:
 conode: cothority
 	@( cd cothority; git pull )
 	echo "Compiling binaries"; \
-	export GO111MODULE=on; \
 	go build -o build/conode; \
 	cd cothority; \
 		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
@@ -32,10 +31,11 @@ newdb: conode
 
 # Use this target to build from local source
 docker: build/Dockerfile cothority
-	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o build/conode
+	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
+	go build -o build/conode; \
 	cd cothority; \
-		GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/bcadmin ./byzcoin/bcadmin; \
-		GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/csadmin ./calypso/csadmin
+		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
+		go build -o ../build/csadmin ./calypso/csadmin
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
@@ -44,7 +44,13 @@ docker_run: docker
 	echo "ByzCoinID = \"$$( grep ByzCoinID variables.txt | sed -e 's/.* //' )\"" > $(WEBAPP_ASSET)
 	echo >> $(WEBAPP_ASSET)
 	cat build/conodes/public.toml >> $(WEBAPP_ASSET)
-	docker run --rm -it -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+	docker run --rm -t -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+
+docker_wait:
+	@for port in $$( seq 7771 2 7777 ); do \
+	  echo "Waiting for localhost:$$port"; \
+	  until curl -s http://localhost:$$port/ok > /dev/null; do sleep .2; done; \
+	done
 
 docker_stop:
 	docker stop $(CONTAINER)
