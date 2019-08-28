@@ -19,20 +19,28 @@ jobs:
       script:
         - cd conode
         - make docker
+        - make docker_run &
+        - make conode
+        - make docker_wait
+        - build/bcadmin latest --bc bc*cfg
     - name: dynacred
       language: node_js
-      node_js: 10
+      node_js: "10"
       install: cd dynacred && npm ci
       script: npm run test
     - name: webapp
       language: node_js
-      node_js: 10
+      node_js: "10"
       install:
+        - gimme 1.12.4
+        - . $HOME/.gimme/envs/go1.12.4.env
         - cd webapp && npm ci
         - npm link ../dynacred
       before_script: npm run lint
       script:
         - npm run build --prod
+        - make -C ../conode docker_run &
+        - make -C ../conode docker_wait
         - npm run test --no-watch
 
     - stage: deploy
@@ -45,7 +53,7 @@ jobs:
         script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
     - name: NPM
       language: node_js
-      node_js: 10
+      node_js: "10"
       script: skip # node_js.script default to `make test`
       before_deploy: echo "//registry.npmjs.org/:_authToken=${DEPLOY_NPM_TOKEN}" > "$HOME/.npmrc"
       deploy:
