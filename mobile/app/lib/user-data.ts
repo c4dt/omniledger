@@ -64,8 +64,8 @@ async function bcTest(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("08b52090c8eaf28b377dc8d142a39068e5383addfeb3a125c89a6d5379c38d2d", "hex");
-    spawnerID = Buffer.from("99442118918da17bb97a31d903acce8b06e554f6932151532299a68bdb12d89a", "hex");
+    byzCoinID = Buffer.from("813eafa9a759396d305f8f81c606f3f917252f6c3d056ce60d1b4650f295d43c", "hex");
+    spawnerID = Buffer.from("98206a01ea75774f0ff5e47d1b37b9d4d7c08c2ad796bf2953d83303ec4b49b7", "hex");
 
     return ByzCoinRPC.fromByzcoin(testRoster, byzCoinID);
 }

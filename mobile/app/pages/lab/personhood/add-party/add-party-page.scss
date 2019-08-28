@@ -4,7 +4,7 @@ $size: 70vw;
 $case-padding: 10;
 
 .page-content {
-  padding: 5;
+  padding: 5px;
   background-color: white;
 }
 
@@ -12,10 +12,8 @@ $case-padding: 10;
   color: white;
   background-color: $accent-light;
   text-align: center;
-  vertical-align: center;
-  horizontal-align: center;
   margin: 7vw;
-  border-radius: 20;
+  border-radius: 20px;
 }
 
 .grid-list-text {
@@ -25,16 +23,16 @@ $case-padding: 10;
 }
 
 .label-title {
-  padding-top: 10;
-  padding-bottom: 5;
+  padding-top: 10px;
+  padding-bottom: 5px;
   vertical-align: center;
 }
 
 #addOrg {
   horizontal-align: right;
   vertical-align: center;
-  font-size: 40;
-  padding-right: 20;
+  font-size: 40pt;
+  padding-right: 20px;
 }
 
 #org-list-header {

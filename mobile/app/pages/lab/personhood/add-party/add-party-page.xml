@@ -83,16 +83,6 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-
-                        <!-- For some reason the 'hidden="true"' doesn't work with an EntityProperty -->
-                        <df:RadDataForm.groups>
-                            <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
-                                <df:PropertyGroup.properties>
-                                    <df:EntityProperty name="_observers"/>
-                                    <df:EntityProperty name="_map"/>
-                                </df:PropertyGroup.properties>
-                            </df:PropertyGroup>
-                        </df:RadDataForm.groups>
                     </df:RadaForm.properties>
                 </df:RadDataForm>
 
@@ -109,9 +99,9 @@
                                         itemTap="{{ readOnly ? '' : 'orgTapped' }}"
                                         row="3"
                                         col="0"
-                                        colSpan="3">
+                                        colSpan="3" height="500px">
                     <nsListView:RadListView.listViewLayout>
-                        <nsListView:ListViewGridLayout scrollDirection="vertical" spanCount="3"/>
+                        <nsListView:ListViewGridLayout scrollDirection="Vertical" itemHeight="50px" spanCount="3"/>
                     </nsListView:RadListView.listViewLayout>
 
                     <nsListView:RadListView.itemTemplate>
