@@ -10,24 +10,24 @@ cothority:
 
 conode: cothority
 	@( cd cothority; git pull )
-	echo "Compiling binaries"; \
+	@echo "Compiling binaries"; \
 	go build -o build/conode; \
 	cd cothority; \
 		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
-		go build -o ../build/csadmin ./calypso/csadmin
+		go build -o ../build/csadmin ./calypso/csadmin; \
+		go build -o ../build/phapp ./personhood/phapp
 
 newdb: conode
 	rm -f build/conodes/*db;
 	@echo "Starting nodes"; \
-	cd build; \
-	COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null & \
-	echo "Waiting for nodes to start up"; sleep 10; \
+	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null ) & \
+	make docker_wait; \
 	echo "Creating new ByzCoin and printing out important variables"; echo; \
 	rm -f *.cfg; \
-	( ./bcadmin -c . create conodes/public.toml --interval 500ms; \
-	  ./bcadmin latest --bc bc-*; \
-	  ./bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private)" | tee ../variables.txt; \
-	echo; echo "Shutting down conodes"; pkill -x conode; rm conodes/running
+	( ./build/bcadmin -c . create build/conodes/public.toml --interval 500ms; \
+	  ./build/bcadmin latest --bc bc-*; \
+	  ./build/bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private|Creating Spawner)" | tee variables.txt; \
+	echo; echo "Shutting down conodes"; pkill -x conode; rm -f conodes/running
 
 # Use this target to build from local source
 docker: build/Dockerfile cothority
@@ -61,6 +61,12 @@ docker_start:
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
+
+docker_wait:
+	@for port in $$( seq 7771 2 7777 ); do \
+	  echo "Waiting for localhost:$$port"; \
+	  until curl -s http://localhost:$$port/ok > /dev/null; do sleep .2; done; \
+	done
 
 clean:
 	rm -rf build/conode cothority

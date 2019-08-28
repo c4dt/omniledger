@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
         if (!this.uData.isAvailableInStorage()) {
             // No data saved - show how to get a new user
             this.loading = false;
-            await this.router.navigate(["/newuser"]);
+            return this.newUser();
         } else {
             try {
                 await this.uData.load();
@@ -50,10 +50,19 @@ export class AppComponent implements OnInit {
                         window.location.reload();
                     } else {
                         this.loading = false;
-                        await this.router.navigate(["/newuser"]);
+                        return this.newUser();
                     }
                 });
             }
+        }
+    }
+
+    async newUser(): Promise<boolean> {
+        const roster = this.uData.bc.getConfig().roster;
+        if (roster && !roster.list[0].address.includes("localhost")) {
+            return this.router.navigate(["/newuser"]);
+        } else {
+            return this.router.navigate(["/register"]);
         }
     }
 }
