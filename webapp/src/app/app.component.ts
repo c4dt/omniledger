@@ -4,7 +4,6 @@ import { Router } from "@angular/router";
 
 import Log from "@c4dt/cothority/log";
 
-import { Data } from "@c4dt/dynacred";
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
 
@@ -58,7 +57,7 @@ export class AppComponent implements OnInit {
         }
     }
 
-    async newUser() {
+    async newUser(): Promise<boolean> {
         const roster = this.uData.bc.getConfig().roster;
         if (roster && !roster.list[0].address.includes("localhost")) {
             return this.router.navigate(["/newuser"]);
