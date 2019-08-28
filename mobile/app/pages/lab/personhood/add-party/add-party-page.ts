@@ -1,13 +1,12 @@
+import { ObservableArray } from "data/observable-array";
 import Long from "long";
 import Moment from "moment";
 import { sprintf } from "sprintf-js";
-import { fromObject } from "tns-core-modules/data/observable";
-import { ObservableArray } from "tns-core-modules/data/observable-array";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import { PopDesc } from "~/lib/cothority/personhood/proto";
 import { Contact } from "~/lib/dynacred/Contact";
 import { PartyItem } from "~/lib/dynacred/PartyItem";
@@ -18,25 +17,28 @@ import { dismissSoftKeyboard } from "~/lib/users";
 let newParty: PopDesc;
 let page: Page;
 
-const dataForm = fromObject({
+let orgList = [];
+
+const dataForm = {
     date: "",
     location: "",
     name: "",
     purpose: "",
     reward: 1e6,
     time: "",
-});
+};
 
 const viewModel = fromObject({
     dataForm,
     networkStatus: null,
-    orgList: new ObservableArray(),
+    orgList,
     readOnly: false,
 });
 
-export function onNavigatingTo(args) {
+export function onNavigatingTo(args: EventData) {
+    Log.lvl1("addPartyPage");
+
     try {
-        Log.lvl1("starting config-page");
         page = args.object as Page;
         page.bindingContext = viewModel;
         if (testingMode) {
@@ -54,12 +56,21 @@ export function onNavigatingTo(args) {
                 purpose: "",
             });
         }
-        viewModel.get("orgList").splice(0);
-        viewModel.get("orgList").push(uData.contact);
+        // orgList = [uData.contact];
+        orgList = [{alias: "one"}, {alias: "two"}];
+        updateModel();
         copyPartyToViewModel();
     } catch (e) {
         Log.catch(e);
     }
+}
+
+// updateModel sets new data to the viewModel. The RadDataViewer under iOS doesn't
+// recognize new data when it points to the same object, so the viewModel.set method
+// needs to take a copoy of the data.
+function updateModel() {
+    viewModel.set("dataForm", Object.assign({}, dataForm));
+    viewModel.set("orgList", orgList.slice());
 }
 
 /**
@@ -67,8 +78,8 @@ export function onNavigatingTo(args) {
  * @return {Date}
  */
 function copyViewModelToParty() {
-    const date = dataForm.get("date").split("-");
-    const time = dataForm.get("time").split(":");
+    const date = dataForm.date.split("-").map(parseInt);
+    const time = dataForm.time.split(":").map(parseInt);
 
     if (date.length !== 3 || time.length !== 2) {
         // tslint:disable:object-literal-sort-keys
@@ -82,25 +93,23 @@ function copyViewModelToParty() {
         // tslint:enable:object-literal-sort-keys
     }
 
-    date.map(parseInt);
-    time.map(parseInt);
-
     const unix = new Date(date[0], date[1] - 1, date[2], time[0], time[1], 0, 0).getTime();
     newParty = new PopDesc({
         datetime: Long.fromNumber(unix),
-        location: dataForm.get("location"),
-        name: dataForm.get("name"),
-        purpose: dataForm.get("purpose"),
+        location: dataForm.location,
+        name: dataForm.name,
+        purpose: dataForm.purpose,
     });
 }
 
 function copyPartyToViewModel() {
     const date = new Date(newParty.datetime.toNumber());
-    dataForm.set("date", sprintf("%04d-%02d-%02d", date.getFullYear(), date.getMonth() + 1, date.getDate()));
-    dataForm.set("time", sprintf("%02d:%02d", date.getHours(), date.getMinutes()));
-    dataForm.set("name", newParty.name);
-    dataForm.set("purpose", newParty.purpose);
-    dataForm.set("location", newParty.location);
+    dataForm.date = sprintf("%04d-%02d-%02d", date.getFullYear(), date.getMonth() + 1, date.getDate());
+    dataForm.time = sprintf("%02d:%02d", date.getHours(), date.getMinutes());
+    dataForm.name = newParty.name;
+    dataForm.purpose = newParty.purpose;
+    dataForm.location = newParty.location;
+    updateModel();
 }
 
 export function goBack() {
@@ -113,7 +122,7 @@ export async function save() {
         setProgress("Saving", 30);
         await copyViewModelToParty();
 
-        const orgs = viewModel.get("orgList").slice() as Contact[];
+        const orgs = orgList.slice() as Contact[];
         // Verify that all organizers have published their personhood public key
         for (const org of orgs) {
             if (!org.personhoodPub) {
@@ -127,7 +136,7 @@ export async function save() {
             coin: uData.coinInstance,
             desc: newParty,
             orgs: orgs.map((org) => org.darcInstance.id),
-            reward: Long.fromNumber(dataForm.get("reward")),
+            reward: Long.fromNumber(dataForm.reward),
             signers: [uData.keyIdentitySigner],
         });
         const p = new PartyItem(ppi);
@@ -154,7 +163,8 @@ export async function addOrg(args: any) {
     // tslint:enable:object-literal-sort-keys
     const org = uData.contacts.find((f) => f.alias === result);
     if (org != null) {
-        viewModel.get("orgList").push(org);
+        orgList.push(org);
+        updateModel();
     }
 }
 
