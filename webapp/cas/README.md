@@ -1,63 +1,57 @@
 # CAS - Central Authentication Service
 
-CAS is described here: https://en.wikipedia.org/wiki/Central_Authentication_Service - it is used
-in Matrix for a SSO authentication.
+CAS is described here: https://en.wikipedia.org/wiki/Central_Authentication_Service.
+It is used for OmniLedger authentication with common tools.
 
 A very small subset of CAS is implemented here. Currently only the following two endpoints are implemented,
 and even those two not fully:
 
 - `api/v0/cas/login` - to start the login procedure and return a ticket
-- `api/v0/cas/proxyValidate` - to return the username of the ticket
+  - as the user keys are inside the StorageDB of the browser, it's currently provided directly by the webapp
+- `api/v0/cas/serviceValidate` - to validate and return the username of the ticket
 
-But it is enough to make Matrix happy and to let it login a user through the omniledger-demo.
-
-## Messages
-
-As per CAS, the following messages are exchanged:
-
-1. Client to matrix: login request through `https://matrix.c4dt.org`
-2. Matrix to client: redirect to `https://demo.c4dt.org/omniledger/api/v0/cas/login`
-3. Client: check if account exists in browser, and display `yes` / `no` choice
-4. Client to matrix: send ticket if login accepted
-5. Matrix to `demo.c4dt.org/omniledger/api/v0/cas/proxyValidate`: get username of ticket
-6. Matrix to Client: logged in, enjoy
-
-### A couple of caveats
-
-- matrix and riot are used mixed here. There are some message not shown that go between
-the two
-- the first redirection to `demo.c4dt.org` only loads the scripts, and runs the
-login-verification in the user's browser
-- the second redirection to `demo.c4dt.org` is an actual call to the server, and
-cannot go through the user's browser, as it's directly done by the matrix-server
-- the ticket is currently `ol-{credentialIID[0:8]}`, which is the same as the username
-used 
+To better understand the interactions of the system, one can look at the [messages' UML](login.uml).
 
 ### TODOs for CAS
 
-- put `proxyValidate` and `serve_all.py` together - probably even as node.js, so that
-the cothority-library can be used
-- Actually store something in OmniLedger that can be verified in step 5. Then the ticket
-would be the IID of the key stored in OmniLedger, and `proxyValidate` can fetch that
-instance from OmniLedger and extract the credentialIID.
 - Check if we need an access control system
 
-### TODOs for OmniLedger-demo
+# Configuration
 
-Make this more user-friendly
+A few elements are needed to start `cas`. Here goes an example to fill in
+```toml
+ByzCoinID = # same as the webapp's asset
 
-## Configuration
+CoinCost = 1 # number of coin to transfer back and forth
+ChallengeSize = 20  # size of challenge to generate
+ChallengeHash = "sha256"  # how it the challenge hashed
+TicketEncoding = "base64"  # how is the ticket's payload is encoded
+TxArgumentName = "challenge"  # field name to find in transaction
+TxValidityDuration = "5m"  # maximum validity time of ticket
+
+# mapping from the service's hostname to the CoinInstance ID of the Action
+[ServiceToCoinInstanceIDs]
+localhost = "8c22411f1aaf3248542f6b677fd066db3178bc0a2b60adc2aaa9d6cc80938b0f"
+
+# same as the webapp's asset
+[[servers]]
+Address = ...
+Suite = ...
+Public = ...
+```
+
+# Deployment
+
+## Example for [matrix](https://matrix.org/)
 
 ### Local Tests
 
 The local test is thought to be used like this:
 - running synapse on localhost:7608 with `synctl start`
 - running riot on localhost:8080 with `yarn start --watch`
-- running omniledger-demo with `ng serve`
+- running omniledger-demo with `npm start`
 - running omniledger with `make docker_run`
-
-Once these four points are running, the file `serve_all.py` can be used to set up the redirect to a local
-`ng serve` as well as return a dummy CAS-authorization.
+- running cas with `./cas config.toml`
 
 The following configuration can be used in `homeserver.yaml`:
 

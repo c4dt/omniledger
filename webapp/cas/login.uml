@@ -1,0 +1,28 @@
+@startuml
+
+entity OmniLedger
+entity Service
+actor User
+database Conodes
+
+User		-> Service:	GET /login
+return				"Sign in with OmniLedger" 
+
+|||
+
+User		-> OmniLedger:	GET /api/v0/cas/login?service=...
+return				Static JavaScript generating login proof
+User		-> User:	Generate random $challenge
+User		-> Conodes:	ClientTransaction putting a coin\ninto the Action and getting it back,\nwith hash($challenge) as unused argument
+Conodes		-> Conodes:	Validation of sent ClientTransaction
+User		-> User:	$ticket = $challenge and User's ID
+
+|||
+
+User		-> Service:	GET /login?ticket=$ticket
+Service		-> OmniLedger:	GET /api/v0/cas/serviceValidate?service=...&ticket=$ticket
+OmniLedger	-> Conodes:	Check recent transactions to find the previously generated
+OmniLedger	--> Service:	$ticket is valid
+Service		--> User:	Access
+
+@enduml
