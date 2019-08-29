@@ -1,16 +1,17 @@
-import Log from "../src/lib/cothority/log";
+import { Darc } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
 import Long from "long";
-import { Data, TestData } from "../src/Data";
-import Darc from "../src/lib/cothority/darc/darc";
-
-// jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
+import { Data } from "../src";
+import { StorageLocalStorage } from "../src/Storage";
+import { TestData } from "../src/test-data";
+import { TData } from "./support/tdata";
 
 describe("Contact should", async () => {
     let tdAdmin: TestData;
 
     beforeAll(async () => {
         try {
-            tdAdmin = await TestData.init();
+            tdAdmin = await TData.init();
         } catch (e) {
             Log.error("couldn't start byzcoin:", e);
         }
@@ -29,7 +30,8 @@ describe("Contact should", async () => {
         await user2.save();
         user1.addContact(user2.contact);
         await user1.save();
-        await user1.load();
+        const user1Copy = await Data.load(tdAdmin.bc, StorageLocalStorage, user1.dataFileName);
+        expect(user1.toObject()).toEqual(user1Copy.toObject());
     }, 20000);
 
     it("convert from old to new contacts", async () => {
@@ -75,16 +77,13 @@ describe("Contact should", async () => {
     });
 
     it("keep actions and groups", async () => {
-        const userCopy = new Data();
-        userCopy.dataFileName = tdAdmin.dataFileName;
-
         const nd = await Darc.createBasic([tdAdmin.keyIdentitySigner], [tdAdmin.keyIdentitySigner],
             Buffer.from("desc"));
         const di = await tdAdmin.spawnerInstance.spawnDarcs(tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner], nd);
         tdAdmin.contact.setActions(di);
         await tdAdmin.save();
         expect((await tdAdmin.contact.getActions()).length).toBe(1);
-        await userCopy.load();
+        const userCopy = await Data.load(tdAdmin.bc, StorageLocalStorage, tdAdmin.dataFileName);
         expect((await userCopy.contact.getActions()).length).toBe(1);
     });
 });
