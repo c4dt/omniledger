@@ -1,6 +1,6 @@
 import { Scalar } from "@dedis/kyber";
-import { randomBytes } from "crypto-browserify";
 import * as crypto from "crypto-browserify";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";

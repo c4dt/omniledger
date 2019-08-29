@@ -14,13 +14,13 @@ import Signer from "@c4dt/cothority/darc/signer";
 import ISigner from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
 import Log from "@c4dt/cothority/log";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
 } from "@c4dt/cothority/personhood/credentials-instance";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
@@ -29,6 +29,7 @@ import { Buffer } from "buffer";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { sprintf } from "sprintf-js";
+import URL from "url-parse";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { KeyPair, Private, Public } from "./KeyPair";
@@ -182,11 +183,11 @@ export class Data {
         Log.lvl1("Creating coin from darc");
         const signers = [adminSigner];
         const instructions: Instruction[] = [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
-                        return Instruction.createSpawn(adminDarcID, DarcInstance.contractID, [
-                            new Argument({name: DarcInstance.argumentDarc, value: dar.toBytes()}),
-                        ]);
-                    },
-                );
+                return Instruction.createSpawn(adminDarcID, DarcInstance.contractID, [
+                    new Argument({name: DarcInstance.argumentDarc, value: dar.toBytes()}),
+                ]);
+            },
+        );
         const idBuf = d.keyIdentity._public.toBuffer();
         instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
             new Argument({name: CoinInstance.argumentCoinID, value: idBuf}),
@@ -206,7 +207,7 @@ export class Data {
 
         const ctx = ClientTransaction.make(bc.getProtocolVersion(), ...instructions);
         await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers,
-                [d.keyIdentitySigner]]);
+            [d.keyIdentitySigner]]);
         await bc.sendTransactionAndWait(ctx, 5);
 
         Log.lvl2("Linking new data to Data-structure");
@@ -235,23 +236,18 @@ export class Data {
         return DarcInstance.fromByzcoin(bc, signer[0]);
     }
 
-    static async attachDevice(bc: ByzCoinRPC, url: string): Promise<Data> {
-        const a = document.createElement("a");
-        a.href = url;
-        if (!a.pathname.includes(this.urlNewDevice)) {
+    static async attachDevice(bc: ByzCoinRPC, urlStr: string): Promise<Data> {
+        const url = new URL(urlStr, true);
+        if (!url.pathname.includes(this.urlNewDevice)) {
             throw new Error("not a newDevice url");
         }
         // Remove the leading "?"
-        const args = a.search.substring(1).split("&");
-        if (args.length !== 2) {
-            throw new Error("need two arguments");
-        }
-        if (!args[0].startsWith("credentialIID=") ||
-            !args[1].startsWith("ephemeral=")) {
+        if (!url.query.credentialIID ||
+            !url.query.ephemeral) {
             throw new Error("need credentialIID and ephemeral");
         }
-        const credentialIID = Buffer.from(args[0].substring(14), "hex");
-        const ephemeral = Buffer.from(args[1].substring(10), "hex");
+        const credentialIID = Buffer.from(url.query.credentialIID, "hex");
+        const ephemeral = Buffer.from(url.query.ephemeral, "hex");
         if (credentialIID.length !== 32 || ephemeral.length !== 32) {
             throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
         }
@@ -528,14 +524,14 @@ export class Data {
     // RecoverySignature returns a string for a qrcode that holds the signature to be used to proof that this
     // trustee is OK with recovering a given account.
     async recoverySignature(request: string, user: Contact): Promise<string> {
-        const requestURL = new URL(request);
+        const requestURL = new URL(request, true);
         if (requestURL.origin + requestURL.pathname !== Data.urlRecoveryRequest) {
             throw new Error("not a recovery request");
         }
-        if (!requestURL.searchParams.has("public")) {
+        if (!requestURL.query.public) {
             throw new Error("recovery request is missing public argument");
         }
-        const publicKey = Buffer.from(requestURL.searchParams.get("public"), "hex");
+        const publicKey = Buffer.from(requestURL.query.public, "hex");
         if (publicKey.length !== RecoverySignature.pub) {
             throw new Error("got wrong public key length");
         }
@@ -566,17 +562,17 @@ export class Data {
      * @param signature the qrcode-string received from scanning.
      */
     async recoveryStore(signature: string) {
-        const sigURL = new URL(signature);
+        const sigURL = new URL(signature, true);
         if (sigURL.origin + sigURL.pathname !== Data.urlRecoverySignature) {
             throw new Error("not a recovery signature");
         }
-        const sigParams = sigURL.searchParams;
-        if (!sigParams.has("credentialIID") ||
-            !sigParams.has("pubSig")) {
+        const sigParams = sigURL.query;
+        if (!sigParams.credentialIID ||
+            !sigParams.pubSig) {
             throw new Error("credentialIID or signature missing");
         }
-        const credIID = Buffer.from(sigParams.get("credentialIID"), "hex");
-        const pubSig = Buffer.from(sigParams.get("pubSig"), "hex");
+        const credIID = Buffer.from(sigParams.credentialIID, "hex");
+        const pubSig = Buffer.from(sigParams.pubSig, "hex");
         if (pubSig.length !== RecoverySignature.pubSig) {
             throw new Error("signature should be of length 64");
         }
@@ -803,13 +799,13 @@ export class Data {
 
         Log.lvl1("Creating identity from spawner");
         const ctx = ClientTransaction.make(this.bc.getProtocolVersion(),
-                ...this.spawnerInstance.spawnDarcInstructions(coin,
-                    darcDevice, darcSign, darcCred, darcCoin),
-                ...this.spawnerInstance.spawnCoinInstructions(coin,
-                    darcCoin.getBaseID(), pub.marshalBinary()),
-                ...this.spawnerInstance.spawnCredentialInstruction(coin,
-                    darcCred.getBaseID(), this.contact.credential, pub.marshalBinary()),
-            );
+            ...this.spawnerInstance.spawnDarcInstructions(coin,
+                darcDevice, darcSign, darcCred, darcCoin),
+            ...this.spawnerInstance.spawnCoinInstructions(coin,
+                darcCoin.getBaseID(), pub.marshalBinary()),
+            ...this.spawnerInstance.spawnCredentialInstruction(coin,
+                darcCred.getBaseID(), this.contact.credential, pub.marshalBinary()),
+        );
         await ctx.updateCountersAndSign(this.bc, [signers]);
         await this.bc.sendTransactionAndWait(ctx);
 
