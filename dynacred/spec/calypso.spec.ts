@@ -89,7 +89,7 @@ describe("Calypso.createWrite should", () => {
     });
 });
 
-describe("In a full byzcoin setting, it should", () => {
+fdescribe("In a full byzcoin setting, it should", () => {
     let tdAdmin: TestData;
     let ocs: OnChainSecretRPC;
 
@@ -121,7 +121,7 @@ describe("In a full byzcoin setting, it should", () => {
         expect(newKey).toEqual(key);
     });
 
-    it("create an LTS and a write using the spawner", async () => {
+    fit("create an LTS and a write using the spawner", async () => {
         Log.lvl1("Creating new LTS");
         const key = Buffer.from("Very Secret Key");
 
@@ -131,6 +131,13 @@ describe("In a full byzcoin setting, it should", () => {
             [await tdAdmin.contact.getDarcSignIdentity()]);
 
         Log.lvl2("Creating Read instance");
+        await tdAdmin.coinInstance.update();
+        Log.print("coins left for admin:", tdAdmin.coinInstance._coin.value.toNumber());
+        const coinDarc = await DarcInstance.fromByzcoin(tdAdmin.bc, tdAdmin.coinInstance.darcID);
+        Log.print("access for coin:", coinDarc.darc.rules);
+        await new Promise((resolve) => {
+            setTimeout(() => {resolve(); }, 1000);
+        });
         const kp = new KeyPair();
         const readInst = await wrInst.spawnRead(kp._public.point, [tdAdmin.keyIdentitySigner],
             tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner]);

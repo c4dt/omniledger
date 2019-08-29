@@ -1,9 +1,10 @@
+import Log from "@c4dt/cothority/log";
 import Long from "long";
-import { Data, TestData } from "../src/Data";
+import { Data } from "../src/Data";
 import { KeyPair } from "../src/KeyPair";
-import Log from "../src/lib/cothority/log";
-
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
+import { StorageLocalStorage } from "../src/Storage";
+import { TestData } from "../src/test-data";
+import { TData } from "./support/tdata";
 
 describe("Data class should", async () => {
     let tdAdmin: TestData;
@@ -11,7 +12,7 @@ describe("Data class should", async () => {
     beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
-            tdAdmin = await TestData.init();
+            tdAdmin = await TData.init();
         } catch (e) {
             return Log.rcatch(e);
         }
@@ -20,9 +21,7 @@ describe("Data class should", async () => {
 
     it("load old user", async () => {
         const user1 = await tdAdmin.createTestUser("user1");
-        const user1Copy = new Data();
-        user1Copy.dataFileName = user1.dataFileName;
-        await user1Copy.load();
+        const user1Copy = await Data.load(tdAdmin.bc, StorageLocalStorage, user1.dataFileName);
         expect(user1Copy.contact.credentialIID).toEqual(user1.contact.credentialIID);
         expect(user1Copy.toObject()).toEqual(user1.toObject());
     });
@@ -32,9 +31,7 @@ describe("Data class should", async () => {
         const user2 = await tdAdmin.createTestUser("user2");
         user1.addContact(user2.contact);
         await user1.save();
-        const user1Copy = new Data();
-        user1Copy.dataFileName = user1.dataFileName;
-        await user1Copy.load();
+        const user1Copy = await Data.load(tdAdmin.bc, StorageLocalStorage, user1.dataFileName);
         expect(user1Copy.contacts.length).toEqual(1);
         expect(user1Copy.toObject()).toEqual(user1.toObject());
         expect(user1Copy.contacts[0].coinInstance).toBeDefined();
@@ -84,15 +81,13 @@ describe("Data class should", async () => {
         user1.addContact(tdAdmin.contact);
         await user1.save();
         Log.lvl1("creating empty data structure");
-        const user1Copy = new Data();
-        user1Copy.bc = user1.bc;
+        const user1Copy = new Data(tdAdmin.bc);
         // Log.lvl1('attaching to it');
         await user1Copy.attachAndEvolve(user1.keyIdentity._private);
 
         // It should not be possible to attach to it a second time.
         Log.lvl1("trying to attach again");
-        const user1Copy2 = new Data();
-        user1Copy2.bc = user1.bc;
+        const user1Copy2 = new Data(tdAdmin.bc);
         await expectAsync(user1Copy2.attachAndEvolve(user1.keyIdentity._private)).toBeRejected();
     });
 
@@ -108,9 +103,7 @@ describe("Data class should", async () => {
         await user.save();
         expect(user.contact.calypso.ours.size).toBe(1);
 
-        const userCopy = new Data({alias: "user1"});
-        userCopy.dataFileName = user.dataFileName;
-        await userCopy.load();
+        const userCopy = await Data.load(tdAdmin.bc, StorageLocalStorage, user.dataFileName);
         expect(userCopy.contact.calypso.ours.size).toBe(1);
     });
 
@@ -119,9 +112,8 @@ describe("Data class should", async () => {
 
         const deviceURL = await device1.createDevice("newdevice");
         await device1.save();
-        const device2 = new Data();
-        device2.dataFileName = "newdevice";
-        await device2.overwrite(await Data.attachDevice(deviceURL));
+        const device2 = await Data.attachDevice(tdAdmin.bc, deviceURL);
+        device2.storage = StorageLocalStorage;
         expect(device2.contact.credentialIID).toEqual(device1.contact.credentialIID);
         expect(device2.contact.credential).toEqual(device1.contact.credential);
         expect(device2.contact.credential.toJSON()).toEqual(device1.contact.credential.toJSON());
@@ -137,17 +129,15 @@ describe("Data class should", async () => {
         expect(device1.coinInstance.value.toNumber()).toBe(balance.toNumber());
         await device2.save();
 
-        const device2copy = new Data();
-        device2copy.dataFileName = "newdevice";
-        await device2copy.load();
-        await device2.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
-            [device2.keyIdentitySigner]);
+        const device2copy = await Data.load(tdAdmin.bc, StorageLocalStorage, device2.dataFileName);
+        await device2copy.coinInstance.transfer(Long.fromNumber(1000), tdAdmin.coinInstance.id,
+            [device2copy.keyIdentitySigner]);
         balance = balance.sub(1000);
-        await device2.coinInstance.update();
-        expect(device2.coinInstance.value.toNumber()).toBe(balance.toNumber());
+        await device2copy.coinInstance.update();
+        expect(device2copy.coinInstance.value.toNumber()).toBe(balance.toNumber());
         await device1.coinInstance.update();
         expect(device1.coinInstance.value.toNumber()).toBe(balance.toNumber());
-        await device2.save();
+        await device2copy.save();
     });
 
     it("keep calypso-data decoded", async () => {
@@ -160,14 +150,14 @@ describe("Data class should", async () => {
 
     it("create a device from a device", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
-        const device2 = await Data.attachDevice(await device1.createDevice("newdevice"));
-        const device3 = await Data.attachDevice(await device2.createDevice("newdevice2"));
+        const device2 = await Data.attachDevice(tdAdmin.bc, await device1.createDevice("newdevice"));
+        const device3 = await Data.attachDevice(tdAdmin.bc, await device2.createDevice("newdevice2"));
         expect(device3.contact.credentialIID).toEqual(device1.contact.credentialIID);
     });
 
     it("remove a device", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
-        const device2 = await Data.attachDevice(await device1.createDevice("newdevice"));
+        const device2 = await Data.attachDevice(tdAdmin.bc, await device1.createDevice("newdevice"));
         await device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
             [device1.keyIdentitySigner]);
         await device1.coinInstance.update();

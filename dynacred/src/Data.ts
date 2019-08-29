@@ -297,7 +297,7 @@ export class Data {
     meetups: SocialNode[] = [];
     // Non-stored fields
     recoverySignatures: RecoverySignature[] = [];
-    storage: IStorage = StorageDB;
+    storage: IStorage;
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
