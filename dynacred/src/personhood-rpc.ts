@@ -9,8 +9,8 @@ import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance"
 import { Sign } from "@c4dt/cothority/personhood/ring-sig";
 import { registerMessage } from "@c4dt/cothority/protobuf";
 import { Scalar } from "@dedis/kyber";
-import * as crypto from "crypto";
 import { randomBytes } from "crypto";
+import * as crypto from "crypto";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 

@@ -1,11 +1,14 @@
-import Log from "@c4dt/cothority";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, OnChainSecretRPC, Write } from "@c4dt/cothority/calypso";
 import { Darc, Rule } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
-import { TestData } from "../src/Data";
+import { StorageDB } from "../src";
 import { KeyPair } from "../src/KeyPair";
+import { StorageLocalStorage } from "../src/Storage";
+import { TestData } from "../src/test-data";
+import { ROSTER, startConodes } from "./support/conondes";
 
 const curve25519 = curve.newCurve("edwards25519");
 
@@ -89,10 +92,17 @@ describe("In a full byzcoin setting, it should", () => {
     let tdAdmin: TestData;
     let ocs: OnChainSecretRPC;
 
+    const roster = ROSTER.slice(0, 4);
+
     beforeAll(async () => {
-        tdAdmin = await TestData.init();
-        ocs = new OnChainSecretRPC(tdAdmin.bc);
-    });
+        try {
+            await startConodes();
+            tdAdmin = await TestData.init("admin", roster, StorageLocalStorage);
+            ocs = new OnChainSecretRPC(tdAdmin.bc);
+        } catch(e){
+            await Log.rcatch(e);
+        }
+    }, 30 * 1000);
 
     it("be able to create an LTS", async () => {
         Log.lvl1("Creating new LTS");

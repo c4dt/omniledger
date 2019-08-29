@@ -1,9 +1,9 @@
 /* tslint:disable no-console */
+import { SignerEd25519 } from "@c4dt/cothority/darc";
+import { Roster } from "@c4dt/cothority/network";
 import Docker from "dockerode";
 import fs from "fs";
 import Long from "long";
-import SignerEd25519 from "../../src/darc/signer-ed25519";
-import { Roster } from "../../src/network/proto";
 
 const docker = new Docker();
 const data = fs.readFileSync(process.cwd() + "/spec/support/public.toml");
