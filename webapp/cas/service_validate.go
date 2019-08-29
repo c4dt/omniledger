@@ -2,12 +2,12 @@ package main
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/xml"
 	"errors"
 	"net/url"
 
 	"go.dedis.ch/cothority/v3/byzcoin"
+	"go.dedis.ch/cothority/v3/byzcoin/contracts"
 	"go.dedis.ch/cothority/v3/skipchain"
 	"go.dedis.ch/protobuf"
 )
@@ -15,7 +15,7 @@ import (
 // TODO eww, define interface with values?
 type XML = interface{}
 
-func containsChallenge(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) bool {
+func (cas CAS) containsChallenge(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) bool {
 	var data byzcoin.DataBody
 	if err := protobuf.Decode(block.Payload, &data); err != nil {
 		return false
@@ -31,15 +31,15 @@ func containsChallenge(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlo
 			continue
 		}
 
-		isValidTx := true
+		isCoinTransfer := true
 		for _, inst := range instructions {
 			if inst.Invoke == nil ||
-				inst.Invoke.ContractID != "coin" ||
+				inst.Invoke.ContractID != contracts.ContractCoinID ||
 				inst.Invoke.Command != "transfer" {
-				isValidTx = false
+				isCoinTransfer = false
 			}
 		}
-		if !isValidTx {
+		if !isCoinTransfer {
 			continue
 		}
 
@@ -50,9 +50,19 @@ func containsChallenge(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlo
 			continue
 		}
 
-		// TODO how to find in recvTx where is the money from?
+		sendSrc, sendDst := sendTx.InstanceID.Slice(), sendTx.Invoke.Args.Search("destination")
+		recvSrc, recvDst := recvTx.InstanceID.Slice(), recvTx.Invoke.Args.Search("destination")
+		if !bytes.Equal(sendDst, recvSrc) ||
+			!bytes.Equal(sendSrc, recvDst) ||
+			!bytes.Equal(coinInstID, recvSrc) {
+			continue
+		}
 
-		if hashed := recvTx.Invoke.Args.Search("challenge"); bytes.Equal(hashedChallenge, hashed) {
+		if !bytes.Equal(sendTx.Invoke.Args.Search("coin"), recvTx.Invoke.Args.Search("coin")) {
+			continue
+		}
+
+		if hashed := recvTx.Invoke.Args.Search(cas.Config.TxArgumentName); bytes.Equal(hashedChallenge, hashed) {
 			return true
 		}
 	}
@@ -87,17 +97,15 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 		return "", err
 	}
 
-	println("challenge:       ", hex.EncodeToString(challenge))
 	hashedChallenge := cas.Config.ChallengeHasher(challenge)
-	println("hashed challenge:", hex.EncodeToString(hashedChallenge))
 	block := latest
-	for !containsChallenge(coinInstID, *block, hashedChallenge) {
+	// TODO stop after some blockchain time
+	for !cas.containsChallenge(coinInstID, *block, hashedChallenge) {
 		if block.Index == 0 {
 			return "", errors.New("hit start of chain")
 		}
 
 		id := block.BackLinkIDs[0]
-		println(">>", hex.EncodeToString(id))
 		block, err = cas.Client.GetSingleBlock(id)
 		if err != nil {
 			return "", err
