@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"net/url"
+	"time"
 
 	"go.dedis.ch/cothority/v3/byzcoin"
 	"go.dedis.ch/cothority/v3/byzcoin/contracts"
@@ -15,13 +16,23 @@ import (
 // TODO eww, define interface with values?
 type XML = interface{}
 
-func (cas CAS) containsChallenge(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) bool {
-	var data byzcoin.DataBody
-	if err := protobuf.Decode(block.Payload, &data); err != nil {
-		return false
+func (cas CAS) containsLoginProof(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) (bool, error) {
+	var header byzcoin.DataHeader
+	if err := protobuf.Decode(block.Data, &header); err != nil {
+		return false, err
 	}
 
-	for _, res := range data.TxResults {
+	timestamp := time.Unix(-1, header.Timestamp)
+	if timestamp.Add(cas.Config.TxValidityDuration).Before(time.Now()) {
+		return false, errors.New("block is too old to be considered")
+	}
+
+	var body byzcoin.DataBody
+	if err := protobuf.Decode(block.Payload, &body); err != nil {
+		return false, err
+	}
+
+	for _, res := range body.TxResults {
 		if !res.Accepted {
 			continue
 		}
@@ -37,6 +48,7 @@ func (cas CAS) containsChallenge(coinInstID skipchain.SkipBlockID, block skipcha
 				inst.Invoke.ContractID != contracts.ContractCoinID ||
 				inst.Invoke.Command != "transfer" {
 				isCoinTransfer = false
+				break
 			}
 		}
 		if !isCoinTransfer {
@@ -63,11 +75,11 @@ func (cas CAS) containsChallenge(coinInstID skipchain.SkipBlockID, block skipcha
 		}
 
 		if hashed := recvTx.Invoke.Args.Search(cas.Config.TxArgumentName); bytes.Equal(hashedChallenge, hashed) {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
@@ -99,10 +111,13 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 
 	hashedChallenge := cas.Config.ChallengeHasher(challenge)
 	block := latest
-	// TODO stop after some blockchain time
-	for !cas.containsChallenge(coinInstID, *block, hashedChallenge) {
-		if block.Index == 0 {
-			return "", errors.New("hit start of chain")
+	for {
+		found, err := cas.containsLoginProof(coinInstID, *block, hashedChallenge)
+		if err != nil {
+			return "", err
+		}
+		if found {
+			break
 		}
 
 		id := block.BackLinkIDs[0]
@@ -110,6 +125,10 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+	}
+
+	if err != nil {
+		return "", err
 	}
 
 	return "admin", nil
