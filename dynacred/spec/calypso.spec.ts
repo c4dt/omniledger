@@ -9,6 +9,7 @@ import { KeyPair } from "../src/KeyPair";
 import { StorageLocalStorage } from "../src/Storage";
 import { TestData } from "../src/test-data";
 import { ROSTER, startConodes } from "./support/conondes";
+import { TData } from "./support/tdata";
 
 const curve25519 = curve.newCurve("edwards25519");
 
@@ -92,14 +93,11 @@ describe("In a full byzcoin setting, it should", () => {
     let tdAdmin: TestData;
     let ocs: OnChainSecretRPC;
 
-    const roster = ROSTER.slice(0, 4);
-
     beforeAll(async () => {
         try {
-            await startConodes();
-            tdAdmin = await TestData.init("admin", roster, StorageLocalStorage);
+            tdAdmin = await TData.init();
             ocs = new OnChainSecretRPC(tdAdmin.bc);
-        } catch(e){
+        } catch (e) {
             await Log.rcatch(e);
         }
     }, 30 * 1000);
