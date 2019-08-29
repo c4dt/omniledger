@@ -49,6 +49,20 @@ jobs:
         - make -C ../conode docker_run &
         - make -C ../conode docker_wait
         - npm run test --no-watch
+    - name: webapp/cas
+      language: go
+      go: 1.12.x
+      install:
+        - cd webapp/cas
+        - go get golang.org/x/lint/golint
+        - go get ./...
+      before_script:
+        - test -z "`gofmt -l .`"
+        - go vet ./...
+        - golint -set_exit_status
+      script:
+        - make cas
+        - go test ./...
 
     - stage: deploy
       name: demo.c4dt.org
