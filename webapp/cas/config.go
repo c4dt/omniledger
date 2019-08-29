@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"time"
 
 	"go.dedis.ch/cothority/v3/skipchain"
 	"go.dedis.ch/kyber/v3/suites"
@@ -24,11 +25,12 @@ type Config struct {
 
 	ServiceToCoinInstanceIDs map[string]skipchain.SkipBlockID
 
-	CoinCost        uint
-	TicketDecoder   TicketDecoder
-	ChallengeSize   uint
-	ChallengeHasher ChallengeHasher
-	TxArgumentName  string
+	CoinCost           uint
+	TicketDecoder      TicketDecoder
+	ChallengeSize      uint
+	ChallengeHasher    ChallengeHasher
+	TxArgumentName     string
+	TxValidityDuration time.Duration
 }
 
 func parseSkipBlockID(raw string) (skipchain.SkipBlockID, error) {
@@ -75,11 +77,12 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 
 		ServiceToCoinInstanceIDs map[string]string
 
-		CoinCost       uint
-		TicketEncoding string
-		ChallengeSize  uint
-		ChallengeHash  string
-		TxArgumentName string
+		CoinCost           uint
+		TicketEncoding     string
+		ChallengeSize      uint
+		ChallengeHash      string
+		TxArgumentName     string
+		TxValidityDuration string
 	}
 	if err := toml.Unmarshal(tomlRaw, &tomlConf); err != nil {
 		return nil, err
@@ -123,6 +126,8 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 		}
 	}
 
+	txValidityDuration, err := time.ParseDuration(tomlConf.TxValidityDuration)
+
 	return &Config{
 		byzCoinID,
 		*onet.NewRoster(servers),
@@ -134,5 +139,6 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 		tomlConf.ChallengeSize,
 		challengeHash,
 		tomlConf.TxArgumentName,
+		txValidityDuration,
 	}, nil
 }
