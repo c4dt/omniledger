@@ -28,22 +28,6 @@ func getRouter(cas CAS) *gin.Engine {
 				resp.Body,
 				map[string]string{},
 			)
-
-			/*buffer := make([]byte, 256)
-			c.Stream(func(w io.Writer) bool {
-				n, errRead := resp.Body.Read(buffer)
-				_, errWrite := w.Write(buffer[:n])
-				if errRead == io.EOF {
-					return false
-				}
-				if errRead != nil {
-					panic(errRead)
-				}
-				if errWrite != nil {
-					panic(errWrite)
-				}
-				return true
-			})*/
 		}
 	}
 	redirectToRoot := redirectWithPath(func(*gin.Context) string { return "/" })
@@ -58,9 +42,12 @@ func getRouter(cas CAS) *gin.Engine {
 	})
 
 	r.GET("/", redirectToRoot)
+	r.GET("/register/*path", redirectToRoot)
 	r.GET("/admin/*path", redirectToRoot)
+	r.GET("/user/*path", redirectToRoot)
+	r.GET("/newuser/*path", redirectToRoot)
+	r.GET("/c4dt/*path", redirectToRoot)
 	r.GET("/api/v0/cas/login", redirectToRoot)
-	r.GET("/register", redirectToRoot)
 
 	r.GET("/assets/*path", redirect)
 	r.GET("/favicon.ico", redirect)
@@ -69,9 +56,6 @@ func getRouter(cas CAS) *gin.Engine {
 	r.GET("/runtime.js", redirect)
 	r.GET("/styles.js", redirect)
 	r.GET("/vendor.js", redirect)
-
-	// TODO remote debugging
-	//r.GET("/sockjs-node/*path", redirectToRoot)
 
 	return r
 }
