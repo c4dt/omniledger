@@ -27,6 +27,7 @@ export class LoginComponent implements OnInit {
 
     // TODO eww, better use Config (as a service maybe?)
     private static readonly coinInstanceIDForService: Map<string, InstanceID> = new Map([
+        ["localhost", "8c22411f1aaf3248542f6b677fd066db3178bc0a2b60adc2aaa9d6cc80938b0f"],
         // TODO use correct hex, ie CoinInstance's one
         ["c4dt.org", ""],
         ["matrix.c4dt.org", ""],

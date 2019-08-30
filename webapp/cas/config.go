@@ -16,9 +16,13 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+// TicketDecoder represent a generic way to decode the ticket.
 type TicketDecoder func(string) ([]byte, error)
+
+// ChallengeHasher represent a generic way to hash the challenge.
 type ChallengeHasher func([]byte) []byte
 
+// Config hold everything installation specific.
 type Config struct {
 	ByzCoinID skipchain.SkipBlockID
 	Roster    onet.Roster
@@ -67,6 +71,7 @@ func parseChallengeHash(raw string) (ChallengeHasher, error) {
 	}
 }
 
+// ParseConfig takes a TOML string and tries to parse it as Config.
 func ParseConfig(tomlRaw []byte) (*Config, error) {
 	var tomlConf struct {
 		ByzCoinID string

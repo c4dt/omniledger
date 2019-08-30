@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const BASE_URL = "http://localhost:4200"
-
 func getRouter(cas CAS) *gin.Engine {
+	const baseURL = "http://localhost:4200"
+
 	redirectWithPath := func(getPath func(*gin.Context) string) func(*gin.Context) {
 		return func(c *gin.Context) {
-			resp, err := http.Get(BASE_URL + getPath(c))
+			resp, err := http.Get(baseURL + getPath(c))
 			if err != nil {
 				c.Error(err)
 				c.Abort()
@@ -75,7 +75,6 @@ func getCASFromOsArgs() CAS {
 	}
 
 	return NewCAS(*conf)
-
 }
 
 func main() {
