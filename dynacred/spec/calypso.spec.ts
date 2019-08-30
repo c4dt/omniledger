@@ -1,4 +1,3 @@
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, OnChainSecretRPC, Write } from "@c4dt/cothority/calypso";
 import { Darc, Rule } from "@c4dt/cothority/darc";
@@ -87,7 +86,7 @@ describe("Calypso.createWrite should", () => {
     });
 });
 
-fdescribe("In a full byzcoin setting, it should", () => {
+describe("In a full byzcoin setting, it should", () => {
     let tdAdmin: TestData;
     let ocs: OnChainSecretRPC;
 
@@ -119,7 +118,7 @@ fdescribe("In a full byzcoin setting, it should", () => {
         expect(newKey).toEqual(key);
     });
 
-    fit("create an LTS and a write using the spawner", async () => {
+    it("create an LTS and a write using the spawner", async () => {
         Log.lvl1("Creating new LTS");
         const key = Buffer.from("Very Secret Key");
 
@@ -129,22 +128,11 @@ fdescribe("In a full byzcoin setting, it should", () => {
             [await tdAdmin.contact.getDarcSignIdentity()]);
 
         Log.lvl2("Creating Read instance");
-        await tdAdmin.coinInstance.update();
-        Log.print("coins left for admin:", tdAdmin.coinInstance._coin.value.toNumber());
-        const coinDarc = await DarcInstance.fromByzcoin(tdAdmin.bc, tdAdmin.coinInstance.darcID);
-        Log.print("access for coin:", coinDarc.darc.rules);
-        const signDarcId = coinDarc.darc.rules.getRule(CoinInstance.commandFetch).getIdentities();
-        Log.print(signDarcId);
-        await new Promise((resolve) => {
-            setTimeout(() => {resolve(); }, 1000);
-        });
         const kp = new KeyPair();
         const readInst = await wrInst.spawnRead(kp._public.point, [tdAdmin.keyIdentitySigner],
-            tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner]);
-        Log.print("Decrypting key");
+                tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner]);
         const newKey = await readInst.decrypt(ocs, kp._private.scalar);
         expect(newKey).toEqual(key);
-        Log.print(newKey, key);
     });
 
     it("verify and change access rights", async () => {

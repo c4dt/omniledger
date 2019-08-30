@@ -1,11 +1,6 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
-import { curve, Point, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
@@ -15,20 +10,25 @@ import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
 import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
 import Darc from "@c4dt/cothority/darc/darc";
 import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import Signer from "@c4dt/cothority/darc/signer";
 import ISigner from "@c4dt/cothority/darc/signer";
+import Signer from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
 import Log from "@c4dt/cothority/log";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
 } from "@c4dt/cothority/personhood/credentials-instance";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
+import { curve, Point, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import URL from "url-parse";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";

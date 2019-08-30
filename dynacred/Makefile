@@ -8,6 +8,7 @@ src/lib/cothority: cothority/external/js/cothority/src
 	@cp -a $< $@
 	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/cothority:src/lib/cothority:"
 	@find spec/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/cothority:src/lib/cothority:"
+	@npm run lint:fix
 
 cothority_npm: cothority-pull
 	@echo "Using cothority-npm libraries"
@@ -20,6 +21,7 @@ cothority_npm: cothority-pull
 	@rm -rf src/lib/cothority
 	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@c4dt/cothority:"
 	@find spec/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@c4dt/cothority:"
+	@npm run lint:fix
 
 cothority:
 	git clone --depth=1 https://github.com/c4dt/cothority
