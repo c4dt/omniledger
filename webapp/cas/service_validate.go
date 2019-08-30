@@ -10,35 +10,51 @@ import (
 	"go.dedis.ch/cothority/v3/byzcoin"
 	"go.dedis.ch/cothority/v3/byzcoin/contracts"
 	"go.dedis.ch/cothority/v3/skipchain"
+	"go.dedis.ch/onet/v3/log"
 	"go.dedis.ch/protobuf"
 )
 
 // TODO eww, define interface with values?
 type XML = interface{}
 
-func (cas CAS) containsLoginProof(coinInstID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) (bool, error) {
+func (cas CAS) containsLoginProof(userCoinID, servCoinID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) (bool, error) {
+	logI := func(e ...interface{}) { log.Info(e...) }
+	logE := func(e ...interface{}) {
+		buf := make([]interface{}, 1+len(e))
+		buf[0] = "!! "
+		copy(buf[1:], e)
+		log.Warn(buf...)
+	}
+	logI("checking block: ", block.Hash.Short())
+
 	var header byzcoin.DataHeader
 	if err := protobuf.Decode(block.Data, &header); err != nil {
+		logE("decoding DataHeader")
 		return false, err
 	}
 
 	timestamp := time.Unix(-1, header.Timestamp)
 	if timestamp.Add(cas.Config.TxValidityDuration).Before(time.Now()) {
+		logE("block is too old")
 		return false, errors.New("block is too old to be considered")
 	}
 
 	var body byzcoin.DataBody
 	if err := protobuf.Decode(block.Payload, &body); err != nil {
+		logE("decoding DataBody")
 		return false, err
 	}
 
 	for _, res := range body.TxResults {
+		logI("checking new tx")
 		if !res.Accepted {
+			logE("not accepted")
 			continue
 		}
 
 		instructions := res.ClientTransaction.Instructions
 		if len(instructions) != 2 {
+			logE("incorrect instructions count")
 			continue
 		}
 
@@ -52,6 +68,7 @@ func (cas CAS) containsLoginProof(coinInstID skipchain.SkipBlockID, block skipch
 			}
 		}
 		if !isCoinTransfer {
+			logE("not a transfer")
 			continue
 		}
 
@@ -59,6 +76,7 @@ func (cas CAS) containsLoginProof(coinInstID skipchain.SkipBlockID, block skipch
 
 		if len(sendTx.Invoke.Args) != 2 ||
 			len(recvTx.Invoke.Args) != 3 {
+			logE("incorrect args count")
 			continue
 		}
 
@@ -67,16 +85,22 @@ func (cas CAS) containsLoginProof(coinInstID skipchain.SkipBlockID, block skipch
 		if !bytes.Equal(sendDst, recvSrc) ||
 			!bytes.Equal(sendSrc, recvDst) ||
 			!bytes.Equal(coinInstID, recvSrc) {
+			logE("not back and forth with coinInstID")
 			continue
 		}
 
 		if !bytes.Equal(sendTx.Invoke.Args.Search("coin"), recvTx.Invoke.Args.Search("coin")) {
+			logE("not same coin count")
 			continue
 		}
 
-		if hashed := recvTx.Invoke.Args.Search(cas.Config.TxArgumentName); bytes.Equal(hashedChallenge, hashed) {
-			return true, nil
+		if hashed := recvTx.Invoke.Args.Search(cas.Config.TxArgumentName); !bytes.Equal(hashedChallenge, hashed) {
+			logE("not with hash of challenge")
+			continue
 		}
+
+		logI("found correct tx")
+		return true, nil
 	}
 
 	return false, nil
