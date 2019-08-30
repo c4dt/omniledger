@@ -1,6 +1,7 @@
 import assert from "assert";
 import crypto from "crypto";
 import Long from "long";
+import { promisify } from "util";
 
 import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
@@ -39,9 +40,8 @@ export class LoginComponent implements OnInit {
     state: State;
     readonly service: string;
 
+    private ticket: Buffer | undefined;
     private readonly redirect: URL;
-    private readonly challenge: Buffer;
-    private readonly challengeHashed: Buffer;
 
     constructor(
         private route: ActivatedRoute,
@@ -57,26 +57,28 @@ export class LoginComponent implements OnInit {
         this.redirect = new URL(decodeURI(encodedRedirect));
         this.service = this.redirect.host;
         this.state = State.LOADING;
-
-        this.challenge = new Buffer(LoginComponent.challengeSize);
-        crypto.randomFillSync(this.challenge);
-
-        const hash = crypto.createHash(LoginComponent.challengeHash);
-        hash.update(this.challenge);
-        this.challengeHashed = hash.digest();
     }
 
     async ngOnInit() {
-        const success = await this.putChallenge();
-        this.state = success ?  State.SUCCESS : State.FAILURE;
+        const challenge = new Buffer(LoginComponent.challengeSize);
+        await promisify(crypto.randomFill)(challenge);
+
+        if (! await this.putChallenge(challenge)) {
+            this.state = State.FAILURE;
+            return;
+        }
+
+        const userCredID = this.uData.contact.credentialIID;
+        this.ticket = Buffer.concat([challenge, userCredID]);
+        this.state = State.SUCCESS;
     }
 
     async login() {
-        assert.ok(this.state === State.SUCCESS, "asked to login but unable to putChallenge");
+        assert.ok(this.ticket !== undefined, "asked to login without ticket");
 
         const nextLocation = this.redirect;
         nextLocation.searchParams.append("ticket",
-            `ST-${this.challenge.toString(LoginComponent.ticketEncoding)}`);
+            `ST-${this.ticket.toString(LoginComponent.ticketEncoding)}`);
 
         window.location.replace(nextLocation.href);
     }
@@ -92,9 +94,14 @@ export class LoginComponent implements OnInit {
      * The Instruction getting it back contains an Argument with the hash of challenge, so that when the user provides
      * it, the transaction proves that he was the one generating it.
      *
+     * @param   challenge to put on the chain
      * @return	success if we managed to put the challenge
      */
-    private async putChallenge(): Promise<boolean> {
+    private async putChallenge(challenge: Buffer): Promise<boolean> {
+        const hash = crypto.createHash(LoginComponent.challengeHash);
+        hash.update(challenge);
+        const challengeHashed = hash.digest();
+
         const coinInstID = LoginComponent.coinInstanceIDForService.get(this.service);
         if (coinInstID === undefined) {
             throw Error("no such service found");
@@ -114,7 +121,7 @@ export class LoginComponent implements OnInit {
         const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(),
             createInvoke(userCoinID, transfer(coinInstID)),
             createInvoke(coinInstID, transfer(userCoinID).concat([
-                new Argument({name: LoginComponent.txArgName, value: this.challengeHashed})])));
+                new Argument({name: LoginComponent.txArgName, value: challengeHashed})])));
         await ctx.updateCountersAndSign(this.uData.bc, [[this.uData.keyIdentitySigner]]);
 
         try {
