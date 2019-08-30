@@ -1,6 +1,11 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
+import { curve, Point, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
@@ -24,11 +29,6 @@ import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
-import { curve, Point, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
-import Long from "long";
-import { sprintf } from "sprintf-js";
 import URL from "url-parse";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";

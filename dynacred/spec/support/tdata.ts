@@ -1,5 +1,5 @@
-import { StorageLocalStorage } from "../../src/Storage";
-import { TestData } from "../../src/test-data";
+import { StorageLocalStorage } from "src/Storage";
+import { TestData } from "src/test-data";
 import { ROSTER, startConodes } from "./conondes";
 
 export class TData {

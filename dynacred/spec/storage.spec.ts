@@ -1,4 +1,4 @@
-import { StorageLocalStorage } from "../src/Storage";
+import { StorageLocalStorage } from "src/Storage";
 
 describe("StorageLocalStorage", () => {
     it("should store and load elements", async () => {

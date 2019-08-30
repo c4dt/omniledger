@@ -1,9 +1,9 @@
 import Log from "@c4dt/cothority/log";
 import Long from "long";
-import { Data } from "../src/Data";
-import { KeyPair } from "../src/KeyPair";
-import { StorageLocalStorage } from "../src/Storage";
-import { TestData } from "../src/test-data";
+import { Data } from "src/Data";
+import { KeyPair } from "src/KeyPair";
+import { StorageLocalStorage } from "src/Storage";
+import { TestData } from "src/test-data";
 import { TData } from "./support/tdata";
 
 describe("Data class should", async () => {

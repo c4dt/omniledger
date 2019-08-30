@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "ts-node --prefer-ts-exts node_modules/.bin/jasmine",
+    "test": "ts-node --project tsconfig.spec.json -r tsconfig-paths/register --prefer-ts-exts node_modules/.bin/jasmine",
     "prepare": "npm run lint && npm run build",
     "cover": "nyc jasmine",
     "lint": "tslint --project .",
@@ -34,6 +34,7 @@
     "jasmine-ts-console-reporter": "^3.1.1",
     "nyc": "^14.1.1",
     "ts-node": "^8.3.0",
+    "tsconfig-paths": "^3.8.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
   },

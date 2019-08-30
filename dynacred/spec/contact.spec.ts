@@ -1,9 +1,9 @@
 import { Darc } from "@c4dt/cothority/darc";
 import Log from "@c4dt/cothority/log";
 import Long from "long";
-import { Data } from "../src";
-import { StorageLocalStorage } from "../src/Storage";
-import { TestData } from "../src/test-data";
+import { Data } from "src";
+import { StorageLocalStorage } from "src/Storage";
+import { TestData } from "src/test-data";
 import { TData } from "./support/tdata";
 
 describe("Contact should", async () => {
