@@ -30,10 +30,18 @@ func (c Client) GetSingleBlock(id skipchain.SkipBlockID) (*skipchain.SkipBlock, 
 	return c.clients.skipchain.GetSingleBlock(&c.roster, id)
 }
 
-func (c Client) GetLatestBlock() (*skipchain.SkipBlock, error) {
-	resp, err := c.clients.byzcoin.GetProofFromLatest(byzcoin.ConfigInstanceID.Slice())
+func (c Client) GetProof(key []byte) (*byzcoin.Proof, error) {
+	resp, err := c.clients.byzcoin.GetProofFromLatest(key)
 	if err != nil {
 		return nil, err
 	}
-	return &resp.Proof.Latest, nil
+	return &resp.Proof, nil
+}
+
+func (c Client) GetLatestBlock() (*skipchain.SkipBlock, error) {
+	proof, err := c.GetProof(byzcoin.ConfigInstanceID.Slice())
+	if err != nil {
+		return nil, err
+	}
+	return &proof.Latest, nil
 }

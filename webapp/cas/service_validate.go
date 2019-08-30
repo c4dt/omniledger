@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/xml"
 	"errors"
 	"net/url"
@@ -9,12 +10,12 @@ import (
 
 	"go.dedis.ch/cothority/v3/byzcoin"
 	"go.dedis.ch/cothority/v3/byzcoin/contracts"
+	"go.dedis.ch/cothority/v3/personhood"
 	"go.dedis.ch/cothority/v3/skipchain"
 	"go.dedis.ch/onet/v3/log"
 	"go.dedis.ch/protobuf"
 )
 
-// TODO eww, define interface with values?
 type XML = interface{}
 
 func (cas CAS) containsLoginProof(userCoinID, servCoinID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) (bool, error) {
@@ -84,8 +85,9 @@ func (cas CAS) containsLoginProof(userCoinID, servCoinID skipchain.SkipBlockID, 
 		recvSrc, recvDst := recvTx.InstanceID.Slice(), recvTx.Invoke.Args.Search("destination")
 		if !bytes.Equal(sendDst, recvSrc) ||
 			!bytes.Equal(sendSrc, recvDst) ||
-			!bytes.Equal(coinInstID, recvSrc) {
-			logE("not back and forth with coinInstID")
+			!bytes.Equal(servCoinID, recvSrc) ||
+			!bytes.Equal(userCoinID, recvDst) {
+			logE("not back and forth between userCoinID and servCoinID")
 			continue
 		}
 
@@ -106,10 +108,49 @@ func (cas CAS) containsLoginProof(userCoinID, servCoinID skipchain.SkipBlockID, 
 	return false, nil
 }
 
+func (cas CAS) credInstIDtoCoinInstID(credID byzcoin.InstanceID) (skipchain.SkipBlockID, error) {
+	proof, err := cas.Client.GetProof(credID.Slice())
+	if err != nil {
+		return nil, err
+	}
+
+	val, contractID, _, err := proof.Get(credID.Slice())
+	if err != nil {
+		return nil, err
+	}
+	if contractID != personhood.ContractCredentialID {
+		return nil, errors.New("creds id aren't for a CoinInstance")
+	}
+
+	// TODO personhood.ContractCredentialFromBytes doesn't check for empty buffer
+	if val == nil {
+		return nil, errors.New("unknown user cred id")
+	}
+	credContract, err := personhood.ContractCredentialFromBytes(val)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, c := range credContract.(*personhood.ContractCredential).Credentials {
+		if c.Name != "1-public" {
+			continue
+		}
+
+		for _, a := range c.Attributes {
+			if a.Name == "coin" {
+				return a.Value, nil
+			}
+		}
+	}
+
+	return nil, errors.New("CoinInstance not found in creds")
+}
+
 func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 	const ServiceTicketPrefix = "ST-"
+	const InstanceIDSize = 32
 
-	coinInstID, ok := cas.Config.ServiceToCoinInstanceIDs[url.Host]
+	servCoinID, ok := cas.Config.ServiceToCoinInstanceIDs[url.Host]
 	if !ok {
 		return "", errors.New("invalid host")
 	}
@@ -124,8 +165,16 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 	}
 
 	challenge := packed[:cas.Config.ChallengeSize]
-	if len(challenge) != int(cas.Config.ChallengeSize) {
+	userCredID_raw := packed[cas.Config.ChallengeSize:]
+	if len(challenge) != int(cas.Config.ChallengeSize) ||
+		len(userCredID_raw) != InstanceIDSize {
 		return "", errors.New("invalid ticket size")
+	}
+
+	userID := byzcoin.NewInstanceID(userCredID_raw)
+	userCoinID, err := cas.credInstIDtoCoinInstID(userID)
+	if err != nil {
+		return "", err
 	}
 
 	latest, err := cas.Client.GetLatestBlock()
@@ -136,7 +185,7 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 	hashedChallenge := cas.Config.ChallengeHasher(challenge)
 	block := latest
 	for {
-		found, err := cas.containsLoginProof(coinInstID, *block, hashedChallenge)
+		found, err := cas.containsLoginProof(userCoinID, servCoinID, *block, hashedChallenge)
 		if err != nil {
 			return "", err
 		}
@@ -155,7 +204,7 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 		return "", err
 	}
 
-	return "admin", nil
+	return hex.EncodeToString(userID[:8]), nil
 }
 
 func (cas CAS) ServiceValidateXML(url_str, ticket string) XML {
@@ -176,7 +225,6 @@ func (cas CAS) ServiceValidateXML(url_str, ticket string) XML {
 		Message string   `xml:",chardata"`
 	}
 
-	// TODO add more error codes
 	fail := func(err error) AuthenticationFailure {
 		return AuthenticationFailure{
 			Code:    "INVALID_TICKET",
