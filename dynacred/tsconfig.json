@@ -4,7 +4,9 @@
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "target": "ES6",
-    "outDir": "build"
+    "outDir": "build",
+    "resolveJsonModule": true,
+    "baseUrl": "./"
   },
   "include": [
     "src/**/*.ts"

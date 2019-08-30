@@ -1,6 +1,6 @@
 import * as http from "http";
 
-import { Config } from "../src";
+import { Config } from "src";
 
 describe("Config", async () => {
     it("can be constructed with a trivial toml", async () => {

@@ -1,14 +1,12 @@
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, OnChainSecretRPC, Write } from "@c4dt/cothority/calypso";
 import { Darc, Rule } from "@c4dt/cothority/darc";
 import Log from "@c4dt/cothority/log";
 import { curve } from "@dedis/kyber";
 import Keccak from "keccak";
-import { StorageDB } from "../src";
-import { KeyPair } from "../src/KeyPair";
-import { StorageLocalStorage } from "../src/Storage";
-import { TestData } from "../src/test-data";
-import { ROSTER, startConodes } from "./support/conondes";
+import { KeyPair } from "src/KeyPair";
+import { TestData } from "src/test-data";
 import { TData } from "./support/tdata";
 
 const curve25519 = curve.newCurve("edwards25519");
@@ -135,14 +133,18 @@ fdescribe("In a full byzcoin setting, it should", () => {
         Log.print("coins left for admin:", tdAdmin.coinInstance._coin.value.toNumber());
         const coinDarc = await DarcInstance.fromByzcoin(tdAdmin.bc, tdAdmin.coinInstance.darcID);
         Log.print("access for coin:", coinDarc.darc.rules);
+        const signDarcId = coinDarc.darc.rules.getRule(CoinInstance.commandFetch).getIdentities();
+        Log.print(signDarcId);
         await new Promise((resolve) => {
             setTimeout(() => {resolve(); }, 1000);
         });
         const kp = new KeyPair();
         const readInst = await wrInst.spawnRead(kp._public.point, [tdAdmin.keyIdentitySigner],
             tdAdmin.coinInstance, [tdAdmin.keyIdentitySigner]);
+        Log.print("Decrypting key");
         const newKey = await readInst.decrypt(ocs, kp._private.scalar);
         expect(newKey).toEqual(key);
+        Log.print(newKey, key);
     });
 
     it("verify and change access rights", async () => {
