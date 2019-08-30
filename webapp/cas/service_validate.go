@@ -16,7 +16,7 @@ import (
 	"go.dedis.ch/protobuf"
 )
 
-type XML = interface{}
+type tXML = interface{}
 
 func (cas CAS) containsLoginProof(userCoinID, servCoinID skipchain.SkipBlockID, block skipchain.SkipBlock, hashedChallenge []byte) (bool, error) {
 	logI := func(e ...interface{}) { log.Info(e...) }
@@ -165,13 +165,13 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 	}
 
 	challenge := packed[:cas.Config.ChallengeSize]
-	userCredID_raw := packed[cas.Config.ChallengeSize:]
+	userCredIDRaw := packed[cas.Config.ChallengeSize:]
 	if len(challenge) != int(cas.Config.ChallengeSize) ||
-		len(userCredID_raw) != InstanceIDSize {
+		len(userCredIDRaw) != InstanceIDSize {
 		return "", errors.New("invalid ticket size")
 	}
 
-	userID := byzcoin.NewInstanceID(userCredID_raw)
+	userID := byzcoin.NewInstanceID(userCredIDRaw)
 	userCoinID, err := cas.credInstIDtoCoinInstID(userID)
 	if err != nil {
 		return "", err
@@ -207,10 +207,11 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 	return hex.EncodeToString(userID[:8]), nil
 }
 
-func (cas CAS) ServiceValidateXML(url_str, ticket string) XML {
+// ServiceValidateXML implement cas:/p3/serviceValidate
+func (cas CAS) ServiceValidateXML(urlRaw, ticket string) tXML {
 	type ServiceResponse struct {
 		XMLName xml.Name `xml:"http://www.yale.edu/tp/cas serviceResponse"`
-		Sub     XML
+		Sub     tXML
 	}
 
 	type AuthenticationSuccess struct {
@@ -233,7 +234,7 @@ func (cas CAS) ServiceValidateXML(url_str, ticket string) XML {
 	}
 
 	res := func() interface{} {
-		url, err := url.ParseRequestURI(url_str)
+		url, err := url.ParseRequestURI(urlRaw)
 		if err != nil {
 			return fail(err)
 		}

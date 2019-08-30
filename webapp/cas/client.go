@@ -11,11 +11,13 @@ type clients struct {
 	skipchain skipchain.Client
 }
 
+// Client allows to communicate with the blockchain.
 type Client struct {
 	roster  onet.Roster
 	clients clients
 }
 
+// NewClient is the constructor.
 func NewClient(conf Config) Client {
 	return Client{
 		conf.Roster,
@@ -26,10 +28,12 @@ func NewClient(conf Config) Client {
 	}
 }
 
+// GetSingleBlock returns the block corresponding to the given id.
 func (c Client) GetSingleBlock(id skipchain.SkipBlockID) (*skipchain.SkipBlock, error) {
 	return c.clients.skipchain.GetSingleBlock(&c.roster, id)
 }
 
+// GetProof returns a Proof of the availability of the given key.
 func (c Client) GetProof(key []byte) (*byzcoin.Proof, error) {
 	resp, err := c.clients.byzcoin.GetProofFromLatest(key)
 	if err != nil {
@@ -38,6 +42,7 @@ func (c Client) GetProof(key []byte) (*byzcoin.Proof, error) {
 	return &resp.Proof, nil
 }
 
+// GetLatestBlock returns the most recent block of the blockchain.
 func (c Client) GetLatestBlock() (*skipchain.SkipBlock, error) {
 	proof, err := c.GetProof(byzcoin.ConfigInstanceID.Slice())
 	if err != nil {
