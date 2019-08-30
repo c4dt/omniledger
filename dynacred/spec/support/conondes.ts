@@ -34,8 +34,7 @@ export async function startConodes(): Promise<void> {
 
     console.log("\n=== starting conodes ===");
     console.log("Check output.log for the logs");
-    // const s = fs.createWriteStream("./output.log");
-    const s = fs.createWriteStream("/dev/stdout");
+    const s = fs.createWriteStream("./output.log");
 
     docker.run("dedis/conode-test", [], s, {
         ExposedPorts: {
