@@ -20,6 +20,8 @@ jobs:
         - cd conode
         - make docker
         - make docker_run &
+        - go version
+        - export GO111MODULE=on
         - make conode
         - make docker_wait
         - build/bcadmin latest --bc bc*cfg

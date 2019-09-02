@@ -63,6 +63,7 @@ export class DialogTransactionComponent<T> implements OnInit {
                 this.dialogRef.close(result);
             }, 1000);
         } catch (e) {
+            clearTimeout(this.ubTimer);
             this.error = e.toString();
         }
     }

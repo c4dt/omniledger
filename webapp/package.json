@@ -24,7 +24,7 @@
     "@angular/platform-browser": "^8.2.0",
     "@angular/platform-browser-dynamic": "^8.2.0",
     "@angular/router": "^8.2.0",
-    "@c4dt/cothority": "^3.1.18",
+    "@c4dt/cothority": "^3.1.23",
     "@c4dt/dynacred": "0.0.6-p20190828094256.0",
     "@dedis/kyber": "^3.0.8",
     "angularx-qrcode": "^1.6.4",

@@ -2,7 +2,7 @@ import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import Log from "@c4dt/cothority/log";
-import { Data } from "@c4dt/dynacred";
+import { Data, TProgress } from "@c4dt/dynacred";
 import { DialogTransactionComponent } from "./dialog-transaction";
 
 /**
@@ -84,8 +84,6 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
     });
 }
 
-// Progress type to be used in showTransactions.
-export type TProgress = (percentage: number, text: string) => void;
 // Worker callback that implements multiple steps and calls progress before each step.
 export type TWorker<T> = (progress: TProgress) => Promise<T>;
 
