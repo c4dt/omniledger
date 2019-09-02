@@ -6,9 +6,9 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
 import { Darc } from "@c4dt/cothority/darc";
 
-import { Device } from "@c4dt/dynacred";
+import { Device, TProgress } from "@c4dt/dynacred";
 
-import { showDialogInfo, showTransactions, TProgress } from "../../../lib/Ui";
+import { showDialogInfo, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
 @Component({
@@ -52,7 +52,9 @@ export class DevicesComponent implements OnInit {
             async (progress: TProgress) => {
                 progress(30, "Deleting Device");
                 await this.uData.deleteDevice(device.name);
-                progress(-60, "Fetching all devices");
+                progress(60, "Updating Device List");
+                await this.uData.contact.sendUpdate();
+                progress(-90, "Fetching all devices");
                 this.updateDevices();
             });
     }
@@ -65,10 +67,14 @@ export class DevicesComponent implements OnInit {
                 let device: string;
                 await showTransactions(this.dialog, "Adding new device",
                     async (progress: TProgress) => {
-                        progress(50, "Creating Device");
-                        device = await this.uData.createDevice(result);
+                        device = await this.uData.createDevice(result, (p, s) => {
+                            progress(25 + p / 2, s);
+                        });
+                        progress(75, "Updating Device List");
+                        await this.uData.contact.sendUpdate();
+                        progress(-90, "Fetching all devices");
+                        this.updateDevices();
                     });
-                this.updateDevices();
                 if (device) {
                     const url = window.location.protocol + "//" + window.location.host +
                         this.location.prepareExternalUrl(device);

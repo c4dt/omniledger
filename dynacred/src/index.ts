@@ -1,6 +1,6 @@
 import { Config } from "./Config";
 import { Contact } from "./Contact";
-import { Data } from "./Data";
+import { Data, TProgress } from "./Data";
 import { Device } from "./Device";
 import { Private } from "./KeyPair";
 import { FileBlob } from "./SecureData";
@@ -14,4 +14,5 @@ export {
     FileBlob,
     Private,
     StorageDB,
+    TProgress,
 };

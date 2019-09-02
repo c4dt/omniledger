@@ -7,9 +7,9 @@ import { CalypsoReadInstance, CalypsoWriteInstance } from "@c4dt/cothority/calyp
 import Darc from "@c4dt/cothority/darc/darc";
 import Log from "@c4dt/cothority/log";
 
-import { Contact, FileBlob } from "@c4dt/dynacred";
+import { Contact, FileBlob, TProgress } from "@c4dt/dynacred";
 
-import { showSnack, showTransactions, TProgress } from "../../../lib/Ui";
+import { showSnack, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 import { ManageDarcComponent } from "../manage-darc";
 

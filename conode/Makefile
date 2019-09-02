@@ -62,11 +62,5 @@ docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
 
-docker_wait:
-	@for port in $$( seq 7771 2 7777 ); do \
-	  echo "Waiting for localhost:$$port"; \
-	  until curl -s http://localhost:$$port/ok > /dev/null; do sleep .2; done; \
-	done
-
 clean:
 	rm -rf build/conode cothority

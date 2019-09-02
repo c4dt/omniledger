@@ -10,11 +10,10 @@ import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
 import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
 import Darc from "@c4dt/cothority/darc/darc";
 import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import ISigner from "@c4dt/cothority/darc/signer";
 import Signer from "@c4dt/cothority/darc/signer";
+import ISigner from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
 import Log from "@c4dt/cothority/log";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
@@ -151,7 +150,7 @@ export class Data {
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
         const darcSign = Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
+        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from(CredentialInstance.argumentCredential),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch,
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s",
@@ -195,9 +194,9 @@ export class Data {
             new Argument({name: CoinInstance.argumentType, value: SPAWNER_COIN}),
         ]));
         instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
-            new Argument({name: CredentialsInstance.argumentCredID, value: idBuf}),
-            new Argument({name: CredentialsInstance.argumentDarcID, value: darcCred.getBaseID()}),
-            new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()}),
+            new Argument({name: CredentialInstance.argumentCredID, value: idBuf}),
+            new Argument({name: CredentialInstance.argumentDarcID, value: darcCred.getBaseID()}),
+            new Argument({name: CredentialInstance.argumentCredential, value: cred.toBytes()}),
         ]));
         const amount = Long.fromNumber(1e9);
         instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
@@ -212,7 +211,7 @@ export class Data {
 
         Log.lvl2("Linking new data to Data-structure");
         d.contact = new Contact(cred, d);
-        Log.lvl2("Credential id should be", CredentialsInstance.credentialIID(idBuf));
+        Log.lvl2("Credential id should be", CredentialInstance.credentialIID(idBuf));
         await d.contact.updateOrConnect(bc);
         await d.connectByzcoin();
         Log.lvl2("done creating first user on chain", bc.genesisID.toString("hex"));
@@ -435,13 +434,13 @@ export class Data {
         return true;
     }
 
-    dummyProgress(text: string = "", width: number = 0) {
-        Log.lvl2("Dummyprogress:", text, width);
+    dummyProgress(percentage: number = 0, text: string = "") {
+        Log.lvl2("Dummyprogress:", percentage, text);
     }
 
     async registerContact(contact: Contact, balance: Long = Long.fromNumber(0),
                           storage: IStorage = this.storage,
-                          progress: (text: string, width: number) => void = this.dummyProgress): Promise<any> {
+                          progress: TProgress = this.dummyProgress): Promise<any> {
         try {
             const d = new Data(this.bc);
             d.storage = storage;
@@ -450,12 +449,12 @@ export class Data {
                 Contact.prepareInitialCred(contact.alias, contact.seedPublic, this.spawnerInstance.id,
                     null, this.lts);
             d.spawnerInstance = this.spawnerInstance;
-            progress("Writing credential to chain", 50);
+            progress(50, "Writing credential to chain");
             await d.registerSelf(this.coinInstance, [this.keyIdentitySigner]);
-            progress("Done", 100);
+            progress(100, "Done");
         } catch (e) {
             Log.catch(e);
-            progress("Error: " + e.toString(), -100);
+            progress(-100, "Error: " + e.toString());
             throw new Error(e);
         }
     }
@@ -851,11 +850,14 @@ export class Data {
      *
      * @param name the name of the new device
      */
-    async createDevice(name: string): Promise<string> {
+    async createDevice(name: string, progress?: TProgress): Promise<string> {
         const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
         const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
+        if (progress) {
+            progress(30, "Adding Device Darc");
+        }
         const deviceDarc = (await this.spawnerInstance.spawnDarcs(this.coinInstance, [this.keyIdentitySigner],
             dDarc))[0];
         const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
@@ -863,10 +865,12 @@ export class Data {
         newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
         const re = "invoke:darc.evolve";
         newSigner.rules.appendToRule(re, deviceDarcIdentity, Rule.OR);
+        if (progress) {
+            progress(60, "Updating Signer Darc");
+        }
         await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
         this.contact.credential.setAttribute("1-devices", name, deviceDarc.darc.getBaseID());
         this.contact.incVersion();
-        await this.contact.sendUpdate();
         return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
             this.contact.credentialIID.toString("hex"),
             ephemeralIdentity.secret.marshalBinary().toString("hex"));
@@ -887,11 +891,21 @@ export class Data {
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
         const newSigner = signerDarc.darc.evolve();
         const deviceStr = `darc:${device.toString("hex")}`;
-        newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
-        newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
-        await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
+        let updateDarc = true;
+        try {
+            newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
+            newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
+        } catch (e) {
+            Log.warn("Couldn't update rule");
+            updateDarc = false;
+        }
+        if (updateDarc) {
+            await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
+        }
         this.contact.credential.deleteAttribute("1-devices", name);
         this.contact.incVersion();
-        await this.contact.sendUpdate();
     }
 }
+
+// Progress type to be used in showTransactions.
+export type TProgress = (percentage: number, text: string) => void;
