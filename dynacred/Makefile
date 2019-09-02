@@ -1,4 +1,4 @@
-CO_REPO := @c4dt
+COT := \@c4dt/cothority
 
 none:
 	@echo "Not breaking if you don't tell me what to do"
@@ -8,8 +8,8 @@ cothority_src: cothority-pull src/lib/cothority
 src/lib/cothority: cothority/external/js/cothority/src
 	@mkdir -p src/lib
 	@cp -a $< $@
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:\${CO_REPO}/cothority:src/lib/cothority:"
-	@find spec/ -name "*.ts" | xargs perl -pi -e "s:\${CO_REPO}/cothority:src/lib/cothority:"
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:${COT}/cothority:src/lib/cothority:"
+	@find spec/ -name "*.ts" | xargs perl -pi -e "s:${COT}/cothority:src/lib/cothority:"
 	@npm run lint:fix
 
 cothority_npm: cothority-pull
@@ -21,8 +21,8 @@ cothority_npm: cothority-pull
 	@diff -Naurq cothority/external/js/cothority/src/ src/lib/cothority/ || \
 		( echo "Moving changes to cothority"; cp -a src/lib/cothority/ cothority/external/js/cothority/src )
 	@rm -rf src/lib/cothority
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\${CO_REPO}/cothority:"
-	@find spec/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\${CO_REPO}/cothority:"
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:${COT}/cothority:"
+	@find spec/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:${COT}/cothority:"
 	@rmdir src/lib
 	@npm run lint:fix
 
