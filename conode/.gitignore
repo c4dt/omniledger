@@ -1,5 +1,6 @@
 cothority/
 build/conode
-build/conodes/log/
-build/bcadmin
 build/csadmin
+build/conodes/log/
+bcadmin
+phapp

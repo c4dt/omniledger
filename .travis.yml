@@ -19,6 +19,10 @@ jobs:
       script:
         - cd conode
         - make docker
+        - make docker_run &
+        - make conode
+        - make docker_wait
+        - build/bcadmin latest --bc bc*cfg
     - name: dynacred
       language: node_js
       node_js: "10"
@@ -33,11 +37,15 @@ jobs:
       language: node_js
       node_js: "10"
       install:
+        - gimme 1.12.4
+        - . $HOME/.gimme/envs/go1.12.4.env
         - cd webapp && npm ci
         - npm link ../dynacred
       before_script: npm run lint
       script:
         - npm run build --prod
+        - make -C ../conode docker_run &
+        - make -C ../conode docker_wait
         - npm run test --no-watch
     - name: mobile
       language: node_js
