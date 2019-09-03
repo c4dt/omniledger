@@ -3,3 +3,4 @@
 *.js
 /doc/
 /cothority/
+output.log

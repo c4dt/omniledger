@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "ts-node --prefer-ts-exts node_modules/.bin/jasmine",
+    "test": "ts-node --project tsconfig.spec.json -r tsconfig-paths/register --prefer-ts-exts node_modules/.bin/jasmine",
     "prepare": "npm run lint && npm run build",
     "cover": "nyc jasmine",
     "lint": "tslint --project .",
@@ -21,16 +21,20 @@
   "author": "C4DT",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@c4dt/cothority": "^3.1.16",
+    "@c4dt/cothority": "^3.1.18",
     "cross-fetch": "^3.0.4",
     "dexie": "^2.0.4",
-    "tweetnacl-ts": "^1.0.3"
+    "dockerode": "^2.5.8",
+    "tweetnacl-ts": "^1.0.3",
+    "url-parse": "^1.4.7"
   },
   "devDependencies": {
     "@types/jasmine": "^3.3.15",
     "jasmine": "^3.4.0",
+    "jasmine-ts-console-reporter": "^3.1.1",
     "nyc": "^14.1.1",
     "ts-node": "^8.3.0",
+    "tsconfig-paths": "^3.8.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
   },
