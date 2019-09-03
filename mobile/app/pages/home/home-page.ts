@@ -6,15 +6,15 @@ logic, and to set up your page’s data binding.
 
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
-import { getFrameById, topmost } from "tns-core-modules/ui/frame";
+import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
-import { SelectedIndexChangedEventData, TabView } from "tns-core-modules/ui/tab-view";
+import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
 import Log from "~/lib/cothority/log";
 import { msgFailed, msgOK } from "~/lib/messages";
+import { getRawData, IScore, rawToPercent } from "~/lib/personhood";
 import { qrcodeIdentity } from "~/lib/qrcode";
 import { testingMode, uData } from "~/lib/user-data";
 import { scanNewUser } from "~/lib/users";
-import { frame } from "~/pages/identity/identity-page";
 import { UserView } from "../identity/contacts/contacts-view";
 
 const attributes = new ObservableArray();
@@ -31,6 +31,9 @@ const identity = fromObject({
     widthAttributes: "0%",
     widthMeetups: "0%",
     widthParty: "0%",
+    widthPolls: "0%",
+    widthRPS: "0%",
+    widthReferences: "0%",
     widthRegistered: "0%",
 });
 
@@ -75,24 +78,37 @@ export function personhoodDesc() {
 }
 
 export function cyclePersonhood() {
-    switch (identityShow) {
-        case 0:
-            setScore(4, false, 0, 0);
-            break;
-        case 1:
-            setScore(4, true, 0, 0);
-            break;
-        case 2:
-            setScore(4, true, 6, 0);
-            break;
-        case 4:
-            setScore(4, true, 6, 1);
-            break;
-        case 4:
-            setScore(0, false, 0, 0);
-            identityShow = -1;
-            break;
+    const score: IScore = {
+        attributes: 0, invites: 0, meetups: 0, parties: 0,
+        polls: 0, registered: 0, roPaScis: 0,
+    };
+    for (let i = 0; i <= identityShow; i++) {
+        switch (i) {
+            case 0:
+                score.attributes = 4;
+                break;
+            case 1:
+                score.registered = 1;
+                break;
+            case 2:
+                score.meetups = 3;
+                break;
+            case 3:
+                score.parties = 2;
+                break;
+            case 4:
+                score.roPaScis = 5;
+                break;
+            case 5:
+                score.polls = 3;
+                break;
+            case 6:
+                score.invites = 5;
+                identityShow = -1;
+                break;
+        }
     }
+    setScore(score);
     identityShow++;
 }
 
@@ -103,20 +119,23 @@ export function setProgress(text: string = "", width: number = 0) {
         if (width < 0) {
             color = "#a04040";
         }
-        page.getViewById("progress_bar").setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
+        page.getViewById("progress_bar").setInlineStyle("width:" + Math.abs(width) +
+            "%; background-color: " + color);
     }
 }
 
-function setScore(att: number, reg: boolean, meet: number, party: number) {
-    const attWidth = Math.floor(10 * att / 4);
-    identity.set("widthAttributes", attWidth + "%");
-    const regWidth = reg ? 10 : 0;
-    identity.set("widthRegistered", regWidth + "%");
-    const meetWidth = Math.min(meet, 6) * 5;
-    identity.set("widthMeetups", meetWidth + "%");
-    const partyWidth = party > 0 ? 50 : 0;
-    identity.set("widthParty", partyWidth + "%");
-    identity.set("personhoodScore", (attWidth + regWidth + meetWidth + partyWidth) + "%");
+function setScore(s: IScore) {
+    const scores = rawToPercent(s);
+
+    identity.set("widthAttributes", scores.attributes + "%");
+    identity.set("widthRegistered", scores.registered + "%");
+    identity.set("widthMeetups", scores.meetups + "%");
+    identity.set("widthParty", scores.parties + "%");
+    identity.set("widthRPS", scores.roPaScis + "%");
+    identity.set("widthPolls", scores.polls + "%");
+    identity.set("widthReferences", scores.invites + "%");
+    // Total score
+    identity.set("personhoodScore", Object.values(scores).reduce((a, b) => a + b) + "%");
 }
 
 export async function update() {
@@ -145,7 +164,7 @@ export async function update() {
         if (uData.contact.phone !== "") {
             attributes.push({name: "phone", value: uData.contact.phone});
         }
-        setScore(attributes.length, uData.coinInstance != null, uData.uniqueMeetings, uData.badges.length);
+        setScore(getRawData(uData));
         if (uData.coinInstance != null) {
             identity.set("hasCoins", true);
             identity.set("init", false);

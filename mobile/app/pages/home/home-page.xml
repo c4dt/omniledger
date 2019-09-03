@@ -58,25 +58,34 @@
 
                 <StackLayout row="2" style="margin:30px;" tap="personhoodDesc">
                     <Label text="{{ 'Your Personhood-score: ' + personhoodScore }}" class="h2"/>
-                    <GridLayout columns="auto, auto, auto, auto, *" width="100%">
+                    <GridLayout columns="auto, auto, auto, auto, auto, auto, auto, *" width="100%">
                         <Label width="{{ widthAttributes }}" text=" "
-                               style="horizontal-align:left; opacity:0.5; background-color: #dbffaa;"
+                               style="horizontal-align:left; opacity:0.5; background-color: #769ECB;"
                                row="0" col="0"/>
                         <Label width="{{ widthRegistered }}" text=" "
-                               style="horizontal-align:left; opacity:0.5; background-color: #b6f5ff;"
+                               style="horizontal-align:left; opacity:0.5; background-color: #9DBAD5;"
                                row="0" col="1"/>
                         <Label width="{{ widthMeetups }}" text=" "
-                               style="horizontal-align:left; opacity:0.5; background-color: #b0bcff;"
+                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"
                                row="0" col="2"/>
                         <Label width="{{ widthParty }}" text=" "
-                               style="horizontal-align:left; opacity:0.5; background-color: #ff9b9c;"
+                               style="horizontal-align:left; opacity:0.5; background-color: #C8D6B9;"
                                row="0" col="3"/>
+                        <Label width="{{ widthRPS }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #8FC1A9;"
+                               row="0" col="4"/>
+                        <Label width="{{ widthPolls }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #7CAA98;"
+                               row="0" col="5"/>
+                        <Label width="{{ widthReferences }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #769ECB;"
+                               row="0" col="6"/>
                         <Label width="100%" text=" "
                                style="horizontal-align:left; opacity:0.5; background-color: #ffffff;"
-                               row="0" col="4"/>
+                               row="0" col="7"/>
                         <Label width="100%" text=" "
                                style="border-color: black; border-width: 2px;"
-                               row="0" colSpan="5"/>
+                               row="0" colSpan="8"/>
                     </GridLayout>
                 </StackLayout>
 

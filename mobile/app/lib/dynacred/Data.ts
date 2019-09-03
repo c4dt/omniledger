@@ -298,6 +298,7 @@ export class Data {
     // Non-stored fields
     recoverySignatures: RecoverySignature[] = [];
     storage: IStorage = StorageDB;
+    references: string[] = [];
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
@@ -348,6 +349,7 @@ export class Data {
                 null, null, null);
             this.contact = new Contact(cred, this);
         }
+        this.references = obj.references ? obj.references : [];
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
@@ -375,6 +377,7 @@ export class Data {
             parties: [] as any,
             personhoodPublished: this.personhoodPublished,
             polls: [] as any,
+            references: this.references,
             ropascis: [] as any,
         };
         if (this.bc) {
@@ -814,6 +817,16 @@ export class Data {
         Log.lvl2("finalizing data");
         await this.connectByzcoin();
         return this;
+    }
+
+    /**
+     * Returns the coins needed to create a new user
+     */
+    signupCost(): Long {
+        const c = this.spawnerInstance.costs;
+        return c.costCoin.value.mul(4).add(
+            c.costCredential.value).add(
+            c.costCoin.value);
     }
 
     /**

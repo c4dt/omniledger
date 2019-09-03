@@ -32,6 +32,21 @@
                 <Label text="{{ parties_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{parties_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
+            <Label text="Games" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ ropascis_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{ropascis_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+            <Label text="Polls" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ polls_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{polls_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+            <Label text="Invites" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ invites_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{invites_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
         </StackLayout>
     </ScrollView>
 </Page>
