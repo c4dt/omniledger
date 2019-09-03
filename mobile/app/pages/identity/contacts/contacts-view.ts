@@ -63,12 +63,12 @@ export class UserView extends Observable {
     static async payUser(u: Contact, progress: any) {
         try {
             if (!u.isRegistered()) {
-                if (await uData.canPay(uData.spawnerInstance.signupCost)) {
+                if (await uData.canPay(uData.signupCost())) {
                     // tslint:disable:object-literal-sort-keys
                     const pay = await dialogs.confirm({
                         title: "Register user",
                         message: "This user is not registered yet - do you want to pay " +
-                            uData.spawnerInstance.signupCost.toString() + " for the registration of user " +
+                            uData.signupCost().toString() + " for the registration of user " +
                             u.alias + "?",
                         okButtonText: "Yes, pay",
                         cancelButtonText: "No, don't pay",
@@ -78,6 +78,7 @@ export class UserView extends Observable {
                     }
                     await u.isRegistered();
                     await msgOK(u.alias + " is now registered and can be paid.");
+                    uData.references.push(u.alias);
                     await uData.save();
                 } else {
                     await msgFailed("The use you want to pay is unregistered. " +

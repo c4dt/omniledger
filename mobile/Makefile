@@ -60,7 +60,7 @@ cothority_npm: kyber_npm
 	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@c4dt/cothority:"
 
 cothority:
-	git clone --depth 1 https://github.com/dedis/cothority
+	git clone --depth 1 https://github.com/c4dt/cothority
 
 cothority-pull: cothority
 	cd cothority && git pull
