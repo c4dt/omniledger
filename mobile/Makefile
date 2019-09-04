@@ -15,7 +15,7 @@ android-check:
 	@if [ ! "$$PERSONHOOD2_ANDROID_PASS" ]; then echo "Please set PERSONHOOD2_ANDROID_PASS"; exit 1; fi
 	@if grep -q "testingMode = true" app/lib/user-data.ts; then echo "\nPUT TESTING TO FALSE IN lib/user-data.ts !!\n"; exit 1; fi
 
-android-release: apply-patches android-check
+android-release: android-check apply-patches
 	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
 		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"

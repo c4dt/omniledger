@@ -8,8 +8,12 @@
 android {  
   defaultConfig {  
     generatedDensities = []
-  }  
-  aaptOptions {  
+    ndk {
+         abiFilters.clear()
+         abiFilters.addAll(['armeabi-v7a','arm64-v8a'])
+    }
+  }
+  aaptOptions {
     additionalParameters "--no-version-vectors"  
   }
   configurations {
