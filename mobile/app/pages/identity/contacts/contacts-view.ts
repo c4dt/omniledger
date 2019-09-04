@@ -157,12 +157,16 @@ export class UserView extends Observable {
             if (!this._user.isRegistered()) {
                 await this._user.isRegistered();
             }
+            setProgress("Fetching latest " + this._user.alias, 33);
             await this._user.updateOrConnect(uData.bc);
+            setProgress("Saving data", 66);
             await uData.save();
             this.notifyPropertyChange("isRegistered", this.isRegistered);
+            setProgress("Done", 100);
         } catch (e) {
             Log.catch("Couldn't update", this.alias, e);
         }
+        setProgress();
         topmost().navigate({
             moduleName: "pages/identity/contacts/actions/actions-page",
             context: this._user,

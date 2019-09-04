@@ -11,7 +11,7 @@
             <StackLayout visibility="{{ maxValue > 1 ? 'visible' : 'collapse' }}"
                          style="margin: 5%; margin-bottom: 0%;" row="0">
                 <Label text="Number of contacts that need to come together to recover your identity" textWrap="true"
-                       class="h2"/>
+                       class="h3"/>
                 <StackLayout orientation="horizontal">
                     <Slider value="{{ threshold }}" minValue="1" maxValue="{{ maxValue }}" width="80%"
                             loaded="sliderLoaded"/>
@@ -19,23 +19,21 @@
                 </StackLayout>
             </StackLayout>
 
-            <ScrollView>
-                <ListView items="{{ trustees }}" class="list-group" row="1">
-                    <ListView.itemTemplate>
-                        <FlexboxLayout orientation="horizontal" flexDirection="row"
-                                       class="basic-list-decorated"
-                                       alignItems="center">
-                            <Label text="{{ alias }}" class="h3"
-                                   height="100%"
-                                   textTransform="uppercase"
-                                   tap="{{ showTrustee }}"
-                                   flexGrow="1"/>
-                            <Label text="&#xf2ed;" class="fas h1"
-                                   tap="{{ removeTrustee }}"/>
-                        </FlexboxLayout>
-                    </ListView.itemTemplate>
-                </ListView>
-            </ScrollView>
+            <ListView items="{{ trustees }}" class="list-group" row="1">
+                <ListView.itemTemplate>
+                    <FlexboxLayout orientation="horizontal" flexDirection="row"
+                                   class="basic-list-decorated"
+                                   alignItems="center">
+                        <Label text="{{ alias }}" class="h3"
+                               height="100%"
+                               textTransform="uppercase"
+                               tap="{{ showTrustee }}"
+                               flexGrow="1"/>
+                        <Label text="&#xf2ed;" class="fas h1"
+                               tap="{{ removeTrustee }}"/>
+                    </FlexboxLayout>
+                </ListView.itemTemplate>
+            </ListView>
 
             <Button text="Add Trustee" tap="addTrustee" class="btn btn-primary" row="2"/>
 

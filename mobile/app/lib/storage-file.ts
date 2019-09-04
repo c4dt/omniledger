@@ -1,4 +1,6 @@
 // tslint:disable-next-line
+require("nativescript-nodeify");
+// tslint:disable-next-line
 const fileSystem = require("tns-core-modules/file-system");
 const documents = fileSystem.knownFolders.documents();
 import Log from "~/lib/cothority/log";

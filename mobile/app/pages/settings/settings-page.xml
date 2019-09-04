@@ -23,8 +23,8 @@
                         </df:EntityProperty>
                     </df:RadaForm.properties>
                 </df:RadDataForm>
-                <Button text="Clear all data" tap="tapClear" class="btn btn-test"
-                        visibility="{{ testing ? 'visible' : 'collapse' }}"/>
+                <Button text="Clear all data" tap="tapClear" class="btn btn-test"/>
+<!--                        visibility="{{ testing ? 'visible' : 'collapse' }}"/>-->
                 <Button text="Share data" tap="shareData" class="btn btn-test"
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
                 <Button text="{{ L('settings.save') }}" tap="tapSave" class="btn btn-primary"/>
@@ -58,7 +58,7 @@
                 </StackLayout>
             </StackLayout>
 
-            <Label text="Version 0.5.1" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
+            <Label text="Version 0.0.1" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
         </GridLayout>
     </ScrollView>
 </Page>

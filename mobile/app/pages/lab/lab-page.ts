@@ -1,4 +1,4 @@
-import { fromObject } from "data/observable";
+import { fromObject } from "tns-core-modules/data/observable";
 import { EventData, Frame, getFrameById, Page, topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
