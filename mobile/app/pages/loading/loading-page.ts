@@ -13,8 +13,10 @@ import { appRootMain, appRootSetup } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
 import { setFactory } from "~/lib/cothority/network/connection";
+import { Data } from "~/lib/dynacred";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
+import { StorageFile } from "~/lib/storage-file";
 import { initBC, loadData, newByzCoin, testingMode, uData } from "~/lib/user-data";
 
 declare const exit: (code: number) => void;
@@ -65,24 +67,34 @@ export async function navigatingTo(args: EventData) {
     Log.lvl1("Loading data");
     try {
         await loadData();
+
+        if (!uData.contact.alias || uData.contact.alias === "new identity") {
+            Log.lvl1("Looks like an empty data - going for setup");
+            return appRootSetup();
+        } else {
+            Log.lvl1("Going for main");
+            return appRootMain();
+        }
     } catch (e) {
         Log.catch(e);
         if (testingMode) {
             // This is a little bit dangerous, as a testing-setup could be destroyed if not handled
             // carefully. But as it's just a testing, this should be OK...
             return appRootSetup();
-        } else {
-            return again(args);
         }
     }
 
-    if (!uData.contact.alias || uData.contact.alias === "new identity") {
-        Log.lvl1("Looks like an empty data - going for setup");
-        return appRootSetup();
-    } else {
-        Log.lvl1("Going for main");
-        return appRootMain();
+    try {
+        // This is to be _really_ sure we don't overwrite the user's data. We could reason that it's
+        // nearly impossible to be able to connect, but not to load the user's data from BC. But, only
+        // nearly impossible...
+        if ((await StorageFile.get(Data.defaultStorage)) != null) {
+            return again(args);
+        }
+    } catch (e) {
+        Log.warn("Couldn't read data");
     }
+    return appRootSetup();
 }
 
 function quit() {
@@ -94,16 +106,20 @@ function quit() {
 }
 
 async function again(args: EventData) {
+    const actions = ["Again", "Delete"];
     // tslint:disable:object-literal-sort-keys
-    if (await dialogs.confirm({
+    switch(await dialogs.action({
         title: "Network error",
         message: "Make sure you have a network connection. Do you want to try again?",
-        okButtonText: "Try again",
         cancelButtonText: "Quit",
+        actions
         // tslint:enable:object-literal-sort-keys
     })) {
-        return navigatingTo(args);
-    } else {
-        quit();
+        case actions[0]:
+            return navigatingTo(args);
+        case actions[1]:
+            return appRootSetup();
+        default:
+            quit();
     }
 }

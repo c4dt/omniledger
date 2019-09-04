@@ -22,10 +22,7 @@ export async function navigatingTo(args: EventData) {
     page.bindingContext = view;
     Log.lvl1("Initializing new Data");
     await initData();
-    uData.contact.alias = "test";
-    await uData.save();
     setProgress();
-    appRootMain();
 }
 
 export async function goInitTest(args: EventData) {

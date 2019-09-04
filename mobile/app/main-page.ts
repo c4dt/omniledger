@@ -1,9 +1,9 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { EventData, fromObject } from "data/observable";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
-import { Page } from "ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
 import { switchHome } from "~/pages/home/home-page";
 import { switchIdentity } from "~/pages/identity/identity-page";

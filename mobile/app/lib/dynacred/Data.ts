@@ -415,7 +415,9 @@ export class Data {
         Log.lvl1("Saving data to", this.dataFileName);
         await this.storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
-            this.contact.personhoodPub = this.keyPersonhood._public;
+            if (!this.contact.personhoodPub.equal(this.keyPersonhood._public)) {
+                this.contact.personhoodPub = this.keyPersonhood._public;
+            }
         }
         if (this.contact.isRegistered()) {
             Log.lvl2("Sending update to chain");
