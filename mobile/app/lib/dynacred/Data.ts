@@ -1,12 +1,6 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
-import { curve, Point, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto-browserify";
-import Long from "long";
-import { sprintf } from "sprintf-js";
-import URL from "url-parse";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "~/lib/cothority/byzcoin/client-transaction";
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
@@ -20,16 +14,22 @@ import Signer from "~/lib/cothority/darc/signer";
 import ISigner from "~/lib/cothority/darc/signer";
 import SignerEd25519 from "~/lib/cothority/darc/signer-ed25519";
 import Log from "~/lib/cothority/log";
-import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
 } from "~/lib/cothority/personhood/credentials-instance";
+import CredentialsInstance from "~/lib/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "~/lib/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "~/lib/cothority/personhood/spawner-instance";
+import { curve, Point, Scalar, sign } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import { randomBytes } from "crypto-browserify";
+import Long from "long";
+import { sprintf } from "sprintf-js";
+import URL from "url-parse";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { KeyPair, Private, Public } from "./KeyPair";
@@ -415,7 +415,8 @@ export class Data {
         Log.lvl1("Saving data to", this.dataFileName);
         await this.storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
-            if (!this.contact.personhoodPub.equal(this.keyPersonhood._public)) {
+            if (!this.contact.personhoodPub ||
+                !this.contact.personhoodPub.equal(this.keyPersonhood._public)) {
                 this.contact.personhoodPub = this.keyPersonhood._public;
             }
         }

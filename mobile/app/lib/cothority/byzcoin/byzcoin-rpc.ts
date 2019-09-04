@@ -65,9 +65,7 @@ export default class ByzCoinRPC implements ICounterUpdater {
     static async fromByzcoin(roster: Roster, skipchainID: Buffer, waitMatch: number = 0, interval: number = 1000):
         Promise<ByzCoinRPC> {
         const rpc = new ByzCoinRPC();
-        // TODO: Remove this 1, so that we sent 2 requests in parallel again,
-        // and fix the problems with incorrect signer id that come from that.
-        rpc.conn = new RosterWSConnection(roster, "ByzCoin", 1);
+        rpc.conn = new RosterWSConnection(roster, "ByzCoin");
 
         const skipchain = new SkipchainRPC(roster);
         rpc.genesis = await skipchain.getSkipBlock(skipchainID);

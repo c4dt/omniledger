@@ -1,4 +1,3 @@
-import Log from "@c4dt/cothority/log";
 import { Buffer } from "buffer";
 import Dexie from "dexie";
 
@@ -20,6 +19,7 @@ export class StorageDB {
     }
 
     static async get(key: string): Promise<string> {
+        // (await this.getDB().toArray()).forEach((ic) => Log.print(ic.key));
         const entry = await this.getDB().get(key);
         if (entry) {
             return entry.buffer;
@@ -49,33 +49,6 @@ export class StorageDB {
             });
         }
         return this.db.table("contacts");
-    }
-}
-
-export class StorageLocalStorage {
-    static pre = "dyna_";
-    static localStorage: {[s: string]: string; } = {};
-
-    static async set(key: string, value: string) {
-        return StorageLocalStorage.localStorage[this.pre + key] = value;
-    }
-
-    static async get(key: string): Promise<string> {
-        return StorageLocalStorage.localStorage[this.pre + key];
-    }
-
-    static async putObject(key: string, obj: any) {
-        return StorageLocalStorage.set(key, JSON.stringify(obj));
-    }
-
-    static async getObject(entry: string): Promise<any> {
-        const obj = JSON.parse(await StorageLocalStorage.get(entry), (key, value) => {
-            if (value && typeof value === "object" && value.type === "Buffer") {
-                return Buffer.from(value);
-            }
-            return value;
-        });
-        return obj == null ? {} : obj;
     }
 }
 

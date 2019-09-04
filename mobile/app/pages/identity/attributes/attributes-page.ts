@@ -40,6 +40,7 @@ export async function tapSave(args: EventData) {
         adminView.setProgress("Done", 100);
         await msgOK("Saved your data");
     } catch (e) {
+        Log.catch(e);
         adminView.setProgress("Error: " + e, -100);
         await msgFailed("Something went wrong: " + e.toString());
     }

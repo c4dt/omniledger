@@ -1,8 +1,3 @@
-import { Point, PointFactory } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import Long from "long";
-import { sprintf } from "sprintf-js";
-import URL from "url-parse";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
@@ -15,6 +10,11 @@ import Signer from "~/lib/cothority/darc/signer";
 import Log from "~/lib/cothority/log";
 import CredentialsInstance, { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
+import { Point, PointFactory } from "@dedis/kyber";
+import { Buffer } from "buffer";
+import Long from "long";
+import { sprintf } from "sprintf-js";
+import URL from "url-parse";
 import { Data } from "./Data";
 import { Public } from "./KeyPair";
 import { UserLocation } from "./personhood-rpc";
@@ -138,7 +138,8 @@ export class Contact {
     }
 
     get personhoodPub(): Public {
-        return Public.fromBuffer(this.credential.getAttribute("1-public", "personhood"));
+        const buf = this.credential.getAttribute("1-public", "personhood");
+        return buf ? Public.fromBuffer(buf) : null;
     }
 
     set personhoodPub(pub: Public) {

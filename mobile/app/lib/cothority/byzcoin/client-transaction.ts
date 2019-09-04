@@ -16,6 +16,8 @@ export interface ICounterUpdater {
  * List of instructions to send to a byzcoin chain
  */
 export default class ClientTransaction extends Message<ClientTransaction> {
+    static counters = new Map();
+
     /**
      * @see README#Message classes
      */
@@ -34,6 +36,45 @@ export default class ClientTransaction extends Message<ClientTransaction> {
         }
 
         return new ClientTransaction({ instructions: instrs });
+    }
+
+    /**
+     * This keeps track of the know counters, thus speeding up signing with known keys. It
+     * also solves the problem of counters sometimes being out of synch with the chain.
+     * After the call returns, all signers are in ClientTransaction.counters.
+     *
+     * @param rpc should allow updates for counters
+     * @param signers the signers needed
+     */
+    static async updateCachedCounters(rpc: ICounterUpdater, signers: IIdentity[]): Promise<Long[]> {
+        const newSigners = signers.filter((signer) => {
+           return ClientTransaction.counters.has(signer.toString()) === false;
+        });
+        if (newSigners.length > 0) {
+            const newCounters = await rpc.getSignerCounters(newSigners, 0);
+            newSigners.forEach((signer, i) => {
+                ClientTransaction.counters.set(signer.toString(), newCounters[i]);
+            });
+        }
+        return signers.map((signer) => {
+            return ClientTransaction.counters.get(signer.toString());
+        });
+    }
+
+    /**
+     * Clears the counters, in case of an error.
+     */
+    static clearCounters() {
+        ClientTransaction.counters.clear();
+    }
+
+    /**
+     * Returns the next value for the counter and updates the cache.
+     */
+    static getNextCounter(signer: IIdentity): Long {
+        const c = ClientTransaction.counters.get(signer.toString()).add(1);
+        ClientTransaction.counters.set(signer.toString(), c);
+        return c;
     }
 
     readonly instructions: Instruction[];
@@ -78,20 +119,14 @@ export default class ClientTransaction extends Message<ClientTransaction> {
 
         // Get all counters from all signers of all instructions and map them into an object.
         const uniqueSigners: IIdentity[] = _.uniq(_.flatten(signers));
-        const counters = await rpc.getSignerCounters(uniqueSigners, 1);
-
-        const signerCounters: {[key: string]: any} = {};
-        uniqueSigners.forEach((us, i) => {
-            signerCounters[us.toString()] = counters[i];
-        });
+        await ClientTransaction.updateCachedCounters(rpc, uniqueSigners);
 
         // Iterate over the instructions, and store the appropriate signers and counters, while
         // increasing those that have been used.
         for (let i = 0; i < this.instructions.length; i++) {
             signers[i].forEach((signer) => {
                 this.instructions[i].signerIdentities.push(IdentityWrapper.fromIdentity(signer));
-                this.instructions[i].signerCounter.push(signerCounters[signer.toString()]);
-                signerCounters[signer.toString()] = signerCounters[signer.toString()].add(1);
+                this.instructions[i].signerCounter.push(ClientTransaction.getNextCounter(signer));
             });
         }
     }

@@ -101,7 +101,7 @@
                                         col="0"
                                         colSpan="3" height="500px">
                     <nsListView:RadListView.listViewLayout>
-                        <nsListView:ListViewGridLayout scrollDirection="Vertical" itemHeight="50px" spanCount="3"/>
+                        <nsListView:ListViewGridLayout scrollDirection="Vertical" ios.itemHeight="50px" spanCount="3"/>
                     </nsListView:RadListView.listViewLayout>
 
                     <nsListView:RadListView.itemTemplate>
