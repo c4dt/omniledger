@@ -1,4 +1,3 @@
-import { ObservableArray } from "data/observable-array";
 import Long from "long";
 import Moment from "moment";
 import { sprintf } from "sprintf-js";

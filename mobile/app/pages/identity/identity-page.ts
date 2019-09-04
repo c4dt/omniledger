@@ -1,12 +1,14 @@
-import { EventData, Frame, getFrameById, topmost } from "tns-core-modules/ui/frame";
+import { fromObject } from "data/observable";
+import { EventData, Frame, getFrameById, Page, topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
 import Log from "~/lib/cothority/log";
 
 export let frame: Frame;
 
-export function navigatingToIdentity(args: EventData) {
+export function navigatingTo(args: EventData) {
     Log.lvl2("Navigating to identity");
+    (args.object as Page).bindingContext = fromObject({});
 }
 
 export function goIdentity(args: GestureEventData) {

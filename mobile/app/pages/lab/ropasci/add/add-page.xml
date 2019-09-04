@@ -59,7 +59,7 @@
             </df:RadaForm.properties>
         </df:RadDataForm>
 
-        <Button text="Send Game to ByzCoin" tap="save" class="btn"
+        <Button text="Send Game to ByzCoin" tap="save" class="btn btn-primary"
                 row="2" colSpan="3"/>
 
         <Label text="" row="3"/>

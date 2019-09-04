@@ -23,7 +23,7 @@
             </ListView.itemTemplate>
         </ListView>
 
-        <Button row="1" text="Add all contacts" class="btn" tap="addContacts"/>
+        <Button row="1" text="Add all contacts" class="btn btn-primary" tap="addContacts"/>
 
         <GridLayout rows="auto" row="2" class="network-progress-grid">
             <Label class="label-title" text=" "/>

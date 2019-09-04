@@ -1,0 +1,114 @@
+{
+  "app.name": "Personhood 2",
+  "greet": "Hello %s",
+  "fasd": "Username",
+  "presenting": {
+    "title": "Presentation",
+    "personhood": "What is Personhood?",
+    "personhood_desc": [
+      "Personhood.online is an experimental application that is used to try out new ideas",
+      "for identity management and troll-resistance. It is based on research from the DEDIS",
+      " lab at EPFL and actively developed by Linus Gasser. The current version should run ",
+      "without too many bugs and its goal is to start a discussion of what is possible."
+    ],
+    "personhood_link": "Personhood is brought to you by",
+    "scan_device": "Scan Device",
+    "recover": "Recover",
+    "identity": "Setting your identity",
+    "identity_desc": [
+      "Let's start with getting to know you. The only required field is 'alias', but for more functionality, ",
+      "you should also fill out the email, the phone-number, and give an URL. Of course you can also do so later. ",
+      "All of this information will eventually be public on our servers."
+    ],
+    "alias": "Alias",
+    "alias_hint": "Enter alias",
+    "email": "Email",
+    "email_hint": "Enter email",
+    "phone": "Phone",
+    "phone_hint": "Enter your phone-#",
+    "url": "Url",
+    "url_hint": "Enter personal webpage",
+    "poc": "Proof-of-concept code!",
+    "asis": [
+      "This software is given as-is. More specifically: all of your data is stored in clear on our blockchain.",
+      "Calls are done unprotected. Coins will disappear. Feel free to open issues on ",
+      "github.com/c4dt/omniledger anyway."
+    ],
+    "congrats": [
+      "Congratulations, you're all set up to go. As is, you are not connected to any of our services. ",
+      "But you can go around and meet other people who have the app and exchange your identity with them. ",
+      "This will also start to create your social graph."
+    ],
+    "parties": [
+      "You can also visit personhood-parties. They will prove that you're a unique person, and will allow you ",
+      "to sign up to our experimental blockchain. Once you signed up, your identity can be updated automatically ",
+      "by all your contacts, if you give them the permission."
+    ],
+    "next_steps": [
+      "Once you're signed up you can play a game of rock-paper-scissors on the blockchain. ",
+      "If you participate in a personhood party, you can create an anonymous, troll-resistant poll."
+    ],
+    "go_main": "Start the fun"
+  },
+  "main": {
+    "home": "Home",
+    "identity": "Identity",
+    "lab": "Lab",
+    "settings": "Settings"
+  },
+  "home": {
+    "register": "To register, get this QRCode scanned by somebody with popcoins, or go to a personhood-party.",
+    "score": "Your Personhood-score: %s",
+    "meetup": "Start Meetup"
+  },
+  "identity": {
+    "title": "Identity",
+    "attributes": "Attributes",
+    "contacts": "Contacts",
+    "recover": "Recover"
+  },
+  "lab": {
+    "title": "Lab of great ideas",
+    "personhood": "Personhood",
+    "ropasci": "Rock-Paper-Scissors",
+    "poll": "Troll-resistant polls"
+  },
+  "settings": {
+    "title": "Settings",
+    "continuousScan": "Continuous Scan",
+    "save": "Save"
+  },
+  "score": {
+    "title": "Personhood-score",
+    "desc": [
+      "Your personhood score is an evaluation of how much you can prove that you're a unique human being. ",
+      "The higher the score, the more the system can trust that your account is uniquely tied to one person only."
+    ],
+    "improve": "You got %d out of %d %s. %s",
+    "done": "You got all %d %s. %s",
+    "attributes": "attributes",
+    "attributes_improve": "Add more information to your identity.",
+    "attributes_done": "Well done.",
+    "registrations": "registrations",
+    "registrations_improve": "Get yourself registered on the blockchain by somebody who has some coins, or visit a personhood party.",
+    "registrations_done": "Nice. Enjoy staying on the blockchain!",
+    "meetups": "meetups",
+    "meetups_improve": "Meet some people and exchange contacts. Only unique meeting groups are counted.",
+    "meetups_done": "Keep up meeting other participants",
+    "parties": "parties",
+    "parties_improve": "Go to a personhood party and get your public key registered.",
+    "parties_done": "Nice party-goer!",
+    "rpascis": "rock-paper-scissor",
+    "ropascis_improve": "Play some rock-paper-scissor games.",
+    "ropascis_done": "Good gamer!",
+    "polls": "polls",
+    "polls_improve": "Answer polls to raise your score.",
+    "polls_done": "Fervent poller!",
+    "invites": "invites",
+    "invites_improve": "Invite and sign up new players.",
+    "invites_done": "Good inviter!"
+  },
+  "button": {
+    "continue": "Continue"
+  }
+}

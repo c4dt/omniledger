@@ -9,9 +9,8 @@
     </ActionBar>
     <ScrollView>
         <StackLayout style="margin: 20px;" tap="goBack">
-            <Label text="Personhood-score" class="h1 text-center" textWrap="true"/>
-            <Label text="Your personhood score is an evaluation of how much you can prove that you're a unique human being. The higher the score, the more the system can trust that your account is uniquely tied to one person only."
-                   class="h3" textWrap="true"/>
+            <Label text="{{ L('score.title') }}" class="h1 text-center" textWrap="true"/>
+            <Label text="{{ L('score.desc') }}" class="h3" textWrap="true"/>
             <Label text="Attributes" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ attributes_rundown_label }}" class="fas h2" style="vertical-align: center;"/>

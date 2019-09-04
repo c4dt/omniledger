@@ -36,6 +36,7 @@
     "moment": "^2.24.0",
     "nativescript-barcodescanner": "^2.7.9",
     "nativescript-email": "^1.5.3",
+    "nativescript-localize": "^4.2.0",
     "nativescript-nodeify": "^0.8.0",
     "nativescript-orientation": "^2.2.1",
     "nativescript-phone": "^1.4.0",

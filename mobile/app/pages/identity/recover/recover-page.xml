@@ -37,12 +37,12 @@
                 </ListView>
             </ScrollView>
 
-            <Button text="Add Trustee" tap="addTrustee" class="btn" row="2"/>
+            <Button text="Add Trustee" tap="addTrustee" class="btn btn-primary" row="2"/>
 
-            <Button text="Recover User" tap="recoverUser" class="btn" row="3"
+            <Button text="Recover User" tap="recoverUser" class="btn btn-primary" row="3"
                     visibility="{{ isTrustee ? 'visible' : 'collapse' }}"/>
 
-            <Button text="Save Credential" tap="save" class="btn" row="4"
+            <Button text="Save Credential" tap="save" class="btn btn-primary" row="4"
                     visibility="{{ changed ? 'visible' : 'collapse' }}"/>
 
             <GridLayout rows="auto" row="5" class="network-progress-grid">

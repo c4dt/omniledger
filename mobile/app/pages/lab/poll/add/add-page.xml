@@ -70,7 +70,7 @@
                 </df:RadDataForm.groups>
             </df:RadDataForm>
 
-        <Button text="Save new poll" tap="save" class="btn" row="2"/>
+        <Button text="Save new poll" tap="save" class="btn btn-primary" row="2"/>
 
         <GridLayout rows="auto" row="1" class="network-progress-grid">
             <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">

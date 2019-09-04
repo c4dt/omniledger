@@ -1,10 +1,15 @@
-import { Frame, getFrameById, topmost } from "tns-core-modules/ui/frame";
+import { fromObject } from "data/observable";
+import { EventData, Frame, getFrameById, Page, topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
 import Log from "~/lib/cothority/log";
 import { msgFailed } from "~/lib/messages";
 
 export let frame: Frame;
+
+export function navigatingTo(args: EventData) {
+    (args.object as Page).bindingContext = fromObject({});
+}
 
 export function goPersonhood(args: GestureEventData) {
     frame = args.view.page.frame;
