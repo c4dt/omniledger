@@ -10,6 +10,6 @@
                textWrap="true"/>
         <Image src="{{ qrcode }}" visibility="visible" width="100%"
                tap="goBack"/>
-        <Button text="Done" tap="goBack" class="btn"/>
+        <Button text="Done" tap="goBack" class="btn btn-primary"/>
     </StackLayout>
 </Page>

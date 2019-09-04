@@ -14,6 +14,6 @@
                tap="tapUrl" textWrap="true"/>
         <Label text="Click on the attributes to call, send email, or open url." class="h3"
                textWrap="true"/>
-        <Button text="Close" tap="goBack" class="btn"/>
+        <Button text="Close" tap="goBack" class="btn btn-primary"/>
     </StackLayout>
 </Page>

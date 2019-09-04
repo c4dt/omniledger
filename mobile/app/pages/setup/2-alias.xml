@@ -10,14 +10,13 @@ Here the user can enter his alias
     </ActionBar>
     <ScrollView>
         <StackLayout class="p-20">
-            <Label text="Setting your identity" class="h1 text-center" textWrap="true"/>
-            <Label text="Let's start with getting to know you. The only required field is 'alias', but for more functionality, you should also fill out the email, the phone-number, and give an URL. Of course you can also do so later. All of this information will eventually be public on our servers."
-                   class="h2" textWrap="true"/>
+            <Label text="{{ L('presenting.identity' )}}" class="h1 text-center" textWrap="true"/>
+            <Label text="{{ L('presenting.identity_desc') }}" class="h3" textWrap="true"/>
             <df:RadDataForm id="myDataForm" source="{{ input }}">
                 <df:RadaForm.properties>
                     <df:EntityProperty name="alias"
-                                       displayName="Alias"
-                                       hintText="Enter Alias" index="0" labelWidth="60">
+                                       displayName="{{ L('presenting.alias') }}"
+                                       hintText="{{ L('presenting.alias_hint') }}" index="0" labelWidth="60">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -27,9 +26,11 @@ Here the user can enter his alias
                             </df:PropertyEditor>
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
-                    <df:EntityProperty name="email" index="1" hintText="Enter email">
+                    <df:EntityProperty name="email" index="1"
+                                       displayName="{{ L('presenting.email') }}"
+                                       hintText="{{ L('presenting.email_hint') }}">
                         <df:EntityProperty.editor>
-                            <df:PropertyEditor type="Email">
+                            <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
                                     <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
                                                             labelFontStyle="Italic" labelTextColor="#00695c"/>
@@ -37,9 +38,11 @@ Here the user can enter his alias
                             </df:PropertyEditor>
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
-                    <df:EntityProperty name="phone" index="2" hintText="Enter phone-#">
+                    <df:EntityProperty name="phone" index="2"
+                                       displayName="{{ L('presenting.phone') }}"
+                                       hintText="{{ L('presenting.phone_hint') }}">
                         <df:EntityProperty.editor>
-                            <df:PropertyEditor type="Phone">
+                            <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
                                     <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
                                                             labelFontStyle="Italic" labelTextColor="#00695c"/>
@@ -47,7 +50,9 @@ Here the user can enter his alias
                             </df:PropertyEditor>
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
-                    <df:EntityProperty name="url" index="2" hintText="Enter personal webpage">
+                    <df:EntityProperty name="url" index="2"
+                                       displayName="{{ L('presenting.url') }}"
+                                       hintText="{{ L('presenting.url_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -60,7 +65,7 @@ Here the user can enter his alias
                 </df:RadaForm.properties>
             </df:RadDataForm>
 
-            <Button text="Continue" tap="goNext" class="btn"/>
+            <Button text="Continue" tap="goNext" class="btn btn-primary"/>
         </StackLayout>
     </ScrollView>
 </Page>

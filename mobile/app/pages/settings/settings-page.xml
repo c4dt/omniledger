@@ -3,14 +3,15 @@
       navigatingTo="navigatingTo"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Settings"></Label>
+        <Label class="action-bar-title" text="{{ L('settings.title') }}"/>
     </ActionBar>
     <ScrollView>
         <GridLayout rows="auto, *, auto, auto">
             <StackLayout class="p-20" row="0">
                 <df:RadDataForm id="myDataForm" source="{{ admin }}">
                     <df:RadaForm.properties>
-                        <df:EntityProperty name="continuousScan" index="2">
+                        <df:EntityProperty name="continuousScan" index="2"
+                        displayName="{{ L('settings.continuousScan') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -26,7 +27,7 @@
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
                 <Button text="Share data" tap="shareData" class="btn btn-test"
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
-                <Button text="Save" tap="tapSave" class="btn"/>
+                <Button text="{{ L('settings.save') }}" tap="tapSave" class="btn btn-primary"/>
             </StackLayout>
 
             <StackLayout row="1">
@@ -48,7 +49,7 @@
                         <HtmlView html="Personhood is brought to you by <u>https://personhood.online</u>" class="h3"
                                   textWrap="true"
                                   width="60%" style="vertical-align: center;" tap="goPersonhood"/>
-                        <HtmlView html="You find the code on github: <u>https://github.com/dedis/personhood.online</u>"
+                        <HtmlView html="You find the code on github: <u>https://github.com/c4dt/omniledger</u>"
                                   class="h3"
                                   textWrap="true"
                                   width="60%" style="vertical-align: center;" tap="goGithub"/>

@@ -64,7 +64,7 @@
                     </df:RadaForm.properties>
                 </df:RadDataForm>
 
-                <Button text="Save" tap="tapSave" class="btn"/>
+                <Button text="Save" tap="tapSave" class="btn btn-primary"/>
             </StackLayout>
         </ScrollView>
 

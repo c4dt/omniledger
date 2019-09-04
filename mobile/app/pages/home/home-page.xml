@@ -2,7 +2,7 @@
       navigatingTo="navigatingToHome"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="{{ 'Welcome ' + alias }}"
+        <Label class="action-bar-title" text="{{ L('home.title', alias ) }}"
                textTransform="uppercase"/>
         <ActionItem tap="update" ios.position="right" android.position="actionBar">
             <ActionItem.actionView>
@@ -14,23 +14,6 @@
     <GridLayout>
         <ScrollView row="0">
             <GridLayout rows="*, auto, auto, auto">
-                <StackLayout row="0" visibility="collapse">
-                    <!--visibility="{{ hasCoins ? 'collapse' : 'visible' }}">-->
-                    <!--<Button text="{{ passport }}" ontap="changePass"/>-->
-                    <Label text="Your attributes:" class="h2 text-center"/>
-                    <ListView items="{{ attributes }}" class="list-group">
-                        <ListView.itemTemplate>
-                            <StackLayout class="{{ 'basic-list-decorated ' + bgcolor }}">
-                                <StackLayout orientation="horizontal">
-                                    <Label text="{{ name }}" class="h3"/>
-                                    <Label text=": " class="h3"/>
-                                    <Label text="{{ value }}" class="h3"/>
-                                </StackLayout>
-                            </StackLayout>
-                        </ListView.itemTemplate>
-                    </ListView>
-                </StackLayout>
-
                 <StackLayout class="p-20" row="1">
                     <FlexboxLayout justifyContent="center">
                         <StackLayout orientation="horizontal"
@@ -39,9 +22,9 @@
                                 <Label text="Popcoins" class="h2"/>
                                 <Label text="{{ 'Balance: ' + coins }}" class="h3"/>
                             </StackLayout>
-                            <Button text="Send coins" tap="coins" class="btn"/>
+                            <Button text="Send coins" tap="coins" class="btn btn-primary"/>
                         </StackLayout>
-                        <Label text="To register, get this QRCode scanned by somebody with popcoins, or go to a personhood-party."
+                        <Label text="{{ L('home.register') }}"
                                textWrap="true" class="h3"
                                visibility="{{ hasCoins ? 'collapse' : 'visible' }}"/>
                     </FlexboxLayout>
@@ -57,7 +40,7 @@
                 </StackLayout>
 
                 <StackLayout row="2" style="margin:30px;" tap="personhoodDesc">
-                    <Label text="{{ 'Your Personhood-score: ' + personhoodScore }}" class="h2"/>
+                    <Label text="{{ L('home.score', personhoodScore) }}" class="h2"/>
                     <GridLayout columns="auto, auto, auto, auto, auto, auto, auto, *" width="100%">
                         <Label width="{{ widthAttributes }}" text=" "
                                style="horizontal-align:left; opacity:0.5; background-color: #769ECB;"
@@ -90,7 +73,7 @@
                 </StackLayout>
 
                 <StackLayout row="3">
-                    <Button text="Start Meetup" tap="meetup" class="btn"/>
+                    <Button text="{{ L('home.meetup') }}" tap="meetup" class="btn"/>
                     <Button text="Cycle personhood" tap="cyclePersonhood" class="btn btn-test"
                             visibility="{{ testing ? 'visible' : 'collapse' }}"/>
                 </StackLayout>
