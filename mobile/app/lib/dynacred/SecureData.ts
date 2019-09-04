@@ -1,5 +1,3 @@
-import { randomBytes } from "crypto-browserify";
-import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { ByzCoinRPC, InstanceID } from "~/lib/cothority/byzcoin";
 import CoinInstance from "~/lib/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
@@ -9,6 +7,8 @@ import { IdentityDarc, IIdentity } from "~/lib/cothority/darc";
 import Signer from "~/lib/cothority/darc/signer";
 import Log from "~/lib/cothority/log";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
+import { randomBytes } from "crypto-browserify";
+import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
 import { KeyPair } from "./KeyPair";
 

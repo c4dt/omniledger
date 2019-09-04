@@ -10,17 +10,17 @@ import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
 import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
 import Darc from "@c4dt/cothority/darc/darc";
 import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import ISigner from "@c4dt/cothority/darc/signer";
 import Signer from "@c4dt/cothority/darc/signer";
+import ISigner from "@c4dt/cothority/darc/signer";
 import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
 import Log from "@c4dt/cothority/log";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
 } from "@c4dt/cothority/personhood/credentials-instance";
+import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
@@ -297,7 +297,8 @@ export class Data {
     meetups: SocialNode[] = [];
     // Non-stored fields
     recoverySignatures: RecoverySignature[] = [];
-    storage: IStorage;
+    storage: IStorage = StorageDB;
+    references: string[] = [];
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
@@ -348,6 +349,7 @@ export class Data {
                 null, null, null);
             this.contact = new Contact(cred, this);
         }
+        this.references = obj.references ? obj.references : [];
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
@@ -375,6 +377,7 @@ export class Data {
             parties: [] as any,
             personhoodPublished: this.personhoodPublished,
             polls: [] as any,
+            references: this.references,
             ropascis: [] as any,
         };
         if (this.bc) {
@@ -412,7 +415,10 @@ export class Data {
         Log.lvl1("Saving data to", this.dataFileName);
         await this.storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
-            this.contact.personhoodPub = this.keyPersonhood._public;
+            if (this.contact.personhoodPub &&
+                !this.contact.personhoodPub.equal(this.keyPersonhood._public)) {
+                this.contact.personhoodPub = this.keyPersonhood._public;
+            }
         }
         if (this.contact.isRegistered()) {
             Log.lvl2("Sending update to chain");
@@ -814,6 +820,16 @@ export class Data {
         Log.lvl2("finalizing data");
         await this.connectByzcoin();
         return this;
+    }
+
+    /**
+     * Returns the coins needed to create a new user
+     */
+    signupCost(): Long {
+        const c = this.spawnerInstance.costs;
+        return c.costCoin.value.mul(4).add(
+            c.costCredential.value).add(
+            c.costCoin.value);
     }
 
     /**

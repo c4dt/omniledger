@@ -210,6 +210,7 @@ export class RosterWSConnection {
                         order++;
 
                         if (order === 1) {
+                            Log.lvl3(idStr, "first to receive");
                             resolve(sub as T);
                         }
                     } catch (e) {

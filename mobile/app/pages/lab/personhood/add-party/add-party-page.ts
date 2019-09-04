@@ -55,8 +55,7 @@ export function onNavigatingTo(args: EventData) {
                 purpose: "",
             });
         }
-        // orgList = [uData.contact];
-        orgList = [{alias: "one"}, {alias: "two"}];
+        orgList = [uData.contact];
         updateModel();
         copyPartyToViewModel();
     } catch (e) {
@@ -124,6 +123,7 @@ export async function save() {
         const orgs = orgList.slice() as Contact[];
         // Verify that all organizers have published their personhood public key
         for (const org of orgs) {
+            Log.print(org);
             if (!org.personhoodPub) {
                 throw new Error(`One of the organisers didn't publish his personhood key`);
             }

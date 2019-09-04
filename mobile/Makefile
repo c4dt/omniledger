@@ -11,16 +11,21 @@ clean:
 android-dev: apply-patches
 	tns prepare android
 
-#android-release: apply-patches
-android-release:
-	#@if [ ! "$$PERSONHOOD_ANDROID_PASS" ]; then echo "Please set PERSONHOOD_ANDROID_PASS"; exit 1; fi
-	#@if grep -q "testingMode = true" app/lib/user-data.ts; then echo "\nPUT TESTING TO FALSE IN lib/user-data.ts !!\n"; exit 1; fi
-	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD_ANDROID_PASS \
-		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD_ANDROID_PASS --release
+android-check:
+	@if [ ! "$$PERSONHOOD2_ANDROID_PASS" ]; then echo "Please set PERSONHOOD2_ANDROID_PASS"; exit 1; fi
+	@if grep -q "testingMode = true" app/lib/user-data.ts; then echo "\nPUT TESTING TO FALSE IN lib/user-data.ts !!\n"; exit 1; fi
+
+android-release: apply-patches android-check
+	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 	@mkdir -p releases; \
-	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" )
+	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	cp platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
+
+android-run: android-check
+	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS
 
 release-key:
 	if [ -e c4dt-development.jks ]; then echo "Please remove c4dt-development.jks first"; exit 1; fi
