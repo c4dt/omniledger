@@ -1,3 +1,5 @@
+TODO
 - setup/1-present::scanDevice doesn't show progress
 - lab/personhood/add-party::save doesn't take data from RadForm
 - lab/ropasci/add::save has too short progress bar
+- settings/status doesn't show all nodes
