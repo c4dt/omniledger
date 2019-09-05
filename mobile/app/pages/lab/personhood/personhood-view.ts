@@ -31,7 +31,7 @@ export class PersonhoodView extends Observable {
     }
 
     sortUnique(input: IViewElement[]): IViewElement[] {
-        const c = input.map((i) => i).sort((a, b) => a.desc.datetime.compare(b.desc.datetime) * -1);
+        const c = input.slice().sort((a, b) => a.desc.datetime.compare(b.desc.datetime) * -1);
         return c.filter((re, i) =>
             c.findIndex((r) => r.desc.uniqueName === re.desc.uniqueName) === i);
     }
@@ -59,7 +59,6 @@ export class PersonhoodView extends Observable {
             .sort((a, b) => a.party.partyInstance.popPartyStruct.description.datetime.sub(
                 b.party.partyInstance.popPartyStruct.description.datetime).toNumber());
         if (this.parties.length > 0) {
-
             this.parties[0].setChosen(true);
         }
         this.notifyPropertyChange("elements", this.elements);
@@ -307,6 +306,7 @@ export class PartyView extends Observable {
                     if (this.party.partyInstance.popPartyStruct.state === PopPartyInstance.FINALIZED) {
                         elements.setProgress("Updating parties", 70);
                         await elements.updateParties();
+                        await elements.updateBadges();
                         await msgOK("Finalized the party");
                     } else {
                         elements.setProgress("Party finalized", 100);

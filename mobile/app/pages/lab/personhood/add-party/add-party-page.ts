@@ -76,8 +76,9 @@ function updateModel() {
  * @return {Date}
  */
 function copyViewModelToParty() {
-    const date = dataForm.date.split("-").map(parseInt);
-    const time = dataForm.time.split(":").map(parseInt);
+    const df = viewModel.get("dataForm");
+    const date = df.date.split("-").map((n) => parseInt(n, 10));
+    const time = df.time.split(":").map((n) => parseInt(n, 10));
 
     if (date.length !== 3 || time.length !== 2) {
         // tslint:disable:object-literal-sort-keys
@@ -94,9 +95,9 @@ function copyViewModelToParty() {
     const unix = new Date(date[0], date[1] - 1, date[2], time[0], time[1], 0, 0).getTime();
     newParty = new PopDesc({
         datetime: Long.fromNumber(unix),
-        location: dataForm.location,
-        name: dataForm.name,
-        purpose: dataForm.purpose,
+        location: df.location,
+        name: df.name,
+        purpose: df.purpose,
     });
 }
 
@@ -123,7 +124,6 @@ export async function save() {
         const orgs = orgList.slice() as Contact[];
         // Verify that all organizers have published their personhood public key
         for (const org of orgs) {
-            Log.print(org);
             if (!org.personhoodPub) {
                 throw new Error(`One of the organisers didn't publish his personhood key`);
             }
@@ -135,7 +135,7 @@ export async function save() {
             coin: uData.coinInstance,
             desc: newParty,
             orgs: orgs.map((org) => org.darcInstance.id),
-            reward: Long.fromNumber(dataForm.reward),
+            reward: Long.fromNumber(viewModel.get("dataForm").reward),
             signers: [uData.keyIdentitySigner],
         });
         const p = new PartyItem(ppi);

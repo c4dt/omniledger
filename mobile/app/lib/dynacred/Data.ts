@@ -624,10 +624,33 @@ export class Data {
         this.contacts = this.contacts.filter((u) => !u.equals(nu));
     }
 
+    async updateParties(): Promise<PartyItem[]> {
+        await Promise.all(this.parties.map(async (p) => p.partyInstance.update()));
+        // Move all finalized parties into badges
+        const parties: PartyItem[] = [];
+        this.parties.forEach((p) => {
+            if (p.state === PartyItem.finalized) {
+                if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
+                    k.equals(this.keyPersonhood._public.point.toProto()))) {
+                    this.badges.push(new Badge(p, this.keyPersonhood));
+                    Log.lvl2("added party to our badges");
+                } else {
+                    Log.lvl2("removing party that doesn't have our key stored");
+                }
+            } else {
+                parties.push(p);
+            }
+        });
+        this.parties = parties;
+        await this.save();
+        return this.parties;
+    }
+
     async reloadParties(): Promise<PartyItem[]> {
         const phrpc = new PersonhoodRPC(this.bc);
         const phParties = await phrpc.listParties();
         await Promise.all(phParties.map(async (php) => {
+            Log.lvl2("Searching party", php.instanceID);
             if (this.parties.find((p) => p.partyInstance.id.equals(php.instanceID)) == null) {
                 Log.lvl2("Found new party id", php.instanceID, this.bc.genesisID);
                 const ppi = await PopPartyInstance.fromByzcoin(this.bc, php.instanceID);
@@ -671,33 +694,11 @@ export class Data {
         return orgPers;
     }
 
-    async updateParties(): Promise<PartyItem[]> {
-        await Promise.all(this.parties.map(async (p) => p.partyInstance.update()));
-        // Move all finalized parties into badges
-        const parties: PartyItem[] = [];
-        this.parties.forEach((p) => {
-            if (p.state === PartyItem.finalized) {
-                if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
-                    k.equals(this.keyPersonhood._public.point.toProto()))) {
-                    this.badges.push(new Badge(p, this.keyPersonhood));
-                    Log.lvl2("added party to our badges");
-                } else {
-                    Log.lvl2("removing party that doesn't have our key stored");
-                }
-            } else {
-                parties.push(p);
-            }
-        });
-        this.parties = parties;
-        await this.save();
-        return this.parties;
-    }
-
     async addParty(p: PartyItem) {
         this.parties.push(p);
         const phrpc = new PersonhoodRPC(this.bc);
-        await this.save();
         await phrpc.listParties(p.toParty(this.bc));
+        await this.save();
     }
 
     async reloadRoPaScis(): Promise<RoPaSciInstance[]> {

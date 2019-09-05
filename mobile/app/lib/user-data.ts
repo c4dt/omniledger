@@ -7,7 +7,7 @@ import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = false;
+export let testingMode = true;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -64,8 +64,8 @@ async function bcTest(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("9ede188c4a6b264ca4ac2f1aa8461dbcd2a8694275c5785814a1e0d54849c4c4", "hex");
-    spawnerID = Buffer.from("8e49d72f67514625dc026b9969dfeefc94640394abc9b47af6f7de65dde62846", "hex");
+    byzCoinID = Buffer.from("5875c7c439602ca247175cc0cd93bba81f8603e90bbd8da3f717876b11b29ba8", "hex");
+    spawnerID = Buffer.from("dd2eb6e1389c13f8cdcf1a25d550375a9aa2c0211837deaf5823f9cee4c5b9ae", "hex");
 
     return ByzCoinRPC.fromByzcoin(testRoster, byzCoinID);
 }
