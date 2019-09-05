@@ -5,13 +5,14 @@ This is the presentation screen when the user is not signed up yet.
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="{{ L('presenting.title') }}"></Label>
     </ActionBar>
-    <ScrollView>
-        <GridLayout rows="*, auto" row="1" tap="cancelNetwork">
+    <GridLayout rows="*, auto" tap="cancelNetwork">
+        <ScrollView>
             <StackLayout class="p-20" row="0">
                 <Label text="{{ L('presenting.personhood') }}" class="h2 text-center"/>
                 <Label text="{{ L('presenting.personhood_desc') }}" class="h3" textWrap="true"/>
                 <StackLayout orientation="horizontal" style="horizontal-align: center;">
-                    <HtmlView html="{{ L('presenting.personhood_link') + ' <u>https://personhood.online</u>' }}" class="h3"
+                    <HtmlView html="{{ L('presenting.personhood_link') + ' <u>https://personhood.online</u>' }}"
+                              class="h3"
                               textWrap="true" width="60%" style="vertical-align: center;" tap="goPersonhood"/>
                     <Image src="~/images/icon-personhood-64.png" width="20%" tap="goPersonhood"/>
                 </StackLayout>
@@ -21,15 +22,15 @@ This is the presentation screen when the user is not signed up yet.
                 <Button text="{{ L('presenting.scan_device') }}" tap="scanDevice" class="btn"/>
                 <Button text="{{ L('presenting.recover') }}" tap="goRecover" class="btn"/>
             </StackLayout>
+        </ScrollView>
 
-            <GridLayout rows="auto" row="1" class="network-progress-grid">
-                <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
-                    <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
-                           id="progress_text"/>
-                    <Label row="0" width="100%" class="network-progress-bar"
-                           id="progress_bar" tap="setProgress"/>
-                </GridLayout>
+        <GridLayout rows="auto" row="1" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
             </GridLayout>
         </GridLayout>
-    </ScrollView>
+    </GridLayout>
 </Page>
