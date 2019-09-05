@@ -1,3 +1,8 @@
+import { Scalar } from "@dedis/kyber";
+import { randomBytes } from "crypto-browserify";
+import * as crypto from "crypto-browserify";
+import Long from "long";
+import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
@@ -8,11 +13,6 @@ import CredentialsInstance, { CredentialStruct } from "~/lib/cothority/personhoo
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { Sign } from "~/lib/cothority/personhood/ring-sig";
 import { registerMessage } from "~/lib/cothority/protobuf";
-import { Scalar } from "@dedis/kyber";
-import * as crypto from "crypto-browserify";
-import { randomBytes } from "crypto-browserify";
-import Long from "long";
-import { Message, Properties } from "protobufjs";
 
 /**
  * PersonhoodRPC interacts with the personhood service and all personhood-related contracts, like personhood-party,

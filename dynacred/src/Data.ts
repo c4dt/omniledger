@@ -415,7 +415,7 @@ export class Data {
         Log.lvl1("Saving data to", this.dataFileName);
         await this.storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
-            if (this.contact.personhoodPub &&
+            if (!this.contact.personhoodPub ||
                 !this.contact.personhoodPub.equal(this.keyPersonhood._public)) {
                 this.contact.personhoodPub = this.keyPersonhood._public;
             }

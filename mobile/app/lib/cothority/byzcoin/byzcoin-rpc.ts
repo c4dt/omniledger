@@ -30,6 +30,13 @@ export const currentVersion = 1;
 const CONFIG_INSTANCE_ID = Buffer.alloc(32, 0);
 
 export default class ByzCoinRPC implements ICounterUpdater {
+
+    get genesisID(): InstanceID {
+        return this.genesis.computeHash();
+    }
+
+    static staticCounters: Map<string, Map<string, Long>> = new Map<string, Map<string, Long>>();
+
     /**
      * Helper to create a genesis darc
      * @param signers       Authorized signers
@@ -107,17 +114,13 @@ export default class ByzCoinRPC implements ICounterUpdater {
 
         return rpc;
     }
-
     private genesisDarc: Darc;
     private config: ChainConfig;
     private genesis: SkipBlock;
     private latest: SkipBlock;
     private conn: IConnection;
 
-    protected constructor() {}
-
-    get genesisID(): InstanceID {
-        return this.genesis.computeHash();
+    protected constructor() {
     }
 
     /**
@@ -172,9 +175,21 @@ export default class ByzCoinRPC implements ICounterUpdater {
             transaction,
             version: currentVersion,
         });
+        const counters = this.counters();
 
         // The error might be in the response, so we look for it and then reject the promise.
         const resp = await this.conn.send(req, AddTxResponse) as AddTxResponse;
+        // If the transaction has been successful, we update all cached counters. If the transaction
+        // failed, all involved counters are reset and will have to be fetched again.
+        transaction.instructions.forEach((instruction) => {
+            instruction.signerIdentities.forEach((signer, i) => {
+                if (resp.error.length === 0) {
+                    counters.set(signer.toString(), instruction.signerCounter[i]);
+                } else {
+                    counters.delete(signer.toString());
+                }
+            });
+        });
         if (resp.error.length === 0) {
             return Promise.resolve(resp);
         }
@@ -284,7 +299,47 @@ export default class ByzCoinRPC implements ICounterUpdater {
         });
 
         const rep = await this.conn.send<GetSignerCountersResponse>(req, GetSignerCountersResponse);
+        const counters = this.counters();
+        ids.forEach((counter, i) => counters.set(counter.toString(), rep.counters[i]));
         return rep.counters.map((c) => c.add(add));
+    }
+
+    /**
+     * This keeps track of the know counters, thus speeding up signing with known keys. It
+     * also solves the problem of counters sometimes being out of synch with the chain.
+     * After the call returns, all signers are in ClientTransaction.counters.
+     *
+     * @param rpc should allow updates for counters
+     * @param signers the signers needed
+     */
+    async updateCachedCounters(signers: IIdentity[]): Promise<Long[]> {
+        const counters = this.counters();
+        const newSigners = signers.filter((signer) => {
+            return counters.has(signer.toString()) === false;
+        });
+        if (newSigners.length > 0) {
+            await this.getSignerCounters(newSigners, 0);
+        }
+        return signers.map((signer) => {
+            return counters.get(signer.toString());
+        });
+    }
+
+    /**
+     * Clears the counters, in case of an error.
+     */
+    clearCounters() {
+        this.counters().clear();
+    }
+
+    /**
+     * Returns the next value for the counter and updates the cache.
+     */
+    getNextCounter(signer: IIdentity): Long {
+        const counters = this.counters();
+        const c = counters.get(signer.toString()).add(1);
+        counters.set(signer.toString(), c);
+        return c;
     }
 
     /**
@@ -309,5 +364,13 @@ export default class ByzCoinRPC implements ICounterUpdater {
 
         const reply = await this.conn.send<CheckAuthorizationResponse>(req, CheckAuthorizationResponse);
         return reply.actions;
+    }
+
+    private counters(): Map<string, Long> {
+        const idStr = this.genesisID.toString("hex");
+        if (!ByzCoinRPC.staticCounters.has(idStr)) {
+            ByzCoinRPC.staticCounters.set(idStr, new Map<string, Long>());
+        }
+        return ByzCoinRPC.staticCounters.get(idStr);
     }
 }
