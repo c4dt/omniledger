@@ -64,7 +64,7 @@
 
         <Label text="" row="3"/>
 
-        <GridLayout rows="auto" row="4" class="network-progress-grid">
+        <GridLayout rows="auto" row="4" class="network-progress-grid" colSpan="3">
             <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
                 <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
                        id="progress_text"/>

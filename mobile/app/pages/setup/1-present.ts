@@ -43,7 +43,6 @@ export async function goInitTest(args: EventData) {
 
 export async function scanDevice() {
     const url = await scan("Scan device QRcode");
-    Log.print(url.text);
     if (!url.text.includes(Data.urlNewDevice)) {
         await msgFailed("Got wrong URL: " + url.text);
     }

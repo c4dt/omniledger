@@ -29,7 +29,6 @@ export async function updateParties() {
         elements.setProgress("Updating", 20);
         await elements.updateAddParty();
         await uData.reloadParties();
-        await uData.save();
         elements.setProgress("Updating Parties", 50);
         await elements.updateParties();
         elements.setProgress("Updating Badges", 75);
