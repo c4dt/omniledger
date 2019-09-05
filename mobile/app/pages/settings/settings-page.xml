@@ -5,13 +5,12 @@
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="{{ L('settings.title') }}"/>
     </ActionBar>
-    <ScrollView>
         <GridLayout rows="auto, *, auto, auto">
             <StackLayout class="p-20" row="0">
                 <df:RadDataForm id="myDataForm" source="{{ admin }}">
                     <df:RadaForm.properties>
                         <df:EntityProperty name="continuousScan" index="2"
-                        displayName="{{ L('settings.continuousScan') }}">
+                                           displayName="{{ L('settings.continuousScan') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -23,25 +22,21 @@
                         </df:EntityProperty>
                     </df:RadaForm.properties>
                 </df:RadDataForm>
+                <Button text="{{ L('settings.save') }}" tap="tapSave" class="btn btn-primary"/>
                 <Button text="Clear all data" tap="tapClear" class="btn btn-test"/>
-<!--                        visibility="{{ testing ? 'visible' : 'collapse' }}"/>-->
                 <Button text="Share data" tap="shareData" class="btn btn-test"
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
-                <Button text="{{ L('settings.save') }}" tap="tapSave" class="btn btn-primary"/>
             </StackLayout>
 
-            <StackLayout row="1">
-                <ListView items="{{ nodes }}" class="list-group"
-                          height="200" tap="{{ updateNodes }}">
-                    <ListView.itemTemplate>
-                        <FlexboxLayout orientation="horizontal" flexDirection="row"
-                                       class="basic-list-decorated"
-                                       alignItems="center">
-                            <Label text="{{ address + ' - ' + status }}" class="h3"/>
-                        </FlexboxLayout>
-                    </ListView.itemTemplate>
-                </ListView>
-            </StackLayout>
+            <ListView items="{{ nodes }}" class="list-group" row="1" tap="{{ updateNodes }}">
+                <ListView.itemTemplate>
+                    <FlexboxLayout orientation="horizontal" flexDirection="row"
+                                   class="basic-list-decorated"
+                                   alignItems="center">
+                        <Label text="{{ address + ' - ' + status }}" class="h3"/>
+                    </FlexboxLayout>
+                </ListView.itemTemplate>
+            </ListView>
 
             <StackLayout row="2">
                 <StackLayout orientation="horizontal" style="horizontal-align: center;">
@@ -60,5 +55,4 @@
 
             <Label text="Version 0.0.4" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
         </GridLayout>
-    </ScrollView>
 </Page>

@@ -7,7 +7,7 @@ import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = true;
+export let testingMode = false;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
