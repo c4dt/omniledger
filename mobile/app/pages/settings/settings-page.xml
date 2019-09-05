@@ -53,6 +53,6 @@
                 </StackLayout>
             </StackLayout>
 
-            <Label text="Version 0.0.4" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
+            <Label text="Version 0.0.5" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
         </GridLayout>
 </Page>
