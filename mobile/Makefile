@@ -5,7 +5,13 @@ npm-install: clean
 	npm ci
 	find app -name "*js" | xargs rm -f
 
-clean:
+gradle-simul:
+	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
+
+gradle-prod:
+	@( cd app/App_Resources/Android; cp app.gradle.prod app.gradle )
+
+clean: gradle-simul
 	rm -rf node_modules platforms hooks
 
 android-dev: apply-patches
@@ -15,15 +21,21 @@ android-check:
 	@if [ ! "$$PERSONHOOD2_ANDROID_PASS" ]; then echo "Please set PERSONHOOD2_ANDROID_PASS"; exit 1; fi
 	@if grep -q "testingMode = true" app/lib/user-data.ts; then echo "\nPUT TESTING TO FALSE IN lib/user-data.ts !!\n"; exit 1; fi
 
-android-release: android-check apply-patches
+update-version:
+	@REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
+	perl -pi -e "s/Version [^\"]*/Version $$REL/" app/pages/settings/settings-page.xml
+
+android-compile: gradle-prod update-version
 	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
 		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
+
+android-release: android-check apply-patches android-compile gradle-simul
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	cp platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
 
-android-run: android-check
+android-run: android-check gradle-simul
 	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
 		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS
 

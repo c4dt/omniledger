@@ -108,11 +108,11 @@ function quit() {
 async function again(args: EventData) {
     const actions = ["Again", "Delete"];
     // tslint:disable:object-literal-sort-keys
-    switch(await dialogs.action({
+    switch (await dialogs.action({
         title: "Network error",
         message: "Make sure you have a network connection. Do you want to try again?",
         cancelButtonText: "Quit",
-        actions
+        actions,
         // tslint:enable:object-literal-sort-keys
     })) {
         case actions[0]:
