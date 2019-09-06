@@ -31,13 +31,18 @@ export function friendsUpdateList() {
 export async function addFriend(args: GestureEventData) {
     try {
         const u = await scanNewUser(uData);
+        setProgress("Checking if user is registered", 20);
         await u.isRegistered();
+        setProgress("Updating all users", 40);
         friendsUpdateList();
+        setProgress("Saving new list", 80);
         await uData.save();
+        setProgress("Done", 100);
     } catch (e) {
         Log.catch(e);
         await msgFailed(e);
     }
+    setProgress();
 }
 
 export function setProgress(text: string = "", width: number = 0) {
