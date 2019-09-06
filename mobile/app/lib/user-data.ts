@@ -4,6 +4,7 @@ import Log from "~/lib/cothority/log";
 import { Roster } from "~/lib/cothority/network";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
 import { SkipBlock } from "~/lib/cothority/skipchain";
+import SkipchainRPC from "~/lib/cothority/skipchain/skipchain-rpc";
 import { Data } from "~/lib/dynacred";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
@@ -100,7 +101,14 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
         latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
         Log.lvl2("got stored latest skipblock");
     } catch (e) {
-        Log.lvl2("No skipblock stored yet ");
+        Log.lvl2("No skipblock stored yet - getting hardcoded one");
+        const scRPC = new SkipchainRPC(DEDISRoster);
+        const sb = await scRPC.getSkipBlockByIndex(byzCoinID, 13705);
+        if (sb.skipblock.computeHash()
+            .equals(Buffer.from("78ccc5d917514dc8ac03503659646dc6cff3f334d8a6165144770c9cf99ba1f6", "hex"))) {
+            Log.lvl2("Successfully got hardcoded block");
+            latest = sb.skipblock;
+        }
     }
     let newBC: ByzCoinRPC;
     try {
@@ -114,6 +122,7 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
         }
     }
     await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
+    Log.print(newBC.latest.index, newBC.latest.hash);
     return newBC;
 }
 
