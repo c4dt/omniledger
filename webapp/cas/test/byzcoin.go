@@ -61,6 +61,8 @@ func NewByzCoin(t *testing.T) ByzCoin {
 	client, _, err := byzcoin.NewLedger(genesisMsg, false)
 	require.NoError(t, err)
 
+	cl := *byzcoin.NewClient(client.ID, roster)
+	cl.UseNode(0) // FIXME avoid timeout in tests, remove when LocalTest.CloseAll is fixed
 	return ByzCoin{
 		cas.Config{
 			ByzCoinID: client.ID,
@@ -77,7 +79,7 @@ func NewByzCoin(t *testing.T) ByzCoin {
 		},
 		NewThinUser(admin, genesisMsg.GenesisDarc.GetBaseID()),
 		*l, t,
-		*byzcoin.NewClient(client.ID, roster),
+		cl,
 		nameCounters{0, 0},
 		make(map[ThinUser]uint),
 	}
