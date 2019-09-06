@@ -191,9 +191,5 @@ export async function coins(args: EventData) {
 }
 
 export async function switchHome(args: SelectedIndexChangedEventData) {
-    // This is only done for the "switchHome", not for the other "switch*", as "switchHome" is
-    // used as an entry-point by different code-paths to go from the "loading/setup"-view to the
-    // tab-view.
-    // let tv = <TabView> getFrameById("app-root").getViewById("mainTabView");
-    // tv.selectedIndex = 0;
+    setTimeout(() => update(), 1);
 }
