@@ -19,6 +19,8 @@ export let bc: ByzCoinRPC;
 export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
+// Version of the app - is automatically updated from AndroidManifest.xml
+export let appVersion = "0.1.3";
 
 // Returns an initialized BC or a failed promise if the given BC is not available.
 export async function initBC() {

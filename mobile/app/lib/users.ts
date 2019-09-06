@@ -20,11 +20,8 @@ export async function scanNewUser(d: Data): Promise<Contact> {
     const str = await scan("Scan Identity Code");
     // const str = {format: "QR_CODE", text: "test from qrcode"};
     Log.lvl2("Got scan:", str);
-    if (!str.format || str.format !== "QR_CODE") {
+    if (!str.format || ( str.format !== "QR_CODE" && str.format !== "org.iso.QRCode")) {
         throw(new Error("Did not find a QR code."));
     }
-    const user = await Contact.fromQR(d.bc, str.text);
-    await d.addContact(user);
-    await d.save();
-    return user;
+    return await Contact.fromQR(d.bc, str.text);
 }

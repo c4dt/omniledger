@@ -20,9 +20,9 @@ import { SkipBlock } from "./skipblock";
  */
 export default class SkipchainRPC {
     static serviceName = "Skipchain";
+    pool: IConnection;
 
-    private roster: Roster;
-    private pool: IConnection;
+    private readonly roster: Roster;
     private conn: IConnection[];
 
     constructor(roster: Roster) {

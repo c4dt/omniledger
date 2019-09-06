@@ -179,7 +179,11 @@ export async function update() {
 
 export async function coins(args: EventData) {
     try {
+        setProgress("Scanning new user", 1);
         const u = await scanNewUser(uData);
+        setProgress("Updating contact list", 10);
+        await uData.addContact(u);
+        await uData.save();
         await UserView.payUser(u, setProgress);
         await update();
         await uData.save();

@@ -23,7 +23,7 @@ android-check:
 
 update-version:
 	@REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
-	perl -pi -e "s/Version [^\"]*/Version $$REL/" app/pages/settings/settings-page.xml
+	perl -pi -e "s/appVersion.*/appVersion = \"$$REL\";/" app/lib/user-data.ts
 
 android-compile: update-version
 	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \

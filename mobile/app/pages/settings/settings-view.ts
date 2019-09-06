@@ -4,11 +4,12 @@ import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { StatusRPC } from "~/lib/cothority/status";
 import { Data } from "~/lib/dynacred";
-import { testingMode, uData } from "~/lib/user-data";
+import { appVersion, testingMode, uData } from "~/lib/user-data";
 
 export class AdminViewModel extends Observable {
     nodes: ObservableArray<Node> = new ObservableArray();
     testing: boolean = testingMode;
+    version = appVersion;
 
     constructor(d: Data) {
         super();

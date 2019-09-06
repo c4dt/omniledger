@@ -30,10 +30,10 @@ export function friendsUpdateList() {
 
 export async function addFriend(args: GestureEventData) {
     try {
+        setProgress("Scanning user", 10);
         const u = await scanNewUser(uData);
-        setProgress("Checking if user is registered", 20);
-        await u.isRegistered();
         setProgress("Updating all users", 40);
+        uData.addContact(u);
         friendsUpdateList();
         setProgress("Saving new list", 80);
         await uData.save();
