@@ -138,7 +138,8 @@ export class BadgeView extends Observable {
 
     async onTap(arg: GestureEventData) {
         const p = this.badge.party.partyInstance.popPartyStruct.description;
-        const details = [p.name, p.purpose, p.dateString, p.location].join("\n");
+        const details = [p.name.toUpperCase(), p.purpose,
+            p.dateString.replace(/:00$/, ""), p.location].join("\n");
         if (this.badge.mined) {
             return msgOK(details, "Details for badge");
         }
@@ -213,7 +214,7 @@ export class PartyView extends Observable {
         if (!this.chosen) {
             return null;
         }
-        return ["Go to party",
+        return ["Show up at party",
             "Get your qrcode scanned",
             "Mining coins"][this.party.state - 1];
     }

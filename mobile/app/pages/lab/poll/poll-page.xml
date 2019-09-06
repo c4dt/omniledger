@@ -22,7 +22,7 @@
                         <Label text="{{ 'Desc: ' + poll.description }}" class="h3"
                                row="1" col="0" textWrap="true"/>
                     </GridLayout>
-                    <GridLayout row="1" height="{{ height }}">
+                    <GridLayout row="1" height="{{ height }}" tap="{{ onTap }}">
                         <StackLayout row="0" style="padding: 5px; padding-top: 15px;">
                             <ListView items="{{ choices }}">
                                 <ListView.itemTemplate>
