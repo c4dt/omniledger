@@ -4,7 +4,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 
 import Log from "@c4dt/cothority/log";
 
-import { Data } from "@c4dt/dynacred";
+import { Data, StorageDB } from "@c4dt/dynacred";
 import { TProgress } from "@c4dt/dynacred";
 
 import { Router } from "@angular/router";
@@ -34,6 +34,7 @@ export class DeviceComponent implements OnInit {
                 async (progress: TProgress) => {
                     progress(50, "Attaching new device");
                     const newData = await Data.attachDevice(this.uData.bc, window.location.href);
+                    newData.storage = StorageDB;
                     await newData.save();
                     progress(-75, "Storing Credential");
                     await this.uData.load();

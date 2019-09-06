@@ -72,6 +72,7 @@ export class RegisterComponent implements OnInit {
                     Log.lvl1("creating user");
                     const ekStr = ephemeral;
                     const ek = Private.fromHex(ekStr);
+                    this.uData.storage = StorageDB;
                     if (darcID.length === 64 && alias.length > 0) {
                         Log.lvl2("creating FIRST user");
                         progress(30, "Creating First User");
