@@ -39,7 +39,6 @@ export async function navigatingTo(args: EventData) {
         await initBC();
         steps.push({text: "Connected"});
     } catch (e) {
-        Log.catch(e);
         if (testingMode) {
             const actions = ["Setup", "Init Byzcoin"];
             // tslint:disable:object-literal-sort-keys
@@ -85,7 +84,6 @@ export async function navigatingTo(args: EventData) {
             return appRootMain();
         }
     } catch (e) {
-        Log.catch(e);
         if (testingMode) {
             // This is a little bit dangerous, as a testing-setup could be destroyed if not handled
             // carefully. But as it's just a testing, this should be OK...

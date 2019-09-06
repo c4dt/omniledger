@@ -25,12 +25,17 @@ update-version:
 	@REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	perl -pi -e "s/Version [^\"]*/Version $$REL/" app/pages/settings/settings-page.xml
 
-android-compile: gradle-prod update-version
+android-compile: update-version
 	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
 		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 
-android-release: android-check apply-patches android-compile gradle-simul
+android-release: gradle-prod android-check apply-patches android-compile gradle-simul
+	@mkdir -p releases; \
+	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
+	cp platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
+
+android-release-32: gradle-simul android-check apply-patches android-compile
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	cp platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
