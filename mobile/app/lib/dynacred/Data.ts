@@ -431,7 +431,6 @@ export class Data {
         if (!(this.coinInstance && this.spawnerInstance)) {
             throw new Error("Cannot sign up a contact without coins and spawner");
         }
-        await this.coinInstance.update();
         if (amount.lessThanOrEqual(0)) {
             throw new Error("Cannot send 0 or less coins");
         }

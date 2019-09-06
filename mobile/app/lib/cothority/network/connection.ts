@@ -145,7 +145,7 @@ export class RosterWSConnection {
      * @param service   The name of the service to reach
      * @param parallel how many nodes to contact in parallel
      */
-    constructor(r: Roster, private service: string, parallel: number = 3) {
+    constructor(r: Roster, private service: string, parallel: number = 2) {
         if (parallel < 1) {
             throw new Error("parallel must be >= 1");
         }

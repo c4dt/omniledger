@@ -62,6 +62,7 @@ export class UserView extends Observable {
 
     static async payUser(u: Contact, progress: any) {
         try {
+            progress("Check if user is registered", 15);
             if (!u.isRegistered()) {
                 if (await uData.canPay(uData.signupCost())) {
                     // tslint:disable:object-literal-sort-keys
@@ -74,15 +75,22 @@ export class UserView extends Observable {
                         cancelButtonText: "No, don't pay",
                     });
                     if (pay) {
+                        progress("Register user", 20);
                         await uData.registerContact(u, Long.fromNumber(0), progress);
                     }
-                    await u.isRegistered();
+                    if (!(await u.isRegistered())) {
+                        throw new Error("registration failed");
+                    }
+                    progress("User registered", 30);
                     await msgOK(u.alias + " is now registered and can be paid.");
                     uData.references.push(u.alias);
+                    progress("Saving data", 40);
                     await uData.save();
                 } else {
+                    progress("Refused to pay", -100);
                     await msgFailed("The use you want to pay is unregistered. " +
                         "You do not have enough coins to invite an unregistered user.");
+                    progress();
                     return;
                 }
             }
@@ -135,9 +143,19 @@ export class UserView extends Observable {
             okButtonText: "Remove",
             cancelButtonText: "Keep",
         })) {
-            uData.rmContact(this._user);
-            friendsUpdateList();
-            await uData.save();
+            try {
+                setProgress("Deleting user from internal list", 20);
+                uData.rmContact(this._user);
+                setProgress("Updating all other users", 40);
+                friendsUpdateList();
+                setProgress("Saving list to ByzCoin", 60);
+                await uData.save();
+                setProgress("Done", 100);
+            } catch (e) {
+                Log.catch(e);
+                setProgress(e.toString(), -100);
+            }
+            setProgress();
         }
     }
 
@@ -149,14 +167,11 @@ export class UserView extends Observable {
     }
 
     async payThisUser(arg: ItemEventData) {
-        UserView.payUser(this._user, setProgress);
+        await UserView.payUser(this._user, setProgress);
     }
 
     async credUser(arg: ItemEventData) {
         try {
-            if (!this._user.isRegistered()) {
-                await this._user.isRegistered();
-            }
             setProgress("Fetching latest " + this._user.alias, 33);
             await this._user.updateOrConnect(uData.bc);
             setProgress("Saving data", 66);

@@ -17,6 +17,7 @@ application.setResources({L: localize});
 
 // iOS has one less frame that needs to be unwound than Android does.
 if (isIOS) {
+    Log.print("are in iOS");
     Log.stackFrameOffset = -1;
 }
 

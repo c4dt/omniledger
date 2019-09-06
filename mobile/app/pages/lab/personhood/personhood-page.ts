@@ -27,7 +27,9 @@ export async function navigatingTo(args: EventData) {
 export async function updateParties() {
     try {
         elements.setProgress("Updating", 20);
+        Log.print("looking if we can pay");
         await elements.updateAddParty();
+        Log.print("reloading parties");
         await uData.reloadParties();
         elements.setProgress("Updating Parties", 50);
         await elements.updateParties();

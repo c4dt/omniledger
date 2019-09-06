@@ -19,7 +19,7 @@ import { Data } from "~/lib/dynacred";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { StorageFile } from "~/lib/storage-file";
-import { initBC, loadData, newByzCoin, testingMode, uData } from "~/lib/user-data";
+import {appVersion, initBC, loadData, newByzCoin, testingMode, uData} from "~/lib/user-data";
 
 declare const exit: (code: number) => void;
 
@@ -35,6 +35,9 @@ export async function navigatingTo(args: EventData) {
 
     Log.lvl1("Connecting to ByzCoin");
     try {
+        steps.push({text: "Got version: " + appVersion});
+        steps.push({text: "Testing network"});
+
         steps.push({text: "Connecting to ByzCoin"});
         await initBC();
         steps.push({text: "Connected"});
