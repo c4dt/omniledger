@@ -44,7 +44,7 @@
       "preuve de ton identité humaine. "
     ],
     "next_steps": [
-      "Une fois sur la blockchain, tu peux aussi jouer à 'feuille-caillou-sciseau'. Si tu as une prevued de ton ",
+      "Une fois sur la blockchain, tu peux aussi jouer à 'feuille-caillou-ciseau'. Si tu as une prevued de ton ",
       "humanité, tu peux aussi participer aux questionnaires anonymes"
     ],
     "go_main": "Commencer le fun"
@@ -70,7 +70,7 @@
   "lab": {
     "title": "Labo des génies",
     "personhood": "Personhood",
-    "ropasci": "Feuille-caillou-sciseau",
+    "ropasci": "Feuille-caillou-ciseau",
     "poll": "Questionnaires anonymes"
   },
   "settings": {
@@ -99,8 +99,8 @@
     "parties": "parties",
     "parties_improve": "Visite une personhood party et fais enregistrer ton identité.",
     "parties_done": "Salut humain!",
-    "ropascis": "feuille-caillou-sciseau",
-    "ropascis_improve": "Joue des feuille-caillou-sciseau.",
+    "ropascis": "feuille-caillou-ciseau",
+    "ropascis_improve": "Joue des feuille-caillou-ciseau.",
     "ropascis_done": "Joli jouer",
     "polls": "questionnaires",
     "polls_improve": "Réponds à des questionnaires pour augmenter ton score.",
