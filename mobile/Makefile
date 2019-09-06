@@ -51,12 +51,12 @@ ios-dev: apply-patches
 ios-release: apply-patches
 	tns prepare ios --release
 	rm -rf platforms/ios/build
-	xcodebuild -workspace platforms/ios/personhoodonline.xcworkspace -scheme personhoodonline -destination generic/platform=iOS archive -archivePath `pwd`/platforms/ios/build/personhood.xcarchive
-	xcodebuild -exportArchive -archivePath `pwd`/platforms/ios/build/personhood.xcarchive -exportOptionsPlist app/App_Resources/iOS/ExportOptions.plist -exportPath `pwd`/platforms/ios/build
-	ls -l `pwd`/platforms/ios/build/personhoodonline.ipa
+	xcodebuild -workspace platforms/ios/mobile.xcworkspace -scheme mobile -destination generic/platform=iOS archive -archivePath `pwd`/platforms/ios/build/mobile.xcarchive
+	xcodebuild -exportArchive -archivePath `pwd`/platforms/ios/build/mobile.xcarchive -exportOptionsPlist app/App_Resources/iOS/ExportOptions.plist -exportPath `pwd`/platforms/ios/build
+	ls -l `pwd`/platforms/ios/build/mobile.ipa
 
 xcode-dev: ios-dev
-	open platforms/ios/personhoodonline.xcworkspace/
+	open platforms/ios/mobile.xcworkspace/
 
 
 

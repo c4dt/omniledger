@@ -1,4 +1,18 @@
 TODO
+- very slow startup
+- on android deploy, owner's key cannot be added in party when activating barrier point
+- chromium: [INFO:library_loader_hooks.cc(163)] Chromium logging enabled: level = 0, default verbosity = 0
+  JS: C : ropasci-view.js:83:17 -> (Cannot read property 'setInlineStyle' of undefined)
+  JS: C : ropasci-page.js:77:48 -> ()
+  JS: C : ropasci-page.js:37:23 -> ()
+  JS: C : ropasci-page.js:18:53 -> ()
+  JS: C : ropasci-page.js:12:71 -> ()
+  JS: C : <anonymous>          -> ()
+  JS: C : ropasci-page.js:8:12 -> ()
+  JS: C : ropasci-page.js:71:12 -> ()
+  JS: C : ropasci-page.js:63:53 -> ()
+  JS: C : timer.js:19:48       -> ()
+
 
 DONE:
 - 190905:

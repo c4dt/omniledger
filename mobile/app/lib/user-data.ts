@@ -1,7 +1,9 @@
 import { InstanceID } from "~/lib/cothority/byzcoin";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
+import Log from "~/lib/cothority/log";
 import { Roster } from "~/lib/cothority/network";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
+import { SkipBlock } from "~/lib/cothority/skipchain";
 import { Data } from "~/lib/dynacred";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
@@ -64,10 +66,21 @@ async function bcTest(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("5875c7c439602ca247175cc0cd93bba81f8603e90bbd8da3f717876b11b29ba8", "hex");
-    spawnerID = Buffer.from("dd2eb6e1389c13f8cdcf1a25d550375a9aa2c0211837deaf5823f9cee4c5b9ae", "hex");
+    byzCoinID = Buffer.from("dbcf079c965c7ef41643d878ac62c5bbd1ab28485b710d1fca98bff992aaf565", "hex");
+    spawnerID = Buffer.from("af02c7074acd0d5fb0094cadb63b7ee1faf8cde10a402f9127675dffb92899d8", "hex");
 
-    return ByzCoinRPC.fromByzcoin(testRoster, byzCoinID);
+    let latest: SkipBlock;
+    try {
+        const latestBuf = await StorageFile.get("latest");
+        latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
+        Log.lvl2("got stored latest skipblock");
+    } catch (e) {
+        Log.lvl2("No skipblock stored yet");
+    }
+    const newBC = await ByzCoinRPC.fromByzcoin(testRoster, byzCoinID, 0, 1000, latest);
+    Log.print("latest is:", latest.index, newBC.latest.index);
+    await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
+    return newBC;
 }
 
 // Connects to the production ByzCoin instance of the DEDIS lab.
@@ -81,7 +94,27 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
     byzCoinID = Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex");
     spawnerID = Buffer.from("ebc32cc89129c7542cdb8991585756be48ea4bd2869d939898f5413e7f757d96", "hex");
 
-    return ByzCoinRPC.fromByzcoin(DEDISRoster, byzCoinID);
+    let latest: SkipBlock;
+    try {
+        const latestBuf = await StorageFile.get("latest");
+        latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
+        Log.lvl2("got stored latest skipblock");
+    } catch (e) {
+        Log.lvl2("No skipblock stored yet ");
+    }
+    let newBC: ByzCoinRPC;
+    try {
+        newBC = await ByzCoinRPC.fromByzcoin(DEDISRoster, byzCoinID, 0, 1000, latest);
+    } catch (e) {
+        if (latest) {
+            Log.warn("probably wrong latest");
+            newBC = await ByzCoinRPC.fromByzcoin(DEDISRoster, byzCoinID);
+        } else {
+            throw new Error(e);
+        }
+    }
+    await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
+    return newBC;
 }
 
 // tslint:disable
