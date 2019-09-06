@@ -6,9 +6,9 @@ logic, and to set up your page’s data binding.
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as application from "tns-core-modules/application";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/page";
 import { appRootMain, appRootSetup } from "~/app-root";
@@ -19,7 +19,7 @@ import { Data } from "~/lib/dynacred";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { StorageFile } from "~/lib/storage-file";
-import {appVersion, initBC, loadData, newByzCoin, testingMode, uData} from "~/lib/user-data";
+import { appVersion, initBC, loadData, newByzCoin, testingMode, uData } from "~/lib/user-data";
 
 declare const exit: (code: number) => void;
 

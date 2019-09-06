@@ -8,8 +8,8 @@
   <string name="_score_polls_improve_8muwd">"Réponds à des questionnaires pour augmenter ton score."</string>
   <string name="_score_polls_wrtdj">"questionnaires"</string>
   <string name="_score_ropascis_done_1UHneY">"Joli jouer"</string>
-  <string name="_score_ropascis_improve_Z104AqI">"Joue des feuille-caillou-sciseau."</string>
-  <string name="_score_ropascis_1DOwyI">"feuille-caillou-sciseau"</string>
+  <string name="_score_ropascis_improve_Z104AqI">"Joue des feuille-caillou-ciseau."</string>
+  <string name="_score_ropascis_1DOwyI">"feuille-caillou-ciseau"</string>
   <string name="_score_parties_done_1wu51c">"Salut humain!"</string>
   <string name="_score_parties_improve_ZgNuzl">"Visite une personhood party et fais enregistrer ton identité."</string>
   <string name="_score_parties_2essaS">"parties"</string>
@@ -30,7 +30,7 @@
   <string name="_settings_continuousScan_2qpYXX">"Scan continu"</string>
   <string name="_settings_title_1A1C8V">"Préférences"</string>
   <string name="_lab_poll_Z2n9YEK">"Questionnaires anonymes"</string>
-  <string name="_lab_ropasci_BQTec">"Feuille-caillou-sciseau"</string>
+  <string name="_lab_ropasci_BQTec">"Feuille-caillou-ciseau"</string>
   <string name="_lab_personhood_Z2rhgUc">"Personhood"</string>
   <string name="_lab_title_2v9QnO">"Labo des génies"</string>
   <string name="_identity_recover_2lhpML">"Récup\'"</string>
@@ -46,7 +46,7 @@
   <string name="_main_identity_zVwv0">"Identité"</string>
   <string name="_main_home_ZlpP4b">"Accueil"</string>
   <string name="_presenting_go_main_Z1c3nQY">"Commencer le fun"</string>
-  <string name="_presenting_next_steps_1FIudp">"Une fois sur la blockchain, tu peux aussi jouer à \'feuille-caillou-sciseau\'. Si tu as une prevued de ton humanité, tu peux aussi participer aux questionnaires anonymes"</string>
+  <string name="_presenting_next_steps_1FIudp">"Une fois sur la blockchain, tu peux aussi jouer à \'feuille-caillou-ciseau\'. Si tu as une prevued de ton humanité, tu peux aussi participer aux questionnaires anonymes"</string>
   <string name="_presenting_parties_Z2mdUEO">"Il faut maintenant visiter une rencontre personhood. Ceci va prouver que tu es une personne unique et va te permettre de te connecter à notre blockchain. Une fois connectée, tu recevras des jetons plus une preuve de ton identité humaine. "</string>
   <string name="_presenting_congrats_Se1wl">"Félicitations! Tu es prêts. Pour le moment, toutes tes données sont encore confinées à ton téléphone. Mais tu peux déjà faire des \'rencontres\' et échanger ton identité."</string>
   <string name="_presenting_asis_1Uisj1">"Ce logiciel est donné sans garanties. Pour le moment, toutes tes données sont enregistré en clair sur la blockchain du DEDIS. Les appels ne sont pas protégés, vos jetons peuvent disparaître. Merci de participer sur github.com/c4dt/omniledger"</string>
@@ -70,7 +70,6 @@
   <string name="_app_name_1k3Sbz">"Personhood II"</string>
   <string name="app_name">"Personhood II"</string>
   <string name="title_activity_kimera">"Personhood II"</string>
-  <string name="_score_rpascis_ZfDY27">"score.rpascis"</string>
   <string name="fasd">"fasd"</string>
   <string name="greet">"greet"</string>
 </resources>

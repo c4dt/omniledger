@@ -33,12 +33,12 @@ android-compile: update-version
 android-release: gradle-prod android-check apply-patches android-compile gradle-simul
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
-	cp platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
+	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
 
 android-release-32: gradle-simul android-check apply-patches android-compile
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
-	cp platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
+	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2-32.$$REL.apk
 
 android-run: android-check gradle-simul
 	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
