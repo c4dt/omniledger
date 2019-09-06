@@ -40,6 +40,7 @@ export async function addFriend(args: GestureEventData) {
         setProgress("Done", 100);
     } catch (e) {
         Log.catch(e);
+        setProgress(e.toString(), -100);
         await msgFailed(e);
     }
     setProgress();

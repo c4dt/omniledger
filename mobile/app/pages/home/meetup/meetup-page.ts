@@ -19,7 +19,7 @@ import Timeout = NodeJS.Timeout;
 let identity: MeetupView;
 let page: Page;
 let phrpc: PersonhoodRPC;
-let interval: Timeout;
+let interval: any;
 let counter: number;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
@@ -57,21 +57,31 @@ export async function meetupUpdate() {
 }
 
 export async function addContacts() {
-    clearInterval(interval);
-    interval = null;
+    if (interval) {
+        clearInterval(interval);
+        interval = null;
+    }
     if (identity.users.length === 0) {
         await msgFailed("Need at least one other attendee to have a meetup", "Empty Meetup");
     } else {
         try {
+            setProgress("Fetching all contacts", 10);
             uData.meetups.push(new SocialNode(identity.users));
+            let perc = 20;
             for (const user of identity.users) {
+                setProgress("Fetching " + user.alias, perc);
+                perc += 70 / identity.users.length;
                 uData.addContact(await Contact.fromUserLocation(uData.bc, user));
             }
+            setProgress("Saving", 90);
             await uData.save();
+            setProgress("Done", 100);
         } catch (e) {
             Log.catch(e);
+            setProgress(e.toString(), -100);
             await msgFailed("Couldn't add contacts from meetup: " + e.toString());
         }
+        setProgress();
     }
     topmost().goBack();
 }
