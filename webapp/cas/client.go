@@ -1,4 +1,4 @@
-package main
+package cas
 
 import (
 	"go.dedis.ch/cothority/v3/byzcoin"

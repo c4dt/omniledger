@@ -7,9 +7,11 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/c4dt/omniledger/webapp/cas"
 )
 
-func getRouter(cas CAS) *gin.Engine {
+func getRouter(cas cas.CAS) *gin.Engine {
 	const baseURL = "http://localhost:4200"
 
 	redirectWithPath := func(getPath func(*gin.Context) string) func(*gin.Context) {
@@ -60,7 +62,7 @@ func getRouter(cas CAS) *gin.Engine {
 	return r
 }
 
-func getCASFromOsArgs() CAS {
+func getCASFromOsArgs() cas.CAS {
 	if len(os.Args) != 2 {
 		log.Fatalf("usage: %s config.toml", os.Args[0])
 	}
@@ -69,12 +71,12 @@ func getCASFromOsArgs() CAS {
 		log.Fatal(err)
 	}
 
-	conf, err := ParseConfig(toml)
+	conf, err := cas.ParseConfig(toml)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return NewCAS(*conf)
+	return cas.NewCAS(*conf)
 }
 
 func main() {

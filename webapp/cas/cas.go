@@ -1,4 +1,4 @@
-package main
+package cas
 
 // CAS implement some CAS calls.
 type CAS struct {

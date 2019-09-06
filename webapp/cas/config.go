@@ -1,4 +1,4 @@
-package main
+package cas
 
 import (
 	"crypto/sha256"
@@ -52,8 +52,8 @@ func parseSkipBlockID(raw string) (skipchain.SkipBlockID, error) {
 
 func parseTicketEncoding(raw string) (TicketDecoder, error) {
 	switch raw {
-	case "base64":
-		return base64.StdEncoding.DecodeString, nil
+	case "base64url":
+		return base64.URLEncoding.DecodeString, nil
 	default:
 		return nil, errors.New("unable to find TicketEncoding")
 	}
