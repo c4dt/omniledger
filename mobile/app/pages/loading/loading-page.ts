@@ -6,9 +6,11 @@ logic, and to set up your page’s data binding.
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
+import { ObservableArray } from "data/observable-array";
 import * as application from "tns-core-modules/application";
-import { EventData } from "tns-core-modules/data/observable";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
+import { Page } from "ui/page";
 import { appRootMain, appRootSetup } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
@@ -27,10 +29,15 @@ declare const exit: (code: number) => void;
 export async function navigatingTo(args: EventData) {
     Log.lvl2("navigatingTo: loading-page");
     setFactory((path: string): WebSocketAdapter => new NativescriptWebSocketAdapter(path));
+    const steps = new ObservableArray();
+    const page = args.object as Page;
+    page.bindingContext = {steps};
 
     Log.lvl1("Connecting to ByzCoin");
     try {
+        steps.push({text: "Connecting to ByzCoin"});
         await initBC();
+        steps.push({text: "Connected"});
     } catch (e) {
         Log.catch(e);
         if (testingMode) {
@@ -66,7 +73,9 @@ export async function navigatingTo(args: EventData) {
 
     Log.lvl1("Loading data");
     try {
+        steps.push({text: "Loading Data"});
         await loadData();
+        steps.push({text: "Data loaded"});
 
         if (!uData.contact.alias || uData.contact.alias === "new identity") {
             Log.lvl1("Looks like an empty data - going for setup");

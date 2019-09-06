@@ -3,6 +3,7 @@ import { Rule } from "../darc";
 import Darc from "../darc/darc";
 import IdentityEd25519 from "../darc/identity-ed25519";
 import IdentityWrapper, { IIdentity } from "../darc/identity-wrapper";
+import Log from "../log";
 import { IConnection, RosterWSConnection, WebSocketConnection } from "../network/connection";
 import { Roster } from "../network/proto";
 import { SkipBlock } from "../skipchain/skipblock";
@@ -67,18 +68,20 @@ export default class ByzCoinRPC implements ICounterUpdater {
      * @param skipchainID   The genesis block identifier
      * @param waitMatch how many times to wait for a match - useful if its called just after an addTransactionAndWait.
      * @param interval how long to wait between two attempts in waitMatch.
+     * @param latest if given, use this to prove the current state of the blockchain. Needs to be trusted!
      * @returns a promise that resolves with the initialized ByzCoin instance
      */
-    static async fromByzcoin(roster: Roster, skipchainID: Buffer, waitMatch: number = 0, interval: number = 1000):
+    static async fromByzcoin(roster: Roster, skipchainID: Buffer, waitMatch: number = 0, interval: number = 1000,
+                             latest: SkipBlock = null):
         Promise<ByzCoinRPC> {
         const rpc = new ByzCoinRPC();
         rpc.conn = new RosterWSConnection(roster, "ByzCoin");
 
         const skipchain = new SkipchainRPC(roster);
         rpc.genesis = await skipchain.getSkipBlock(skipchainID);
-        rpc.latest = rpc.genesis;
+        rpc.latest = latest ? latest : rpc.genesis;
 
-        const ccProof = await rpc.getProof(CONFIG_INSTANCE_ID, waitMatch, interval);
+        const ccProof = await rpc.getProofFromLatest(CONFIG_INSTANCE_ID, waitMatch, interval);
         rpc.config = ChainConfig.fromProof(ccProof);
 
         const di = await DarcInstance.fromByzcoin(rpc, ccProof.stateChangeBody.darcID, waitMatch, interval);
@@ -114,10 +117,10 @@ export default class ByzCoinRPC implements ICounterUpdater {
 
         return rpc;
     }
+    latest: SkipBlock;
     private genesisDarc: Darc;
     private config: ChainConfig;
     private genesis: SkipBlock;
-    private latest: SkipBlock;
     private conn: IConnection;
 
     protected constructor() {

@@ -501,19 +501,26 @@ export class Contact {
         this.contactsCache = [];
         if (csBuf) {
             let hasFaulty: boolean = false;
+            const contactsBuf: Buffer[] = [];
             for (let c = 0; c < csBuf.length; c += 32) {
-                try {
-                    const d = new Date();
-                    const cont = await Contact.fromByzcoin(this.bc, csBuf.slice(c, c + 32), false);
-                    Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
-                    this.contactsCache.push(cont);
-                } catch (e) {
-                    Log.error("couldn't get contact - removing contact from the list");
-                    hasFaulty = true;
-                }
+                contactsBuf.push(csBuf.slice(c, c + 32));
             }
+            this.contactsCache = await Promise.all(contactsBuf.map((buf) => {
+                return new Promise<Contact>(async (resolve) => {
+                    try {
+                        const d = new Date();
+                        const cont = await Contact.fromByzcoin(this.bc, buf, false);
+                        Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
+                        resolve(cont);
+                    } catch (e) {
+                        Log.error("couldn't get contact - removing contact from the list");
+                        hasFaulty = true;
+                        resolve(null as Contact);
+                    }
+                });
+            }));
             if (hasFaulty) {
-                this.contacts = this.contactsCache;
+                this.contacts = this.contactsCache.filter((c) => c != null);
             }
         }
     }
