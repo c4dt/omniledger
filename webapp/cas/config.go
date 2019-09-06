@@ -76,8 +76,8 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 	var tomlConf struct {
 		ByzCoinID string
 		Servers   []struct {
-			Address       network.Address
-			Suite, Public string
+			Address            network.Address
+			Suite, Public, URL string
 		}
 
 		ServiceToCoinInstanceIDs map[string]string
@@ -110,7 +110,9 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 			return nil, err
 		}
 
-		servers[i] = network.NewServerIdentity(point, s.Address)
+		id := network.NewServerIdentity(point, s.Address)
+		id.URL = s.URL
+		servers[i] = id
 	}
 
 	ticketDecoder, err := parseTicketEncoding(tomlConf.TicketEncoding)
