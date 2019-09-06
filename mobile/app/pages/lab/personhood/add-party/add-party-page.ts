@@ -31,7 +31,6 @@ const viewModel = fromObject({
     dataForm,
     networkStatus: null,
     orgList,
-    readOnly: false,
 });
 
 export function onNavigatingTo(args: EventData) {
@@ -67,7 +66,7 @@ export function onNavigatingTo(args: EventData) {
 // recognize new data when it points to the same object, so the viewModel.set method
 // needs to take a copoy of the data.
 function updateModel() {
-    viewModel.set("dataForm", Object.assign({}, dataForm));
+    viewModel.set("dataForm", dataForm);
     viewModel.set("orgList", orgList.slice());
 }
 
@@ -162,6 +161,7 @@ export async function addOrg(args: any) {
     // tslint:enable:object-literal-sort-keys
     const org = uData.contacts.find((f) => f.alias === result);
     if (org != null) {
+        await org.updateOrConnect(uData.bc);
         orgList.push(org);
         updateModel();
     }

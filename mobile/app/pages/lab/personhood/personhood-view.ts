@@ -290,11 +290,11 @@ export class PartyView extends Observable {
                 case BARRIER:
                     elements.setProgress("Activating Barrier Point", 50);
                     await this.party.partyInstance.activateBarrier([uData.keyIdentitySigner]);
-                    const orgKeys = await uData.fetchOrgKeys(this.party.partyInstance);
-                    orgKeys.forEach((key) => this.party.partyInstance.addAttendee(key));
                     elements.setProgress();
                     break;
                 case SCAN:
+                    const orgKeys = await uData.fetchOrgKeys(this.party.partyInstance);
+                    orgKeys.forEach((key) => this.party.partyInstance.addAttendee(key));
                     return topmost().navigate({
                         context: this.party,
                         moduleName: "pages/lab/personhood/scan-atts/scan-atts-page",

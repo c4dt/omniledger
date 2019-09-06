@@ -46,6 +46,8 @@ export class PopPartyInstance extends Instance {
         const ids = darcIDs.map((di) => new IdentityDarc({id: di}));
         const darc = Darc.createBasic(ids, ids, Buffer.from(desc));
         ids.forEach((id) => {
+            // The "invoke:finalize" is in fact an error in the pop-contract :(
+            darc.addIdentity("invoke:finalize", id, Rule.OR);
             darc.addIdentity("invoke:popParty.barrier", id, Rule.OR);
             darc.addIdentity("invoke:popParty.finalize", id, Rule.OR);
             darc.addIdentity("invoke:popParty.addParty", id, Rule.OR);

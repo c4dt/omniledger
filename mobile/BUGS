@@ -1,5 +1,4 @@
 TODO
-- very slow startup
 - on android deploy, owner's key cannot be added in party when activating barrier point
 - chromium: [INFO:library_loader_hooks.cc(163)] Chromium logging enabled: level = 0, default verbosity = 0
   JS: C : ropasci-view.js:83:17 -> (Cannot read property 'setInlineStyle' of undefined)
@@ -15,6 +14,8 @@ TODO
 
 
 DONE:
+- 190906:
+  - very slow startup
 - 190905:
   - setup/1-present::scanDevice doesn't show progress
   - lab/personhood/add-party::save doesn't take data from RadForm
