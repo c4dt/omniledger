@@ -8,21 +8,9 @@ import { GestureEventData } from "tns-core-modules/ui/gestures";
 import RoPaSciInstance, { RoPaSciStruct } from "~/lib/cothority/personhood/ro-pa-sci-instance";
 import { msgFailed } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
-import { elRoPaSci, updateRoPaSci } from "~/pages/lab/ropasci/ropasci-page";
+import { elRoPaSci, setProgress, updateRoPaSci } from "~/pages/lab/ropasci/ropasci-page";
 
 export class RopasciView extends Observable {
-
-    static setProgress(text: string = "", width: number = 0) {
-        elRoPaSci.set("networkStatus", width === 0 ? undefined : text);
-        if (width !== 0) {
-            let color = "#308080;";
-            if (width < 0) {
-                color = "#a04040";
-            }
-            topmost().getViewById("progress_bar")
-                .setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
-        }
-    }
     ropascis = new ObservableArray();
     networkStatus: string;
 
@@ -229,21 +217,21 @@ export class RopasciViewElement extends Observable {
                     break;
                 case playRock:
                     second = true;
-                    RopasciView.setProgress("Sending move", 50);
+                    setProgress("Sending move", 50);
                     await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 0);
                     break;
                 case playPaper:
                     second = true;
-                    RopasciView.setProgress("Sending move", 50);
+                    setProgress("Sending move", 50);
                     await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 1);
                     break;
                 case playScissors:
                     second = true;
-                    RopasciView.setProgress("Sending move", 50);
+                    setProgress("Sending move", 50);
                     await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 2);
                     break;
                 case reveal:
-                    RopasciView.setProgress("Revealing", 50);
+                    setProgress("Revealing", 50);
                     await this.ropasci.confirm(uData.coinInstance);
                     break;
                 case cancel:
@@ -258,6 +246,6 @@ export class RopasciViewElement extends Observable {
         }
         this.updateColor();
         await updateRoPaSci();
-        RopasciView.setProgress();
+        setProgress();
     }
 }

@@ -22,12 +22,12 @@ import { registerMessage } from "~/lib/cothority/protobuf";
  */
 export class PersonhoodRPC {
     static serviceID = "Personhood";
-    private socket: IConnection;
-    private list: ServerIdentity[];
 
-    constructor(public rpc: ByzCoinRPC) {
-        this.socket = new RosterWSConnection(rpc.getConfig().roster, PersonhoodRPC.serviceID);
-        this.list = this.rpc.getConfig().roster.list;
+    static fromByzCoin(rpc: ByzCoinRPC): PersonhoodRPC {
+        return new PersonhoodRPC(rpc.genesisID, rpc.getConfig().roster.list);
+    }
+
+    constructor(private genesisID: InstanceID, private list: ServerIdentity[]) {
     }
 
     /**
@@ -45,7 +45,7 @@ export class PersonhoodRPC {
             return parties.findIndex((p) => p.instanceID.equals(py.instanceID)) === i;
         });
         // Only take parties from our byzcoin
-        return parties.filter((party) => party.byzCoinID.equals(this.rpc.genesisID));
+        return parties.filter((party) => party.byzCoinID.equals(this.genesisID));
     }
 
     // this removes all parties from the list, but not from byzcoin.
@@ -117,7 +117,7 @@ export class PersonhoodRPC {
             title,
         });
         const ps = await this.callPoll(new Poll({
-            byzcoinID: this.rpc.genesisID,
+            byzcoinID: this.genesisID,
             newPoll,
         }));
         return ps[0];
@@ -125,7 +125,7 @@ export class PersonhoodRPC {
 
     async pollList(partyIDs: InstanceID[]): Promise<PollStruct[]> {
         return this.callPoll(new Poll({
-            byzcoinID: this.rpc.genesisID,
+            byzcoinID: this.genesisID,
             list: new PollList({partyIDs}),
         }));
     }
@@ -133,7 +133,7 @@ export class PersonhoodRPC {
     async pollAnswer(priv: Scalar, personhood: PopPartyInstance, pollID: Buffer, choice: number): Promise<PollStruct> {
         const context = Buffer.alloc(68);
         context.write("Poll");
-        this.rpc.genesisID.copy(context, 4);
+        this.genesisID.copy(context, 4);
         pollID.copy(context, 36);
         const msg = Buffer.alloc(7);
         msg.write("Choice");
@@ -149,14 +149,14 @@ export class PersonhoodRPC {
         });
         const ps = await this.callPoll(new Poll({
             answer,
-            byzcoinID: this.rpc.genesisID,
+            byzcoinID: this.genesisID,
             },
         ));
         return ps[0];
     }
 
     async pollWipe() {
-        return this.callPoll(new Poll({byzcoinID: this.rpc.genesisID}));
+        return this.callPoll(new Poll({byzcoinID: this.genesisID}));
     }
 
     async callPoll(p: Poll): Promise<PollStruct[]> {

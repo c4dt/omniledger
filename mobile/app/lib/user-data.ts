@@ -1,14 +1,16 @@
 import { InstanceID } from "~/lib/cothority/byzcoin";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import Log from "~/lib/cothority/log";
-import { Roster } from "~/lib/cothority/network";
-import { Node, RosterWSConnection } from "~/lib/cothority/network/connection";
+import { Roster, ServerIdentity } from "~/lib/cothority/network";
+import { RosterWSConnection } from "~/lib/cothority/network/connection";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
 import { SkipBlock } from "~/lib/cothority/skipchain";
 import SkipchainRPC from "~/lib/cothority/skipchain/skipchain-rpc";
 import { StatusRequest, StatusResponse } from "~/lib/cothority/status/proto";
 import StatusRPC from "~/lib/cothority/status/status-rpc";
 import { Data } from "~/lib/dynacred";
+import { KeyPair } from "~/lib/dynacred/KeyPair";
+import { PersonhoodRPC } from "~/lib/dynacred/personhood-rpc";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
@@ -24,18 +26,24 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - is automatically updated from AndroidManifest.xml
-export let appVersion = "0.1.4";
+export let appVersion = "0.1.5";
 // Node for game-communication
-export let gameNode: Node;
+export let gameNode: ServerIdentity;
 
 // Returns an initialized BC or a failed promise if the given BC is not available.
 export async function initBC() {
     if (testingMode) {
         bc = await bcTest();
-        gameNode = new Node("ws://localhost:7772");
+        gameNode = new ServerIdentity({
+            public: new KeyPair()._public.point.toProto(),
+            url: "https://localhost:7772",
+        });
     } else {
         bc = await bcDEDIS();
-        gameNode = new Node("wss://conode.c4dt.org:7771");
+        gameNode = new ServerIdentity({
+            public: new KeyPair()._public.point.toProto(),
+            url: "https://conode.c4dt.org:7771",
+        });
     }
 }
 
@@ -49,26 +57,31 @@ export async function speedTest(): Promise<string> {
     return wsc.getURL();
 }
 
+async function finishData() {
+    uData.storage = StorageFile;
+    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+    uData.phrpc = new PersonhoodRPC(bc.genesisID, [gameNode]);
+}
+
 // Setting up uData - can be called again if uData needs to be reset and all data cleared.
 // It uses the initialized BC and will fail if BC is not initialized.
 export async function initData() {
     uData = new Data(bc);
-    uData.storage = StorageFile;
-    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+    await finishData();
 }
 
 // Loading uData. If the data cannot be loaded (doesn't exist or is invalid),
 // it will return a failed promise.
 export async function loadData() {
     uData = await Data.load(bc, StorageFile);
-    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+    await finishData();
 }
 
 // Attaches to an existing identity as a new device. The passed string contains an
 // ephemeral private key that will be used to set up the identity.
 export async function attachDevice(url: string) {
     uData = await Data.attachDevice(bc, url);
-    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+    await finishData();
 }
 
 // Creates a new byzcoin on the test-roster.
@@ -76,6 +89,7 @@ export async function newByzCoin(): Promise<Data> {
     uData = await TestData.init("admin", testRoster);
     bc = uData.bc;
     spawnerID = uData.spawnerInstance.id;
+    await finishData();
     return uData;
 }
 

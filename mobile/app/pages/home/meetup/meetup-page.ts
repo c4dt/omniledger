@@ -9,16 +9,14 @@ import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
 import { Contact } from "~/lib/dynacred";
-import { Meetup, PersonhoodRPC } from "~/lib/dynacred/personhood-rpc";
+import { Meetup } from "~/lib/dynacred/personhood-rpc";
 import { SocialNode } from "~/lib/dynacred/SocialNode";
 import { msgFailed } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { MeetupView } from "~/pages/home/meetup/meetup-view";
-import Timeout = NodeJS.Timeout;
 
 let identity: MeetupView;
 let page: Page;
-let phrpc: PersonhoodRPC;
 let interval: any;
 let counter: number;
 
@@ -27,11 +25,10 @@ export async function navigatingTo(args: EventData) {
     identity = new MeetupView();
     page = args.object as Page;
     page.bindingContext = identity;
-    phrpc = new PersonhoodRPC(uData.bc);
     setProgress("Broadcasting position", 30);
     try {
         const userLocation = uData.contact.toUserLocation();
-        await phrpc.meetups(new Meetup({userLocation}));
+        await uData.phrpc.meetups(new Meetup({userLocation}));
         await meetupUpdate();
         if (interval) {
             clearInterval(interval);
@@ -51,7 +48,7 @@ export async function navigatingTo(args: EventData) {
 
 export async function meetupUpdate() {
     setProgress("Listening for other broadcasts", 60);
-    const ms = await phrpc.listMeetups();
+    const ms = await uData.phrpc.listMeetups();
     identity.updateUsers(ms);
     setProgress();
 }

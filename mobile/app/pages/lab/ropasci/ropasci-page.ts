@@ -20,26 +20,37 @@ export async function navigatingTo(args: EventData) {
     page = args.object as Page;
     elRoPaSci = new RopasciView();
     page.bindingContext = elRoPaSci;
-    await elRoPaSci.updateRoPaScis();
-    setTimeout(() => updateRoPaSci(), 1);
+    setTimeout(() => updateRoPaSci(), 1000);
 }
 
 export async function updateRoPaSci() {
     try {
-        RopasciView.setProgress("Reloading games", 33);
+        setProgress("Reloading games", 33);
         await uData.reloadRoPaScis();
-        RopasciView.setProgress("Updating games", 66);
+        setProgress("Updating games", 66);
         await uData.updateRoPaScis();
         await uData.save();
         await elRoPaSci.updateRoPaScis();
     } catch (e) {
         Log.catch(e);
     }
-    RopasciView.setProgress();
+    setProgress();
 }
 
 export async function addRoPaSci(args: GestureEventData) {
     return topmost().navigate({
         moduleName: "pages/lab/ropasci/add/add-page",
     });
+}
+
+export function setProgress(text: string = "", width: number = 0) {
+    elRoPaSci.set("networkStatus", width === 0 ? undefined : text);
+    if (width !== 0) {
+        let color = "#308080;";
+        if (width < 0) {
+            color = "#a04040";
+        }
+        topmost().getViewById("progress_bar")
+            .setInlineStyle("width:" + Math.abs(width) + "%; background-color: " + color);
+    }
 }

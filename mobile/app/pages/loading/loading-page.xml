@@ -1,9 +1,10 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd"
       navigatingTo="navigatingTo"
       class="page">
-    <GridLayout rows="*, auto, *, *">
+    <GridLayout rows="auto, auto, *">
+        <Label height="20%" row="0"/>
         <Label text="Connecting" class="h1 text-center" row="1"/>
-        <ListView items="{{ steps }}" row="2" width="50%">
+        <ListView items="{{ steps }}" row="2" width="75%">
             <ListView.itemTemplate>
                 <StackLayout>
                     <Label text="{{ text }}"/>

@@ -3,8 +3,7 @@ import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
-import Log from "~/lib/cothority/log";
-import { PersonhoodRPC, PollChoice, PollStruct } from "~/lib/dynacred/personhood-rpc";
+import { PollStruct } from "~/lib/dynacred/personhood-rpc";
 import { msgFailed } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { elPoll, updatePoll } from "~/pages/lab/poll/poll-page";
@@ -72,7 +71,6 @@ export class PollViewElement extends Observable {
                     break;
                 default:
                     const index = choices.findIndex((c) => c === action);
-                    const phr = new PersonhoodRPC(uData.bc);
                     const badge = uData.badges.find((p) => {
                         return p.party.partyInstance.id.equals(this.poll.personhood);
                     });
@@ -80,7 +78,7 @@ export class PollViewElement extends Observable {
                         await msgFailed("Invalid poll with invalid partyID");
                         return;
                     }
-                    await phr.pollAnswer(uData.keyPersonhood._private.scalar, badge.party.partyInstance,
+                    await uData.phrpc.pollAnswer(uData.keyPersonhood._private.scalar, badge.party.partyInstance,
                         this.poll.pollID, index);
             }
         } catch (e) {

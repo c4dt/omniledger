@@ -299,6 +299,7 @@ export class Data {
     recoverySignatures: RecoverySignature[] = [];
     storage: IStorage = StorageDB;
     references: string[] = [];
+    phrpc: PersonhoodRPC;
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
@@ -357,7 +358,7 @@ export class Data {
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-
+        this.phrpc = PersonhoodRPC.fromByzCoin(this.bc);
         return this.bc;
     }
 
@@ -646,8 +647,7 @@ export class Data {
     }
 
     async reloadParties(): Promise<PartyItem[]> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        const phParties = await phrpc.listParties();
+        const phParties = await this.phrpc.listParties();
         await Promise.all(phParties.map(async (php) => {
             Log.lvl2("Searching party", php.instanceID);
             if (this.parties.find((p) => p.partyInstance.id.equals(php.instanceID)) == null) {
@@ -695,14 +695,12 @@ export class Data {
 
     async addParty(p: PartyItem) {
         this.parties.push(p);
-        const phrpc = new PersonhoodRPC(this.bc);
-        await phrpc.listParties(p.toParty(this.bc));
+        await this.phrpc.listParties(p.toParty(this.bc));
         await this.save();
     }
 
     async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        const phRoPaScis = await phrpc.listRPS();
+        const phRoPaScis = await this.phrpc.listRPS();
         await Promise.all(phRoPaScis.map(async (rps) => {
             if (this.ropascis.find((r) => r.id.equals(rps.roPaSciID)) == null) {
                 Log.lvl2("Found new ropasci");
@@ -727,9 +725,8 @@ export class Data {
 
     async addRoPaSci(rps: RoPaSciInstance) {
         this.ropascis.push(rps);
-        const phrpc = new PersonhoodRPC(this.bc);
         await this.save();
-        await phrpc.listRPS(new RoPaSci({
+        await this.phrpc.listRPS(new RoPaSci({
             byzcoinID: this.bc.genesisID,
             roPaSciID: rps.id,
         }));
@@ -744,14 +741,12 @@ export class Data {
     }
 
     async reloadPolls(): Promise<PollStruct[]> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        this.polls = await phrpc.pollList(this.badges.map((b) => b.party.partyInstance.id));
+        this.polls = await this.phrpc.pollList(this.badges.map((b) => b.party.partyInstance.id));
         return this.polls;
     }
 
     async addPoll(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        const rps = await phrpc.pollNew(personhood, title, description, choices);
+        const rps = await this.phrpc.pollNew(personhood, title, description, choices);
         this.polls.push(rps);
         await this.save();
         return rps;
