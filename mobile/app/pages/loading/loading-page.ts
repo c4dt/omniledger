@@ -14,12 +14,12 @@ import { Page } from "tns-core-modules/ui/page";
 import { appRootMain, appRootSetup } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
-import { setFactory } from "~/lib/cothority/network/connection";
+import { Nodes, setFactory } from "~/lib/cothority/network/connection";
 import { Data } from "~/lib/dynacred";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { StorageFile } from "~/lib/storage-file";
-import { appVersion, initBC, loadData, newByzCoin, testingMode, uData } from "~/lib/user-data";
+import { appVersion, initBC, loadData, newByzCoin, speedTest, testingMode, uData } from "~/lib/user-data";
 
 declare const exit: (code: number) => void;
 
@@ -36,12 +36,17 @@ export async function navigatingTo(args: EventData) {
     Log.lvl1("Connecting to ByzCoin");
     try {
         steps.push({text: "Got version: " + appVersion});
-        steps.push({text: "Testing network"});
-
+        steps.push({text: "Measuring network"});
+        Nodes.parallel = 5;
+        steps.push({text: "1st ping: " + await speedTest()});
+        steps.push({text: "2nd ping: " + await speedTest()});
+        steps.push({text: "3rd ping: " + await speedTest()});
+        Nodes.parallel = 1;
         steps.push({text: "Connecting to ByzCoin"});
         await initBC();
         steps.push({text: "Connected"});
     } catch (e) {
+        Log.catch(e);
         if (testingMode) {
             const actions = ["Setup", "Init Byzcoin"];
             // tslint:disable:object-literal-sort-keys

@@ -12,12 +12,14 @@ import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
 import { openUrl } from "tns-core-modules/utils/utils";
 import { appRootSetup } from "~/app-root";
 import Log from "~/lib/cothority/log";
+import { WebSocketConnection } from "~/lib/cothority/network/connection";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { initBC, testingMode, uData } from "~/lib/user-data";
 import { Admin, AdminViewModel } from "./settings-view";
 
 let page: Page;
 export let adminView: AdminViewModel;
+export let nodeList: WebSocketConnection[];
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export function navigatingTo(args: EventData) {
@@ -77,4 +79,8 @@ export function goPersonhood() {
 
 export function goGithub() {
     openUrl("https://github.com/dedis/personhood.online");
+}
+
+export function setNodeList(list: WebSocketConnection[]) {
+    nodeList = list.slice();
 }

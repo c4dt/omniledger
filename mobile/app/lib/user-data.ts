@@ -2,12 +2,16 @@ import { InstanceID } from "~/lib/cothority/byzcoin";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import Log from "~/lib/cothority/log";
 import { Roster } from "~/lib/cothority/network";
+import { Node, RosterWSConnection } from "~/lib/cothority/network/connection";
 import SpawnerInstance from "~/lib/cothority/personhood/spawner-instance";
 import { SkipBlock } from "~/lib/cothority/skipchain";
 import SkipchainRPC from "~/lib/cothority/skipchain/skipchain-rpc";
+import { StatusRequest, StatusResponse } from "~/lib/cothority/status/proto";
+import StatusRPC from "~/lib/cothority/status/status-rpc";
 import { Data } from "~/lib/dynacred";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
+import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
 export let testingMode = false;
@@ -21,14 +25,28 @@ export let spawnerID: InstanceID;
 export let byzCoinID: InstanceID;
 // Version of the app - is automatically updated from AndroidManifest.xml
 export let appVersion = "0.1.4";
+// Node for game-communication
+export let gameNode: Node;
 
 // Returns an initialized BC or a failed promise if the given BC is not available.
 export async function initBC() {
     if (testingMode) {
         bc = await bcTest();
+        gameNode = new Node("ws://localhost:7772");
     } else {
         bc = await bcDEDIS();
+        gameNode = new Node("wss://conode.c4dt.org:7771");
     }
+}
+
+// Sends a status message to the nodes and checks which node replies the fastest
+export async function speedTest(): Promise<string> {
+    const r = testingMode ? testRoster : DEDISRoster;
+    const wsc = new RosterWSConnection(r, StatusRPC.serviceName);
+    await wsc.send(new StatusRequest(), StatusResponse);
+    Log.lvl2("fastest node:", wsc.getURL());
+    setNodeList(wsc.nodes.newList(StatusRPC.serviceName).active);
+    return wsc.getURL();
 }
 
 // Setting up uData - can be called again if uData needs to be reset and all data cleared.
@@ -69,8 +87,8 @@ async function bcTest(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("dbcf079c965c7ef41643d878ac62c5bbd1ab28485b710d1fca98bff992aaf565", "hex");
-    spawnerID = Buffer.from("af02c7074acd0d5fb0094cadb63b7ee1faf8cde10a402f9127675dffb92899d8", "hex");
+    byzCoinID = Buffer.from("0b4c5abcf42701fd98579b2e429cec1e2c21cb844d80cb1f901d0c1c49dbea65", "hex");
+    spawnerID = Buffer.from("018f0c0cd3738aea499fd0316cc51efb4736037647bdc01cc873ff5120140a79", "hex");
 
     let latest: SkipBlock;
     try {
@@ -81,7 +99,7 @@ async function bcTest(): Promise<ByzCoinRPC> {
         Log.lvl2("No skipblock stored yet");
     }
     const newBC = await ByzCoinRPC.fromByzcoin(testRoster, byzCoinID, 0, 1000, latest);
-    Log.print("latest is:", latest.index, newBC.latest.index);
+    Log.lvl2("latest is:", latest ? latest.index : "null", newBC.latest.index);
     await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
     return newBC;
 }
@@ -124,7 +142,7 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
         }
     }
     await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
-    Log.print(newBC.latest.index, newBC.latest.hash);
+    Log.lvl2(newBC.latest.index, newBC.latest.hash);
     return newBC;
 }
 
