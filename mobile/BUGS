@@ -1,5 +1,17 @@
 TODO
-- on android deploy, owner's key cannot be added in party when activating barrier point
+- Increase communication speed for slow networks
+
+DONE:
+- 190906:
+  - very slow startup
+- 190905:
+  - setup/1-present::scanDevice doesn't show progress
+  - lab/personhood/add-party::save doesn't take data from RadForm
+  - lab/personhood/add-party::save doesn't store a new party to the service
+  - lab/ropasci/add::save has too short progress bar
+  - settings/status doesn't show all nodes
+
+INVALID?:
 - chromium: [INFO:library_loader_hooks.cc(163)] Chromium logging enabled: level = 0, default verbosity = 0
   JS: C : ropasci-view.js:83:17 -> (Cannot read property 'setInlineStyle' of undefined)
   JS: C : ropasci-page.js:77:48 -> ()
@@ -11,14 +23,4 @@ TODO
   JS: C : ropasci-page.js:71:12 -> ()
   JS: C : ropasci-page.js:63:53 -> ()
   JS: C : timer.js:19:48       -> ()
-
-
-DONE:
-- 190906:
-  - very slow startup
-- 190905:
-  - setup/1-present::scanDevice doesn't show progress
-  - lab/personhood/add-party::save doesn't take data from RadForm
-  - lab/personhood/add-party::save doesn't store a new party to the service
-  - lab/ropasci/add::save has too short progress bar
-  - settings/status doesn't show all nodes
+- on android deploy, owner's key cannot be added in party when activating barrier point

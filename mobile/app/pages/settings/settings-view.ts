@@ -2,8 +2,11 @@ import { Observable } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
+import { WebSocketConnection } from "~/lib/cothority/network/connection";
 import { StatusRPC } from "~/lib/cothority/status";
+import { StatusRequest, StatusResponse } from "~/lib/cothority/status/proto";
 import { Data } from "~/lib/dynacred";
+import { nodeList } from "~/pages/settings/settings-page";
 import { appVersion, testingMode, uData } from "~/lib/user-data";
 
 export class AdminViewModel extends Observable {
@@ -17,10 +20,11 @@ export class AdminViewModel extends Observable {
         this.updateNodes();
     }
 
-    updateNodes() {
+    async updateNodes() {
         this.nodes.splice(0);
-        if (uData.bc) {
-            uData.bc.getConfig().roster.list.forEach((si, i) => this.nodes.push(new Node(si, this)));
+        if (nodeList) {
+            this.nodes.push(...nodeList.map((ws) => new Node(ws, this)));
+            await Promise.all(this.nodes.map((n) => n.getStatus()));
         }
     }
 
@@ -42,19 +46,19 @@ export class Node {
     address: string;
     status: string;
 
-    constructor(si: ServerIdentity, am: AdminViewModel) {
-        this.address = si.address;
+    constructor(private ws: WebSocketConnection, private am: AdminViewModel) {
+        this.address = ws.getURL();
         this.status = "unknown";
+    }
 
-        const status = new StatusRPC(new Roster({ list: [ si ]}));
-        status.getStatus().then((s) => {
-            // got status, put it into the right spot
-            this.status = "ok, up " + s.getStatus("Generic").field.Uptime;
-            // trigger an update.
-            am.nodes.splice(0, 0);
-        }).catch((e) => {
+    async getStatus() {
+        try {
+            const stat: StatusResponse = await this.ws.send(new StatusRequest(), StatusResponse);
+            Log.lvl2("Got status from", this.address);
+            this.status = "up " + stat.getStatus("Generic").field.Uptime;
+        } catch (e) {
             this.status = "error";
-            Log.catch(e);
-        });
+        }
+        this.am.nodes.splice(0, 0);
     }
 }
