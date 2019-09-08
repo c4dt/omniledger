@@ -19,10 +19,11 @@ let page: Page;
 export let recoverView: RecoverView;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
-export function navigatingTo(args: EventData) {
+export async function navigatingTo(args: EventData) {
     page = args.object as Page;
     recoverView = new RecoverView();
     page.bindingContext = recoverView;
+    await recoverView.updateTrustees();
 }
 
 export function sliderLoaded(args) {
@@ -68,7 +69,6 @@ export async function addTrustee() {
                 await recover.addTrustee(contact[0]);
                 recoverView._changed = true;
                 recover.threshold += 1;
-                await recoverView.updateTrustees();
             } catch (e) {
                 Log.catch(e);
                 return msgFailed(e.toString(), "Adding Trustee");
