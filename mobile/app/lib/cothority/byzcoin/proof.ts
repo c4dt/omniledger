@@ -2,12 +2,12 @@ import { createHash } from "crypto-browserify";
 import _ from "lodash";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
+import Log from "../log";
 import { registerMessage } from "../protobuf";
 import { SkipchainRPC } from "../skipchain";
 import { ForwardLink, SkipBlock } from "../skipchain/skipblock";
 import Instance, { InstanceID } from "./instance";
 import DataHeader from "./proto/data-header";
-import Log from "../log";
 
 /**
  * The proof class represents a proof that a given instance with its data is either present or absent in the global

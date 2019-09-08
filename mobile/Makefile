@@ -1,18 +1,19 @@
-apply-patches: npm-install
-	patch -p0 < nodeify_temporary_patch.patch
+clean: gradle-simul
+	rm -rf node_modules platforms hooks
 
 npm-install: clean
 	npm ci
 	find app -name "*js" | xargs rm -f
+
+apply-patches: npm-install
+	patch -p0 < nodeify_temporary_patch.patch
+	rm -rf node_modules/public-encrypt/test/
 
 gradle-simul:
 	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
 
 gradle-prod:
 	@( cd app/App_Resources/Android; cp app.gradle.prod app.gradle )
-
-clean: gradle-simul
-	rm -rf node_modules platforms hooks
 
 android-dev: apply-patches
 	tns prepare android
@@ -30,7 +31,7 @@ android-compile: update-version
 		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 
-android-release: gradle-prod android-check apply-patches android-compile gradle-simul
+android-release: android-check apply-patches gradle-prod android-compile gradle-simul
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
