@@ -37,7 +37,7 @@ export async function navigatingTo(args: EventData) {
     try {
         steps.push({text: "Got version: " + appVersion});
         steps.push({text: "Measuring network"});
-        Nodes.parallel = 6;
+        Nodes.parallel = 5;
         steps.push({text: "1st ping: " + await speedTest()});
         steps.push({text: "2nd ping: " + await speedTest()});
         steps.push({text: "3rd ping: " + await speedTest()});
