@@ -1,6 +1,6 @@
 {
   "nativescript": {
-    "id": "ch.epfl.personhood2",
+    "id": "org.c4dt.personhood2",
     "tns-android": {
       "version": "5.1.0"
     },
