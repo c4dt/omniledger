@@ -1,5 +1,5 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd"
-      navigatingTo="navigatingToHome"
+      loaded="navigatingToHome"
       class="page">
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="{{ L('home.title', alias ) }}"

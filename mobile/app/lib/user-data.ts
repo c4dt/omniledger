@@ -26,7 +26,7 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - is automatically updated from AndroidManifest.xml
-export let appVersion = "0.1.6";
+export let appVersion = "0.1.7";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 

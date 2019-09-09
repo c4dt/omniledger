@@ -68,6 +68,10 @@
     "recover": "Récup'",
     "challenge": "Concours"
   },
+  "challenge": {
+    "welcome": "High-scores",
+    "update": "Update List"
+  },
   "lab": {
     "title": "Labo des génies",
     "personhood": "Personhood",

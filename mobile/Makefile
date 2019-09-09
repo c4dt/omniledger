@@ -2,9 +2,11 @@
 
 gradle-simul:
 	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
+	@perl -pi -e "s/org.c4dt.personhood2/ch.epfl.personhood2/" package.json
 
 gradle-prod:
 	@( cd app/App_Resources/Android; cp app.gradle.prod app.gradle )
+	@perl -pi -e "s/ch.epfl.personhood2/org.c4dt.personhood2/" package.json
 
 clean: gradle-simul
 	rm -rf node_modules platforms hooks

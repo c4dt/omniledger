@@ -118,6 +118,12 @@ export class PersonhoodRPC {
         }));
     }
 
+    async challenge(update: ChallengeCandidate = null): Promise<ChallengeCandidate[]> {
+        const socket = new WebSocketConnection(this.list[0].getWebSocketAddress(), PersonhoodRPC.serviceID);
+        const reply: ChallengeReply = await socket.send(new Challenge({update}), ChallengeReply);
+        return reply.list;
+    }
+
     async pollNew(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
         const newPoll = new PollStruct({
             choices,
@@ -575,6 +581,40 @@ export class MeetupResponse extends Message<MeetupResponse> {
     }
 }
 
+export class Challenge extends Message<Challenge> {
+    static register() {
+        registerMessage("Challenge", Challenge);
+    }
+    readonly update: ChallengeCandidate;
+
+    constructor(props?: Properties<Challenge>) {
+        super(props);
+    }
+}
+
+export class ChallengeCandidate extends Message<ChallengeCandidate> {
+    static register() {
+        registerMessage("ChallengeCandidate", ChallengeCandidate);
+    }
+    readonly credential: InstanceID;
+    readonly score: number;
+
+    constructor(props?: Properties<ChallengeCandidate>) {
+        super(props);
+    }
+}
+
+export class ChallengeReply extends Message<ChallengeReply> {
+    static register() {
+        registerMessage("ChallengeReply", ChallengeReply);
+    }
+    readonly list: ChallengeCandidate[];
+
+    constructor(props?: Properties<ChallengeReply>) {
+        super(props);
+    }
+}
+
 RoPaSci.register();
 RoPaSciList.register();
 RoPaSciListResponse.register();
@@ -591,3 +631,6 @@ PartyDelete.register();
 PartyListResponse.register();
 Meetup.register();
 MeetupResponse.register();
+Challenge.register();
+ChallengeCandidate.register();
+ChallengeReply.register();

@@ -68,6 +68,10 @@
     "recover": "Recover",
     "challenge": "Challenge"
   },
+  "challenge": {
+    "welcome": "High-scores",
+    "update": "Update List"
+  },
   "lab": {
     "title": "Lab of great ideas",
     "personhood": "Personhood",
