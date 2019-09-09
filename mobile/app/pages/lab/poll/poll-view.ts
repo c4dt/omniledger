@@ -3,9 +3,11 @@ import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
+import Log from "~/lib/cothority/log";
+import { Badge } from "~/lib/dynacred/Badge";
 import { PollStruct } from "~/lib/dynacred/personhood-rpc";
 import { msgFailed } from "~/lib/messages";
-import { uData } from "~/lib/user-data";
+import { isAdmin, uData } from "~/lib/user-data";
 import { elPoll, updatePoll } from "~/pages/lab/poll/poll-page";
 
 export class PollView extends Observable {
@@ -54,7 +56,9 @@ export class PollViewElement extends Observable {
         const del = "Delete";
         const cancel = "Cancel";
         const choices = this.poll.choices.map((c) => "Send vote for " + c);
-        // choices.push(del);
+        if (isAdmin) {
+            choices.push(del);
+        }
         try {
             // tslint:disable:object-literal-sort-keys
             const action = await dialogs.action({
@@ -65,15 +69,24 @@ export class PollViewElement extends Observable {
             // tslint:enable:object-literal-sort-keys
             switch (action) {
                 case del:
-                    await uData.delPoll(this.poll);
+                    elPoll.setProgress("Deleting Poll", 33);
+                    await uData.phrpc.pollDelete(uData.keyIdentitySigner, this.poll.pollID);
+                    elPoll.setProgress("Updating Polls", 66);
+                    await elPoll.updatePolls();
+                    elPoll.setProgress("Done", 100);
                     break;
                 case cancel:
                     break;
                 default:
                     const index = choices.findIndex((c) => c === action);
-                    const badge = uData.badges.find((p) => {
-                        return p.party.partyInstance.id.equals(this.poll.personhood);
-                    });
+                    let badge: Badge;
+                    if (this.poll.personhood.equals(Buffer.alloc(32))) {
+                        badge = uData.badges[0];
+                    } else {
+                        badge = uData.badges.find((p) => {
+                            return p.party.partyInstance.id.equals(this.poll.personhood);
+                        });
+                    }
                     if (badge == null) {
                         await msgFailed("Invalid poll with invalid partyID");
                         return;
@@ -84,6 +97,7 @@ export class PollViewElement extends Observable {
         } catch (e) {
             await msgFailed(e.toString(), "Error");
         }
+        elPoll.setProgress();
         await updatePoll();
         elPoll.setProgress();
     }

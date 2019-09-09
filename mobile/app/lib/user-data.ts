@@ -1,5 +1,6 @@
 import { InstanceID } from "~/lib/cothority/byzcoin";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
+import { IdentityWrapper } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { RosterWSConnection } from "~/lib/cothority/network/connection";
@@ -16,7 +17,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = false;
+export let testingMode = true;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -29,15 +30,16 @@ export let byzCoinID: InstanceID;
 export let appVersion = "0.1.7";
 // Node for game-communication
 export let gameNode: ServerIdentity;
+// Admin darc defining who has super powers
+export let adminDarc: InstanceID;
+// Is this user in the admin darc?
+export let isAdmin: boolean;
 
 // Returns an initialized BC or a failed promise if the given BC is not available.
 export async function initBC() {
     if (testingMode) {
         bc = await bcTest();
-        gameNode = new ServerIdentity({
-            public: new KeyPair()._public.point.toProto(),
-            url: "https://localhost:7772",
-        });
+        gameNode = testRoster.list[0];
     } else {
         bc = await bcDEDIS();
         gameNode = new ServerIdentity({
@@ -61,6 +63,10 @@ async function finishData() {
     uData.storage = StorageFile;
     uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
     uData.phrpc = new PersonhoodRPC(bc.genesisID, [gameNode]);
+    const rights = await uData.bc.checkAuthorization(uData.bc.genesisID, adminDarc,
+        IdentityWrapper.fromIdentity(uData.keyIdentitySigner));
+    Log.lvl2("User", uData.alias, "has admin-rights:", rights);
+    isAdmin = rights.length > 0;
 }
 
 // Setting up uData - can be called again if uData needs to be reset and all data cleared.
@@ -101,21 +107,27 @@ async function bcTest(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("0b4c5abcf42701fd98579b2e429cec1e2c21cb844d80cb1f901d0c1c49dbea65", "hex");
-    spawnerID = Buffer.from("018f0c0cd3738aea499fd0316cc51efb4736037647bdc01cc873ff5120140a79", "hex");
-
-    let latest: SkipBlock;
     try {
-        const latestBuf = await StorageFile.get("latest");
-        latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
-        Log.lvl2("got stored latest skipblock");
+        byzCoinID = Buffer.from("4ce651a3a5172241baff80bbf0c5f6eb83ad77c51fd06808d127ac56688420fa", "hex");
+        spawnerID = Buffer.from("22ec243c577c16debfa97b6086c48a2a6150ede4dc099a15f372240181e92391", "hex");
+        adminDarc = Buffer.from("b11b8ef2a60d4bd15d1b2859c40f8f2bd6ad14c7ed6860fa4409a024e86e6f50", "hex");
+
+        let latest: SkipBlock;
+        try {
+            const latestBuf = await StorageFile.get("latest");
+            latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
+            Log.lvl2("got stored latest skipblock");
+        } catch (e) {
+            Log.lvl2("No skipblock stored yet");
+            await StorageFile.set("latest", "");
+        }
+        const newBC = await ByzCoinRPC.fromByzcoin(testRoster, byzCoinID, 0, 1000, latest);
+        Log.lvl2("latest is:", latest ? latest.index : "null", newBC.latest.index);
+        await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
+        return newBC;
     } catch (e) {
-        Log.lvl2("No skipblock stored yet");
+        return Log.rcatch(e);
     }
-    const newBC = await ByzCoinRPC.fromByzcoin(testRoster, byzCoinID, 0, 1000, latest);
-    Log.lvl2("latest is:", latest ? latest.index : "null", newBC.latest.index);
-    await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
-    return newBC;
 }
 
 // Connects to the production ByzCoin instance of the DEDIS lab.
@@ -128,6 +140,7 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
 
     byzCoinID = Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex");
     spawnerID = Buffer.from("ebc32cc89129c7542cdb8991585756be48ea4bd2869d939898f5413e7f757d96", "hex");
+    adminDarc = Buffer.from("28aa9504ad3d781611b57d98607e1bca25b1c92f3b32a08a7e341c3866db4675", "hex");
 
     let latest: SkipBlock;
     try {

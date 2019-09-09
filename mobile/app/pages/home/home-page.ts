@@ -195,5 +195,7 @@ export async function coins(args: EventData) {
 }
 
 export async function switchHome(args: SelectedIndexChangedEventData) {
-    setTimeout(() => update(), 1);
+    if (page) {
+        await update();
+    }
 }

@@ -6,6 +6,7 @@ import Log from "~/lib/cothority/log";
 import { Roster } from "~/lib/cothority/network";
 import { Data, Private } from "~/lib/dynacred";
 import { StorageFile } from "~/lib/storage-file";
+import {uData} from "~/lib/user-data";
 
 /**
  * This class allows for setting up a new ByzCoin system, complete with a spawnerInstance ready to create new
@@ -46,10 +47,12 @@ export class TestData extends Data {
             td.admin = admin;
 
             // tslint:disable-next-line
-            console.log("// To be pasted into user-data.ts :: bcTest - line 70");
+            console.log("// To be pasted into user-data.ts :: bcTest - line 101");
+            const ad = (await td.contact.getDarcSignIdentity()).id;
             // tslint:disable-next-line
             console.log("\nbyzCoinID = Buffer.from(\"" + bc.genesisID.toString("hex") + "\", \"hex\");\n" +
-                "spawnerID = Buffer.from(\"" + td.spawnerInstance.id.toString("hex") + "\", \"hex\");\n");
+                "spawnerID = Buffer.from(\"" + td.spawnerInstance.id.toString("hex") + "\", \"hex\");\n" +
+                "adminDarc = Buffer.from(\"" + ad.toString("hex") + "\", \"hex\");\n");
 
             td.darc = d;
             return td;

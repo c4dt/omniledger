@@ -140,7 +140,8 @@ export default class Proof extends Message<Proof> {
      * @deprecated use verifyFrom for a complete verification
      */
     verify(id: InstanceID): Error {
-        Log.warn("Dont't verifying because it's too slow");
+        // TODO: Re-enable check after making it faster on ios
+        Log.lvl3("Not verifying because it's too slow");
         return;
         if (!this.latest.computeHash().equals(this.latest.hash)) {
             return new Error("invalid latest block");

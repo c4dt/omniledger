@@ -12,6 +12,7 @@ import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/page";
 import { appRootMain, appRootSetup } from "~/app-root";
+import { IdentityWrapper } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
 import { Nodes, setFactory } from "~/lib/cothority/network/connection";
@@ -19,7 +20,7 @@ import { Data } from "~/lib/dynacred";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { StorageFile } from "~/lib/storage-file";
-import { appVersion, initBC, loadData, newByzCoin, speedTest, testingMode, uData } from "~/lib/user-data";
+import { adminDarc, appVersion, initBC, loadData, newByzCoin, speedTest, testingMode, uData } from "~/lib/user-data";
 
 declare const exit: (code: number) => void;
 
@@ -47,7 +48,9 @@ export async function navigatingTo(args: EventData) {
         steps.push({text: "Connected"});
     } catch (e) {
         Log.catch(e);
+        Nodes.parallel = 1;
         if (testingMode) {
+            await StorageFile.set("latest", "");
             const actions = ["Setup", "Init Byzcoin"];
             // tslint:disable:object-literal-sort-keys
             switch (await dialogs.action({
@@ -92,6 +95,7 @@ export async function navigatingTo(args: EventData) {
             return appRootMain();
         }
     } catch (e) {
+        Log.catch(e);
         if (testingMode) {
             // This is a little bit dangerous, as a testing-setup could be destroyed if not handled
             // carefully. But as it's just a testing, this should be OK...

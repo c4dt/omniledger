@@ -20,7 +20,7 @@ export function onNavigatingTo(args) {
     page = args.object as Page;
 
     // Create a key-array of string to party-name, because the iid cannot be the key of the array.
-    const labels = uData.badges.map((a) => a)
+    const labels = uData.badges.slice()
         .sort((a, b) => a.party.uniqueName
             .localeCompare(b.party.uniqueName) * -1)
         .map((b) => {
@@ -29,6 +29,7 @@ export function onNavigatingTo(args) {
             label: b.party.partyInstance.popPartyStruct.description.name,
         };
     });
+    labels.unshift({key: Buffer.alloc(32).toString("hex"), label: "all"});
     viewModel.set("partyList", labels);
 
     // Add the object but so we can access it from within this module.
