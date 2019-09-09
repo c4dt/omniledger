@@ -10,7 +10,7 @@
 	<string>enterprise</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>online.personhood</key>
+		<key>ch.epfl.personhood2</key>
 		<string>personhood mobile app dev</string>
 	</dict>
 	<key>signingCertificate</key>
