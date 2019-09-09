@@ -1,3 +1,11 @@
+.DEFAULT_GOAL := apply-patches
+
+gradle-simul:
+	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
+
+gradle-prod:
+	@( cd app/App_Resources/Android; cp app.gradle.prod app.gradle )
+
 clean: gradle-simul
 	rm -rf node_modules platforms hooks
 
@@ -8,12 +16,6 @@ npm-install: clean
 apply-patches: npm-install
 	patch -p0 < nodeify_temporary_patch.patch
 	rm -rf node_modules/public-encrypt/test/
-
-gradle-simul:
-	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
-
-gradle-prod:
-	@( cd app/App_Resources/Android; cp app.gradle.prod app.gradle )
 
 android-dev: apply-patches
 	tns prepare android

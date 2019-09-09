@@ -1,0 +1,32 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Settings"></Label>
+    </ActionBar>
+    <GridLayout columns="*">
+        <ListView items="{{ participants }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <FlexboxLayout orientation="horizontal" flexDirection="row"
+                               class="basic-list-decorated"
+                               tap="{{ showParticipant }}"
+                               alignItems="center">
+                    <Label text="{{ alias }}" class="h3"
+                           height="100%"
+                           textTransform="uppercase"
+                           flexGrow="1"/>
+                    <Label text="{{ score }}" class="h3"/>
+                </FlexboxLayout>
+            </ListView.itemTemplate>
+        </ListView>
+
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>
