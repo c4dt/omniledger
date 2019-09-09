@@ -32,6 +32,13 @@ export function goRecover(args: GestureEventData) {
     });
 }
 
+export function goChallenge(args: GestureEventData) {
+    frame = args.view.page.frame;
+    return frame.navigate({
+        moduleName: "pages/identity/challenge/challenge-page",
+    });
+}
+
 export async function switchIdentity(args: SelectedIndexChangedEventData) {
     Log.print("switchIdentity");
     try {

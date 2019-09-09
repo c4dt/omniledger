@@ -19,3 +19,7 @@ export async function navigatingTo(args: EventData) {
     page.bindingContext = adminView;
     await adminView.updateList();
 }
+
+export async function updateList() {
+    return adminView.updateList();
+}

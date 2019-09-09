@@ -1,9 +1,15 @@
 import { Observable } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
+import { InstanceID } from "~/lib/cothority/byzcoin";
+import Log from "~/lib/cothority/log";
+import { Contact } from "~/lib/dynacred";
 import { Data } from "~/lib/dynacred/Data";
+import { ChallengeCandidate } from "~/lib/dynacred/personhood-rpc";
+import { getRawData, rawToPercent } from "~/lib/personhood";
 import { uData } from "~/lib/user-data";
 
 export class ChallengeViewModel extends Observable {
+    static candidates: Map<string, string> = new Map<string, string>();
     participants: Participant[];
 
     constructor(d: Data) {
@@ -11,8 +17,34 @@ export class ChallengeViewModel extends Observable {
     }
 
     async updateList() {
-        this.participants = [new Participant("test", 99)];
-        this.participants = [new Participant("test2", 97)];
+        try {
+            this.setProgress("Updating list", 30);
+            const challengers = await uData.phrpc.challenge(new ChallengeCandidate({
+                credential: uData.contact.credentialIID,
+                score: Object.values(rawToPercent(getRawData(uData))).reduce((a, b) => a + b),
+            }));
+            this.setProgress("Searching new candidates", 60);
+            await this.updateCandidates(challengers.map((challenger) => challenger.credential));
+            this.participants = challengers.map((challenger) =>
+                new Participant(ChallengeViewModel.candidates.get(challenger.credential.toString("hex")),
+                    challenger.score, challenger.credential));
+            this.setProgress("Done", 100);
+            this.notifyPropertyChange("participants", this.participants);
+        } catch (e) {
+            Log.catch(e);
+        }
+        this.setProgress();
+    }
+
+    async updateCandidates(creds: InstanceID[]) {
+        const unknown = creds.filter((cred) =>
+            !ChallengeViewModel.candidates.has(cred.toString("hex")));
+        if (unknown.length > 0) {
+            const contacts = await Promise.all(unknown.map((iid) => Contact.fromByzcoin(uData.bc, iid)));
+            contacts.forEach((contact) => {
+                ChallengeViewModel.candidates.set(contact.credentialIID.toString("hex"), contact.alias);
+            });
+        }
     }
 
     setProgress(text: string = "", width: number = 0) {
@@ -33,6 +65,14 @@ export class ChallengeViewModel extends Observable {
 }
 
 export class Participant {
-    constructor(public alias: string, public score: number) {
+    constructor(public alias: string, public score: number, public iid: InstanceID) {
+    }
+
+    async showParticipant() {
+        topmost().navigate({
+            context: await Contact.fromByzcoin(uData.bc, this.iid, false),
+            moduleName: "pages/identity/contacts/actions/actions-page",
+        });
+        Log.print("showing", this);
     }
 }

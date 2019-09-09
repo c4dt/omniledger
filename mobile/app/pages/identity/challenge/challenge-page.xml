@@ -4,21 +4,28 @@
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="Settings"></Label>
     </ActionBar>
-    <GridLayout columns="*">
-        <ListView items="{{ participants }}" class="list-group" row="0">
-            <ListView.itemTemplate>
-                <FlexboxLayout orientation="horizontal" flexDirection="row"
-                               class="basic-list-decorated"
-                               tap="{{ showParticipant }}"
-                               alignItems="center">
-                    <Label text="{{ alias }}" class="h3"
-                           height="100%"
-                           textTransform="uppercase"
-                           flexGrow="1"/>
-                    <Label text="{{ score }}" class="h3"/>
-                </FlexboxLayout>
-            </ListView.itemTemplate>
-        </ListView>
+    <GridLayout>
+        <GridLayout rows="auto, *, auto, auto" row="0">
+            <Label text="{{ L('challenge.welcome') }}" class="h1 text-center" row="0"/>
+
+            <ListView items="{{ participants }}" class="list-group" row="1" height="100%">
+                <ListView.itemTemplate>
+                    <FlexboxLayout orientation="horizontal" flexDirection="row"
+                                   class="basic-list-decorated"
+                                   tap="{{ showParticipant }}"
+                                   alignItems="center">
+                        <Label text="{{ alias }}" class="h3"
+                               height="100%"
+                               textTransform="uppercase"
+                               flexGrow="1"/>
+                        <Label text="{{ score }}" class="h3"/>
+                    </FlexboxLayout>
+                </ListView.itemTemplate>
+            </ListView>
+
+            <Button text="{{ L('challenge.update') }}" tap="updateList" class="btn btn-primary" row="2"/>
+
+        </GridLayout>
 
         <GridLayout rows="auto" row="0" class="network-progress-grid">
             <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
