@@ -15,19 +15,21 @@
     <GridLayout rows="*, auto">
         <ListView items="{{ polls }}" class="list-group" row="0">
             <ListView.itemTemplate>
-                <GridLayout tap="{{ onTap }}" class="{{ 'basic-list-decorated ' + bgcolor }}" rows="auto, auto">
-                    <GridLayout style="padding-right: 15%;" columns="*" rows="auto, auto" row="0">
+                <GridLayout class="{{ 'basic-list-decorated ' + bgcolor }}" rows="auto, auto">
+                    <GridLayout style="padding-right: 15%;" columns="*" rows="auto, auto" row="0"
+                                tap="{{ onTap }}">
                         <Label text="{{ 'Title: ' + poll.title }}" class="h2"
                                row="0" col="0"/>
                         <Label text="{{ 'Desc: ' + poll.description }}" class="h3"
                                row="1" col="0" textWrap="true"/>
                     </GridLayout>
-                    <GridLayout row="1" height="{{ height }}" tap="{{ onTap }}">
+                    <GridLayout row="1" height="{{ height }}">
                         <StackLayout row="0" style="padding: 5px; padding-top: 15px;">
-                            <ListView items="{{ choices }}">
+                            <ListView items="{{ choices }}" tap="{{ onTap }}">
                                 <ListView.itemTemplate>
-                                    <GridLayout tap="{{ onTap }}">
-                                        <Label text="{{ label }}" class="h3" style="text-align: left; margin-left: 10px;"
+                                    <GridLayout>
+                                        <Label text="{{ label }}" class="h3"
+                                               style="text-align: left; margin-left: 10px;"
                                                width="100%" row="0"/>
                                         <Label text="{{ counts }}" class="h3" style="text-align: right;"
                                                width="100%" row="0"/>

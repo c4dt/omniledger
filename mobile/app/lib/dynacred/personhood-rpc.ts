@@ -1,12 +1,13 @@
 import { Scalar } from "@dedis/kyber";
-import * as crypto from "crypto-browserify";
 import { randomBytes } from "crypto-browserify";
+import * as crypto from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
 import { IdentityWrapper, IIdentity } from "~/lib/cothority/darc";
+import ISigner from "~/lib/cothority/darc/signer";
 import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { IConnection, RosterWSConnection, WebSocketConnection } from "~/lib/cothority/network/connection";
@@ -161,6 +162,7 @@ export class PersonhoodRPC {
         const answer = new PollAnswer({
             choice,
             lrs: lrs.encode(),
+            partyID: personhood.id,
             pollID,
         });
         const ps = await this.callPoll(new Poll({
@@ -173,6 +175,13 @@ export class PersonhoodRPC {
 
     async pollWipe() {
         return this.callPoll(new Poll({byzcoinID: this.genesisID}));
+    }
+
+    async pollDelete(signer: ISigner, pollID: Buffer) {
+        const pd: PollDelete = new PollDelete({
+            identity: IdentityWrapper.fromIdentity(signer), pollID, signature: Buffer.alloc(0),
+        });
+        return this.callPoll(new Poll({byzcoinID: this.genesisID, delete: pd}));
     }
 
     async callPoll(p: Poll): Promise<PollStruct[]> {
@@ -282,6 +291,7 @@ export class Poll extends Message<Poll> {
     readonly newPoll: PollStruct;
     readonly list: PollList;
     readonly answer: PollAnswer;
+    readonly delete: PollDelete;
 
     constructor(props?: Properties<Poll>) {
         super(props);
@@ -373,8 +383,40 @@ export class PollAnswer extends Message<PollAnswer> {
     readonly pollID: Buffer;
     readonly choice: number;
     readonly lrs: Buffer;
+    readonly partyID: InstanceID;
 
     constructor(props?: Properties<PollAnswer>) {
+        super(props);
+
+        Object.defineProperty(this, "pollid", {
+            get(): Buffer {
+                return this.pollID;
+            },
+            set(value: Buffer) {
+                this.pollID = value;
+            },
+        });
+        Object.defineProperty(this, "partyid", {
+            get(): Buffer {
+                return this.partyID;
+            },
+            set(value: Buffer) {
+                this.partyID = value;
+            },
+        });
+    }
+}
+
+// PollDelete can be used to delete a given poll
+export class PollDelete extends Message<PollDelete> {
+    static register() {
+        registerMessage("PollDelete", PollDelete);
+    }
+    readonly identity: IdentityWrapper;
+    readonly pollID: Buffer;
+    readonly signature: Buffer;
+
+    constructor(props?: Properties<PollDelete>) {
         super(props);
 
         Object.defineProperty(this, "pollid", {
@@ -624,6 +666,7 @@ PollStruct.register();
 PollAnswer.register();
 PollChoice.register();
 PollResponse.register();
+PollDelete.register();
 UserLocation.register();
 Party.register();
 PartyList.register();

@@ -197,13 +197,13 @@ export class RosterWSConnection {
                         }
                         return;
                     } catch (e) {
-                        Log.catch(e);
                         Log.lvl3(idStr, "has error", e);
                         errors.push(e);
                         conn = list.replace(conn);
                         if (errors.length >= list.length / 2) {
                             // It's the last connection that also threw an error, so let's quit
                             reject(errors);
+                            conn = undefined;
                         }
                     }
                 } while (conn !== undefined);
@@ -270,10 +270,10 @@ export class Nodes {
         } else if (p > 0) {
             this._parallel = p;
         }
-        while (p > this.active.length) {
+        while (this._parallel > this.active.length) {
             this.active.push(this.reserve.shift());
         }
-        while (p < this.active.length) {
+        while (this._parallel < this.active.length) {
             this.reserve.push(this.active.pop());
         }
     }
@@ -307,7 +307,7 @@ export class Nodes {
         if (Nodes.parallel > 0) {
             this.parallel = Nodes.parallel;
         }
-        return new NodeList(this, service, this.active, this.reserve);
+        return new NodeList(this, service, this.active.slice(), this.reserve.slice());
     }
 
     /**

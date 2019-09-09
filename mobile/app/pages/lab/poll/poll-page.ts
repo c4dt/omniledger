@@ -4,11 +4,12 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { EventData } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
+import { msgOK } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { PollView } from "~/pages/lab/poll/poll-view";
 
@@ -20,7 +21,14 @@ export async function navigatingTo(args: EventData) {
     page = args.object as Page;
     elPoll = new PollView();
     page.bindingContext = elPoll;
-    setTimeout(() => updatePoll(), 1);
+    if (uData.badges.length === 0) {
+        await msgOK("Before you can answer any polls, you need to get a personhood-badge");
+        return topmost().navigate({
+            moduleName: "pages/home/home-page",
+        });
+    } else {
+        setTimeout(() => updatePoll(), 1);
+    }
 }
 
 export async function updatePoll() {
