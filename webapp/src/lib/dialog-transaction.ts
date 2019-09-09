@@ -41,7 +41,8 @@ export class DialogTransactionComponent<T> implements OnInit {
 
     async updateBlocks() {
         this.bcv.updateBlocks();
-        if (this.blockIndex < this.bcv.currentBlock.index) {
+        if (this.bcv.currentBlock &&
+            this.blockIndex < this.bcv.currentBlock.index) {
             this.blockIndex = this.bcv.currentBlock.index;
             this.addBlock();
         }
