@@ -25,10 +25,18 @@
         <Label backgroundColor="#ffffff" row="3" colSpan="2" height="3%"/>
 
         <Label text="&#xf1b8; " fontSize="100%" class="fas"
-               row="4" col="0" style="vertical-align: center; horizontal-align: center" tap="goRecover"/>
-        <StackLayout padding="10%" row="4" col="2" style="vertical-align: center;" tap="goRecover">
-            <Label text="{{ L('identity.recover') }}" class="h2" textWrap="true" style="padding: 5%;"
+               row="4" col="0" style="vertical-align: center; horizontal-align: center" tap="goChallenge"/>
+        <StackLayout padding="10%" row="4" col="2" style="vertical-align: center;" tap="goChallenge">
+            <Label text="{{ L('identity.challenge') }}" class="h2" textWrap="true" style="padding: 5%;"
                    textTransform="uppercase"/>
         </StackLayout>
+        <!-- Recovery is currently broken in the credential-contract and needs to be fixed there before it can
+        be re-enabled -->
+<!--        <Label text="&#xf1b8; " fontSize="100%" class="fas"-->
+<!--               row="4" col="0" style="vertical-align: center; horizontal-align: center" tap="goRecover"/>-->
+<!--        <StackLayout padding="10%" row="4" col="2" style="vertical-align: center;" tap="goRecover">-->
+<!--            <Label text="{{ L('identity.recover') }}" class="h2" textWrap="true" style="padding: 5%;"-->
+<!--                   textTransform="uppercase"/>-->
+<!--        </StackLayout>-->
     </GridLayout>
 </Page>

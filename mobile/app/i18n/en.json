@@ -65,7 +65,8 @@
     "title": "Identity",
     "attributes": "Attributes",
     "contacts": "Contacts",
-    "recover": "Recover"
+    "recover": "Recover",
+    "challenge": "Challenge"
   },
   "lab": {
     "title": "Lab of great ideas",
