@@ -43,6 +43,13 @@ func getRouter(cas cas.CAS) *gin.Engine {
 		))
 	})
 
+	// TODO fix synapse to support CAS 3.0, should be $cas/p3/proxyValidate
+	r.GET("/api/v0/cas/proxyValidate", func(c *gin.Context) {
+		c.XML(http.StatusOK, cas.ProxyValidateXML(
+			c.Query("service"), c.Query("ticket"),
+		))
+	})
+
 	r.GET("/", redirectToRoot)
 	r.GET("/register/*path", redirectToRoot)
 	r.GET("/admin/*path", redirectToRoot)
