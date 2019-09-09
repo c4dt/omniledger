@@ -673,7 +673,7 @@ export class Data {
         const piDarc = await DarcInstance.fromByzcoin(this.bc, ppi.darcID);
         const orgDarcs = piDarc.darc.rules.list.find((l) => l.action === "invoke:popParty.finalize").getIdentities();
         const orgPers: Point[] = [];
-        const contacts = this.contacts.concat(this.contact);
+        const contacts = [this.contact].concat(this.contacts);
 
         for (const orgDarc of orgDarcs) {
             // Remove leading "darc:" from expression
