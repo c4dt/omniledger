@@ -1,11 +1,12 @@
 import { Scalar } from "@dedis/kyber";
-import { randomBytes } from "crypto-browserify";
 import * as crypto from "crypto-browserify";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
+import { IdentityWrapper, IIdentity } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { IConnection, RosterWSConnection, WebSocketConnection } from "~/lib/cothority/network/connection";
@@ -53,6 +54,15 @@ export class PersonhoodRPC {
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             await socket.send(new PartyList({wipeparties: true}), PartyListResponse);
+        }));
+    }
+
+    // this removes one party from the list and the service, but not from byzcoin.
+    async deleteParty(partyID: InstanceID, identity: IdentityWrapper) {
+        const partydelete = new PartyDelete({partyID, identity, signature: Buffer.alloc(0)});
+        await Promise.all(this.list.map(async (addr) => {
+            const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
+            await socket.send(new PartyList({partydelete}), PartyListResponse);
         }));
     }
 
@@ -490,9 +500,31 @@ export class PartyList extends Message<PartyList> {
     }
     readonly newparty: Party;
     readonly wipeparties: boolean;
+    readonly partydelete: PartyDelete;
 
     constructor(props?: Properties<PartyList>) {
         super(props);
+    }
+}
+
+export class PartyDelete extends Message<PartyDelete> {
+    static register() {
+        registerMessage("PartyDelete", PartyDelete);
+    }
+    readonly partyID: InstanceID;
+    readonly identity: IdentityWrapper;
+    readonly signature: Buffer;
+
+    constructor(props?: Properties<PartyDelete>) {
+        super(props);
+        Object.defineProperty(this, "partyid", {
+            get(): InstanceID {
+                return this.partyID;
+            },
+            set(value: InstanceID) {
+                this.partyID = value;
+            },
+        });
     }
 }
 
@@ -555,6 +587,7 @@ PollResponse.register();
 UserLocation.register();
 Party.register();
 PartyList.register();
+PartyDelete.register();
 PartyListResponse.register();
 Meetup.register();
 MeetupResponse.register();

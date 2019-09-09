@@ -6,6 +6,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { appRootMain } from "~/app-root";
+import { IdentityWrapper } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { PopDesc } from "~/lib/cothority/personhood/proto";
@@ -279,7 +280,10 @@ export class PartyView extends Observable {
                         cancelButtonText: "Cancel",
                         // tslint:enable:object-literal-sort-keys
                     })) {
+                        elements.setProgress("Deleting party", 20);
                         const index = uData.parties.findIndex((p) => this.party === p);
+                        await uData.phrpc.deleteParty(uData.parties[index].partyInstance.id,
+                            IdentityWrapper.fromIdentity(uData.keyIdentitySigner));
                         uData.parties.splice(index, 1);
                         elements.setProgress("Updating parties", 50);
                         await elements.updateParties();
