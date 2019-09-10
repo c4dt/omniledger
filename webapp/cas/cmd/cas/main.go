@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -69,25 +69,29 @@ func getRouter(cas cas.CAS) *gin.Engine {
 	return r
 }
 
-func getCASFromOsArgs() cas.CAS {
-	if len(os.Args) != 2 {
-		log.Fatalf("usage: %s config.toml", os.Args[0])
+func parseOsArgs() (*cas.CAS, string, error) {
+	if len(os.Args) != 3 {
+		return nil, "", fmt.Errorf("usage: %s config.toml bind-addr", os.Args[0])
 	}
 	toml, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		return nil, "", err
 	}
 
 	conf, err := cas.ParseConfig(toml)
 	if err != nil {
-		log.Fatal(err)
+		return nil, "", err
 	}
 
-	return cas.NewCAS(*conf)
+	cas := cas.NewCAS(*conf)
+	return &cas, os.Args[2], nil
 }
 
 func main() {
-	cas := getCASFromOsArgs()
-	r := getRouter(cas)
-	r.Run(":4201")
+	cas, addr, err := parseOsArgs()
+	if err != nil {
+		panic(err)
+	}
+
+	getRouter(*cas).Run(addr)
 }
