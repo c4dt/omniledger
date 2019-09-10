@@ -17,7 +17,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = true;
+export let testingMode = false;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -26,8 +26,8 @@ export let bc: ByzCoinRPC;
 export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
-// Version of the app - is automatically updated from AndroidManifest.xml
-export let appVersion = "0.1.7";
+// Version of the app - this is automatically copied from package.json
+export let appVersion = "0.1.8";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 // Admin darc defining who has super powers
