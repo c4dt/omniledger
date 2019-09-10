@@ -6,7 +6,7 @@ import Log from "~/lib/cothority/log";
 import { Roster } from "~/lib/cothority/network";
 import { Data, Private } from "~/lib/dynacred";
 import { StorageFile } from "~/lib/storage-file";
-import {uData} from "~/lib/user-data";
+import { uData } from "~/lib/user-data";
 
 /**
  * This class allows for setting up a new ByzCoin system, complete with a spawnerInstance ready to create new

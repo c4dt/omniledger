@@ -27,7 +27,9 @@ android-check:
 	@if grep -q "testingMode = true" app/lib/user-data.ts; then echo "\nPUT TESTING TO FALSE IN lib/user-data.ts !!\n"; exit 1; fi
 
 update-version:
-	@REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
+	@REL=$$( grep version package.json | head -n 1 | sed -e "s/.*: .\(.*\).,/\1/" ); \
+	perl -pi -e "s/(versionName=\").*\"/\$${1}$$REL\"/" app/App_Resources/Android/src/main/AndroidManifest.xml; \
+	perl -0pi -e "s:(<key>CFBundleVersion</key>.*?<string>).*?</:\$${1}$$REL</:s" app/App_Resources/iOS/Info.plist; \
 	perl -pi -e "s/appVersion.*/appVersion = \"$$REL\";/" app/lib/user-data.ts
 
 android-compile: update-version
