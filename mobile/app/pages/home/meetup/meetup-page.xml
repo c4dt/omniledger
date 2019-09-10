@@ -2,7 +2,7 @@
       navigatingTo="navigatingTo"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Meetup"/>
+        <Label class="action-bar-title" text="{{ L('meetup.title') }}"/>
         <ActionItem tap="meetupUpdate" ios.position="right" android.position="actionBar">
             <ActionItem.actionView>
                 <Label text="&#xf2f1;  " class="fas" style="font-size: 25%;"/>
@@ -23,7 +23,7 @@
             </ListView.itemTemplate>
         </ListView>
 
-        <Button row="1" text="Add all contacts" class="btn btn-primary" tap="addContacts"/>
+        <Button row="1" text="{{ L('meetup.add_contacts') }}" class="btn btn-primary" tap="addContacts"/>
 
         <GridLayout rows="auto" row="2" class="network-progress-grid">
             <Label class="label-title" text=" "/>

@@ -23,7 +23,7 @@ This is the new personhood.online application that allows to test our latest ide
 You use this at your own risk. It stores all your data unprotected on our test-network that is open to the public internet, 
 so be sure that you're OK with that!
 
-It is written in NativeScript works and on iOS and Android.
+It is written in NativeScript and works on iOS and Android.
 
 ## New V3 Version
 

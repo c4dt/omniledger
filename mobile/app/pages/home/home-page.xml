@@ -20,9 +20,9 @@
                                      visibility="{{ hasCoins ? 'visible' : 'collapse' }}">
                             <StackLayout style="vertical-align: center">
                                 <Label text="Popcoins" class="h2"/>
-                                <Label text="{{ 'Balance: ' + coins }}" class="h3"/>
+                                <Label text="{{ L('home.balance', coins) }}" class="h3"/>
                             </StackLayout>
-                            <Button text="Send coins" tap="coins" class="btn btn-primary"/>
+                            <Button text="{{ L('home.send_coins') }}" tap="coins" class="btn btn-primary"/>
                         </StackLayout>
                         <Label text="{{ L('home.register') }}"
                                textWrap="true" class="h3"

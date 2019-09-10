@@ -4,6 +4,8 @@
   "fasd": "Username",
   "presenting": {
     "title": "Presentation",
+    "title2": "Setting Alias",
+    "title3": "Next Steps",
     "personhood": "What is Personhood?",
     "personhood_desc": [
       "Personhood.online is an experimental application that is used to try out new ideas",
@@ -57,9 +59,12 @@
     "settings": "Settings"
   },
   "home": {
-    "register": "To register, get this QRCode scanned by somebody with popcoins, or go to a personhood-party.",
+    "title": "Hello %s",
+    "register": "To register, get this QR Code scanned by somebody with popcoins, or go to a personhood-party.",
     "score": "Your Personhood-score: %s",
-    "meetup": "Start Meetup"
+    "meetup": "Start Meetup",
+    "balance": "Balance: %s",
+    "send_coins": "Send coins"
   },
   "identity": {
     "title": "Identity",
@@ -69,6 +74,7 @@
     "challenge": "Challenge"
   },
   "challenge": {
+    "title": "Challenge",
     "welcome": "High-scores",
     "update": "Update List"
   },
@@ -80,38 +86,100 @@
   },
   "settings": {
     "title": "Settings",
-    "continuousScan": "Continuous Scan",
-    "save": "Save"
+    "continuous_scan": "Continuous Scan",
+    "save": "Save",
+    "clear": "Clear all data"
   },
   "score": {
-    "title": "Personhood-score",
+    "title": "Personhood",
+    "header": "Personhood-score",
     "desc": [
       "Your personhood score is an evaluation of how much you can prove that you're a unique human being. ",
       "The higher the score, the more the system can trust that your account is uniquely tied to one person only."
     ],
     "improve": "You got %d out of %d %s. %s",
     "done": "You got all %d %s. %s",
+    "header_attributes": "Attributes",
     "attributes": "attributes",
     "attributes_improve": "Add more information to your identity.",
     "attributes_done": "Well done.",
+    "header_registrations": "Registration",
     "registrations": "registrations",
     "registrations_improve": "Get yourself registered on the blockchain by somebody who has some coins, or visit a personhood party.",
     "registrations_done": "Nice. Enjoy staying on the blockchain!",
+    "header_meetups": "Meetups",
     "meetups": "meetups",
     "meetups_improve": "Meet some people and exchange contacts. Only unique meeting groups are counted.",
     "meetups_done": "Keep up meeting other participants",
+    "header_parties": "Parties",
     "parties": "parties",
     "parties_improve": "Go to a personhood party and get your public key registered.",
     "parties_done": "Nice party-goer!",
+    "header_ropascis": "Games",
     "ropascis": "rock-paper-scissor",
     "ropascis_improve": "Play some rock-paper-scissor games.",
     "ropascis_done": "Good gamer!",
+    "header_polls": "Polls",
     "polls": "polls",
     "polls_improve": "Answer polls to raise your score.",
     "polls_done": "Fervent poller!",
+    "header_invites": "Invites",
     "invites": "invites",
     "invites_improve": "Invite and sign up new players.",
     "invites_done": "Good inviter!"
+  },
+  "meetup": {
+      "title": "Meetup",
+      "add_contacts": "Add all contacts"
+  },
+  "personhood": {
+      "title": "Manage Badges and Parties"
+  },
+  "attributes": {
+      "title": "Attributes"
+  },
+  "contacts": {
+      "title": "Manage Contacts"
+  },
+  "contact_info": {
+      "title": "Show Contact",
+      "alias": "Info for %s",
+      "email": "Email: %s",
+      "phone": "Telephone: %s",
+      "url": "Webpage: %s",
+      "instructions": "Click on the attributes to call, send email or open url.",
+      "close": "Close"
+  },
+  "add_party": {
+      "title": "Add New Party",
+      "organizers": "Organizers"
+  },
+  "scan_atts": {
+      "title": "Public Keys",
+      "finalize": "Finalize"
+  },
+  "ropascis": {
+      "title": "Play Rock Paper Scissors"
+  },
+  "add_ropascis": {
+      "title": "Configuration",
+      "header": "Description",
+      "action": "Send Game to the Blochain"
+  },
+  "polls": {
+      "title": "Answer polls anonymously"
+  },
+  "add_poll": {
+      "title": "Add Poll",
+      "action": "Save new poll"
+  },
+  "loading": {
+      "connecting": "Connecting"
+  },
+  "modal_user": {
+      "title": "Info for %s",
+      "scan": "Scan QR Code to copy user",
+      "close": "Tap to close"
   },
   "button": {
     "continue": "Continue"
