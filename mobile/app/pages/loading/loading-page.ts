@@ -7,20 +7,19 @@ logic, and to set up your page’s data binding.
 require("nativescript-nodeify");
 
 import * as application from "tns-core-modules/application";
-import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { EventData } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/page";
 import { appRootMain, appRootSetup } from "~/app-root";
-import { IdentityWrapper } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { WebSocketAdapter } from "~/lib/cothority/network";
 import { Nodes, setFactory } from "~/lib/cothority/network/connection";
 import { Data } from "~/lib/dynacred";
-import { msgFailed, msgOK } from "~/lib/messages";
+import { msgOK } from "~/lib/messages";
 import { NativescriptWebSocketAdapter } from "~/lib/nativescript-ws";
 import { StorageFile } from "~/lib/storage-file";
-import { adminDarc, appVersion, initBC, loadData, newByzCoin, speedTest, testingMode, uData } from "~/lib/user-data";
+import { appVersion, initBC, loadData, speedTest, testingMode } from "~/lib/user-data";
 
 declare const exit: (code: number) => void;
 
@@ -51,34 +50,16 @@ export async function navigatingTo(args: EventData) {
         Nodes.parallel = 1;
         if (testingMode) {
             await StorageFile.set("latest", "");
-            const actions = ["Setup", "Init Byzcoin"];
-            // tslint:disable:object-literal-sort-keys
-            switch (await dialogs.action({
-                title: "ByzCoin error",
-                message: "Couldn't contact ByzCoin, you should perhaps create a new one",
-                cancelButtonText: "Quit",
-                actions,
-                // tslint:enable:object-literal-sort-keys
-            })) {
-                case actions[0]:
-                    return appRootSetup();
-                case actions[1]:
-                    try {
-                        await newByzCoin();
-                    } catch (e) {
-                        await msgFailed(e.toString(), "Failed to setup ByzCoin");
-                        quit();
-                    }
-                    await msgOK(
-                        "A new byzcoin has been created - please update your user-data.ts",
-                        "ByzCoin created",
-                    );
-                    return appRootMain();
-            }
-            return quit();
+            return appRootSetup();
         } else {
             return again(args);
         }
+    }
+
+    const storage = await StorageFile.get(Data.defaultStorage);
+    if (!storage || storage === "") {
+        Log.lvl1("Didn't find any storage");
+        return appRootSetup();
     }
 
     Log.lvl1("Loading data");
@@ -86,35 +67,22 @@ export async function navigatingTo(args: EventData) {
         steps.push({text: "Loading Data"});
         await loadData();
         steps.push({text: "Data loaded"});
-
-        if (!uData.contact.alias || uData.contact.alias === "new identity") {
-            Log.lvl1("Looks like an empty data - going for setup");
-            return appRootSetup();
-        } else {
-            Log.lvl1("Going for main");
-            Log.print("LTS is:", uData.lts);
-            return appRootMain();
-        }
+        Log.lvl1("Going for main");
+        return appRootMain();
     } catch (e) {
         Log.catch(e);
         if (testingMode) {
+            await msgOK("go on and delete everything?" + e.toString());
             // This is a little bit dangerous, as a testing-setup could be destroyed if not handled
             // carefully. But as it's just a testing, this should be OK...
             return appRootSetup();
-        }
-    }
-
-    try {
-        // This is to be _really_ sure we don't overwrite the user's data. We could reason that it's
-        // nearly impossible to be able to connect, but not to load the user's data from BC. But, only
-        // nearly impossible...
-        if ((await StorageFile.get(Data.defaultStorage)) != null) {
+        } else {
+            // This is to be _really_ sure we don't overwrite the user's data. We could reason that it's
+            // nearly impossible to be able to connect, but not to load the user's data from BC. But, only
+            // nearly impossible...
             return again(args);
         }
-    } catch (e) {
-        Log.warn("Couldn't read data");
     }
-    return appRootSetup();
 }
 
 function quit() {

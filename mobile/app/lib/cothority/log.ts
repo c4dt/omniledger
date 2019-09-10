@@ -71,7 +71,7 @@ export class Logger {
             }
 
             // @ts-ignore
-            return (file).padEnd(20);
+            return (file).padEnd(30);
         } catch (e) {
             return this.out("Couldn't get stack - " + e.toString(), (i + 2 + +this.stackFrameOffset).toString());
         }

@@ -1,4 +1,8 @@
 import { Message, Properties } from "protobufjs/light";
+import { LongTermSecret } from "~/lib/cothority/calypso";
+import Log from "~/lib/cothority/log";
+import { KeyPair } from "~/lib/dynacred/KeyPair";
+import { uData } from "~/lib/user-data";
 import ByzCoinRPC from "../byzcoin/byzcoin-rpc";
 import ClientTransaction, { Argument, Instruction } from "../byzcoin/client-transaction";
 import CoinInstance, { Coin } from "../byzcoin/contracts/coin-instance";
@@ -31,6 +35,7 @@ export default class RoPaSciInstance extends Instance {
     get adversaryChoice(): number {
         return this.struct.secondPlayer;
     }
+
     static readonly contractID = "ropasci";
 
     /**
@@ -47,7 +52,6 @@ export default class RoPaSciInstance extends Instance {
         Promise<RoPaSciInstance> {
         return new RoPaSciInstance(bc, await Instance.fromByzcoin(bc, iid, waitMatch, interval));
     }
-
     struct: RoPaSciStruct;
     private fillUp: Buffer;
     private firstMove: number;
@@ -89,6 +93,25 @@ export default class RoPaSciInstance extends Instance {
     }
 
     /**
+     * returns true if there is a CalypsoWrite instance stored.
+     */
+    isCalypso(): boolean {
+        return !this.struct.calypsoWrite.equals(Buffer.alloc(32));
+    }
+
+    /**
+     * ourGame returns if this game belongs to the given coin.
+     * @param coinID
+     */
+    ourGame(coinID: InstanceID): boolean {
+        const player1 = this.struct.firstPlayerAccount;
+        if (player1 && !player1.equals(Buffer.alloc(32))) {
+            return player1.equals(coinID);
+        }
+        return !!this.getChoice()[1];
+    }
+
+    /**
      * Play the adversary move
      *
      * @param coin      The CoinInstance of the second player
@@ -96,12 +119,24 @@ export default class RoPaSciInstance extends Instance {
      * @param choice    The choice of the second player
      * @returns a promise that resolves on success, or rejects with the error
      */
-    async second(coin: CoinInstance, signer: Signer, choice: number): Promise<void> {
+    async second(coin: CoinInstance, signer: Signer, choice: number, lts?: LongTermSecret): Promise<void> {
         if (!coin.name.equals(this.struct.stake.name)) {
             throw new Error("not correct coin-type for player 2");
         }
         if (coin.value.lessThan(this.struct.stake.value)) {
             throw new Error("don't have enough coins to match stake");
+        }
+
+        const args = [
+            new Argument({name: "account", value: coin.id}),
+            new Argument({name: "choice", value: Buffer.from([choice % 3])}),
+        ];
+        const kp = new KeyPair();
+        if (this.isCalypso()) {
+            if (!lts) {
+                throw new Error("need LTS for calypso-ropascis");
+            }
+            args.push(new Argument({name: "public", value: kp._public.toBuffer()}));
         }
 
         const ctx = ClientTransaction.make(
@@ -121,15 +156,21 @@ export default class RoPaSciInstance extends Instance {
                 this.id,
                 RoPaSciInstance.contractID,
                 "second",
-                [
-                    new Argument({name: "account", value: coin.id}),
-                    new Argument({name: "choice", value: Buffer.from([choice % 3])}),
-                ],
+                args,
             ),
         );
         await ctx.updateCountersAndSign(this.rpc, [[signer], []]);
 
         await this.rpc.sendTransactionAndWait(ctx);
+        await this.update();
+        if (this.isCalypso()) {
+            const dreply = await lts.reencryptKey(await this.rpc.getProof(this.struct.calypsoWrite),
+                await this.rpc.getProof(this.struct.calypsoRead));
+            const preHash = await dreply.decrypt(kp._private.scalar);
+            this.firstMove = preHash[0];
+            this.fillUp = preHash.slice(1);
+            await this.confirm(coin);
+        }
     }
 
     /**
@@ -144,7 +185,7 @@ export default class RoPaSciInstance extends Instance {
             throw new Error("not correct coin-type for player 1");
         }
 
-        const preHash = Buffer.alloc(32, 0);
+        const preHash = Buffer.alloc(this.fillUp.length + 1, 0);
         preHash[0] = this.firstMove % 3;
         this.fillUp.copy(preHash, 1);
         const ctx = ClientTransaction.make(this.rpc.getProtocolVersion(), Instruction.createInvoke(
@@ -183,19 +224,22 @@ export default class RoPaSciInstance extends Instance {
  * Data hold by a rock-paper-scissors instance
  */
 export class RoPaSciStruct extends Message<RoPaSciStruct> {
+
     /**
      * @see README#Message classes
      */
     static register() {
         registerMessage("personhood.RoPaSciStruct", RoPaSciStruct);
     }
-
     readonly description: string;
     readonly stake: Coin;
     readonly firstPlayerHash: Buffer;
     readonly firstPlayer: number;
     readonly secondPlayer: number;
     readonly secondPlayerAccount: Buffer;
+    readonly firstPlayerAccount: Buffer;
+    readonly calypsoWrite: Buffer;
+    readonly calypsoRead: Buffer;
 
     constructor(props?: Properties<RoPaSciStruct>) {
         super(props);
@@ -236,6 +280,33 @@ export class RoPaSciStruct extends Message<RoPaSciStruct> {
             },
             set(value: Buffer) {
                 this.secondPlayerAccount = value;
+            },
+        });
+
+        Object.defineProperty(this, "firstplayeraccount", {
+            get(): Buffer {
+                return this.firstPlayerAccount;
+            },
+            set(value: Buffer) {
+                this.firstPlayerAccount = value;
+            },
+        });
+
+        Object.defineProperty(this, "calypsowrite", {
+            get(): Buffer {
+                return this.calypsoWrite;
+            },
+            set(value: Buffer) {
+                this.calypsoWrite = value;
+            },
+        });
+
+        Object.defineProperty(this, "calypsoread", {
+            get(): Buffer {
+                return this.calypsoRead;
+            },
+            set(value: Buffer) {
+                this.calypsoRead = value;
             },
         });
     }

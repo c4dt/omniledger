@@ -10,6 +10,7 @@ import { uData } from "~/lib/user-data";
 let page: Page;
 
 const dataForm = fromObject({
+    calypso: false,
     choice: "Rock",
     description: "",
     stake: 100,
@@ -35,9 +36,11 @@ export async function save() {
     try {
         const stake = Long.fromNumber(dataForm.get("stake"));
         const choice = ["Rock", "Paper", "Scissors"].findIndex((c) => c === dataForm.get("choice"));
-        const fillup = randomBytes(31);
+        const calypso = dataForm.get("calypso");
+        const fillup = randomBytes(calypso ? 27 : 31);
         setProgress("Creating game", 33);
         const rps = await uData.spawnerInstance.spawnRoPaSci({
+            calypso: calypso ? uData.lts : undefined,
             choice,
             coin: uData.coinInstance,
             desc: dataForm.get("description"),

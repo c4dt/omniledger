@@ -21,13 +21,13 @@ export class ChallengeViewModel extends Observable {
             this.setProgress("Updating list", 30);
             const challengers = await uData.phrpc.challenge(new ChallengeCandidate({
                 credential: uData.contact.credentialIID,
-                score: Object.values(rawToPercent(getRawData(uData))).reduce((a, b) => a + b),
+                score: Object.values(rawToPercent(getRawData(uData))).reduce((a, b) => a + b) * 2,
             }));
             this.setProgress("Searching new candidates", 60);
             await this.updateCandidates(challengers.map((challenger) => challenger.credential));
             this.participants = challengers.map((challenger) =>
                 new Participant(ChallengeViewModel.candidates.get(challenger.credential.toString("hex")),
-                    challenger.score, challenger.credential));
+                    challenger.score / 2, challenger.credential));
             this.setProgress("Done", 100);
             this.notifyPropertyChange("participants", this.participants);
         } catch (e) {

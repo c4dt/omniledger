@@ -3,8 +3,8 @@ import { Observable } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { ImageSource } from "tns-core-modules/image-source";
 import * as dialogs from "tns-core-modules/ui/dialogs";
-import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
+import Log from "~/lib/cothority/log";
 import RoPaSciInstance, { RoPaSciStruct } from "~/lib/cothority/personhood/ro-pa-sci-instance";
 import { msgFailed } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
@@ -22,7 +22,7 @@ export class RopasciView extends Observable {
         this.ropascis.splice(0);
         uData.ropascis.map((r) => r).reverse().forEach((rps, index) => {
             // Decide if this ropasci needs to be displayed:
-            if (rps.getChoice()[0] >= 0 || // it's our game
+            if (rps.ourGame(uData.coinInstance.id) || // it's our game
                 rps.struct.secondPlayer < 0 || // the second player has not played yet
                 rps.struct.secondPlayerAccount.equals(uData.coinInstance.id)) {  // we are the 2nd player
                 this.ropascis.push(new RopasciViewElement(rps, index));
@@ -119,7 +119,7 @@ export class RopasciViewElement extends Observable {
     }
 
     get ourGame(): boolean {
-        return !!this.ropasci.getChoice()[1];
+        return this.ropasci.ourGame(uData.coinInstance.id);
     }
 
     /**
@@ -167,6 +167,7 @@ export class RopasciViewElement extends Observable {
                 return "invalid";
         }
     }
+
     rps: RoPaSciStruct;
 
     constructor(public ropasci: RoPaSciInstance, public index: number) {
@@ -218,17 +219,17 @@ export class RopasciViewElement extends Observable {
                 case playRock:
                     second = true;
                     setProgress("Sending move", 50);
-                    await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 0);
+                    await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 0, uData.lts);
                     break;
                 case playPaper:
                     second = true;
                     setProgress("Sending move", 50);
-                    await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 1);
+                    await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 1, uData.lts);
                     break;
                 case playScissors:
                     second = true;
                     setProgress("Sending move", 50);
-                    await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 2);
+                    await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 2, uData.lts);
                     break;
                 case reveal:
                     setProgress("Revealing", 50);
@@ -238,6 +239,7 @@ export class RopasciViewElement extends Observable {
                     break;
             }
         } catch (e) {
+            Log.catch(e);
             if (second) {
                 await msgFailed("Somebody else joined the game before you.", "Missed your chance");
             } else {
