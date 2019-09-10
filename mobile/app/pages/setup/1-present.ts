@@ -5,12 +5,13 @@ import { openUrl } from "tns-core-modules/utils/utils";
 import { appRootMain, appRootNav } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { Data } from "~/lib/dynacred";
-import { msgFailed } from "~/lib/messages";
+import { msgFailed, msgOK } from "~/lib/messages";
 import { scan } from "~/lib/scan";
 import { StorageFile } from "~/lib/storage-file";
-import { attachDevice, initData, newByzCoin, testingMode, uData } from "~/lib/user-data";
+import { attachDevice, bc, newByzCoin, testingMode, uData } from "~/lib/user-data";
 
 const view: Observable = fromObjectRecursive({
+    hasBC: !!bc,
     networkStatus: undefined,
     testing: testingMode,
 });
@@ -21,7 +22,6 @@ export async function navigatingTo(args: EventData) {
     page = args.object as Page;
     page.bindingContext = view;
     Log.lvl1("Initializing new Data");
-    await initData();
     setProgress();
 }
 
@@ -35,6 +35,7 @@ export async function goInitTest(args: EventData) {
 
         setProgress("saving", 100);
         await uData.save();
+        await msgOK("You should update user-data.ts now");
         appRootMain();
     } catch (e) {
         await Log.rcatch(e);

@@ -18,9 +18,11 @@ This is the presentation screen when the user is not signed up yet.
                 </StackLayout>
                 <Button text="Create BC" tap="goInitTest" class="btn btn-test"
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
-                <Button text="{{ L('button.continue') }}" tap="goAlias" class="btn btn-primary"/>
-                <Button text="{{ L('presenting.scan_device') }}" tap="scanDevice" class="btn"/>
-<!--                <Button text="{{ L('presenting.recover') }}" tap="goRecover" class="btn"/>-->
+                <Button text="{{ L('button.continue') }}" tap="goAlias" class="btn btn-primary"
+                        visibility="{{ hasBC ? 'visible' : 'collapse' }}"/>
+                <Button text="{{ L('presenting.scan_device') }}" tap="scanDevice" class="btn"
+                        visibility="{{ hasBC ? 'visible' : 'collapse' }}"/>
+                <!--                <Button text="{{ L('presenting.recover') }}" tap="goRecover" class="btn"/>-->
             </StackLayout>
         </ScrollView>
 

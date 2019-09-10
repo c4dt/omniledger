@@ -29,6 +29,7 @@ export async function updateRoPaSci() {
         await uData.reloadRoPaScis();
         setProgress("Updating games", 66);
         await uData.updateRoPaScis();
+        setProgress("Updating games", 90);
         await uData.save();
         await elRoPaSci.updateRoPaScis();
     } catch (e) {

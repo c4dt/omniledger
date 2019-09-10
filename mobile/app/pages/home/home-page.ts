@@ -145,7 +145,7 @@ export async function update() {
         identity.set("alias", uData.contact.alias);
         if (!uData.contact.isRegistered() && await uData.contact.isRegisteredByzCoin(uData.bc)) {
             try {
-                await uData.contact.updateOrConnect(uData.bc);
+                await uData.connectByzcoin();
                 if (uData.contact.isRegistered()) {
                     // Need to send new credential to byzcoin
                     await uData.contact.sendUpdate([uData.keyIdentitySigner]);

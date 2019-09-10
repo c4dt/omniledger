@@ -12,12 +12,7 @@ export class StorageFile {
     static fileName = "dyna.json";
     static keyValues: any = {};
 
-    static async set(key: string, value: string) {
-        this.keyValues[key] = value;
-        await FileIO.writeFile(this.fileName, JSON.stringify(this.keyValues));
-    }
-
-    static async get(key: string): Promise<string> {
+    static async loadFile(){
         if (Object.keys(this.keyValues).length === 0) {
             try {
                 this.keyValues = strToObject(await FileIO.readFile(this.fileName));
@@ -26,6 +21,16 @@ export class StorageFile {
                 this.keyValues = {};
             }
         }
+    }
+
+    static async set(key: string, value: string) {
+        await this.loadFile();
+        this.keyValues[key] = value;
+        await FileIO.writeFile(this.fileName, JSON.stringify(this.keyValues));
+    }
+
+    static async get(key: string): Promise<string> {
+        await  this.loadFile();
         return this.keyValues[key];
     }
 

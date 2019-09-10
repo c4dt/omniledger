@@ -711,7 +711,6 @@ export class Data {
             }
         }));
         Log.lvl2("finished with searching");
-        await this.save();
         return this.ropascis;
     }
 
@@ -719,7 +718,6 @@ export class Data {
         await Promise.all(this.ropascis
             .filter((rps) => rps.struct.firstPlayer < 0)
             .map(async (rps) => rps.update()));
-        await this.save();
         return this.ropascis;
     }
 

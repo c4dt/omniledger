@@ -9,11 +9,11 @@ import { getFrameById, Page } from "tns-core-modules/ui/frame";
 import { appRootNav } from "~/app-root";
 import Log from "~/lib/cothority/log";
 import { msgFailed } from "~/lib/messages";
-import { uData } from "~/lib/user-data";
+import { initData, uData } from "~/lib/user-data";
 
 let page: Page;
 
-export function navigatingTo(args: EventData) {
+export async function navigatingTo(args: EventData) {
     page = args.object as Page;
     page.bindingContext = fromObject({
         input: {
@@ -23,6 +23,7 @@ export function navigatingTo(args: EventData) {
             url: "",
         },
     });
+    await initData();
 }
 
 // Event handler for Page "navigatingTo" event attached in main-page.xml

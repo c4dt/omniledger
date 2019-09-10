@@ -21,7 +21,7 @@
                 source="{{ dataForm }}"
                 row="1" colSpan="3"
                 isReadOnly="{{ readOnly }}">
-            <df:RadaForm.properties>
+            <df:RadDataForm.properties>
                 <df:EntityProperty name="description" index="0">
                     <df:EntityProperty.editor>
                         <df:PropertyEditor type="Text">
@@ -35,6 +35,16 @@
                 <df:EntityProperty name="stake" index="1">
                     <df:EntityProperty.editor>
                         <df:PropertyEditor type="Number">
+                            <df:PropertyEditor.propertyEditorStyle>
+                                <df:PropertyEditorStyle labelPosition="Left" labelWidth="120"
+                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
+                            </df:PropertyEditor.propertyEditorStyle>
+                        </df:PropertyEditor>
+                    </df:EntityProperty.editor>
+                </df:EntityProperty>
+                <df:EntityProperty name="calypso" index="1">
+                    <df:EntityProperty.editor>
+                        <df:PropertyEditor type="Switch">
                             <df:PropertyEditor.propertyEditorStyle>
                                 <df:PropertyEditorStyle labelPosition="Left" labelWidth="120"
                                                                 labelFontStyle="Italic" labelTextColor="#00695c"/>
@@ -56,7 +66,7 @@
                         </df:PropertyGroup.properties>
                     </df:PropertyGroup>
                 </df:RadDataForm.groups>
-            </df:RadaForm.properties>
+            </df:RadDataForm.properties>
         </df:RadDataForm>
 
         <Button text="{{ L('add_ropascis.action') }}" tap="save" class="btn btn-primary"
