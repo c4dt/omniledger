@@ -92,6 +92,7 @@ export async function navigatingTo(args: EventData) {
             return appRootSetup();
         } else {
             Log.lvl1("Going for main");
+            Log.print("LTS is:", uData.lts);
             return appRootMain();
         }
     } catch (e) {
