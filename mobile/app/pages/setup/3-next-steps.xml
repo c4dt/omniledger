@@ -3,7 +3,7 @@ Here the user can enter his alias
 -->
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Next Steps"/>
+        <Label class="action-bar-title" text="{{ L('presenting.title3') }}"/>
     </ActionBar>
     <ScrollView>
         <StackLayout class="p-20">

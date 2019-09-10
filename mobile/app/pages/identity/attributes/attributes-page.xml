@@ -3,7 +3,7 @@
       navigatingTo="navigatingTo"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Settings"></Label>
+        <Label class="action-bar-title" text="{{ L('attributes.title') }}"></Label>
     </ActionBar>
     <GridLayout columns="*">
         <ScrollView row="0">
@@ -21,7 +21,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="email" index="1" hintText="Enter email">
+                        <df:EntityProperty name="email" index="1" hintText="{{ L('presenting.email_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Email">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -31,7 +31,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="phone" index="2" hintText="Enter phone-#">
+                        <df:EntityProperty name="phone" index="2" hintText="{{ L('presenting.phone_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Phone">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -41,7 +41,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="url" index="2" hintText="Enter personal webpage">
+                        <df:EntityProperty name="url" index="2" hintText="{{ L('presenting.url_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>

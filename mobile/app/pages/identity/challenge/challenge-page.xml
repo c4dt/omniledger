@@ -2,7 +2,7 @@
       navigatingTo="navigatingTo"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Settings"></Label>
+        <Label class="action-bar-title" text="{{ L('challenge.title') }}"></Label>
     </ActionBar>
     <GridLayout>
         <GridLayout rows="auto, *, auto, auto" row="0">

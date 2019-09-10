@@ -2,13 +2,15 @@
   "app.name": "Personhood II",
   "presenting": {
     "title": "Présentation",
+    "title2": "Configuration du pseudo",
+    "title3": "Étapes suivantes",
     "personhood": "Qu'est-ce Personhood?",
     "personhood_desc": [
-      "Personhood est une application expérimentale qui est utilisé pour tester de nouvelles ",
-      "idées pour la gestion d'identités et la résistance au trolls. Elle est basée sur la ",
-      "recherche du laboratoire DEDIS de l'EPFL at développé activement par Linus Gasser. ",
-      "Cette version devrait tourner sans trop de bugs, mais tout retour via email ou répertoire ",
-      "github est la bienvenu."
+      "Personhood est une application expérimentale utilisée pour explorer de nouvelles ",
+      "idées sur la gestion d'identités et la résistance aux 'trolls'. Elle est basée sur la ",
+      "recherche du laboratoire DEDIS de l'EPFL et développée activement par Linus Gasser. ",
+      "Cette version devrait tourner sans trop de bugs, mais tout retour via email ou sur le dépôt ",
+      "github est bienvenu."
     ],
     "personhood_link": "Personhood est créé par",
     "scan_device": "Lire Identité Web",
@@ -16,8 +18,8 @@
     "identity": "Données personelles",
     "identity_desc": [
       "Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est 'alias', mais pour",
-      "plus de fonctionalité, tu peux aussi remplir les autres champs. Tu auras aussi la possibilité de faire",
-      "cela plus tard. Pour le moment, ces informations seront disponible publiquement sur nos serveurs!"
+      "accéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu auras aussi la possibilité de faire",
+      "cela plus tard. Pour le moment, ces informations seront disponibles publiquement sur nos serveurs!"
       ],
     "alias": "Pseudo",
     "alias_hint": "Saisis ton pseudonyme",
@@ -29,25 +31,25 @@
     "url_hint": "Saisis ta page web personelle",
     "poc": "Code Expérimental!",
     "asis": [
-      "Ce logiciel est donné sans garanties. Pour le moment, toutes tes données sont enregistré en clair ",
+      "Ce logiciel est fourni sans garanties. Pour le moment, toutes tes données sont enregistrés en clair ",
       "sur la blockchain du DEDIS. Les appels ne sont pas protégés, vos jetons peuvent disparaître. ",
-      "Merci de participer sur ",
+      "Merci de reporter les problèmes sur ",
       "github.com/c4dt/omniledger"
     ],
     "congrats": [
-      "Félicitations! Tu es prêts. Pour le moment, toutes tes données sont encore confinées à ton téléphone. ",
-      "Mais tu peux déjà faire des 'rencontres' et échanger ton identité."
+      "Félicitations! Tu es prêt. Pour le moment, toutes tes données sont encore confinées à ton téléphone. ",
+      "Mais tu peux déjà faire des 'rencontres' avec d'autres utilisateurs et échanger ton identité avec eux."
     ],
     "parties": [
-      "Il faut maintenant visiter une rencontre personhood. Ceci va prouver que tu es une personne unique et ",
-      "va te permettre de te connecter à notre blockchain. Une fois connectée, tu recevras des jetons plus une ",
-      "preuve de ton identité humaine. "
+      "Il faut maintenant visiter une rencontre personhood. Ceci va prouver que tu es un individu unique et ",
+      "va te permettre de te connecter à notre blockchain. Une fois connecté, tu recevras des jetons plus une ",
+      "preuve de ton identité individuelle. "
     ],
     "next_steps": [
-      "Une fois sur la blockchain, tu peux aussi jouer à 'feuille-caillou-ciseau'. Si tu as une prevued de ton ",
-      "humanité, tu peux aussi participer aux questionnaires anonymes"
+      "Une fois sur la blockchain, tu peux aussi jouer à 'feuille-caillou-ciseaux'. Si tu as une preuve de ton ",
+      "individualité, tu peux aussi participer aux sondages anonymes"
     ],
-    "go_main": "Commencer le fun"
+    "go_main": "Commencer à s'amuser"
   },
   "main": {
     "home": "Accueil",
@@ -57,9 +59,11 @@
   },
   "home": {
     "title": "Tcho %s",
-    "register": "Pour t'enregistrer, demande à quelqu'un avec des jetons de scanner ton code.",
-    "score": "Ton niveau d'humanité: %s",
-    "meetup": "Commencer une rencontre"
+    "register": "Pour t'inscrire, demande à quelqu'un qui possède des jetons de scanner ton QR Code.",
+    "score": "Ton degré d'individualité: %s",
+    "meetup": "Commencer une rencontre",
+    "balance": "Solde: %s",
+    "send_coins": "Envoyer des jetons"
   },
   "identity": {
     "title": "Identité",
@@ -69,50 +73,113 @@
     "challenge": "Concours"
   },
   "challenge": {
-    "welcome": "High-scores",
-    "update": "Update List"
+    "title": "Concours",
+    "welcome": "Classement",
+    "update": "Mettre à jour"
   },
   "lab": {
     "title": "Labo des génies",
-    "personhood": "Personhood",
-    "ropasci": "Feuille-caillou-ciseau",
-    "poll": "Questionnaires anonymes"
+    "personhood": "Individualité",
+    "ropasci": "Feuille-caillou-ciseaux",
+    "poll": "Sondages anonymes"
   },
   "settings": {
     "title": "Préférences",
-    "continuousScan": "Scan continu",
-    "save": "Enregistrer"
+    "continuous_scan": "Scan continu",
+    "save": "Enregistrer",
+    "clear": "Effacer toutes les données"
   },
   "score": {
-    "title": "Personhood-niveau",
+    "title": "Individualité",
+    "header": "Degré d'individualité",
     "desc": [
-      "Ton niveau d'humanité est une évaluation de la confiance que le système a que tu es un être humain unique. ",
-      "Plus le niveau est haut, plus le système va te faire confiance que tu ne va pas l'attaquer en te faisant passer ",
+      "Ton degré d'individualité est une évaluation faite par le système que tu es bien un individu unique. ",
+      "Plus le degré est élevé, plus le système sera confiant que tu ne va pas l'attaquer en te faisant passer ",
       "pour plusieurs personnes."
     ],
-    "improve": "Tu as fait %d de %d %s. %s",
-    "done": "Tu as complété les %d de %s. %s",
+    "improve": "Tu as fait %d sur %d %s. %s",
+    "done": "Tu as complété les %d %s. %s",
+    "header_attributes": "Attributs",
     "attributes": "attributs",
-    "attributes_improve": "Ajoute des informations sur ton identité",
+    "attributes_improve": "Ajoute des informations sur ton identité.",
     "attributes_done": "Bien joué!",
-    "registrations": "enregistration",
-    "registrations_improve": "Fais-toi enregistrer par quelqu'un qui a des jetons, ou visite une personhood-party.",
-    "registrations_done": "Super! Bonne chance sur la blockchain.",
+    "header_registrations": "Inscription",
+    "registrations": "inscription",
+    "registrations_improve": "Fais-toi inscrire par quelqu'un qui possède des jetons, ou visite une personhood-party.",
+    "registrations_done": "Super! Amuse-toi bien sur la blockchain.",
+    "header_meetups": "Rencontres",
     "meetups": "rencontres",
-    "meetups_improve": "Rencontre des autres personnes et echanges ton identité. Seulement des rencontres uniques sont comptés.",
+    "meetups_improve": "Rencontre d'autres personnes et échange tes contacts. Seules les rencontres avec des groupes distincts sont comptées.",
     "meetups_done": "Tu es au top!",
+    "header_parties": "Parties",
     "parties": "parties",
-    "parties_improve": "Visite une personhood party et fais enregistrer ton identité.",
-    "parties_done": "Salut humain!",
-    "ropascis": "feuille-caillou-ciseau",
-    "ropascis_improve": "Joue des feuille-caillou-ciseau.",
-    "ropascis_done": "Joli jouer",
-    "polls": "questionnaires",
-    "polls_improve": "Réponds à des questionnaires pour augmenter ton score.",
+    "parties_improve": "Visite une personhood party et fais inscrire ton identité.",
+    "parties_done": "Sacré fêtard!",
+    "header_ropascis": "Jeux",
+    "ropascis": "feuille-caillou-ciseaux",
+    "ropascis_improve": "Joue à des parties de feuille-caillou-ciseaux.",
+    "ropascis_done": "Tu es un bon joueur!",
+    "header_polls": "Sondages",
+    "polls": "sondages",
+    "polls_improve": "Réponds à des sondages pour augmenter ton score.",
     "polls_done": "Tu as tout répondu",
+    "header_invites": "Invitations",
     "invites": "invitations",
-    "invites_improve": "Enregistre un autre joueur.",
+    "invites_improve": "Invite d'autres joueurs et inscris-les.",
     "invites_done": "Wow - tu sais motiver les gens!"
+  },
+  "meetup": {
+      "title": "Rencontre",
+      "add_contacts": "Ajouter tous les contacts"
+  },
+  "personhood": {
+      "title": "Gestion des badges et parties"
+  },
+  "attributes": {
+      "title": "Attributs"
+  },
+  "contacts": {
+      "title": "Géstion des contacts"
+  },
+  "contact_info": {
+      "title": "Contact",
+      "alias": "Informations sur %s",
+      "email": "Courriel: %s",
+      "phone": "Téléphone: %s",
+      "url": "Page web: %s",
+      "instructions": "Clique sur les attributs pour appeler, envoyer un email ou ouvrir la page web.",
+      "close": "Fermer"
+  },
+  "add_party": {
+      "title": "Créer une nouvelle Party",
+      "organizers": "Organisateurs"
+  },
+  "scan_atts": {
+      "title": "Clés publiques",
+      "finalize": "Finaliser"
+  },
+  "ropascis": {
+      "title": "Jouer à feuille-caillou-ciseaux"
+  },
+  "add_ropascis": {
+      "title": "Configuration",
+      "header": "Description",
+      "action": "Créer le jeu dans la blockchain"
+  },
+  "polls": {
+      "title": "Répondre anonymement à des sondages"
+  },
+  "add_poll": {
+      "title": "Créer un nouveau sondage",
+      "action": "Enregistrer"
+  },
+  "loading": {
+      "connecting": "Connection en cours"
+  },
+  "modal_user": {
+      "title": "Informations sur %s",
+      "scan": "Scanne le QR Code pour copier l'utilisateur",
+      "close": "Clique pour fermer"
   },
   "button": {
     "continue": "Continuer"

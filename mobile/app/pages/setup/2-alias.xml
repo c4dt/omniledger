@@ -6,7 +6,7 @@ Here the user can enter his alias
       xmlns:df="nativescript-ui-dataform"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Setting Alias"></Label>
+        <Label class="action-bar-title" text="{{ L('presenting.title2') }}"></Label>
     </ActionBar>
     <ScrollView>
         <StackLayout class="p-20">

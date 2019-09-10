@@ -10,7 +10,7 @@
                 <df:RadDataForm id="myDataForm" source="{{ admin }}">
                     <df:RadaForm.properties>
                         <df:EntityProperty name="continuousScan" index="2"
-                                           displayName="{{ L('settings.continuousScan') }}">
+                                           displayName="{{ L('settings.continuous_scan') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -23,7 +23,7 @@
                     </df:RadaForm.properties>
                 </df:RadDataForm>
                 <Button text="{{ L('settings.save') }}" tap="tapSave" class="btn btn-primary"/>
-                <Button text="Clear all data" tap="tapClear" class="btn btn-test"/>
+                <Button text="{{ L('settings.clear') }}" tap="tapClear" class="btn btn-test"/>
                 <Button text="Share data" tap="shareData" class="btn btn-test"
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
             </StackLayout>

@@ -6,7 +6,7 @@
 
     <ActionBar class="action-bar">
         <NavigationButton text="Go Back" android:icon="res://ic_arrow_back" tap="goBack"/>
-        <Label class="action-bar-title" text="Configuration"/>
+        <Label class="action-bar-title" text="{{ L('add_ropascis.title') }}"/>
         <ActionItem tap="save"
                     ios.systemIcon="0" ios.position="right"
                     android:icon="res://ic_done" android.position="actionBar"
@@ -15,7 +15,7 @@
 
     <GridLayout class="page-content" rows="auto, auto, auto, *, auto"
                 columns="*,auto,*">
-        <Label class="label-title" text="Description" row="0" col="0" colSpan="3"/>
+                <Label class="label-title" text="{{ L('add_ropascis.header') }}" row="0" col="0" colSpan="3"/>
         <df:RadDataForm
                 id="data-form"
                 source="{{ dataForm }}"
@@ -59,7 +59,7 @@
             </df:RadaForm.properties>
         </df:RadDataForm>
 
-        <Button text="Send Game to ByzCoin" tap="save" class="btn btn-primary"
+        <Button text="{{ L('add_ropascis.action') }}" tap="save" class="btn btn-primary"
                 row="2" colSpan="3"/>
 
         <Label text="" row="3"/>
