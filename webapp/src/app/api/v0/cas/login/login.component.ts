@@ -34,9 +34,16 @@ export class LoginComponent implements OnInit {
     ].map((l) => [l[0], Buffer.from(l[1], "hex")]));
     private static readonly coinCost = 1;
     private static readonly challengeSize = 20;
-    private static readonly challengeHash = "sha256";
-    private static readonly ticketEncoding = "base64";
     private static readonly txArgName = "challenge";
+    private static readonly challengeHasher = (val) => {
+        const hash = crypto.createHash("sha256");
+        hash.update(val);
+        return hash.digest();
+    }
+    private static readonly ticketEncoder = (buf: Buffer) =>
+        buf.toString("base64")
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
 
     state: State;
     readonly service: string;
@@ -79,7 +86,7 @@ export class LoginComponent implements OnInit {
 
         const nextLocation = this.redirect;
         nextLocation.searchParams.append("ticket",
-            `ST-${this.ticket.toString(LoginComponent.ticketEncoding)}`);
+            `ST-${LoginComponent.ticketEncoder(this.ticket)}`);
 
         window.location.replace(nextLocation.href);
     }
@@ -99,9 +106,7 @@ export class LoginComponent implements OnInit {
      * @return	success if we managed to put the challenge
      */
     private async putChallenge(challenge: Buffer): Promise<boolean> {
-        const hash = crypto.createHash(LoginComponent.challengeHash);
-        hash.update(challenge);
-        const challengeHashed = hash.digest();
+        const challengeHashed = LoginComponent.challengeHasher(challenge);
 
         const coinInstID = LoginComponent.coinInstanceIDForService.get(this.service);
         if (coinInstID === undefined) {
