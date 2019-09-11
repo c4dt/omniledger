@@ -168,7 +168,8 @@ export default class RoPaSciInstance extends Instance {
                 await this.rpc.getProof(this.struct.calypsoRead));
             const preHash = await dreply.decrypt(kp._private.scalar);
             this.firstMove = preHash[0];
-            this.fillUp = preHash.slice(1);
+            this.fillUp = Buffer.alloc(31);
+            preHash.slice(1).copy(this.fillUp);
             await this.confirm(coin);
         }
     }

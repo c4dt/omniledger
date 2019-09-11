@@ -340,9 +340,8 @@ export default class SpawnerInstance extends Instance {
     async spawnRoPaSci(params: ICreateRoPaSci): Promise<RoPaSciInstance> {
         const {desc, coin, signers, stake, choice, fillup, calypso} = params;
 
-        const fillupBytes = calypso ? 27 : 31;
-        if (fillup.length !== fillupBytes) {
-            throw new Error("need exactly " + fillupBytes + " bytes for fillUp");
+        if (fillup.length !== 31) {
+            throw new Error("need exactly " + 31 + " bytes for fillUp");
         }
 
         const c = new Coin({name: coin.name, value: stake.add(this.struct.costRoPaSci.value)});
@@ -350,7 +349,7 @@ export default class SpawnerInstance extends Instance {
             throw new Error("account balance not high enough for that stake");
         }
 
-        const preHash = Buffer.alloc(fillupBytes + 1);
+        const preHash = Buffer.alloc(32);
         preHash.writeInt8(choice % 3, 0);
         fillup.copy(preHash, 1);
         const fph = createHash("sha256");
@@ -370,7 +369,7 @@ export default class SpawnerInstance extends Instance {
             const wcH = createHash("sha256");
             wcH.update(rps.firstPlayerHash);
             const writeCommit = wcH.digest();
-            const w = await Write.createWrite(calypso.id, writeCommit, calypso.X, preHash);
+            const w = await Write.createWrite(calypso.id, writeCommit, calypso.X, preHash.slice(0, 28));
             const writeBuf = Write.encode(w).finish();
             rpsArgs.push(new Argument({name: "secret", value: Buffer.from(writeBuf)}));
         }
