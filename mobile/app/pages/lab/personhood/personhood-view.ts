@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { sprintf } from "sprintf-js";
 import { Observable } from "tns-core-modules/data/observable";
 import { Folder, knownFolders, path } from "tns-core-modules/file-system";
@@ -128,9 +129,9 @@ export class BadgeView extends Observable {
             return null;
         }
         if (uData.contact.isRegistered()) {
-            return "Mine Coins";
+            return localize("personhood.mine_coins");
         } else {
-            return "Register on byzcoin";
+            return localize("personhood.register");
         }
     }
 
