@@ -10,46 +10,46 @@
       "idées sur la gestion d'identités et la résistance aux 'trolls'. Elle est basée sur la ",
       "recherche du laboratoire DEDIS de l'EPFL et développée activement par Linus Gasser. ",
       "Cette version devrait tourner sans trop de bugs, mais tout retour via email ou sur le dépôt ",
-      "github est bienvenu."
+      "github est le bienvenu."
     ],
     "personhood_link": "Personhood est créé par",
     "scan_device": "Lire Identité Web",
     "recover": "Récupérer compte",
     "identity": "Données personelles",
     "identity_desc": [
-      "Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est 'alias', mais pour",
+      "Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est 'pseudo', mais pour",
       "accéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu auras aussi la possibilité de faire",
-      "cela plus tard. Pour le moment, ces informations seront disponibles publiquement sur nos serveurs!"
+      "cela plus tard. Attention: actuellement, ces informations seront disponibles publiquement sur nos serveurs!"
       ],
     "alias": "Pseudo",
     "alias_hint": "Saisis ton pseudonyme",
     "email": "Courriel",
     "email_hint": "Saisis ton courriel",
     "phone": "Tél",
-    "phone_hint": "Saisis ton numbéro de téléphone",
+    "phone_hint": "Saisis ton numéro de téléphone",
     "url": "Web",
     "url_hint": "Saisis ta page web personelle",
     "poc": "Code Expérimental!",
     "asis": [
-      "Ce logiciel est fourni sans garanties. Pour le moment, toutes tes données sont enregistrés en clair ",
-      "sur la blockchain du DEDIS. Les appels ne sont pas protégés, vos jetons peuvent disparaître. ",
-      "Merci de reporter les problèmes sur ",
+      "Ce logiciel est fourni sans garanties. Pour le moment, toutes tes données sont enregistrées en clair ",
+      "sur la blockchain du DEDIS. Les appels ne sont pas protégés, tes jetons peuvent disparaître. ",
+      "Merci de reporter les problèmes rencontrés sur ",
       "github.com/c4dt/omniledger"
     ],
     "congrats": [
       "Félicitations! Tu es prêt. Pour le moment, toutes tes données sont encore confinées à ton téléphone. ",
-      "Mais tu peux déjà faire des 'rencontres' avec d'autres utilisateurs et échanger ton identité avec eux."
+      "Mais tu peux déjà faire des rencontres avec d'autres utilisateurs et échanger ton identité avec eux."
     ],
     "parties": [
-      "Il faut maintenant visiter une rencontre personhood. Ceci va prouver que tu es un individu unique et ",
-      "va te permettre de te connecter à notre blockchain. Une fois connecté, tu recevras des jetons plus une ",
+      "Il faut maintenant visiter une rencontre 'Personhood'. Ceci prouvera que tu es un individu unique et ",
+      "te permettra de t'inscrire sur notre blockchain. Une fois inscrit, tu recevras des jetons ainsi qu'une ",
       "preuve de ton identité individuelle. "
     ],
     "next_steps": [
       "Une fois sur la blockchain, tu peux aussi jouer à 'feuille-caillou-ciseaux'. Si tu as une preuve de ton ",
-      "individualité, tu peux aussi participer aux sondages anonymes"
+      "individualité, tu peux aussi participer aux sondages anonymes."
     ],
-    "go_main": "Commencer à s'amuser"
+    "go_main": "Allons-y!"
   },
   "main": {
     "home": "Accueil",
@@ -58,13 +58,13 @@
     "settings": "Préf."
   },
   "home": {
-    "title": "Tcho %s",
+    "title": "Salut %s",
     "register": "Pour t'inscrire, demande à quelqu'un de t'inviter et de scanner ce QR Code, ou visite une rencontre 'Personhood'.",
     "score": "Ton degré d'individualité: %s",
     "meetup": "Commencer une rencontre",
     "balance": "Solde: %s",
     "send_coins": "Envoyer des jetons",
-    "invite": "Inviter"
+    "invite": "Inviter quelqu'un"
   },
   "identity": {
     "title": "Identité",
@@ -76,7 +76,7 @@
   "challenge": {
     "title": "Concours",
     "welcome": "Classement",
-    "update": "Mettre à jour"
+    "update": "Mise à jour"
   },
   "lab": {
     "title": "Labo des génies",
@@ -95,7 +95,7 @@
     "header": "Degré d'individualité",
     "desc": [
       "Ton degré d'individualité est une évaluation faite par le système que tu es bien un individu unique. ",
-      "Plus le degré est élevé, plus le système sera confiant que tu ne va pas l'attaquer en te faisant passer ",
+      "Plus ce degré est élevé, plus le système sera confiant que tu ne va pas l'attaquer en te faisant passer ",
       "pour plusieurs personnes."
     ],
     "improve": "Tu as fait %d sur %d %s. %s",
@@ -106,10 +106,10 @@
     "attributes_done": "Bien joué!",
     "header_registrations": "Inscription",
     "registrations": "inscription",
-    "registrations_improve": "Fais-toi inscrire par quelqu'un qui possède des jetons, ou visite une personhood-party.",
+    "registrations_improve": "Fais-toi inscrire en demandant à quelqu'un de t'inviter, ou visite une rencontre 'Personhood'.",
     "registrations_done": "Super! Amuse-toi bien sur la blockchain.",
-    "header_meetups": "Rencontres",
-    "meetups": "rencontres",
+    "header_meetups": "Rencontres informelles",
+    "meetups": "rencontres informelles",
     "meetups_improve": "Rencontre d'autres personnes et échange tes contacts. Seules les rencontres avec des groupes distincts sont comptées.",
     "meetups_done": "Tu es au top!",
     "header_parties": "Rencontres",
@@ -130,7 +130,7 @@
     "invites_done": "Wow - tu sais motiver les gens!"
   },
   "meetup": {
-      "title": "Rencontre",
+      "title": "Rencontre informelle",
       "add_contacts": "Ajouter tous les contacts"
   },
   "personhood": {
@@ -154,7 +154,7 @@
       "close": "Fermer"
   },
   "add_party": {
-      "title": "Créer une nouvelle Party",
+      "title": "Créer une nouvelle rencontre",
       "organizers": "Organisateurs"
   },
   "scan_atts": {
