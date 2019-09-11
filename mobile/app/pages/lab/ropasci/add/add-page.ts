@@ -37,7 +37,13 @@ export async function save() {
         const stake = Long.fromNumber(dataForm.get("stake"));
         const choice = ["Rock", "Paper", "Scissors"].findIndex((c) => c === dataForm.get("choice"));
         const calypso = dataForm.get("calypso");
-        const fillup = randomBytes(calypso ? 27 : 31);
+        const fillup = Buffer.from(randomBytes(31));
+        if (calypso) {
+            // Calypso rps can only use 27 fillup bytes, but we need to give 31 anyway. So fill the
+            // last 4 bytes with 0s, so that player 2 can know them. 27*8 bits should be enough for
+            // everybody...
+            fillup.fill(0, 27, 31);
+        }
         setProgress("Creating game", 33);
         const rps = await uData.spawnerInstance.spawnRoPaSci({
             calypso: calypso ? uData.lts : undefined,
