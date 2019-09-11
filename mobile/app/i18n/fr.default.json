@@ -59,7 +59,7 @@
   },
   "home": {
     "title": "Tcho %s",
-    "register": "Pour t'inscrire, demande à quelqu'un qui possède des jetons de scanner ton QR Code.",
+    "register": "Pour t'inscrire, demande à quelqu'un de t'inviter et de scanner ce QR Code, ou visite une rencontre 'Personhood'.",
     "score": "Ton degré d'individualité: %s",
     "meetup": "Commencer une rencontre",
     "balance": "Solde: %s",
@@ -112,9 +112,9 @@
     "meetups": "rencontres",
     "meetups_improve": "Rencontre d'autres personnes et échange tes contacts. Seules les rencontres avec des groupes distincts sont comptées.",
     "meetups_done": "Tu es au top!",
-    "header_parties": "Parties",
-    "parties": "parties",
-    "parties_improve": "Visite une personhood party et fais inscrire ton identité.",
+    "header_parties": "Rencontres",
+    "parties": "rencontres",
+    "parties_improve": "Visite une rencontre 'Personhood' et fais inscrire ton identité.",
     "parties_done": "Sacré fêtard!",
     "header_ropascis": "Jeux",
     "ropascis": "feuille-caillou-ciseaux",
@@ -134,7 +134,9 @@
       "add_contacts": "Ajouter tous les contacts"
   },
   "personhood": {
-      "title": "Gestion des badges et parties"
+      "title": "Gestion des badges et rencontres",
+      "mine_coins": "Miner des PopCoins",
+      "register": "S'inscrire sur ByzCoin et Miner des PopCoins"
   },
   "attributes": {
       "title": "Attributs"

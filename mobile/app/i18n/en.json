@@ -60,7 +60,7 @@
   },
   "home": {
     "title": "Hello %s",
-    "register": "To register, get this QR Code scanned by somebody with popcoins, or go to a personhood-party.",
+    "register": "To register, ask someone to invite you and scan this QR Code, or go to a personhood-party.",
     "score": "Your Personhood-score: %s",
     "meetup": "Start Meetup",
     "balance": "Balance: %s",
@@ -134,7 +134,9 @@
       "add_contacts": "Add all contacts"
   },
   "personhood": {
-      "title": "Manage Badges and Parties"
+      "title": "Manage Badges and Parties",
+      "mine_coins": "Mine Coins",
+      "register": "Register on ByzCoin and Mine Coins"
   },
   "attributes": {
       "title": "Attributes"
