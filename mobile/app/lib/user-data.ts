@@ -17,7 +17,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = false;
+export let testingMode = true;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -108,9 +108,9 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("4ce651a3a5172241baff80bbf0c5f6eb83ad77c51fd06808d127ac56688420fa", "hex");
-        spawnerID = Buffer.from("22ec243c577c16debfa97b6086c48a2a6150ede4dc099a15f372240181e92391", "hex");
-        adminDarc = Buffer.from("b11b8ef2a60d4bd15d1b2859c40f8f2bd6ad14c7ed6860fa4409a024e86e6f50", "hex");
+        byzCoinID = Buffer.from("8b41d0affd0abd5e6d84e5b726e190865a4338863e064e0c64ca54435f130e8d", "hex");
+        spawnerID = Buffer.from("3cc9b08f04a54c977902cf0f5fb0f1a11b5004f682a12431431008fdd9ae45f8", "hex");
+        adminDarc = Buffer.from("9ac7e4d8821019f3169253444be9c57bda8c8fbaa9c574d311025008320218d7", "hex");
 
         let latest: SkipBlock;
         try {
