@@ -65,7 +65,7 @@
     "meetup": "Start Meetup",
     "balance": "Balance: %s",
     "send_coins": "Send coins",
-    "invite": "Invite"
+    "invite": "Invite someone"
   },
   "identity": {
     "title": "Identity",
@@ -106,7 +106,7 @@
     "attributes_done": "Well done.",
     "header_registrations": "Registration",
     "registrations": "registrations",
-    "registrations_improve": "Get yourself registered on the blockchain by somebody who has some coins, or visit a personhood party.",
+    "registrations_improve": "Get yourself registered on the blockchain by asking someone to invite you, or visit a personhood party.",
     "registrations_done": "Nice. Enjoy staying on the blockchain!",
     "header_meetups": "Meetups",
     "meetups": "meetups",
