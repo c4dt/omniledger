@@ -22,7 +22,7 @@
                                 <Label text="Popcoins" class="h2"/>
                                 <Label text="{{ L('home.balance', coins) }}" class="h3"/>
                             </StackLayout>
-                            <Button text="{{ L('home.send_coins') }}" tap="coins" class="btn btn-primary"/>
+                            <Button text="{{ L('home.invite') }}" tap="coins" class="btn btn-primary"/>
                         </StackLayout>
                         <Label text="{{ L('home.register') }}"
                                textWrap="true" class="h3"
@@ -48,9 +48,9 @@
                         <Label width="{{ widthRegistered }}" text=" "
                                style="horizontal-align:left; opacity:0.5; background-color: #9DBAD5;"
                                row="0" col="1"/>
-                        <Label width="{{ widthMeetups }}" text=" "
-                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"
-                               row="0" col="2"/>
+<!--                        <Label width="{{ widthMeetups }}" text=" "-->
+<!--                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"-->
+<!--                               row="0" col="2"/>-->
                         <Label width="{{ widthParty }}" text=" "
                                style="horizontal-align:left; opacity:0.5; background-color: #C8D6B9;"
                                row="0" col="3"/>
@@ -73,7 +73,7 @@
                 </StackLayout>
 
                 <StackLayout row="3">
-                    <Button text="{{ L('home.meetup') }}" tap="meetup" class="btn"/>
+<!--                    <Button text="{{ L('home.meetup') }}" tap="meetup" class="btn"/>-->
                     <Button text="Cycle personhood" tap="cyclePersonhood" class="btn btn-test"
                             visibility="{{ testing ? 'visible' : 'collapse' }}"/>
                 </StackLayout>

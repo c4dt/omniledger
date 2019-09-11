@@ -64,7 +64,8 @@
     "score": "Your Personhood-score: %s",
     "meetup": "Start Meetup",
     "balance": "Balance: %s",
-    "send_coins": "Send coins"
+    "send_coins": "Send coins",
+    "invite": "Invite"
   },
   "identity": {
     "title": "Identity",

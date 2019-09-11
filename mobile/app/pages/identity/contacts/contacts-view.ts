@@ -19,6 +19,7 @@ export class ContactsView extends Observable {
         this._networkStatus = str;
         this.notifyPropertyChange("networkStatus", this._networkStatus);
     }
+
     private _users: UserView[];
 
     private _networkStatus: string;
@@ -120,6 +121,64 @@ export class UserView extends Observable {
             }
 
             // contacts.notifyUpdate();
+        } catch (e) {
+            Log.catch(e);
+            await msgFailed(e.toString(), "Error");
+        }
+        progress();
+    }
+
+    static async inviteUser(u: Contact, progress: any) {
+        try {
+            progress("Check if user is registered", 15);
+            if (!u.isRegistered()) {
+                if (await uData.canPay(uData.signupCost())) {
+                    // tslint:disable:object-literal-sort-keys
+                    const pay = await dialogs.confirm({
+                        title: "Invite user",
+                        message: "This user is not invited yet - do you want to pay " +
+                            10000 + uData.signupCost().toString() + " to invite the user " +
+                            u.alias + "?",
+                        okButtonText: "Yes, pay",
+                        cancelButtonText: "No, don't pay",
+                    });
+                    if (pay) {
+                        progress("Register user", 20);
+                        await uData.registerContact(u, Long.fromNumber(0), progress);
+                    }
+                    if (!(await u.isRegistered())) {
+                        throw new Error("registration failed");
+                    }
+                    progress("User registered", 30);
+                    uData.references.push(u.alias);
+                    progress("Saving data", 40);
+                    await uData.save();
+                } else {
+                    progress("Refused to pay", -100);
+                    await msgFailed("The use you want to pay is unregistered. " +
+                        "You do not have enough coins to invite an unregistered user.");
+                    progress();
+                    return;
+                }
+            } else {
+                await msgOK("This user is already on the blockchain - invite another one!");
+                return;
+            }
+            const coins = Long.fromNumber(10000);
+            if (await uData.canPay(coins)) {
+                const target = u.getCoinAddress();
+                if (target) {
+                    progress("Transferring coin", 50);
+                    await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
+                    progress("Success", 100);
+                    await msgOK("Transferred " + coins.toString() + " to " + u.alias);
+                    progress();
+                } else {
+                    await msgFailed("couldn't get targetAddress");
+                }
+            } else {
+                await msgFailed("Cannot pay " + coins.toString() + " coins.");
+            }
         } catch (e) {
             Log.catch(e);
             await msgFailed(e.toString(), "Error");

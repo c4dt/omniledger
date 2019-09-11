@@ -36,10 +36,10 @@ export function rawToPercent(data: IScore): IScore {
         attributes: 10 * data.attributes / 4,
         // invites: 15%
         invites: 3 * data.invites,
-        // meetups: 15%
-        meetups: 5 * data.meetups,
-        // parties: 25%
-        parties: [0, 20, 25][data.parties],
+        // meetups: 0%
+        meetups: 0 * data.meetups,
+        // parties: 40%
+        parties: [0, 25, 40][data.parties],
         // polls: 15%
         polls: 5 * data.polls,
         // registered: 5%
