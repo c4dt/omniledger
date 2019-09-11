@@ -20,14 +20,17 @@ export class RopasciView extends Observable {
 
     async updateRoPaScis() {
         this.ropascis.splice(0);
+        const rpsTmp: RopasciViewElement[] = [];
         uData.ropascis.map((r) => r).reverse().forEach((rps, index) => {
             // Decide if this ropasci needs to be displayed:
             if (rps.ourGame(uData.coinInstance.id) || // it's our game
                 rps.struct.secondPlayer < 0 || // the second player has not played yet
                 rps.struct.secondPlayerAccount.equals(uData.coinInstance.id)) {  // we are the 2nd player
-                this.ropascis.push(new RopasciViewElement(rps, index));
+                rpsTmp.push(new RopasciViewElement(rps, index));
             }
         });
+        rpsTmp.sort((a, b) => a.order() - b.order());
+        this.ropascis.push(...rpsTmp);
         elRoPaSci.notifyPropertyChange("ropascis", this.ropascis);
         this.ropascis.forEach((rps: RopasciViewElement) => {
             rps.updateColor();
@@ -182,6 +185,18 @@ export class RopasciViewElement extends Observable {
         //     pb.setInlineStyle(this.style);
         // }
         this.notifyPropertyChange("style", this.style);
+    }
+
+    order(): number {
+        const id = this.ropasci.id.readUInt16BE(0) / 65536;
+        switch (this.step) {
+            case 0:
+                return (this.ourGame ? 2 : 1) + id;
+            case 1:
+                return id;
+            case 2:
+                return 3 + id;
+        }
     }
 
     async onTap(arg: GestureEventData) {

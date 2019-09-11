@@ -72,14 +72,11 @@ export async function navigatingTo(args: EventData) {
     } catch (e) {
         Log.catch(e);
         if (testingMode) {
-            await msgOK("go on and delete everything?" + e.toString());
-            // This is a little bit dangerous, as a testing-setup could be destroyed if not handled
-            // carefully. But as it's just a testing, this should be OK...
             return appRootSetup();
         } else {
             // This is to be _really_ sure we don't overwrite the user's data. We could reason that it's
             // nearly impossible to be able to connect, but not to load the user's data from BC. But, only
-            // nearly impossible...
+            // nearly impossible... see also https://xkcd.com/2200/
             return again(args);
         }
     }
