@@ -111,9 +111,9 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("4ce651a3a5172241baff80bbf0c5f6eb83ad77c51fd06808d127ac56688420fa", "hex");
-        spawnerID = Buffer.from("22ec243c577c16debfa97b6086c48a2a6150ede4dc099a15f372240181e92391", "hex");
-        adminDarc = Buffer.from("b11b8ef2a60d4bd15d1b2859c40f8f2bd6ad14c7ed6860fa4409a024e86e6f50", "hex");
+        byzCoinID = Buffer.from("452385ccc020bb1044d559b03105f5212e132f9b862d676e2a865aa9cc91a9e8", "hex");
+        spawnerID = Buffer.from("de64ec62402132e92ef0530be19e78fb72ee6fd8900447355dc18030ed8247e2", "hex");
+        adminDarc = Buffer.from("82358e4bfb6f258ad45dfe469221ce9456db7b0c5367aa258cead1c39b0c3219", "hex");
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");

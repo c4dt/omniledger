@@ -12,7 +12,7 @@ export class StorageFile {
     static fileName = "dyna.json";
     static keyValues: any = {};
 
-    static async loadFile(){
+    static async loadFile() {
         if (Object.keys(this.keyValues).length === 0) {
             try {
                 this.keyValues = strToObject(await FileIO.readFile(this.fileName));
