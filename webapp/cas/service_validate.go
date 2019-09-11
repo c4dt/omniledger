@@ -204,7 +204,7 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 		return "", err
 	}
 
-	return hex.EncodeToString(userID[:8]), nil
+	return "ol-" + hex.EncodeToString(userID[:8]), nil
 }
 
 // ServiceValidateXML implement cas:/p3/serviceValidate

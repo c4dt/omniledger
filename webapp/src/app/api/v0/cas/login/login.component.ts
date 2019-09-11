@@ -27,10 +27,8 @@ export class LoginComponent implements OnInit {
 
     // TODO eww, better use Config (as a service maybe?)
     private static readonly coinInstanceIDForService: Map<string, InstanceID> = new Map([
-        ["localhost", "8c22411f1aaf3248542f6b677fd066db3178bc0a2b60adc2aaa9d6cc80938b0f"],
-        // TODO use correct hex, ie CoinInstance's one
-        ["c4dt.org", ""],
-        ["matrix.c4dt.org", ""],
+        ["c4dt.org", "aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"],
+        ["matrix.c4dt.org:8448", "90b03f42b85540981f71a5e52f18e1df94a6ae68cd34ced132282a6219c2ad3d"],
     ].map((l) => [l[0], Buffer.from(l[1], "hex")]));
     private static readonly coinCost = 1;
     private static readonly challengeSize = 20;
