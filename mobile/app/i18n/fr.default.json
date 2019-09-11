@@ -63,7 +63,8 @@
     "score": "Ton degré d'individualité: %s",
     "meetup": "Commencer une rencontre",
     "balance": "Solde: %s",
-    "send_coins": "Envoyer des jetons"
+    "send_coins": "Envoyer des jetons",
+    "invite": "Inviter"
   },
   "identity": {
     "title": "Identité",

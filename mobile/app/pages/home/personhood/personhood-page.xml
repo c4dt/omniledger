@@ -21,11 +21,11 @@
                 <Label text="{{ registrations_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{registrations_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-            <Label text="{{ L('score.hedaer_meetups') }}" class="h2 text-center"/>
-            <StackLayout orientation="horizontal">
-                <Label text="{{ meetups_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
-                <Label text="{{meetups_rundown}}" class="h3" textWrap="true"/>
-            </StackLayout>
+<!--            <Label text="{{ L('score.hedaer_meetups') }}" class="h2 text-center"/>-->
+<!--            <StackLayout orientation="horizontal">-->
+<!--                <Label text="{{ meetups_rundown_label }}" class="fas h2" style="vertical-align: center;"/>-->
+<!--                <Label text="{{meetups_rundown}}" class="h3" textWrap="true"/>-->
+<!--            </StackLayout>-->
             <Label text="{{ L('score.hedaer_parties') }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ parties_rundown_label }}" class="fas h2" style="vertical-align: center;"/>

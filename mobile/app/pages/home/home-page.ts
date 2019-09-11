@@ -184,7 +184,7 @@ export async function coins(args: EventData) {
         setProgress("Updating contact list", 10);
         await uData.addContact(u);
         await uData.save();
-        await UserView.payUser(u, setProgress);
+        await UserView.inviteUser(u, setProgress);
         await update();
         await uData.save();
     } catch (e) {

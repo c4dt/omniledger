@@ -17,7 +17,7 @@ export async function navigatingTo(args: EventData) {
         const count = getRawData(uData);
         addRundown(count.attributes, max.attributes, "attributes");
         addRundown(count.registered, max.registered, "registrations");
-        addRundown(count.meetups, max.meetups, "meetups");
+        // addRundown(count.meetups, max.meetups, "meetups");
         addRundown(count.parties, max.parties, "parties");
         addRundown(count.roPaScis, max.roPaScis, "ropascis");
         addRundown(count.polls, max.polls, "polls");
