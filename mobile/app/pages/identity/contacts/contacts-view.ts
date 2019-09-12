@@ -1,4 +1,5 @@
 import Long from "long";
+import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
@@ -107,16 +108,16 @@ export class UserView extends Observable {
                 if (await uData.canPay(coins)) {
                     const target = u.getCoinAddress();
                     if (target) {
-                        progress("Transferring coin", 50);
+                        progress(localize("contacts.transfer"), 50);
                         await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
-                        progress("Success", 100);
-                        await msgOK("Transferred " + coins.toString() + " to " + u.alias);
+                        progress(localize("progress.success"), 100);
+                        await msgOK(localize("contacts.transferred", coins.toString(), u.alias));
                         progress();
                     } else {
-                        await msgFailed("couldn't get targetAddress");
+                        await msgFailed(localize("contacts.transfer_fail1"));
                     }
                 } else {
-                    await msgFailed("Cannot pay " + coins.toString() + " coins.");
+                    await msgFailed(localize("contacts.transfer_fail2", coins.toString()));
                 }
             }
 
@@ -203,16 +204,16 @@ export class UserView extends Observable {
             cancelButtonText: "Keep",
         })) {
             try {
-                setProgress("Deleting user from internal list", 20);
+                setProgress(localize("contacts.deleting"), 20);
                 uData.rmContact(this._user);
-                setProgress("Updating all other users", 40);
+                setProgress(localize("contacts.updating_others"), 40);
                 friendsUpdateList();
-                setProgress("Saving list to ByzCoin", 60);
+                setProgress(localize("contacts.saving_byzcoin"), 60);
                 await uData.save();
-                setProgress("Done", 100);
+                setProgress(localize("progress.done"), 100);
             } catch (e) {
                 Log.catch(e);
-                setProgress(e.toString(), -100);
+                setProgress(localize("progress.error", e.toString()), -100);
             }
             setProgress();
         }
@@ -231,12 +232,12 @@ export class UserView extends Observable {
 
     async credUser(arg: ItemEventData) {
         try {
-            setProgress("Fetching latest " + this._user.alias, 33);
+            setProgress(localize("contacts.fetching", this._user.alias), 33);
             await this._user.updateOrConnect(uData.bc);
-            setProgress("Saving data", 66);
+            setProgress(localize("progress.saving"), 66);
             await uData.save();
             this.notifyPropertyChange("isRegistered", this.isRegistered);
-            setProgress("Done", 100);
+            setProgress(localize("progress.done"), 100);
         } catch (e) {
             Log.catch("Couldn't update", this.alias, e);
         }

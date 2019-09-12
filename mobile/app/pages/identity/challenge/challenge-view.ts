@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 import { InstanceID } from "~/lib/cothority/byzcoin";
@@ -18,17 +19,17 @@ export class ChallengeViewModel extends Observable {
 
     async updateList() {
         try {
-            this.setProgress("Updating list", 30);
+            this.setProgress(localize("challenge.updating"), 30);
             const challengers = await uData.phrpc.challenge(new ChallengeCandidate({
                 credential: uData.contact.credentialIID,
                 score: Object.values(rawToPercent(getRawData(uData))).reduce((a, b) => a + b) * 2,
             }));
-            this.setProgress("Searching new candidates", 60);
+            this.setProgress(localize("challenge.searching"), 60);
             await this.updateCandidates(challengers.map((challenger) => challenger.credential));
             this.participants = challengers.map((challenger) =>
                 new Participant(ChallengeViewModel.candidates.get(challenger.credential.toString("hex")),
                     challenger.score / 2, challenger.credential));
-            this.setProgress("Done", 100);
+            this.setProgress(localize("progress.done"), 100);
             this.notifyPropertyChange("participants", this.participants);
         } catch (e) {
             Log.catch(e);

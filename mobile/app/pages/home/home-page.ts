@@ -4,6 +4,7 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import { localize } from "nativescript-localize";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { topmost } from "tns-core-modules/ui/frame";
@@ -136,7 +137,7 @@ function setScore(s: IScore) {
 
 export async function update() {
     try {
-        setProgress("Updating", 50);
+        setProgress(localize("progress.updating"), 50);
         identity.set("hasCoins", false);
         identity.set("alias", uData.contact.alias);
         if (!uData.contact.isRegistered() && await uData.contact.isRegisteredByzCoin(uData.bc)) {
@@ -170,9 +171,9 @@ export async function update() {
 
 export async function coins(args: EventData) {
     try {
-        setProgress("Scanning new user", 1);
+        setProgress(localize("home.scanning"), 1);
         const u = await scanNewUser(uData);
-        setProgress("Updating contact list", 10);
+        setProgress(localize("home.updating_contacts"), 10);
         await uData.addContact(u);
         await uData.save();
         await UserView.inviteUser(u, setProgress);

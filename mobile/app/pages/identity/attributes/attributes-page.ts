@@ -4,6 +4,7 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import { localize } from "nativescript-localize";
 import { EventData } from "tns-core-modules/data/observable";
 import { getFrameById, Page, topmost } from "tns-core-modules/ui/frame";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
@@ -26,7 +27,7 @@ export function navigatingTo(args: EventData) {
 export async function tapSave(args: EventData) {
     try {
         dismissSoftKeyboard();
-        adminView.setProgress("Saving Attributes", 10);
+        adminView.setProgress(localize("attributes.saving_attributes"), 10);
         const uid: Identity = page.bindingContext.userId;
         uData.contact.alias = uid.alias;
         uData.contact.email = uid.email;
@@ -34,15 +35,15 @@ export async function tapSave(args: EventData) {
         uData.contact.url = uid.url;
         uData.personhoodPublished = uid.publishPersonhood;
         if (uData.contact.isRegistered()) {
-            adminView.setProgress("Sending Attributes to ByzCoin", 50);
+            adminView.setProgress(localize("attributes.attributes_to_byzcoin"), 50);
         }
         await uData.save();
-        adminView.setProgress("Done", 100);
-        await msgOK("Saved your data");
+        adminView.setProgress(localize("progress.done"), 100);
+        await msgOK(localize("dialog.data_saved"));
     } catch (e) {
         Log.catch(e);
-        adminView.setProgress("Error: " + e, -100);
-        await msgFailed("Something went wrong: " + e.toString());
+        adminView.setProgress(localize("progress.error", e), -100);
+        await msgFailed(localize("dialog.error", e.toString()));
     }
     adminView.setProgress();
 }

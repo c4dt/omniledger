@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { sprintf } from "sprintf-js";
 import { Observable } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
@@ -242,21 +243,21 @@ export class RopasciViewElement extends Observable {
                     break;
                 case playRock:
                     second = true;
-                    setProgress("Sending move", 50);
+                    setProgress(localize("ropascis.sending_move"), 50);
                     await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 0, uData.lts);
                     break;
                 case playPaper:
                     second = true;
-                    setProgress("Sending move", 50);
+                    setProgress(localize("ropascis.sending_move"), 50);
                     await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 1, uData.lts);
                     break;
                 case playScissors:
                     second = true;
-                    setProgress("Sending move", 50);
+                    setProgress(localize("ropascis.sending_move"), 50);
                     await this.ropasci.second(uData.coinInstance, uData.keyIdentitySigner, 2, uData.lts);
                     break;
                 case reveal:
-                    setProgress("Revealing", 50);
+                    setProgress(localize("ropascis.revealing"), 50);
                     await this.ropasci.confirm(uData.coinInstance);
                     break;
                 case cancel:

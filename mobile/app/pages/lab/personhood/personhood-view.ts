@@ -149,21 +149,21 @@ export class BadgeView extends Observable {
         try {
             const registered = uData.contact.isRegistered();
             if (registered) {
-                elements.setProgress("Mining coins", 50);
+                elements.setProgress(localize("personhood.mining"), 50);
             } else {
-                elements.setProgress("Registering contact", 50);
+                elements.setProgress(localize("personhood.registering"), 50);
             }
             await this.badge.mine(uData);
-            elements.setProgress("Saving data", 80);
+            elements.setProgress(localize("progress.saving"), 80);
             await finishData();
-            elements.setProgress("Done", 100);
+            elements.setProgress(localize("progress.done"), 100);
             await msgOK("Successfully mined\n" + details, "Details for badge");
             if (!registered) {
                 appRootMain();
             }
         } catch (e) {
             Log.catch(e);
-            elements.setProgress(e.toString(), -100);
+            elements.setProgress(localize("progress.error", e.toString()), -100);
             await msgFailed("Couldn't mine:\n" + e.toString());
             this.badge.mined = true;
         }
@@ -284,20 +284,20 @@ export class PartyView extends Observable {
                         cancelButtonText: "Cancel",
                         // tslint:enable:object-literal-sort-keys
                     })) {
-                        elements.setProgress("Deleting party", 20);
+                        elements.setProgress(localize("personhood.deleting"), 20);
                         const index = uData.parties.findIndex((p) => this.party === p);
                         await uData.phrpc.deleteParty(uData.parties[index].partyInstance.id,
                             IdentityWrapper.fromIdentity(uData.keyIdentitySigner));
                         uData.parties.splice(index, 1);
-                        elements.setProgress("Updating parties", 50);
+                        elements.setProgress(localize("personhood.updating_parties"), 50);
                         await elements.updateParties();
-                        elements.setProgress("Parties updated", 100);
+                        elements.setProgress(localize("personhood.parties_updated"), 100);
                         await uData.save();
                         elements.setProgress();
                     }
                     break;
                 case BARRIER:
-                    elements.setProgress("Activating Barrier Point", 50);
+                    elements.setProgress(localize("personhood.barrier"), 50);
                     await this.party.partyInstance.activateBarrier([uData.keyIdentitySigner]);
                     elements.setProgress();
                     break;
@@ -310,15 +310,15 @@ export class PartyView extends Observable {
                     });
                     break;
                 case FINALIZE:
-                    elements.setProgress("Finalizing party", 40);
+                    elements.setProgress(localize("personhood.finalizing"), 40);
                     await this.party.partyInstance.finalize([uData.keyIdentitySigner]);
                     if (this.party.partyInstance.popPartyStruct.state === PopPartyInstance.FINALIZED) {
-                        elements.setProgress("Updating parties", 70);
+                        elements.setProgress(localize("personhood.updating_parties"), 70);
                         await elements.updateParties();
                         await elements.updateBadges();
                         await msgOK("Finalized the party");
                     } else {
-                        elements.setProgress("Party finalized", 100);
+                        elements.setProgress(localize("personhood.finalized"), 100);
                         await msgOK("Waiting for other organizers to finalize");
                     }
                     elements.setProgress();

@@ -4,6 +4,7 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import { localize } from "nativescript-localize";
 import { ShareFile } from "nativescript-share-file";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
@@ -30,11 +31,11 @@ export function navigatingTo(args: EventData) {
 
 export async function tapClear(args: EventData) {
     if (!testingMode) {
-        if (await dialogs.confirm("Do you really want to delete everything? There is no way back!") &&
-            await dialogs.confirm("You will lose all your data! No way back!")) {
+        if (await dialogs.confirm(localize("settings.clear_confirm_1")) &&
+            await dialogs.confirm(localize("settings.clear_confirm_2"))) {
             await initBC();
             await uData.save();
-            await msgOK("ALL YOUR DATA HAS BEEN DELETED!");
+            await msgOK(localize("settings.data_deleted"));
         } else {
             return;
         }
@@ -66,7 +67,7 @@ export async function tapSave(args: EventData) {
     const a: Admin = page.bindingContext.admin;
     uData.continuousScan = a.continuousScan;
     await uData.save();
-    await msgOK("Saved your data");
+    await msgOK(localize("dialog.data_saved"));
 }
 
 export async function switchSettings(args: SelectedIndexChangedEventData) {

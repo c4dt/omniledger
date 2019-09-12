@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import * as dialogs from "tns-core-modules/ui/dialogs";
@@ -69,11 +70,11 @@ export class PollViewElement extends Observable {
             // tslint:enable:object-literal-sort-keys
             switch (action) {
                 case del:
-                    elPoll.setProgress("Deleting Poll", 33);
+                    elPoll.setProgress(localize("polls.deleting"), 33);
                     await uData.phrpc.pollDelete(uData.keyIdentitySigner, this.poll.pollID);
-                    elPoll.setProgress("Updating Polls", 66);
+                    elPoll.setProgress(localize("polls.updating"), 66);
                     await elPoll.updatePolls();
-                    elPoll.setProgress("Done", 100);
+                    elPoll.setProgress(localize("progress.done"), 100);
                     break;
                 case cancel:
                     break;

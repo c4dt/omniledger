@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { getFrameById, Page } from "tns-core-modules/ui/frame";
 import { appRootMain, appRootNav } from "~/app-root";
@@ -27,6 +28,6 @@ export async function deleteAll(args: any) {
     } catch (e) {
         Log.catch(e, "while resetting values");
     }
-    await msgOK("Deleted all data");
+    await msgOK(localize("presenting.data_deleted"));
     return appRootNav("pages/setup/1-present");
 }

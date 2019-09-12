@@ -78,6 +78,10 @@ default interface on a Mac is en0, you'll do:
 ```
 sudo ifconfig en0 inet 192.168.100.1 add
 ```
+For Linux, the command is (`<dev>` is e.g. `eth0`):
+```
+sudo ip address add 192.168.100.1/24 dev <dev>
+```
 
 To start your local Cothority, do the following:
 
@@ -97,6 +101,7 @@ To start the actual app:
 
 ```bash
 make
+
 tns run ios
 # or
 tns run android

@@ -4,6 +4,7 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import { localize } from "nativescript-localize";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/frame";
@@ -23,10 +24,10 @@ export async function navigatingTo(args: EventData) {
     if (!joined) {
         // tslint:disable:object-literal-sort-keys
         const join = await dialogs.confirm({
-            title: "Join challenge",
-            message: "By joining the challenge you reveal your data for anybody to see it. Do you agree?",
-            okButtonText: "Reveal and join",
-            cancelButtonText: "Don't participate",
+            title: localize("challenge.join_title"),
+            message: localize("challenge.join_msg"),
+            okButtonText: localize("challenge.join_ok"),
+            cancelButtonText: localize("challenge.join_cancel"),
             // tslint:enable:object-literal-sort-keys
         });
         if (!join) {
