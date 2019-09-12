@@ -40,8 +40,16 @@ export class ChallengeViewModel extends Observable {
         const unknown = creds.filter((cred) =>
             !ChallengeViewModel.candidates.has(cred.toString("hex")));
         if (unknown.length > 0) {
-            const contacts = await Promise.all(unknown.map((iid) => Contact.fromByzcoin(uData.bc, iid)));
-            contacts.forEach((contact) => {
+            const contacts = await Promise.all(unknown.map(async (iid) => {
+                try {
+                    const c = await Contact.fromByzcoin(uData.bc, iid);
+                    return c;
+                } catch (e) {
+                    Log.warn("couldn't load contact:", e.toString());
+                    return null as Contact;
+                }
+            }));
+            contacts.filter((c) => c).forEach((contact) => {
                 ChallengeViewModel.candidates.set(contact.credentialIID.toString("hex"), contact.alias);
             });
         }
@@ -73,6 +81,5 @@ export class Participant {
             context: await Contact.fromByzcoin(uData.bc, this.iid, false),
             moduleName: "pages/identity/contacts/actions/actions-page",
         });
-        Log.print("showing", this);
     }
 }
