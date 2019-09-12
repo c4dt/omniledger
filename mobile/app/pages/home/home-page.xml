@@ -19,7 +19,7 @@
                         <StackLayout orientation="horizontal"
                                      visibility="{{ hasCoins ? 'visible' : 'collapse' }}">
                             <StackLayout style="vertical-align: center">
-                                <Label text="Popcoins" class="h2"/>
+                                <Label text="PopCoins" class="h2"/>
                                 <Label text="{{ L('home.balance', coins) }}" class="h3"/>
                             </StackLayout>
                             <Button text="{{ L('home.invite') }}" tap="coins" class="btn btn-primary"/>

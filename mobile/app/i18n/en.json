@@ -22,14 +22,6 @@
       "you should also fill out the email, the phone-number, and give an URL. Of course you can also do so later. ",
       "All of this information will eventually be public on our servers."
     ],
-    "alias": "Alias",
-    "alias_hint": "Enter alias",
-    "email": "Email",
-    "email_hint": "Enter email",
-    "phone": "Phone",
-    "phone_hint": "Enter your phone-#",
-    "url": "Url",
-    "url_hint": "Enter personal webpage",
     "poc": "Proof-of-concept code!",
     "asis": [
       "This software is given as-is. More specifically: all of your data is stored in clear on our blockchain.",
@@ -50,7 +42,12 @@
       "Once you're signed up you can play a game of rock-paper-scissors on the blockchain. ",
       "If you participate in a personhood party, you can create an anonymous, troll-resistant poll."
     ],
-    "go_main": "Start the fun"
+    "go_main": "Start the fun",
+    "delete_all": "Delete All",
+    "creating_byzcoin": "Creating ByzCoin",
+    "verifying_registration": "Verifying registration",
+    "attaching_device": "Attaching device",
+    "data_deleted": "Deleted all data"
   },
   "main": {
     "home": "Home",
@@ -65,7 +62,9 @@
     "meetup": "Start Meetup",
     "balance": "Balance: %s",
     "send_coins": "Send coins",
-    "invite": "Invite someone"
+    "invite": "Invite someone",
+    "scanning": "Scanning new user",
+    "updating_contacts": "Updating contact list"
   },
   "identity": {
     "title": "Identity",
@@ -77,7 +76,13 @@
   "challenge": {
     "title": "Challenge",
     "welcome": "High-scores",
-    "update": "Update List"
+    "update": "Update List",
+    "updating": "Updating list",
+    "searching": "Searching new candidates",
+    "join_title": "Join challenge",
+    "join_msg": "By joining the challenge you reveal your data for anybody to see. Do you agree?",
+    "join_ok": "Reveal and join",
+    "join_cancel": "Don't participate"
   },
   "lab": {
     "title": "Lab of great ideas",
@@ -88,8 +93,10 @@
   "settings": {
     "title": "Settings",
     "continuous_scan": "Continuous Scan",
-    "save": "Save",
-    "clear": "Clear all data"
+    "clear": "Clear all data",
+	"clear_confirm_1": "Do you really want to delete everything? There is no way back!",
+	"clear_confirm_2": "You will lose all your data! No way back!",
+	"data_deleted": "ALL YOUR DATA HAS BEEN DELETED!"
   },
   "score": {
     "title": "Personhood",
@@ -136,13 +143,46 @@
   "personhood": {
       "title": "Manage Badges and Parties",
       "mine_coins": "Mine Coins",
-      "register": "Register on ByzCoin and Mine Coins"
+      "register": "Register on ByzCoin and Mine Coins",
+      "updating_parties": "Updating Parties",
+      "parties_updated": "Parties updated",
+      "updating_badges": "Updating Badges",
+      "mining": "Mining coins",
+      "registering": "Registering contact",
+      "deleting": "Deleting party",
+      "barrier": "Activating barrier point",
+      "finalizing": "Finalizing party",
+      "finalized": "Party finalized",
+      "creating": "Creating Party on ByzCoin",
+      "storing": "Storing Parties"
   },
   "attributes": {
-      "title": "Attributes"
+      "title": "Attributes",
+      "alias": "Alias",
+      "alias_hint": "Enter alias",
+      "email": "Email",
+      "email_hint": "Enter email",
+      "phone": "Phone",
+      "phone_hint": "Enter your phone-#",
+      "url": "Url",
+      "url_hint": "Enter personal webpage",
+      "publish": "Publish Personhood",
+      "saving_attributes": "Saving attributes",
+      "attributes_to_byzcoin": "Sending attributes to ByzCoin"
   },
   "contacts": {
-      "title": "Manage Contacts"
+      "title": "Manage Contacts",
+      "scanning": "Scanning user",
+      "updating": "Updating all users",
+      "saving": "Saving new list",
+      "deleting": "Deleting user from internal list",
+      "updating_others": "Updating all other users",
+      "saving_byzcoin": "Saving list to ByzCoin",
+      "fetching": "Fetching latest %s",
+	  "transfer": "Transferring coins",
+	  "transferred": "Transferred %s to %s",
+	  "transfer_fail1": "Coundn't get target address",
+	  "transfer_fail2": "Cannot pay %s coins"
   },
   "contact_info": {
       "title": "Show Contact",
@@ -155,26 +195,56 @@
   },
   "add_party": {
       "title": "Add New Party",
-      "organizers": "Organizers"
+      "organizers": "Organizers",
+      "prop_name": "Name",
+      "prop_date": "Date",
+      "prop_time": "Time",
+      "prop_purpose": "Purpose",
+      "prop_location": "Location",
+      "prop_reward": "Reward"
   },
   "scan_atts": {
       "title": "Public Keys",
-      "finalize": "Finalize"
+      "finalize": "Finalize",
+      "finalizing": "Finalizing party"
   },
   "ropascis": {
-      "title": "Play Rock Paper Scissors"
+      "title": "Play Rock Paper Scissors",
+      "sending_move": "Sending move",
+      "revealing": "Revealing",
+      "reloading": "Reoading games",
+      "updating": "Updating games",
+      "creating": "Creating game",
+      "publishing": "Publishing game",
+      "rock": "Rock",
+      "paper": "Paper",
+      "scissors": "Scissors",
+      "no_calypso": "You chose not to use calypso - this will make the game more difficult. Are you sure?",
+      "use_calypso": "Use Calypso"
   },
   "add_ropascis": {
       "title": "Configuration",
       "header": "Description",
-      "action": "Send Game to the Blockchain"
+      "action": "Send Game to the Blockchain",
+      "prop_description": "Description",
+      "prop_stake": "Stake",
+      "prop_calypso": "Calypso",
+      "prop_choice": "Choice"
   },
   "polls": {
-      "title": "Answer polls anonymously"
+      "title": "Answer polls anonymously",
+      "reloading": "Reloading polls",
+      "updating": "Updating polls",
+      "deleting": "Deleting polls",
+      "missing_badge": "Before you can answer any polls, you need to get a personhood-badge"
   },
   "add_poll": {
       "title": "Add Poll",
-      "action": "Save new poll"
+      "action": "Save new poll",
+      "prop_party": "Party",
+      "prop_title": "Title",
+      "prop_description": "Description",
+      "prop_choices": "Choices"
   },
   "loading": {
       "connecting": "Connecting"
@@ -185,6 +255,36 @@
       "close": "Tap to close"
   },
   "button": {
-    "continue": "Continue"
+    "continue": "Continue",
+    "save": "Save"
+  },
+  "dialog": {
+      "success": "Success",
+      "choose": "Please choose",
+      "failure": "Failure",
+      "data_saved": "Saved your data",
+      "error": "Something went wrong: %s",
+      "yes": "Yes",
+      "ok_value1": "Cool",
+      "ok_value2": "Nice",
+      "ok_value3": "This rocks",
+      "ok_value4": "Wonderful",
+      "ok_value5": "Fantastic",
+      "ok_value6": "Best",
+      "ok_value7": ":stars:",
+      "fail_value1": "Too bad",
+      "fail_value2": "Shame",
+      "fail_value3": "Try later",
+      "fail_value4": "Dang",
+      "fail_value5": "Why?",
+      "fail_value6": "Life's hard",
+      "fail_value7": "This sucks"
+  },
+  "progress": {
+      "updating": "Updating",
+      "saving": "Saving",
+      "done": "Done",
+      "error": "Error: %s",
+	  "success": "Success"
   }
 }

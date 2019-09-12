@@ -4,12 +4,13 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import { localize } from "nativescript-localize";
 import { EventData } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import { msgOK } from "~/lib/messages";
+import { msgFailed } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { PollView } from "~/pages/lab/poll/poll-view";
 
@@ -22,7 +23,7 @@ export async function navigatingTo(args: EventData) {
     elPoll = new PollView();
     page.bindingContext = elPoll;
     if (uData.badges.length === 0) {
-        await msgOK("Before you can answer any polls, you need to get a personhood-badge");
+        await msgFailed(localize("polls.missing_badge"));
         return topmost().navigate({
             moduleName: "pages/home/home-page",
         });
@@ -33,9 +34,9 @@ export async function navigatingTo(args: EventData) {
 
 export async function updatePoll() {
     try {
-        elPoll.setProgress("Reloading polls", 33);
+        elPoll.setProgress(localize("polls.reloading"), 33);
         await uData.reloadPolls();
-        elPoll.setProgress("Updating polls", 66);
+        elPoll.setProgress(localize("polls.updating"), 66);
         await elPoll.updatePolls();
     } catch (e) {
         Log.catch(e);

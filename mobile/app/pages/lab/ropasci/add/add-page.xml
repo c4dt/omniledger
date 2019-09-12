@@ -22,7 +22,7 @@
                 row="1" colSpan="3"
                 isReadOnly="{{ readOnly }}">
             <df:RadDataForm.properties>
-                <df:EntityProperty name="description" index="0">
+                <df:EntityProperty name="description" displayName="{{ L('add_ropascis.prop_description') }}" index="0">
                     <df:EntityProperty.editor>
                         <df:PropertyEditor type="Text">
                             <df:PropertyEditor.propertyEditorStyle>
@@ -32,7 +32,7 @@
                         </df:PropertyEditor>
                     </df:EntityProperty.editor>
                 </df:EntityProperty>
-                <df:EntityProperty name="stake" index="1">
+                <df:EntityProperty name="stake" displayName="{{ L('add_ropascis.prop_stake') }}" index="1">
                     <df:EntityProperty.editor>
                         <df:PropertyEditor type="Number">
                             <df:PropertyEditor.propertyEditorStyle>
@@ -42,7 +42,7 @@
                         </df:PropertyEditor>
                     </df:EntityProperty.editor>
                 </df:EntityProperty>
-                <df:EntityProperty name="calypso" index="1">
+                <df:EntityProperty name="calypso" displayName="{{ L('add_ropascis.prop_calypso') }}" index="1">
                     <df:EntityProperty.editor>
                         <df:PropertyEditor type="Switch">
                             <df:PropertyEditor.propertyEditorStyle>
@@ -52,7 +52,7 @@
                         </df:PropertyEditor>
                     </df:EntityProperty.editor>
                 </df:EntityProperty>
-                <df:EntityProperty name="choice" index="2" valuesProvider="Rock, Paper, Scissors">
+                <df:EntityProperty name="choice" displayName="{{ L('add_ropascis.prop_choice') }}" index="2" valuesProvider="{{ rpsValues }}">
                     <df:EntityProperty.editor>
                         <df:PropertyEditor type="SegmentedEditor"/>
                     </df:EntityProperty.editor>

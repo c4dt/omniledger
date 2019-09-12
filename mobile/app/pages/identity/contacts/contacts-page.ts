@@ -4,6 +4,7 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import { localize } from "nativescript-localize";
 import { EventData } from "tns-core-modules/data/observable";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { Page } from "tns-core-modules/ui/page";
@@ -30,17 +31,17 @@ export function friendsUpdateList() {
 
 export async function addFriend(args: GestureEventData) {
     try {
-        setProgress("Scanning user", 10);
+        setProgress(localize("contacts.scanning"), 10);
         const u = await scanNewUser(uData);
-        setProgress("Updating all users", 40);
+        setProgress(localize("contacts.updating"), 40);
         uData.addContact(u);
         friendsUpdateList();
-        setProgress("Saving new list", 80);
+        setProgress(localize("contacts.saving"), 80);
         await uData.save();
-        setProgress("Done", 100);
+        setProgress(localize("progress.done"), 100);
     } catch (e) {
         Log.catch(e);
-        setProgress(e.toString(), -100);
+        setProgress(localize("progress.error", e.toString()), -100);
         await msgFailed(e);
     }
     setProgress();

@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 
@@ -55,12 +56,12 @@ export async function addNewKey() {
  */
 export async function finalize() {
     try {
-        viewScanModel.setProgress("Finalizing Party", 50);
+        viewScanModel.setProgress(localize("scan_atts.finalizing"), 50);
         await party.partyInstance.finalize([uData.keyIdentitySigner]);
         if (party.partyInstance.popPartyStruct.state === PopPartyInstance.FINALIZED) {
-            viewScanModel.setProgress("Saving Data", 75);
+            viewScanModel.setProgress(localize("progress.saving"), 75);
             await uData.save();
-            viewScanModel.setProgress("Done", 100);
+            viewScanModel.setProgress(localize("progress.done"), 100);
             await msgOK("Finalized the party");
             viewScanModel.setProgress();
         } else {
@@ -68,7 +69,7 @@ export async function finalize() {
         }
         await goBack();
     } catch (e) {
-        viewScanModel.setProgress("Error: " + e.toString(), -100);
+        viewScanModel.setProgress(localize("progress.error", e.toString()), -100);
         await msgFailed("Something went wrong: " + e.toString());
         viewScanModel.setProgress();
     }

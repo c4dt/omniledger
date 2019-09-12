@@ -22,7 +22,7 @@
                         </df:EntityProperty>
                     </df:RadaForm.properties>
                 </df:RadDataForm>
-                <Button text="{{ L('settings.save') }}" tap="tapSave" class="btn btn-primary"/>
+                <Button text="{{ L('button.save') }}" tap="tapSave" class="btn btn-primary"/>
                 <Button text="{{ L('settings.clear') }}" tap="tapClear" class="btn btn-test"/>
                 <Button text="Share data" tap="shareData" class="btn btn-test"
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>

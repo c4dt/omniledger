@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { EventData, fromObjectRecursive, Observable } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/frame";
@@ -27,13 +28,13 @@ export async function navigatingTo(args: EventData) {
 
 export async function goInitTest(args: EventData) {
     try {
-        setProgress("creating ByzCoin", 30);
+        setProgress(localize("presenting.creating_byzcoin"), 30);
         await newByzCoin();
 
-        setProgress("verify registration", 70);
+        setProgress(localize("presenting.verifying_registration"), 70);
         await uData.contact.updateOrConnect(uData.bc);
 
-        setProgress("saving", 100);
+        setProgress(localize("progress.saving"), 100);
         await uData.save();
         await msgOK("You should update user-data.ts now");
         appRootMain();
@@ -48,12 +49,12 @@ export async function scanDevice() {
         await msgFailed("Got wrong URL: " + url.text);
     }
     try {
-        setProgress("Attaching device", 33);
+        setProgress(localize("presenting.attaching_device"), 33);
         await attachDevice(url.text);
-        setProgress("Saving data", 66);
+        setProgress(localize("progress.saving"), 66);
         uData.storage = StorageFile;
         await uData.save();
-        setProgress("Done", 100);
+        setProgress(localize("progress.done"), 100);
     } catch (e) {
         Log.catch(e);
         setProgress();

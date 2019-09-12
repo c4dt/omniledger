@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { fromObject } from "tns-core-modules/data/observable";
@@ -19,6 +20,11 @@ const dataForm = fromObject({
 const viewModel = fromObject({
     dataForm,
     networkStatus: "",
+    rpsValues: [
+        {key: "Rock", label: localize("ropascis.rock")},
+        {key: "Paper", label: localize("ropascis.paper")},
+        {key: "Scissors", label: localize("ropascis.scissors")},
+    ],
 });
 
 export function onNavigatingTo(args) {
@@ -38,8 +44,9 @@ export async function save() {
         const choice = ["Rock", "Paper", "Scissors"].findIndex((c) => c === dataForm.get("choice"));
         let calypso = dataForm.get("calypso");
         if (!calypso) {
-            if (!(await msgOKCancel("You chose not to use calypso - this will make the game more difficult. " +
-                "Are you sure?", "Yes", "Use Calypso"))) {
+            if (!(await msgOKCancel(localize("ropascis.no_calypso"),
+                                    localize("dialog.yes"),
+                                    localize("ropascis.use_calypso")))) {
                 calypso = true;
             }
         }
@@ -50,7 +57,7 @@ export async function save() {
             // everybody...
             fillup.fill(0, 27, 31);
         }
-        setProgress("Creating game", 33);
+        setProgress(localize("ropascis.creating"), 33);
         const rps = await uData.spawnerInstance.spawnRoPaSci({
             calypso: calypso ? uData.lts : undefined,
             choice,
@@ -60,7 +67,7 @@ export async function save() {
             signers: [uData.keyIdentitySigner],
             stake,
         });
-        setProgress("Publishing game", 66);
+        setProgress(localize("ropascis.publishing"), 66);
         await uData.addRoPaSci(rps);
         await uData.save();
         goBack();

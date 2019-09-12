@@ -18,7 +18,7 @@
                     source="{{ dataForm }}"
                     row="0">
                 <df:RadaForm.properties>
-                    <df:EntityProperty name="party" index="0" valuesProvider="{{ partyList }}">
+                    <df:EntityProperty name="party" displayName="{{ L('add_poll.prop_party') }}" index="0" valuesProvider="{{ partyList }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Picker">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -28,7 +28,7 @@
                             </df:PropertyEditor>
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
-                    <df:EntityProperty name="title" index="1" hintText="Title">
+                    <df:EntityProperty name="title" displayName="{{ L('add_poll.prop_title') }}" index="1" hintText="Title">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -38,7 +38,7 @@
                             </df:PropertyEditor>
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
-                    <df:EntityProperty name="description" index="2" hintText="Description">
+                    <df:EntityProperty name="description" displayName="{{ L('add_poll.prop_description') }}" index="2" hintText="Description">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -48,7 +48,7 @@
                             </df:PropertyEditor>
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
-                    <df:EntityProperty name="choices" index="3" hintText="One option per line">
+                    <df:EntityProperty name="choices" displayName="{{ L('add_poll.prop_choices') }}" index="3" hintText="One option per line">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="MultilineText">
                                 <df:PropertyEditor.propertyEditorStyle>

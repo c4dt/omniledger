@@ -1,3 +1,4 @@
+import { localize } from "nativescript-localize";
 import Long from "long";
 import Moment from "moment";
 import { sprintf } from "sprintf-js";
@@ -117,7 +118,7 @@ export function goBack() {
 export async function save() {
     try {
         dismissSoftKeyboard();
-        setProgress("Saving", 30);
+        setProgress(localize("progress.saving"), 30);
         await copyViewModelToParty();
 
         const orgs = orgList.slice() as Contact[];
@@ -129,7 +130,7 @@ export async function save() {
         }
 
         // Create the party
-        setProgress("Creating Party on ByzCoin", 50);
+        setProgress(localize("personhood.creating"), 50);
         const ppi = await uData.spawnerInstance.spawnPopParty({
             coin: uData.coinInstance,
             desc: newParty,
@@ -139,12 +140,12 @@ export async function save() {
         });
         const p = new PartyItem(ppi);
         p.isOrganizer = true;
-        setProgress("Storing Parties", 75);
+        setProgress(localize("personhood.storing"), 75);
         await uData.addParty(p);
         setProgress();
         goBack();
     } catch (e) {
-        setProgress("Error: " + e.toString(), -100);
+        setProgress(localize("progress.error", e.toString()), -100);
         await msgFailed(e.toString());
         setProgress();
         Log.catch(e);

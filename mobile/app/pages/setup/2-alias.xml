@@ -15,8 +15,8 @@ Here the user can enter his alias
             <df:RadDataForm id="myDataForm" source="{{ input }}">
                 <df:RadaForm.properties>
                     <df:EntityProperty name="alias"
-                                       displayName="{{ L('presenting.alias') }}"
-                                       hintText="{{ L('presenting.alias_hint') }}" index="0" labelWidth="60">
+                                       displayName="{{ L('attributes.alias') }}"
+                                       hintText="{{ L('attributes.alias_hint') }}" index="0" labelWidth="60">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -27,8 +27,8 @@ Here the user can enter his alias
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
                     <df:EntityProperty name="email" index="1"
-                                       displayName="{{ L('presenting.email') }}"
-                                       hintText="{{ L('presenting.email_hint') }}">
+                                       displayName="{{ L('attributes.email') }}"
+                                       hintText="{{ L('attributes.email_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -39,8 +39,8 @@ Here the user can enter his alias
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
                     <df:EntityProperty name="phone" index="2"
-                                       displayName="{{ L('presenting.phone') }}"
-                                       hintText="{{ L('presenting.phone_hint') }}">
+                                       displayName="{{ L('attributes.phone') }}"
+                                       hintText="{{ L('attributes.phone_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -51,8 +51,8 @@ Here the user can enter his alias
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
                     <df:EntityProperty name="url" index="2"
-                                       displayName="{{ L('presenting.url') }}"
-                                       hintText="{{ L('presenting.url_hint') }}">
+                                       displayName="{{ L('attributes.url') }}"
+                                       hintText="{{ L('attributes.url_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -65,7 +65,7 @@ Here the user can enter his alias
                 </df:RadaForm.properties>
             </df:RadDataForm>
 
-            <Button text="Continue" tap="goNext" class="btn btn-primary"/>
+            <Button text="{{ L('button.continue') }}" tap="goNext" class="btn btn-primary"/>
         </StackLayout>
     </ScrollView>
 </Page>

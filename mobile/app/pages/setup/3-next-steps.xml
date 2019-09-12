@@ -20,7 +20,7 @@ Here the user can enter his alias
                    class="h3"
                    textWrap="true"/>
             <Button text="{{ L('presenting.go_main') }}" tap="goMain" class="btn btn-primary"/>
-            <Button text="Delete all" tap="deleteAll" class="btn btn-test"
+            <Button text="{{ L('presenting.delete_all') }}" tap="deleteAll" class="btn btn-test"
                     visibility="{{ testing ? 'visible' : 'collapse' }}"/>
         </StackLayout>
     </ScrollView>

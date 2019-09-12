@@ -11,7 +11,7 @@
 
                 <df:RadDataForm id="myDataForm" source="{{ userId }}">
                     <df:RadaForm.properties>
-                        <df:EntityProperty name="alias" index="0">
+                        <df:EntityProperty name="alias" displayName="{{ L('attributes.alias') }}" index="0" hintIndex="{{ L('attributes.alias_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -21,7 +21,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="email" index="1" hintText="{{ L('presenting.email_hint') }}">
+                        <df:EntityProperty name="email" displayName="{{ L('attributes.email') }}" index="1" hintText="{{ L('attributes.email_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Email">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -31,7 +31,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="phone" index="2" hintText="{{ L('presenting.phone_hint') }}">
+                        <df:EntityProperty name="phone" displayName="{{ L('attributes.phone') }}" index="2" hintText="{{ L('attributes.phone_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Phone">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -41,7 +41,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="url" index="2" hintText="{{ L('presenting.url_hint') }}">
+                        <df:EntityProperty name="url" displayName="{{ L('attributes.url') }}" index="2" hintText="{{ L('attributes.url_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -51,7 +51,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="publishPersonhood" index="3">
+                        <df:EntityProperty name="publishPersonhood" displayName="{{ L('attributes.publish') }}" index="3">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -64,7 +64,7 @@
                     </df:RadaForm.properties>
                 </df:RadDataForm>
 
-                <Button text="Save" tap="tapSave" class="btn btn-primary"/>
+                <Button text="{{ L('button.save') }}" tap="tapSave" class="btn btn-primary"/>
             </StackLayout>
         </ScrollView>
 
