@@ -29,7 +29,7 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - this is automatically copied from package.json
-export let appVersion = "0.1.8";
+export let appVersion = "0.2.0";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 // Admin darc defining who has super powers
@@ -126,11 +126,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("26aa522e95be01e5cb807a86a7be301275720675dfcd27f299b918b9d4bfa646", "hex");
-        spawnerID = Buffer.from("b575133202038701e156929866bbb5143aefd063d7a8ff1db09dec3e50b88918", "hex");
-        adminDarc = Buffer.from("f596f27d8f2d262663456678bf9bf47081cefa104fed5cc73170d7b08c35fdc7", "hex");
-        ltsID = Buffer.from("3d11600a2e9319c85aa85091a29931c8f07f039920a4c85c661e60e67cb6f366", "hex");
-        ltsX = Public.fromHex("82592b6a1c39560c82f69c9354bbeeacf952d118575935ea383ced1b41071fb6").point;
+        byzCoinID = Buffer.from("c064dfbc847f98724927ad4dba636fee71ea35d70309d2cb96f604ffafc276c0", "hex");
+        spawnerID = Buffer.from("361877dd756f19e819a00d37fc3fa0576b10c61e09dc91629772aa3a8f210fb9", "hex");
+        adminDarc = Buffer.from("ad228dba36672db88430e049c1d712a99e589fe69c923a19ae32629551b6cd83", "hex");
+        ltsID = Buffer.from("aa34f0075df8f22f227c1480eb3ced3d8e0a1528f170a333ee2dd0ba5e747786", "hex");
+        ltsX = Public.fromHex("caf1df56a3cb9ee8767c3668dc2006960ce99a87b3f7d125ff6ad51037dacb6a").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");

@@ -165,7 +165,8 @@ export class Contact {
     }
 
     set ltsID(id: InstanceID) {
-        if (id) {
+        if (id &&
+            (!this.ltsID || !id.equals(this.ltsID))) {
             this.credential.setAttribute("1-config", "ltsID", id);
             this.incVersion();
         }
@@ -177,7 +178,8 @@ export class Contact {
     }
 
     set ltsX(X: Point) {
-        if (X) {
+        if (X &&
+            ( !this.ltsX || !X.equals(this.ltsX) )) {
             this.credential.setAttribute("1-config", "ltsX", X.toProto());
             this.incVersion();
         }
