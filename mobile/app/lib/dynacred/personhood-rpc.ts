@@ -1,17 +1,15 @@
 import { Scalar } from "@dedis/kyber";
-import { randomBytes } from "crypto-browserify";
 import * as crypto from "crypto-browserify";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
-import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
-import { IdentityWrapper, IIdentity } from "~/lib/cothority/darc";
+import { IdentityWrapper } from "~/lib/cothority/darc";
 import ISigner from "~/lib/cothority/darc/signer";
-import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
-import { IConnection, RosterWSConnection, WebSocketConnection } from "~/lib/cothority/network/connection";
-import CredentialsInstance, { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
+import { WebSocketConnection } from "~/lib/cothority/network/connection";
+import { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import { Sign } from "~/lib/cothority/personhood/ring-sig";
 import { registerMessage } from "~/lib/cothority/protobuf";
@@ -119,6 +117,19 @@ export class PersonhoodRPC {
         }));
     }
 
+    async lockRPS(id: InstanceID) {
+        const ropasci = new RoPaSciList({
+            lock: new RoPaSci({
+                byzcoinID: this.genesisID,
+                roPaSciID: id,
+            }),
+        });
+        await Promise.all(this.list.map(async (addr) => {
+            const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
+            const reply: RoPaSciListResponse = await socket.send(ropasci, RoPaSciListResponse);
+        }));
+    }
+
     async challenge(update: ChallengeCandidate = null): Promise<ChallengeCandidate[]> {
         const socket = new WebSocketConnection(this.list[0].getWebSocketAddress(), PersonhoodRPC.serviceID);
         const reply: ChallengeReply = await socket.send(new Challenge({update}), ChallengeReply);
@@ -166,8 +177,8 @@ export class PersonhoodRPC {
             pollID,
         });
         const ps = await this.callPoll(new Poll({
-            answer,
-            byzcoinID: this.genesisID,
+                answer,
+                byzcoinID: this.genesisID,
             },
         ));
         return ps[0];
@@ -213,6 +224,7 @@ export class RoPaSci extends Message<RoPaSci> {
     static register() {
         registerMessage("RoPaSci", RoPaSci);
     }
+
     readonly byzcoinID: InstanceID;
     readonly roPaSciID: InstanceID;
 
@@ -243,8 +255,10 @@ export class RoPaSciList extends Message<RoPaSciList> {
     static register() {
         registerMessage("RoPaSciList", RoPaSciList);
     }
+
     readonly newRoPaSci: RoPaSci;
     readonly wipe: boolean;
+    readonly lock: RoPaSci;
 
     constructor(props?: Properties<RoPaSciList>) {
         super(props);
@@ -265,6 +279,7 @@ export class RoPaSciListResponse extends Message<RoPaSciListResponse> {
     static register() {
         registerMessage("RoPaSciListResponse", RoPaSciListResponse);
     }
+
     readonly roPaScis: RoPaSci[];
 
     constructor(props?: Properties<RoPaSciListResponse>) {
@@ -287,6 +302,7 @@ export class Poll extends Message<Poll> {
     static register() {
         registerMessage("Poll", Poll);
     }
+
     readonly byzcoinID: Buffer;
     readonly newPoll: PollStruct;
     readonly list: PollList;
@@ -321,6 +337,7 @@ export class PollList extends Message<PollList> {
     static register() {
         registerMessage("PollList", PollList);
     }
+
     readonly partyIDs: InstanceID[];
 
     constructor(props?: Properties<PollList>) {
@@ -343,6 +360,7 @@ export class PollStruct extends Message<PollStruct> {
     static register() {
         registerMessage("PollStruct", PollStruct);
     }
+
     readonly personhood: InstanceID;
     readonly pollID: Buffer;
     readonly title: string;
@@ -380,6 +398,7 @@ export class PollAnswer extends Message<PollAnswer> {
     static register() {
         registerMessage("PollAnswer", PollAnswer);
     }
+
     readonly pollID: Buffer;
     readonly choice: number;
     readonly lrs: Buffer;
@@ -409,6 +428,7 @@ export class PollAnswer extends Message<PollAnswer> {
 
 // PollDelete can be used to delete a given poll
 export class PollDelete extends Message<PollDelete> {
+
     static register() {
         registerMessage("PollDelete", PollDelete);
     }
@@ -436,6 +456,7 @@ export class PollChoice extends Message<PollChoice> {
     static register() {
         registerMessage("PollChoice", PollChoice);
     }
+
     readonly choice: number;
     readonly lrstag: Buffer;
 
@@ -450,6 +471,7 @@ export class PollResponse extends Message<PollResponse> {
     static register() {
         registerMessage("PollResponse", PollResponse);
     }
+
     readonly polls: PollStruct[];
 
     constructor(props?: Properties<PollResponse>) {
@@ -513,6 +535,7 @@ export class Party extends Message<Party> {
     static register() {
         registerMessage("Party", Party);
     }
+
     readonly roster: Roster;
     // ByzCoinID represents the ledger where the pop-party is stored.
     readonly byzCoinID: InstanceID;
@@ -546,6 +569,7 @@ export class PartyList extends Message<PartyList> {
     static register() {
         registerMessage("PartyList", PartyList);
     }
+
     readonly newparty: Party;
     readonly wipeparties: boolean;
     readonly partydelete: PartyDelete;
@@ -556,6 +580,7 @@ export class PartyList extends Message<PartyList> {
 }
 
 export class PartyDelete extends Message<PartyDelete> {
+
     static register() {
         registerMessage("PartyDelete", PartyDelete);
     }
@@ -581,6 +606,7 @@ export class PartyListResponse extends Message<PartyListResponse> {
     static register() {
         registerMessage("PartyListResponse", PartyListResponse);
     }
+
     readonly parties: Party[];
 
     constructor(props?: Properties<PartyListResponse>) {
@@ -594,6 +620,7 @@ export class Meetup extends Message<Meetup> {
     static register() {
         registerMessage("Meetup", Meetup);
     }
+
     readonly userLocation: UserLocation;
     readonly wipe: boolean;
 
@@ -616,6 +643,7 @@ export class MeetupResponse extends Message<MeetupResponse> {
     static register() {
         registerMessage("MeetupResponse", MeetupResponse);
     }
+
     readonly users: UserLocation[];
 
     constructor(props?: Properties<MeetupResponse>) {
@@ -624,6 +652,7 @@ export class MeetupResponse extends Message<MeetupResponse> {
 }
 
 export class Challenge extends Message<Challenge> {
+
     static register() {
         registerMessage("Challenge", Challenge);
     }
@@ -635,6 +664,7 @@ export class Challenge extends Message<Challenge> {
 }
 
 export class ChallengeCandidate extends Message<ChallengeCandidate> {
+
     static register() {
         registerMessage("ChallengeCandidate", ChallengeCandidate);
     }
@@ -647,6 +677,7 @@ export class ChallengeCandidate extends Message<ChallengeCandidate> {
 }
 
 export class ChallengeReply extends Message<ChallengeReply> {
+
     static register() {
         registerMessage("ChallengeReply", ChallengeReply);
     }

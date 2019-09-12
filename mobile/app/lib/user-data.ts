@@ -47,13 +47,8 @@ export async function initBC() {
     if (testingMode) {
         calypsoRoster = testRoster;
         bc = await bcTest();
-        gameNode = testRoster.list[0];
     } else {
         bc = await bcDEDIS();
-        gameNode = new ServerIdentity({
-            public: new KeyPair()._public.point.toProto(),
-            url: "https://conode.c4dt.org:7771",
-        });
         calypsoRoster = C4DTCalypsoRoster;
     }
 }
@@ -68,7 +63,7 @@ export async function speedTest(): Promise<string> {
     return wsc.getURL();
 }
 
-async function finishData() {
+export async function finishData() {
     uData.storage = StorageFile;
     uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
     const rights = await uData.bc.checkAuthorization(uData.bc.genesisID, adminDarc,
@@ -76,7 +71,17 @@ async function finishData() {
     Log.lvl2("User", uData.alias, "has admin-rights:", rights);
     isAdmin = rights.length > 0;
     await uData.connectByzcoin();
+    if (testingMode) {
+        gameNode = testRoster.list[0];
+    } else {
+        gameNode = new ServerIdentity({
+            public: new KeyPair()._public.point.toProto(),
+            url: "https://conode.c4dt.org:7771",
+        });
+    }
     uData.phrpc = new PersonhoodRPC(bc.genesisID, [gameNode]);
+    uData.contact.ltsX = ltsX;
+    uData.contact.ltsID = ltsID;
     uData.lts = new LongTermSecret(uData.bc, uData.contact.ltsID, uData.contact.ltsX, calypsoRoster);
     await uData.save();
 }
@@ -121,11 +126,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("bf1aa54e01a939beaf4ad6a7bd6000250214c2844b124a04dc7a5c9abe9ed556", "hex");
-        spawnerID = Buffer.from("4822e449b96ce07c4afe72fa18c1b737ed02d7e7eb11e3660e74a24d2a1e2595", "hex");
-        adminDarc = Buffer.from("45af4c5d8a5976c5e02c40dfbd5ad2a6333d9b08a452e8dc7481c61ecf278cb6", "hex");
-        ltsID = Buffer.from("874b7d2e83e9bcdf93c657cc10b4c0b5c46c6a4dee05823ffe890211892653c6", "hex");
-        ltsX = Public.fromHex("e1d9ea000a6b3352bd928bb84e540e78a68d9d8048fb6e48f28aec8a0aa64eb9").point;
+        byzCoinID = Buffer.from("43b620f486512b01151eae57053c9f033bb35aced65009df8039e2a5547fd910", "hex");
+        spawnerID = Buffer.from("62ea3c4f7993fa4a2bf6a9d3d3b63d5191ae6a48ea692308c780a2a55baf7a5f", "hex");
+        adminDarc = Buffer.from("84ea18ecaafde898e52fe8f3f39f62378a243fbdc1add7f79d9e9934e44e2844", "hex");
+        ltsID = Buffer.from("c33a3c057d51e6b8724f4e2c3d2574e2f9724117d4bdbf4ebb6eb49b2350fba8", "hex");
+        ltsX = Public.fromHex("18c1038ca30e8b6513587111b8a8eafdb6ad3c2e0f9248680e78c82f8877b256").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");

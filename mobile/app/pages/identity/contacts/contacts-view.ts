@@ -137,7 +137,7 @@ export class UserView extends Observable {
                     const pay = await dialogs.confirm({
                         title: "Invite user",
                         message: "This user is not invited yet - do you want to pay " +
-                            10000 + uData.signupCost().toString() + " to invite the user " +
+                            (10000 + uData.signupCost().toNumber()) + " to invite the user " +
                             u.alias + "?",
                         okButtonText: "Yes, pay",
                         cancelButtonText: "No, don't pay",

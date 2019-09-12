@@ -64,3 +64,7 @@ docker_clean:
 
 clean:
 	rm -rf build/conode cothority
+
+run_local: conode
+	cd build; \
+	COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -c -n 4 -d conodes/

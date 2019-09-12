@@ -6,7 +6,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import Log from "~/lib/cothority/log";
 import RoPaSciInstance, { RoPaSciStruct } from "~/lib/cothority/personhood/ro-pa-sci-instance";
-import { msgFailed } from "~/lib/messages";
+import { msgFailed, msgOK } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { elRoPaSci, setProgress, updateRoPaSci } from "~/pages/lab/ropasci/ropasci-page";
 
@@ -210,7 +210,15 @@ export class RopasciViewElement extends Observable {
         switch (this.step) {
             case 0:
                 if (!this.ourGame) {
-                    choices = choices.concat([playRock, playPaper, playScissors]);
+                    try {
+                        await uData.phrpc.lockRPS(this.ropasci.id);
+                        choices = choices.concat([playRock, playPaper, playScissors]);
+                    } catch (e) {
+                        Log.warn("This ropasci is already locked:", e);
+                        await msgOK("Couldn't play on this rock-paper-scissors, another player already chose it.",
+                            "Couldn't play");
+                        await updateRoPaSci();
+                    }
                 }
                 break;
             case 1:

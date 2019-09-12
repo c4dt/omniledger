@@ -700,6 +700,11 @@ export class Data {
     }
 
     async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
+        this.ropascis = this.ropascis.filter((ropasci) => {
+            return ropasci.isDone() ||
+                ropasci.ourGame(this.coinInstance.id) ||
+                ropasci.struct.secondPlayer >= 0;
+        });
         const phRoPaScis = await this.phrpc.listRPS();
         await Promise.all(phRoPaScis.map(async (rps) => {
             if (this.ropascis.find((r) => r.id.equals(rps.roPaSciID)) == null) {

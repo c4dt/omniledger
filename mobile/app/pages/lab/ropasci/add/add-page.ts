@@ -4,13 +4,13 @@ import { fromObject } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import { msgFailed } from "~/lib/messages";
+import { msgFailed, msgOK, msgOKCancel } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 
 let page: Page;
 
 const dataForm = fromObject({
-    calypso: false,
+    calypso: true,
     choice: "Rock",
     description: "",
     stake: 100,
@@ -36,7 +36,13 @@ export async function save() {
     try {
         const stake = Long.fromNumber(dataForm.get("stake"));
         const choice = ["Rock", "Paper", "Scissors"].findIndex((c) => c === dataForm.get("choice"));
-        const calypso = dataForm.get("calypso");
+        let calypso = dataForm.get("calypso");
+        if (!calypso) {
+            if (!(await msgOKCancel("You chose not to use calypso - this will make the game more difficult. " +
+                "Are you sure?", "Yes", "Use Calypso"))) {
+                calypso = true;
+            }
+        }
         const fillup = Buffer.from(randomBytes(31));
         if (calypso) {
             // Calypso rps can only use 27 fillup bytes, but we need to give 31 anyway. So fill the
