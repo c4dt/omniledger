@@ -1,5 +1,4 @@
 import { localize } from "nativescript-localize";
-import { sprintf } from "sprintf-js";
 import { fromObject } from "tns-core-modules/data/observable";
 import { EventData, Page, topmost } from "tns-core-modules/ui/frame";
 import Log from "~/lib/cothority/log";

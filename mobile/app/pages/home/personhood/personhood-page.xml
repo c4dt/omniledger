@@ -11,37 +11,37 @@
         <StackLayout style="margin: 20px;" tap="goBack">
             <Label text="{{ L('score.header') }}" class="h1 text-center" textWrap="true"/>
             <Label text="{{ L('score.desc') }}" class="h3" textWrap="true"/>
-            <Label text="{{ L('score.header_attributes') }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_attributes', 10) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ attributes_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{attributes_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-            <Label text="{{ L('score.header_registrations') }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_registrations', 5) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ registrations_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{registrations_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-<!--            <Label text="{{ L('score.header_meetups') }}" class="h2 text-center"/>-->
+<!--            <Label text="{{ L('score.header_meetups', 0) }}" class="h2 text-center"/>-->
 <!--            <StackLayout orientation="horizontal">-->
 <!--                <Label text="{{ meetups_rundown_label }}" class="fas h2" style="vertical-align: center;"/>-->
 <!--                <Label text="{{meetups_rundown}}" class="h3" textWrap="true"/>-->
 <!--            </StackLayout>-->
-            <Label text="{{ L('score.header_parties') }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_parties', 40) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ parties_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{parties_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-            <Label text="{{ L('score.header_ropascis') }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_ropascis', 15) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ ropascis_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{ropascis_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-            <Label text="{{ L('score.header_polls') }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_polls', 15) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ polls_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{polls_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-            <Label text="{{ L('score.header_invites') }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_invites', 15) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ invites_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{invites_rundown}}" class="h3" textWrap="true"/>

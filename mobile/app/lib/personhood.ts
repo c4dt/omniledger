@@ -12,6 +12,18 @@ export function getMax(): IScore {
     };
 }
 
+export function getMaxScore(): IScore {
+    return {
+        attributes: 10,
+        invites: 15,
+        meetups: 0,
+        parties: 40,
+        polls: 15,
+        registered: 5,
+        roPaScis: 15,
+    };
+}
+
 export function getRawData(u: Data): IScore {
     const atts = 1 +
         (u.contact.email !== "" ? 1 : 0) +
