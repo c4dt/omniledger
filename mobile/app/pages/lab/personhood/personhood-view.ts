@@ -14,7 +14,7 @@ import { Badge } from "~/lib/dynacred/Badge";
 import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { partyQrcode } from "~/lib/qrcode";
-import { uData } from "~/lib/user-data";
+import { ltsID, ltsX, uData } from "~/lib/user-data";
 import { elements } from "~/pages/lab/personhood/personhood-page";
 
 export class PersonhoodView extends Observable {
@@ -152,6 +152,11 @@ export class BadgeView extends Observable {
                 elements.setProgress("Registering contact", 50);
             }
             await this.badge.mine(uData);
+            uData.contact.ltsX = ltsX;
+            uData.contact.ltsID = ltsID;
+            elements.setProgress("Saving data", 80);
+            await uData.save();
+            await uData.connectByzcoin();
             elements.setProgress("Done", 100);
             await msgOK("Successfully mined\n" + details, "Details for badge");
             if (!registered) {

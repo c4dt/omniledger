@@ -1,3 +1,4 @@
+import { Point } from "@dedis/kyber";
 import { InstanceID } from "~/lib/cothority/byzcoin";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import { LongTermSecret } from "~/lib/cothority/calypso";
@@ -11,14 +12,14 @@ import SkipchainRPC from "~/lib/cothority/skipchain/skipchain-rpc";
 import { StatusRequest, StatusResponse } from "~/lib/cothority/status/proto";
 import StatusRPC from "~/lib/cothority/status/status-rpc";
 import { Data } from "~/lib/dynacred";
-import { KeyPair } from "~/lib/dynacred/KeyPair";
+import { KeyPair, Public } from "~/lib/dynacred/KeyPair";
 import { PersonhoodRPC } from "~/lib/dynacred/personhood-rpc";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = false;
+export let testingMode = true;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -37,6 +38,9 @@ export let adminDarc: InstanceID;
 export let isAdmin: boolean;
 // The calypso roster
 export let calypsoRoster: Roster;
+// LTS data
+export let ltsID: InstanceID;
+export let ltsX: Point;
 
 // Returns an initialized BC or a failed promise if the given BC is not available.
 export async function initBC() {
@@ -67,12 +71,12 @@ export async function speedTest(): Promise<string> {
 async function finishData() {
     uData.storage = StorageFile;
     uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
-    uData.phrpc = new PersonhoodRPC(bc.genesisID, [gameNode]);
     const rights = await uData.bc.checkAuthorization(uData.bc.genesisID, adminDarc,
         IdentityWrapper.fromIdentity(uData.keyIdentitySigner));
     Log.lvl2("User", uData.alias, "has admin-rights:", rights);
     isAdmin = rights.length > 0;
     await uData.connectByzcoin();
+    uData.phrpc = new PersonhoodRPC(bc.genesisID, [gameNode]);
     uData.lts = new LongTermSecret(uData.bc, uData.contact.ltsID, uData.contact.ltsX, calypsoRoster);
     await uData.save();
 }
@@ -117,9 +121,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("8479aaf1d433ff9d51fe4ff81270e8d539bf22ba7e63d35f25840cdf43333afd", "hex");
-        spawnerID = Buffer.from("b13e11fe4c8e7af04f1efb9e5e94613e88b9027e63990f250c2623a7faea4b3f", "hex");
-        adminDarc = Buffer.from("181a67bc397fc184e2fca795121cadb32f03987d4c6ee6236dbc9f0eb4a9af60", "hex");
+        byzCoinID = Buffer.from("bf1aa54e01a939beaf4ad6a7bd6000250214c2844b124a04dc7a5c9abe9ed556", "hex");
+        spawnerID = Buffer.from("4822e449b96ce07c4afe72fa18c1b737ed02d7e7eb11e3660e74a24d2a1e2595", "hex");
+        adminDarc = Buffer.from("45af4c5d8a5976c5e02c40dfbd5ad2a6333d9b08a452e8dc7481c61ecf278cb6", "hex");
+        ltsID = Buffer.from("874b7d2e83e9bcdf93c657cc10b4c0b5c46c6a4dee05823ffe890211892653c6", "hex");
+        ltsX = Public.fromHex("e1d9ea000a6b3352bd928bb84e540e78a68d9d8048fb6e48f28aec8a0aa64eb9").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");
@@ -151,6 +157,8 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
     byzCoinID = Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex");
     spawnerID = Buffer.from("ebc32cc89129c7542cdb8991585756be48ea4bd2869d939898f5413e7f757d96", "hex");
     adminDarc = Buffer.from("28aa9504ad3d781611b57d98607e1bca25b1c92f3b32a08a7e341c3866db4675", "hex");
+    ltsID = Buffer.from("c460c73284503d175bdef8058d815bd99f133d39db2f8267d5ccf3dbce9c1e17", "hex");
+    ltsX = Public.fromHex("97a56eba22e02f67c83d568b1f96503d2f85ef1987711367d18a698332859a6b").point;
 
     let latest: SkipBlock;
     try {

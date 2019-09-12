@@ -354,7 +354,7 @@ export class Data {
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
-        Log.lvl2("Getting contact informations");
+        Log.lvl2("Connecting Data to ByzCoin");
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);

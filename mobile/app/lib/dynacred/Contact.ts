@@ -443,6 +443,10 @@ export class Contact {
 
     async updateOrConnect(bc: ByzCoinRPC = null, getContacts: boolean = true): Promise<Contact> {
         if (bc) {
+            if (!(await this.isRegisteredByzCoin(bc))) {
+                Log.lvl2("This user is not yet registered");
+                return null;
+            }
             this.bc = bc;
             Log.lvl1("Connecting user", this.alias,
                 "with public key", this.seedPublic.toHex(), "and id", this.credentialIID.toString("hex"),

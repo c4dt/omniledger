@@ -5,9 +5,8 @@ logic, and to set up your page’s data binding.
 */
 
 import { EventData } from "tns-core-modules/data/observable";
+import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/frame";
-import * as dialogs from "ui/dialogs";
-import { msgOK } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { frame } from "~/pages/identity/identity-page";
 import { ChallengeViewModel } from "./challenge-view";
