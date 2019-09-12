@@ -44,10 +44,6 @@ export async function navigatingToHome(args: EventData) {
     Log.lvl2("navigatingTo: home");
     page = args.object as Page;
     page.bindingContext = identity;
-    if (!uData) {
-        Log.lvl2("uData not yet ready");
-        return;
-    }
     try {
         setTimeout(() => update(), 1);
     } catch (e) {
