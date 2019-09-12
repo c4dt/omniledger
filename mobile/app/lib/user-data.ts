@@ -19,7 +19,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = true;
+export let testingMode = false;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -29,7 +29,7 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - this is automatically copied from package.json
-export let appVersion = "0.2.0";
+export let appVersion = "0.2.1";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 // Admin darc defining who has super powers
