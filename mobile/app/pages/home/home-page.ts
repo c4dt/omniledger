@@ -13,7 +13,7 @@ import Log from "~/lib/cothority/log";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { getRawData, IScore, rawToPercent } from "~/lib/personhood";
 import { qrcodeIdentity } from "~/lib/qrcode";
-import { testingMode, uData } from "~/lib/user-data";
+import { finishData, testingMode, uData } from "~/lib/user-data";
 import { scanNewUser } from "~/lib/users";
 import { UserView } from "../identity/contacts/contacts-view";
 
@@ -143,10 +143,10 @@ export async function update() {
             try {
                 await uData.connectByzcoin();
                 if (uData.contact.isRegistered()) {
-                    // Need to send new credential to byzcoin
-                    await uData.contact.sendUpdate([uData.keyIdentitySigner]);
+                    await finishData();
+                } else {
+                    await uData.save();
                 }
-                await uData.save();
             } catch (e) {
                 await msgFailed("Error while trying to activate your profile: " + e.toString());
             }

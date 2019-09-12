@@ -46,7 +46,7 @@ export class TestData extends Data {
             td.admin = admin;
 
             // tslint:disable
-            console.log("// To be pasted into user-data.ts :: bcTest - line 114\n");
+            console.log("// To be pasted into user-data.ts :: bcTest - line 124\n");
             const ad = (await td.contact.getDarcSignIdentity()).id;
             console.log("byzCoinID = Buffer.from(\"" + bc.genesisID.toString("hex") + "\", \"hex\");");
             console.log("spawnerID = Buffer.from(\"" + td.spawnerInstance.id.toString("hex") + "\", \"hex\");\n");

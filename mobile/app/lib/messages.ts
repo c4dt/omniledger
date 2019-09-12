@@ -19,6 +19,15 @@ export async function msgOK(msg: string, title?: string) {
     });
 }
 
+export async function msgOKCancel(msg: string, ok: string, cancel: string, title?: string): Promise<boolean> {
+    return dialogs.confirm({
+        cancelButtonText: cancel,
+        message: msg,
+        okButtonText: ok,
+        title: title ? title : "Please chose",
+    });
+}
+
 export function getFailed(): string {
     failedIndex = (failedIndex + 1) % failedStrs.length;
     return failedStrs[failedIndex];
