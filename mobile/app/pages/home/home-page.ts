@@ -141,12 +141,7 @@ export async function update() {
         identity.set("alias", uData.contact.alias);
         if (!uData.contact.isRegistered() && await uData.contact.isRegisteredByzCoin(uData.bc)) {
             try {
-                await uData.connectByzcoin();
-                if (uData.contact.isRegistered()) {
-                    await finishData();
-                } else {
-                    await uData.save();
-                }
+                await finishData();
             } catch (e) {
                 await msgFailed("Error while trying to activate your profile: " + e.toString());
             }

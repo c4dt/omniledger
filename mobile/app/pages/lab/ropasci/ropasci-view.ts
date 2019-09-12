@@ -7,12 +7,13 @@ import { GestureEventData } from "tns-core-modules/ui/gestures";
 import Log from "~/lib/cothority/log";
 import RoPaSciInstance, { RoPaSciStruct } from "~/lib/cothority/personhood/ro-pa-sci-instance";
 import { msgFailed, msgOK } from "~/lib/messages";
-import { uData } from "~/lib/user-data";
+import { isAdmin, uData } from "~/lib/user-data";
 import { elRoPaSci, setProgress, updateRoPaSci } from "~/pages/lab/ropasci/ropasci-page";
 
 export class RopasciView extends Observable {
     ropascis = new ObservableArray();
     networkStatus: string;
+    isAdmin = isAdmin;
 
     constructor() {
         super();

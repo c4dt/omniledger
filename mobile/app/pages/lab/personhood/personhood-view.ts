@@ -14,7 +14,7 @@ import { Badge } from "~/lib/dynacred/Badge";
 import { PartyItem } from "~/lib/dynacred/PartyItem";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { partyQrcode } from "~/lib/qrcode";
-import { finishData, ltsID, ltsX, uData } from "~/lib/user-data";
+import { finishData, isAdmin, uData } from "~/lib/user-data";
 import { elements } from "~/pages/lab/personhood/personhood-page";
 
 export class PersonhoodView extends Observable {
@@ -39,7 +39,8 @@ export class PersonhoodView extends Observable {
 
     async updateAddParty() {
         try {
-            this.canAddParty = uData.spawnerInstance &&
+            this.canAddParty = isAdmin &&
+                uData.spawnerInstance &&
                 uData.personhoodPublished &&
                 await uData.canPay(uData.spawnerInstance.costs.costParty.value);
         } catch (e) {

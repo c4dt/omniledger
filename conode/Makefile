@@ -67,4 +67,5 @@ clean:
 
 run_local: conode
 	cd build; \
-	COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -c -n 4 -d conodes/
+	if [ ! -d local ]; then cp -a conodes local; fi; \
+	COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -c -n 4 -d local/
