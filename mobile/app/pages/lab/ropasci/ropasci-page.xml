@@ -3,6 +3,10 @@
       class="page">
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="{{ L('ropascis.title') }}"></Label>
+        <ActionItem tap="wipeRoPaSci"
+                    ios.systemIcon="16" ios.position="right"
+                    android.systemIcon="ic_menu_delete" android.position="actionBar"
+                    visibility="{{ isAdmin ? 'visible' : 'hidden' }}"/>
         <ActionItem tap="addRoPaSci"
                     ios.systemIcon="4" ios.position="right"
                     icon="res://ic_add_white" android.position="actionBar"/>

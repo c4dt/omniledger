@@ -165,7 +165,7 @@
   "add_ropascis": {
       "title": "Configuration",
       "header": "Description",
-      "action": "Send Game to the Blochain"
+      "action": "Send Game to the Blockchain"
   },
   "polls": {
       "title": "Answer polls anonymously"

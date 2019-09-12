@@ -44,6 +44,11 @@ export async function addRoPaSci(args: GestureEventData) {
     });
 }
 
+export async function wipeRoPaSci() {
+    await uData.phrpc.wipeRPS();
+    return updateRoPaSci();
+}
+
 export function setProgress(text: string = "", width: number = 0) {
     elRoPaSci.set("networkStatus", width === 0 ? undefined : text);
     if (width !== 0) {

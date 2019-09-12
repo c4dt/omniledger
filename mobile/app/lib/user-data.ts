@@ -126,11 +126,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("43b620f486512b01151eae57053c9f033bb35aced65009df8039e2a5547fd910", "hex");
-        spawnerID = Buffer.from("62ea3c4f7993fa4a2bf6a9d3d3b63d5191ae6a48ea692308c780a2a55baf7a5f", "hex");
-        adminDarc = Buffer.from("84ea18ecaafde898e52fe8f3f39f62378a243fbdc1add7f79d9e9934e44e2844", "hex");
-        ltsID = Buffer.from("c33a3c057d51e6b8724f4e2c3d2574e2f9724117d4bdbf4ebb6eb49b2350fba8", "hex");
-        ltsX = Public.fromHex("18c1038ca30e8b6513587111b8a8eafdb6ad3c2e0f9248680e78c82f8877b256").point;
+        byzCoinID = Buffer.from("26aa522e95be01e5cb807a86a7be301275720675dfcd27f299b918b9d4bfa646", "hex");
+        spawnerID = Buffer.from("b575133202038701e156929866bbb5143aefd063d7a8ff1db09dec3e50b88918", "hex");
+        adminDarc = Buffer.from("f596f27d8f2d262663456678bf9bf47081cefa104fed5cc73170d7b08c35fdc7", "hex");
+        ltsID = Buffer.from("3d11600a2e9319c85aa85091a29931c8f07f039920a4c85c661e60e67cb6f366", "hex");
+        ltsX = Public.fromHex("82592b6a1c39560c82f69c9354bbeeacf952d118575935ea383ced1b41071fb6").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");
@@ -161,6 +161,7 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
 
     byzCoinID = Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex");
     spawnerID = Buffer.from("ebc32cc89129c7542cdb8991585756be48ea4bd2869d939898f5413e7f757d96", "hex");
+    // Do not overwrite this data when testing!!
     adminDarc = Buffer.from("28aa9504ad3d781611b57d98607e1bca25b1c92f3b32a08a7e341c3866db4675", "hex");
     ltsID = Buffer.from("c460c73284503d175bdef8058d815bd99f133d39db2f8267d5ccf3dbce9c1e17", "hex");
     ltsX = Public.fromHex("97a56eba22e02f67c83d568b1f96503d2f85ef1987711367d18a698332859a6b").point;
