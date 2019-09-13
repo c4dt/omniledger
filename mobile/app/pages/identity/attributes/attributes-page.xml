@@ -70,11 +70,11 @@
                                 <df:EntityProperty name="url"/>
                             </df:PropertyGroup.properties>
                         </df:PropertyGroup>
-                        <df:PropertyGroup collapsible="false" name="Admin" hidden="{{ isAdmin ? 'false' : 'true' }}">
-                            <df:PropertyGroup.properties>
-                                <df:EntityProperty name="publishPersonhood"/>
-                            </df:PropertyGroup.properties>
-                        </df:PropertyGroup>
+<!--                        <df:PropertyGroup collapsible="false" name="Admin" hidden="{{ isAdmin ? 'false' : 'true' }}">-->
+<!--                            <df:PropertyGroup.properties>-->
+<!--                                <df:EntityProperty name="publishPersonhood"/>-->
+<!--                            </df:PropertyGroup.properties>-->
+<!--                        </df:PropertyGroup>-->
                     </df:RadDataForm.groups>
                 </df:RadDataForm>
 

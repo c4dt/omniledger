@@ -6,7 +6,7 @@ import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
 import { msgFailed, msgOK, msgOKCancel } from "~/lib/messages";
-import { uData } from "~/lib/user-data";
+import { isAdmin, uData } from "~/lib/user-data";
 
 let page: Page;
 
@@ -19,6 +19,7 @@ const dataForm = fromObject({
 
 const viewModel = fromObject({
     dataForm,
+    isAdmin,
     networkStatus: "",
     rpsValues: [
         {key: "Rock", label: localize("ropascis.rock")},

@@ -1,5 +1,6 @@
 import { Point } from "@dedis/kyber";
-import { InstanceID } from "~/lib/cothority/byzcoin";
+import Long from "long";
+import { ChainConfig, InstanceID } from "~/lib/cothority/byzcoin";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import { LongTermSecret } from "~/lib/cothority/calypso";
 import { IdentityWrapper } from "~/lib/cothority/darc";
@@ -19,7 +20,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = true;
+export let testingMode = false;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -29,7 +30,7 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - this is automatically copied from package.json
-export let appVersion = "0.2.1";
+export let appVersion = "0.3.0";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 // Admin darc defining who has super powers
@@ -51,6 +52,12 @@ export async function initBC() {
         calypsoRoster = testRoster;
     } else {
         bc = await bcOH19();
+        // const conf = bc.getConfig();
+        // const newConf = new ChainConfig({
+        //     blockInterval: Long.fromNumber(2.5e9),
+        //     maxBlockSize: conf.maxBlockSize,
+        //     roster: conf.roster,
+        // });
         calypsoRoster = OH19Roster;
     }
 }
@@ -132,11 +139,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("22e8e7235c7db41e2d838a8cd804962ea721781f517c3004537bf6a6f5046b94", "hex");
-        spawnerID = Buffer.from("145ff644260c554f7c3b1560455be1c73dc6ff1080b3755a1efc157582787bf4", "hex");
-        adminDarc = Buffer.from("76029d8c0ec193f8fee3b00bf3690b82302806e448230577adb06297e5719f39", "hex");
-        ltsID = Buffer.from("d01f031d901cb6cf8d48349872ed1e5d2f6dfe466565774de7da0af4ae64364e", "hex");
-        ltsX = Public.fromHex("4e3935caea07c8cd5927d492659b4c6cbd3d7def78807360ea99752f6bc51d84").point;
+        byzCoinID = Buffer.from("f8b98d8c84399654dac9454a974f66ff3b1b11880717f874e041f065de2d99a3", "hex");
+        spawnerID = Buffer.from("1697a5e904fccf013f19c1ade2d11b80986ad054814c435414f4d685eacfaa61", "hex");
+        adminDarc = Buffer.from("fe74a48bb53c5fba3fb0447e84f64543024e50a31fa033afc7cb9d419879c903", "hex");
+        ltsID = Buffer.from("8ea3dc50f7284bb3b42c0e4fb90fe2994d5a990e5165f3bb5425ee2f22e93958", "hex");
+        ltsX = Public.fromHex("740385956a6c4bb8db71a81ff262b97896fccfd78ad51c295bb40b36c86b3db7").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");
@@ -211,11 +218,11 @@ async function bcOH19(): Promise<ByzCoinRPC> {
     //
     // *******
 
-    byzCoinID = Buffer.from("329e749bffcf00fe56474071e2fb6c2f10a2b80062ace4eba87c104e061e3b66", "hex");
-    spawnerID = Buffer.from("a5fd84bbb177361741bacd2fc7637718cda9b9cd1f0ff6f27a8d2f12f5f488bc", "hex");
-    adminDarc = Buffer.from("3ce379e2fe3f6270093337dfd75f113add06f1e7b8fecdbb3d57c8e8771f7784", "hex");
-    ltsID = Buffer.from("bcf3bb32e552a83042364544acb5d74aa92ca51edb1d11baa441a98c678d68f8", "hex");
-    ltsX = Public.fromHex("cfb4c50c35062633fb4f80d998742e21f3b9e0d26c2d8efbb4b2a4bfa8787bb8").point;
+    byzCoinID = Buffer.from("88f5ce63250d36362064ea468836508defe8d9ebd5d7d14ecb4b3c12970e561e", "hex");
+    spawnerID = Buffer.from("5d240efc13b35b9445596011f7fab61f186f01e7a5bc812cfcef9a960b987da6", "hex");
+    adminDarc = Buffer.from("738bcedfbdb90fdc0525c36453dc96f29930f1173c7f993d950805504685a2ac", "hex");
+    ltsID = Buffer.from("1c48e0aca3ae9d64b913c452b56705149b5a3e088bd7cc0e6188c04f10790add", "hex");
+    ltsX = Public.fromHex("1558e209fbebebef16a5e142bc4019bf5b63b45ebd57077e0a82a6e5cea52f94").point;
 
     let latest: SkipBlock;
     try {
