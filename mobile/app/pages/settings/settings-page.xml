@@ -10,7 +10,8 @@
                 <df:RadDataForm id="myDataForm" source="{{ admin }}">
                     <df:RadaForm.properties>
                         <df:EntityProperty name="continuousScan" index="2"
-                                           displayName="{{ L('settings.continuous_scan') }}">
+                                           displayName="{{ L('settings.continuous_scan') }}"
+                            visibility="{{ isAdmin ? 'visible' : 'collapse' }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -28,31 +29,32 @@
                         visibility="{{ testing ? 'visible' : 'collapse' }}"/>
             </StackLayout>
 
-            <ListView items="{{ nodes }}" class="list-group" row="1" tap="{{ updateNodes }}">
-                <ListView.itemTemplate>
-                    <FlexboxLayout orientation="horizontal" flexDirection="row"
-                                   class="basic-list-decorated"
-                                   alignItems="center">
-                        <Label text="{{ address + ' - ' + status }}" class="h3"/>
-                    </FlexboxLayout>
-                </ListView.itemTemplate>
-            </ListView>
+        <ListView items="{{ nodes }}" class="list-group" row="1" tap="{{ updateNodes }}">
+            <ListView.itemTemplate>
+                <FlexboxLayout orientation="horizontal" flexDirection="row"
+                               class="basic-list-decorated"
+                               alignItems="center">
+                    <Label text="{{ address + ' - ' + status }}" class="h3"/>
+                </FlexboxLayout>
+            </ListView.itemTemplate>
+        </ListView>
 
-            <StackLayout row="2">
-                <StackLayout orientation="horizontal" style="horizontal-align: center;">
-                    <StackLayout>
-                        <HtmlView html="Personhood is brought to you by <u>https://personhood.online</u>" class="h3"
-                                  textWrap="true"
-                                  width="60%" style="vertical-align: center;" tap="goPersonhood"/>
-                        <HtmlView html="You find the code on github: <u>https://github.com/c4dt/omniledger</u>"
-                                  class="h3"
-                                  textWrap="true"
-                                  width="60%" style="vertical-align: center;" tap="goGithub"/>
-                    </StackLayout>
-                    <Image src="~/images/icon-personhood-64.png" width="20%" tap="goPersonhood"/>
+        <StackLayout row="2">
+            <StackLayout orientation="horizontal" style="horizontal-align: center;">
+                <StackLayout>
+                    <HtmlView html="For more information about personhood, visit <u>https://oh19.c4dt.org</u>"
+                              class="h3"
+                              textWrap="true"
+                              width="60%" style="vertical-align: center;" tap="goPersonhood"/>
+                    <HtmlView html="You find the code on github: <u>https://github.com/c4dt/omniledger</u>"
+                              class="h3"
+                              textWrap="true"
+                              width="60%" style="vertical-align: center;" tap="goGithub"/>
                 </StackLayout>
+                <Image src="~/images/icon-personhood-64.png" width="20%" tap="goPersonhood"/>
             </StackLayout>
+        </StackLayout>
 
-            <Label text="{{ version }}" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
-        </GridLayout>
+        <Label text="{{ version }}" class="h5" row="3" style="text-align: right; margin-right: 5%;"/>
+    </GridLayout>
 </Page>

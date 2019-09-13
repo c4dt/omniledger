@@ -3,7 +3,7 @@
       navigatingTo="navigatingTo"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="{{ L('attributes.title') }}"></Label>
+        <Label class="action-bar-title" text="{{ L('attributes.title') }}"/>
     </ActionBar>
     <GridLayout columns="*">
         <ScrollView row="0">
@@ -21,7 +21,8 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="email" displayName="{{ L('attributes.email') }}" index="1" hintText="{{ L('attributes.email_hint') }}">
+                        <df:EntityProperty name="email" displayName="{{ L('attributes.email') }}" index="1" hintText="{{ L('attributes.email_hint') }}"
+                                           visibility="{{ noAttributes ? 'collapsed' : 'visible' }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Email">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -31,7 +32,8 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="phone" displayName="{{ L('attributes.phone') }}" index="2" hintText="{{ L('attributes.phone_hint') }}">
+                        <df:EntityProperty name="phone" displayName="{{ L('attributes.phone') }}" index="2" hintText="{{ L('attributes.phone_hint') }}"
+                                           visibility="{{ noAttributes ? 'collapsed' : 'visible' }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Phone">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -41,7 +43,8 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="url" displayName="{{ L('attributes.url') }}" index="2" hintText="{{ L('attributes.url_hint') }}">
+                        <df:EntityProperty name="url" displayName="{{ L('attributes.url') }}" index="2" hintText="{{ L('attributes.url_hint') }}"
+                                           visibility="{{ noAttributes ? 'collapsed' : 'visible' }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -51,7 +54,8 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="publishPersonhood" displayName="{{ L('attributes.publish') }}" index="3">
+                        <df:EntityProperty name="publishPersonhood" displayName="{{ L('attributes.publish') }}" index="3"
+                                           visibility="{{ isAdmin ? 'visible' : 'collapsed' }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>

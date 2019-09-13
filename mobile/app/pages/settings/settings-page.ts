@@ -75,11 +75,11 @@ export async function switchSettings(args: SelectedIndexChangedEventData) {
 }
 
 export function goPersonhood() {
-    openUrl("https://personhood.online");
+    openUrl("https://oh19.c4dt.org");
 }
 
 export function goGithub() {
-    openUrl("https://github.com/dedis/personhood.online");
+    openUrl("https://github.com/c4dt/omniledger");
 }
 
 export function setNodeList(list: WebSocketConnection[]) {

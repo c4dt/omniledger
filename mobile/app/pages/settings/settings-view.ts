@@ -6,13 +6,14 @@ import { WebSocketConnection } from "~/lib/cothority/network/connection";
 import { StatusRPC } from "~/lib/cothority/status";
 import { StatusRequest, StatusResponse } from "~/lib/cothority/status/proto";
 import { Data } from "~/lib/dynacred";
-import { appVersion, testingMode, uData } from "~/lib/user-data";
+import { appVersion, testingMode, isAdmin } from "~/lib/user-data";
 import { nodeList } from "~/pages/settings/settings-page";
 
 export class AdminViewModel extends Observable {
     nodes: ObservableArray<Node> = new ObservableArray();
     testing: boolean = testingMode;
     version = appVersion;
+    isAdmin = isAdmin;
 
     constructor(d: Data) {
         super();

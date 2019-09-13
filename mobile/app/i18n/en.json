@@ -18,6 +18,10 @@
     "recover": "Recover",
     "identity": "Setting your identity",
     "identity_desc": [
+      "Please fill in an alias with which the other users will recognize you later. You can also change it",
+      "after you started using the system."
+    ],
+    "identity_desc_full": [
       "Let's start with getting to know you. The only required field is 'alias', but for more functionality, ",
       "you should also fill out the email, the phone-number, and give an URL. Of course you can also do so later. ",
       "All of this information will eventually be public on our servers."
@@ -137,8 +141,8 @@
     "invites_done": "Good inviter!"
   },
   "meetup": {
-      "title": "Meetup",
-      "add_contacts": "Add all contacts"
+    "title": "Meetup",
+    "add_contacts": "Add all contacts"
   },
   "personhood": {
       "title": "Manage Badges and Parties",
@@ -185,13 +189,13 @@
 	  "transfer_fail2": "Cannot pay %s coins"
   },
   "contact_info": {
-      "title": "Show Contact",
-      "alias": "Info for %s",
-      "email": "Email: %s",
-      "phone": "Telephone: %s",
-      "url": "Webpage: %s",
-      "instructions": "Click on the attributes to call, send email or open url.",
-      "close": "Close"
+    "title": "Show Contact",
+    "alias": "Info for %s",
+    "email": "Email: %s",
+    "phone": "Telephone: %s",
+    "url": "Webpage: %s",
+    "instructions": "Click on the attributes to call, send email or open url.",
+    "close": "Close"
   },
   "add_party": {
       "title": "Add New Party",
@@ -247,12 +251,12 @@
       "prop_choices": "Choices"
   },
   "loading": {
-      "connecting": "Connecting"
+    "connecting": "Connecting"
   },
   "modal_user": {
-      "title": "Info for %s",
-      "scan": "Scan QR Code to copy user",
-      "close": "Tap to close"
+    "title": "Info for %s",
+    "scan": "Scan QR Code to copy user",
+    "close": "Tap to close"
   },
   "button": {
     "continue": "Continue",
