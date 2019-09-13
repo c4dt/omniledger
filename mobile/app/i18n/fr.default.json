@@ -238,7 +238,7 @@
   },
   "polls": {
       "title": "Répondre anonymement à des sondages",
-      "reloading": "Rechanrgement des sondages",
+      "reloading": "Rechargement des sondages",
       "updating": "Mise à jour des sondages",
       "deleting": "Effacement des sondages",
       "missing_badge": "Avant de pouvoir participer aux sondages, tu dois obtenir un badge d'individualité"

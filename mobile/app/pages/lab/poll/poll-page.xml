@@ -12,7 +12,7 @@
             </ActionItem.actionView>
         </ActionItem>
     </ActionBar>
-    <GridLayout rows="*, auto">
+    <GridLayout rows="*">
         <ListView items="{{ polls }}" class="list-group" row="0" tap="{{ onTap }}">
             <ListView.itemTemplate>
                 <GridLayout class="{{ 'basic-list-decorated ' + bgcolor }}" rows="auto, auto">
@@ -47,7 +47,7 @@
             </ListView.itemTemplate>
         </ListView>
 
-        <GridLayout rows="auto" row="1" class="network-progress-grid">
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
             <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
                 <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
                        id="progress_text"/>

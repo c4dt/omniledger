@@ -21,7 +21,7 @@ export class PollView extends Observable {
 
     async updatePolls() {
         this.polls.splice(0);
-        uData.polls.map((r) => r).reverse().forEach((rps) => {
+        uData.polls.forEach((rps) => {
             this.polls.push(new PollViewElement(rps));
         });
         this.set("polls", this.polls);

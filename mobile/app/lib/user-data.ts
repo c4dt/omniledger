@@ -30,7 +30,7 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - this is automatically copied from package.json
-export let appVersion = "0.3.0";
+export let appVersion = "0.3.3";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 // Admin darc defining who has super powers
@@ -89,7 +89,7 @@ export async function finishData() {
     } else {
         gameNode = new ServerIdentity({
             public: new KeyPair()._public.point.toProto(),
-            url: "https://conode.c4dt.org:7771",
+            url: "https://oh19.c4dt.org:10001",
         });
     }
     uData.phrpc = new PersonhoodRPC(bc.genesisID, [gameNode]);

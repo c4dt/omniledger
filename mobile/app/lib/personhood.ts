@@ -14,10 +14,10 @@ export function getMax(): IScore {
 
 export function getMaxScore(): IScore {
     return {
-        attributes: 10,
-        invites: 15,
+        attributes: 0,
+        invites: 20,
         meetups: 0,
-        parties: 40,
+        parties: 45,
         polls: 15,
         registered: 5,
         roPaScis: 15,
@@ -44,14 +44,14 @@ export function getRawData(u: Data): IScore {
 
 export function rawToPercent(data: IScore): IScore {
     return {
-        // attributes: 10%
-        attributes: 10 * data.attributes / 4,
-        // invites: 15%
-        invites: 3 * data.invites,
+        // attributes: 0%
+        attributes: 0,
+        // invites: 20%
+        invites: 4 * data.invites,
         // meetups: 0%
         meetups: 0 * data.meetups,
-        // parties: 40%
-        parties: [0, 25, 40][data.parties],
+        // parties: 45%
+        parties: [0, 20, 45][data.parties],
         // polls: 15%
         polls: 5 * data.polls,
         // registered: 5%
