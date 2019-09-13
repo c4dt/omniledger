@@ -1,3 +1,4 @@
+import Long from "long";
 import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
@@ -7,11 +8,12 @@ import { Contact } from "~/lib/dynacred";
 import { Data } from "~/lib/dynacred/Data";
 import { ChallengeCandidate } from "~/lib/dynacred/personhood-rpc";
 import { getRawData, rawToPercent } from "~/lib/personhood";
-import { uData } from "~/lib/user-data";
+import { isAdmin, uData } from "~/lib/user-data";
 
 export class ChallengeViewModel extends Observable {
     static candidates: Map<string, string> = new Map<string, string>();
     participants: Participant[];
+    isAdmin = isAdmin;
 
     constructor(d: Data) {
         super();
@@ -23,13 +25,15 @@ export class ChallengeViewModel extends Observable {
             const challengers = await uData.phrpc.challenge(new ChallengeCandidate({
                 credential: uData.contact.credentialIID,
                 score: Object.values(rawToPercent(getRawData(uData))).reduce((a, b) => a + b) * 2,
+                signup: uData.contact.joinedChallenge,
             }));
             this.setProgress(localize("challenge.searching"), 60);
             await this.updateCandidates(challengers.map((challenger) => challenger.credential));
             this.participants = challengers.map((challenger) =>
                 new Participant(ChallengeViewModel.candidates.get(challenger.credential.toString("hex")),
-                    challenger.score / 2, challenger.credential));
+                    challenger));
             this.setProgress(localize("progress.done"), 100);
+            this.participants = this.participants.filter((participant) => participant.isVisible());
             this.notifyPropertyChange("participants", this.participants);
         } catch (e) {
             Log.catch(e);
@@ -74,7 +78,14 @@ export class ChallengeViewModel extends Observable {
 }
 
 export class Participant {
-    constructor(public alias: string, public score: number, public iid: InstanceID) {
+    score: number;
+    iid: InstanceID;
+    signup: Long;
+
+    constructor(public alias: string, ch: ChallengeCandidate) {
+        this.score = ch.score / 2;
+        this.iid = ch.credential;
+        this.signup = ch.signup;
     }
 
     async showParticipant() {
@@ -82,5 +93,11 @@ export class Participant {
             context: await Contact.fromByzcoin(uData.bc, this.iid, false),
             moduleName: "pages/identity/contacts/actions/actions-page",
         });
+    }
+
+    isVisible() {
+        Log.print(this.alias, this.signup, this.signup.sub(Long.fromNumber(Date.now())));
+        Log.print(this.signup.greaterThan(Long.fromNumber(Date.now() - 10000)));
+        return this.signup.greaterThan(Long.fromNumber(Date.now() - 10000));
     }
 }

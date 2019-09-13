@@ -24,7 +24,7 @@
             </ListView>
 
             <Button text="{{ L('challenge.update') }}" tap="updateList" class="btn btn-primary" row="2"/>
-            <Button text="Reset Date" tap="resetDate" class="btn btn-primary" row="2"
+            <Button text="Reset Date" tap="resetDate" class="btn btn-primary" row="3"
                     visibility="{{ isAdmin ? 'visible' : 'collapsed' }}"/>
 
         </GridLayout>

@@ -200,7 +200,8 @@
   <string name="_presenting_congrats_Se1wl">"Félicitations! Tu es prêt. Pour le moment, toutes tes données sont encore confinées à ton téléphone. Mais tu peux déjà faire des rencontres avec d\'autres utilisateurs et échanger ton identité avec eux."</string>
   <string name="_presenting_asis_1Uisj1">"Ce logiciel est fourni sans garanties. Actuellement, toutes tes données sont enregistrées en clair sur la blockchain du DEDIS. Les appels ne sont pas protégés, tes jetons peuvent disparaître. Merci de reporter les problèmes rencontrés sur github.com/c4dt/omniledger"</string>
   <string name="_presenting_poc_Z2eiABI">"Code Expérimental!"</string>
-  <string name="_presenting_identity_desc_Z1m8tKf">"Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est \'pseudo\', mais pour accéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu pourras bien sûr le faire plus tard également. Attention: actuellement, ces informations seront disponibles publiquement sur nos serveurs!"</string>
+  <string name="_presenting_identity_desc_full_1D5mjp">"Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est \'pseudo\', mais pouraccéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu auras aussi la possibilité de fairecela plus tard. Attention: actuellement, ces informations seront disponibles publiquement sur nos serveurs!"</string>
+  <string name="_presenting_identity_desc_Z1m8tKf">"Ici tu peux enregistrer ton pseudonyme avec lequel les autres utilisateurs vont te reconnaître plus tard. Tu peux aussi le changer plus tard."</string>
   <string name="_presenting_identity_1peySV">"Données personelles"</string>
   <string name="_presenting_recover_Z8KXaw">"Récupérer compte"</string>
   <string name="_presenting_scan_device_24km6X">"Lire Identité Web"</string>

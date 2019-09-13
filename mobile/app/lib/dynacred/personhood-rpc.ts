@@ -1,12 +1,13 @@
 import { Scalar } from "@dedis/kyber";
-import * as crypto from "crypto-browserify";
 import { randomBytes } from "crypto-browserify";
+import * as crypto from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs";
 import ByzCoinRPC from "~/lib/cothority/byzcoin/byzcoin-rpc";
 import { InstanceID } from "~/lib/cothority/byzcoin/instance";
 import { IdentityWrapper } from "~/lib/cothority/darc";
 import ISigner from "~/lib/cothority/darc/signer";
+import Log from "~/lib/cothority/log";
 import { Roster, ServerIdentity } from "~/lib/cothority/network";
 import { WebSocketConnection } from "~/lib/cothority/network/connection";
 import { CredentialStruct } from "~/lib/cothority/personhood/credentials-instance";
@@ -670,6 +671,7 @@ export class ChallengeCandidate extends Message<ChallengeCandidate> {
     }
     readonly credential: InstanceID;
     readonly score: number;
+    readonly signup: Long;
 
     constructor(props?: Properties<ChallengeCandidate>) {
         super(props);
