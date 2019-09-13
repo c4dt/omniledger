@@ -65,13 +65,17 @@ export async function speedTest(): Promise<string> {
     return wsc.getURL();
 }
 
-export async function finishData() {
-    uData.storage = StorageFile;
-    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+export async function updateIsAdmin() {
     const rights = await uData.bc.checkAuthorization(uData.bc.genesisID, adminDarc,
         IdentityWrapper.fromIdentity(uData.keyIdentitySigner));
     Log.lvl2("User", uData.alias, "has admin-rights:", rights);
     isAdmin = rights.length > 0;
+}
+
+export async function finishData() {
+    uData.storage = StorageFile;
+    uData.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID);
+    await updateIsAdmin();
     await uData.connectByzcoin();
     if (testingMode) {
         gameNode = testRoster.list[0];
@@ -128,11 +132,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("010c09ca56fd53e58713b676fadc0d898da4dd2149686b630c47068ddc1107d3", "hex");
-        spawnerID = Buffer.from("050eac4e2145388f0367991e05bf38e2ab5cba15a9771d6587cc8cca4e954929", "hex");
-        adminDarc = Buffer.from("e04534ccde49474bfca9be85468827dc766e58b2dd1b4ec177244dbf3664edcc", "hex");
-        ltsID = Buffer.from("8cf179b5d69f064b26a9c130f6ac88fdb1ef7773cb92b263916d2fe8a6033690", "hex");
-        ltsX = Public.fromHex("2246a33404bab57dc5097f468e67a0c9724c72780cc56c7b47061841585899ac").point;
+        byzCoinID = Buffer.from("22e8e7235c7db41e2d838a8cd804962ea721781f517c3004537bf6a6f5046b94", "hex");
+        spawnerID = Buffer.from("145ff644260c554f7c3b1560455be1c73dc6ff1080b3755a1efc157582787bf4", "hex");
+        adminDarc = Buffer.from("76029d8c0ec193f8fee3b00bf3690b82302806e448230577adb06297e5719f39", "hex");
+        ltsID = Buffer.from("d01f031d901cb6cf8d48349872ed1e5d2f6dfe466565774de7da0af4ae64364e", "hex");
+        ltsX = Public.fromHex("4e3935caea07c8cd5927d492659b4c6cbd3d7def78807360ea99752f6bc51d84").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");

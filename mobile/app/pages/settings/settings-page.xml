@@ -5,13 +5,13 @@
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="{{ L('settings.title') }}"/>
     </ActionBar>
-        <GridLayout rows="auto, *, auto, auto">
-            <StackLayout class="p-20" row="0">
+    <GridLayout rows="auto, *, auto, auto">
+        <StackLayout class="p-20" row="0">
+            <StackLayout visibility="{{ isAdmin ? 'visible' : 'collapsed' }}">
                 <df:RadDataForm id="myDataForm" source="{{ admin }}">
                     <df:RadaForm.properties>
                         <df:EntityProperty name="continuousScan" index="2"
-                                           displayName="{{ L('settings.continuous_scan') }}"
-                            visibility="{{ isAdmin ? 'visible' : 'collapse' }}">
+                                           displayName="{{ L('settings.continuous_scan') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Switch">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -23,11 +23,12 @@
                         </df:EntityProperty>
                     </df:RadaForm.properties>
                 </df:RadDataForm>
-                <Button text="{{ L('button.save') }}" tap="tapSave" class="btn btn-primary"/>
-                <Button text="{{ L('settings.clear') }}" tap="tapClear" class="btn btn-test"/>
-                <Button text="Share data" tap="shareData" class="btn btn-test"
-                        visibility="{{ testing ? 'visible' : 'collapse' }}"/>
             </StackLayout>
+            <Button text="{{ L('button.save') }}" tap="tapSave" class="btn btn-primary"/>
+            <Button text="{{ L('settings.clear') }}" tap="tapClear" class="btn btn-test"/>
+            <Button text="Share data" tap="shareData" class="btn btn-test"
+                    visibility="{{ testing ? 'visible' : 'collapse' }}"/>
+        </StackLayout>
 
         <ListView items="{{ nodes }}" class="list-group" row="1" tap="{{ updateNodes }}">
             <ListView.itemTemplate>

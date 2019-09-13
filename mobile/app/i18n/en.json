@@ -84,9 +84,10 @@
     "updating": "Updating list",
     "searching": "Searching new candidates",
     "join_title": "Join challenge",
-    "join_msg": "By joining the challenge you reveal your data for anybody to see. Do you agree?",
+    "join_msg": "By joining the challenge you reveal your progress for anybody to see. Do you agree?",
     "join_ok": "Reveal and join",
-    "join_cancel": "Don't participate"
+    "join_cancel": "Don't participate",
+    "need_register": "You need first to register."
   },
   "lab": {
     "title": "Lab of great ideas",

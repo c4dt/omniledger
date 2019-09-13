@@ -83,9 +83,10 @@
     "updating": "Mise à jour de la liste",
     "searching": "Recherche de nouveaux candidats",
     "join_title": "Participation au concours",
-    "join_msg": "Ta participation au concours implique que tout le monde pourra voir tes données. Es-tu d'accord?",
-    "join_ok": "Je dévoile mes données et participe",
-    "join_cancel": "Je ne souhaite pas participer"
+    "join_msg": "Ta participation au concours implique que tout le monde pourra voir ton progrès. Es-tu d'accord?",
+    "join_ok": "Montre mon progrès",
+    "join_cancel": "Je ne souhaite pas participer",
+    "need_register": "il faut d'abord t'enregistrer."
   },
   "lab": {
     "title": "Labo des génies",

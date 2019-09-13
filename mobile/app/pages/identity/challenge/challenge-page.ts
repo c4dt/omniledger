@@ -4,11 +4,12 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import { localize } from "nativescript-localize";
 import Long from "long";
+import { localize } from "nativescript-localize";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/frame";
+import { msgFailed } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { frame } from "~/pages/identity/identity-page";
 import { ChallengeViewModel } from "./challenge-view";
@@ -21,6 +22,10 @@ export async function navigatingTo(args: EventData) {
     page = args.object as Page;
     adminView = new ChallengeViewModel(uData);
     page.bindingContext = adminView;
+    if (!uData.contact.isRegistered()) {
+        await msgFailed(localize("challenge.need_register"));
+        return frame.navigate("pages/home/home-page");
+    }
     const joined = uData.contact.credential.getAttribute("1-public", "challenge");
     if (!joined) {
         // tslint:disable:object-literal-sort-keys

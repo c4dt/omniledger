@@ -6,7 +6,7 @@ Here the user can enter his alias
       xmlns:df="nativescript-ui-dataform"
       class="page">
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="{{ L('presenting.title2') }}"></Label>
+        <Label class="action-bar-title" text="{{ L('presenting.title2') }}"/>
     </ActionBar>
     <ScrollView>
         <StackLayout class="p-20">
@@ -28,8 +28,7 @@ Here the user can enter his alias
                     </df:EntityProperty>
                     <df:EntityProperty name="email" index="1"
                                        displayName="{{ L('attributes.email') }}"
-                                       hintText="{{ L('attributes.email_hint') }}"
-                    visibility="{{ noAttributes ? 'hidden' : 'visible' }}">
+                                       hintText="{{ L('attributes.email_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -41,8 +40,7 @@ Here the user can enter his alias
                     </df:EntityProperty>
                     <df:EntityProperty name="phone" index="2"
                                        displayName="{{ L('attributes.phone') }}"
-                                       hintText="{{ L('attributes.phone_hint') }}"
-                                       visibility="{{ noAttributes ? 'hidden' : 'visible' }}">
+                                       hintText="{{ L('attributes.phone_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -54,8 +52,7 @@ Here the user can enter his alias
                     </df:EntityProperty>
                     <df:EntityProperty name="url" index="2"
                                        displayName="{{ L('attributes.url') }}"
-                                       hintText="{{ L('attributes.url_hint') }}"
-                                       visibility="{{ noAttributes ? 'hidden' : 'visible' }}">
+                                       hintText="{{ L('attributes.url_hint') }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -66,6 +63,15 @@ Here the user can enter his alias
                         </df:EntityProperty.editor>
                     </df:EntityProperty>
                 </df:RadaForm.properties>
+                <df:RadDataForm.groups>
+                    <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
+                        <df:PropertyGroup.properties>
+                            <df:EntityProperty name="email"/>
+                            <df:EntityProperty name="phone"/>
+                            <df:EntityProperty name="url"/>
+                        </df:PropertyGroup.properties>
+                    </df:PropertyGroup>
+                </df:RadDataForm.groups>
             </df:RadDataForm>
 
             <Button text="{{ L('button.continue') }}" tap="goNext" class="btn btn-primary"/>
