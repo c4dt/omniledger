@@ -63,6 +63,7 @@
                         <df:PropertyGroup.properties>
                             <df:EntityProperty name="_observers"/>
                             <df:EntityProperty name="_map"/>
+                            <df:EntityProperty name="calypso"/>
                         </df:PropertyGroup.properties>
                     </df:PropertyGroup>
                 </df:RadDataForm.groups>

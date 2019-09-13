@@ -10,6 +10,7 @@ import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
+import { msgOKCancel } from "~/lib/messages";
 import { uData } from "~/lib/user-data";
 import { RopasciView } from "~/pages/lab/ropasci/ropasci-view";
 
@@ -46,8 +47,10 @@ export async function addRoPaSci(args: GestureEventData) {
 }
 
 export async function wipeRoPaSci() {
-    await uData.phrpc.wipeRPS();
-    return updateRoPaSci();
+    if (await msgOKCancel("Wipe all games?", "Wipe", "Don't")) {
+        await uData.phrpc.wipeRPS();
+        return updateRoPaSci();
+    }
 }
 
 export function setProgress(text: string = "", width: number = 0) {

@@ -96,8 +96,7 @@ export class Participant {
     }
 
     isVisible() {
-        Log.print(this.alias, this.signup, this.signup.sub(Long.fromNumber(Date.now())));
-        Log.print(this.signup.greaterThan(Long.fromNumber(Date.now() - 10000)));
-        return this.signup.greaterThan(Long.fromNumber(Date.now() - 10000));
+        // Show user for 12h in challenge.
+        return this.signup.greaterThan(Long.fromNumber(Date.now() - 86400 * 1000 / 2));
     }
 }
