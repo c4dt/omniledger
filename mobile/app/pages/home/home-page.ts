@@ -14,7 +14,7 @@ import Log from "~/lib/cothority/log";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { getRawData, IScore, rawToPercent } from "~/lib/personhood";
 import { qrcodeIdentity } from "~/lib/qrcode";
-import { finishData, testingMode, uData } from "~/lib/user-data";
+import { finishData, testingMode, uData, updateIsAdmin } from "~/lib/user-data";
 import { scanNewUser } from "~/lib/users";
 import { UserView } from "../identity/contacts/contacts-view";
 
@@ -163,6 +163,7 @@ export async function update() {
             await uData.coinInstance.update();
             identity.set("coins", uData.coinInstance.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
         }
+        await updateIsAdmin();
         setProgress();
     } catch (e) {
         Log.catch(e);

@@ -4,10 +4,12 @@ import { Observable } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { ItemEventData } from "tns-core-modules/ui/list-view";
+import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
+import { Darc, Rule } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { Contact } from "~/lib/dynacred/Contact";
 import { msgFailed, msgOK } from "~/lib/messages";
-import { uData } from "~/lib/user-data";
+import { adminDarc, isAdmin, uData } from "~/lib/user-data";
 import { friendsUpdateList, setProgress } from "~/pages/identity/contacts/contacts-page";
 
 export class ContactsView extends Observable {
@@ -186,6 +188,7 @@ export class UserView extends Observable {
         }
         progress();
     }
+    isAdmin = isAdmin;
 
     private _user: Contact;
 
@@ -246,5 +249,26 @@ export class UserView extends Observable {
             moduleName: "pages/identity/contacts/actions/actions-page",
             context: this._user,
         });
+    }
+
+    async makeAdmin() {
+        try {
+            if (!this.isRegistered) {
+                await msgFailed("Cannot make an unregistered user admin");
+                return;
+            }
+            setProgress("making admin", 33);
+            const admin = await DarcInstance.fromByzcoin(uData.bc, adminDarc);
+            const newAdmin = admin.darc.evolve();
+            newAdmin.addIdentity(Darc.ruleSign, await this._user.getDarcSignIdentity(), Rule.OR);
+            newAdmin.addIdentity(DarcInstance.ruleEvolve, await this._user.getDarcSignIdentity(), Rule.OR);
+            await admin.evolveDarcAndWait(newAdmin, [uData.keyIdentitySigner], 10);
+            setProgress("Done", 100);
+        } catch (e) {
+            Log.catch(e);
+            setProgress("Error", -100);
+            await msgFailed("Couldn't update darc:", e.toString());
+        }
+        setProgress();
     }
 }

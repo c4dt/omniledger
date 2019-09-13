@@ -162,9 +162,10 @@
   <string name="_lab_ropasci_BQTec">"Feuille-caillou-ciseaux"</string>
   <string name="_lab_personhood_Z2rhgUc">"Individualité"</string>
   <string name="_lab_title_2v9QnO">"Labo des génies"</string>
+  <string name="_challenge_need_register_Mg96y">"il faut d\'abord t\'enregistrer."</string>
   <string name="_challenge_join_cancel_M0v1w">"Je ne souhaite pas participer"</string>
-  <string name="_challenge_join_ok_ZppK7H">"Je dévoile mes données et participe"</string>
-  <string name="_challenge_join_msg_2kuY7c">"Ta participation au concours implique que tout le monde pourra voir tes données. Es-tu d\'accord?"</string>
+  <string name="_challenge_join_ok_ZppK7H">"Montre mon progrès"</string>
+  <string name="_challenge_join_msg_2kuY7c">"Ta participation au concours implique que tout le monde pourra voir ton progrès. Es-tu d\'accord?"</string>
   <string name="_challenge_join_title_2uMzVm">"Participation au concours"</string>
   <string name="_challenge_searching_Z1a6K2A">"Recherche de nouveaux candidats"</string>
   <string name="_challenge_updating_t2Utp">"Mise à jour de la liste"</string>

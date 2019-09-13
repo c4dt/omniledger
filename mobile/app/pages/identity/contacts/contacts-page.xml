@@ -23,6 +23,9 @@
                            textTransform="uppercase"
                            tap="{{ credUser }}"
                            flexGrow="1"/>
+                    <Label text="&#xf502;  " class="fas h1"
+                           tap="{{ makeAdmin }}"
+                           visibility="{{ isAdmin ? 'visible' : 'collapsed' }}"/>
                     <Label text="&#xf158;  " class="fas h1"
                            tap="{{ payThisUser }}"/>
                     <Label text="&#xf029;  " class="fas h1"
