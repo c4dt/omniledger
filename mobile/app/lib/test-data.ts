@@ -37,7 +37,7 @@ export class TestData extends Data {
                 "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"].forEach((rule) => {
                 d.rules.appendToRule(rule, admin, "|");
             });
-            const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(1e10));
+            const bc = await ByzCoinRPC.newByzCoinRPC(r, d, Long.fromNumber(5e8));
 
             const fu = await Data.createFirstUser(bc, bc.getDarc().getBaseID(), admin.secret, alias);
             fu.storage = StorageFile;

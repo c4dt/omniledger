@@ -19,7 +19,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = false;
+export let testingMode = true;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -128,11 +128,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("be0d276851fcf584fb7b44a36c4655c754ca4b0146b5f14128914b2a967d8b08", "hex");
-        spawnerID = Buffer.from("d572b27d5379c043b013a86eb389527cc7fd837203730804a881f25517bc3fed", "hex");
-        adminDarc = Buffer.from("1f0c31d14fa7aca37b1664d10da90de1dd0cc6f5a8260e7832d6ba29d430a8b2", "hex");
-        ltsID = Buffer.from("e9d658ac831d88ffc19865640663e7ea5f547e1c4c45decdceb74f088a3f3ad3", "hex");
-        ltsX = Public.fromHex("372f3cd24bbc5a844d0240a080398f76b89bc942919e20440bcb6172b4acd325").point;
+        byzCoinID = Buffer.from("010c09ca56fd53e58713b676fadc0d898da4dd2149686b630c47068ddc1107d3", "hex");
+        spawnerID = Buffer.from("050eac4e2145388f0367991e05bf38e2ab5cba15a9771d6587cc8cca4e954929", "hex");
+        adminDarc = Buffer.from("e04534ccde49474bfca9be85468827dc766e58b2dd1b4ec177244dbf3664edcc", "hex");
+        ltsID = Buffer.from("8cf179b5d69f064b26a9c130f6ac88fdb1ef7773cb92b263916d2fe8a6033690", "hex");
+        ltsX = Public.fromHex("2246a33404bab57dc5097f468e67a0c9724c72780cc56c7b47061841585899ac").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");
@@ -245,7 +245,7 @@ async function bcOH19(): Promise<ByzCoinRPC> {
 }
 
 // tslint:disable
-const testRoster1 = Roster.fromTOML(`[[servers]]
+const testRoster = Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"
   Suite = "Ed25519"
   Public = "ed2494dfd826cd2c2ea23adedf564fb19619c6004bff91f08bc76e80bdb4ec7f"
@@ -348,7 +348,6 @@ const OH19Roster = Roster.fromTOML(`[[servers]]
       Public = "86dd65fc4bfb9723fb2139eaf745aee4783b3ecbbfab972daf8df6d78406378e229ccd8d781b0c0d648e584ab37555868d28fbe111ae3182bb0d3211dbd084433bb1e5d9ca2ae4e1494f3439dd3b5ab52bdb8999865aedab8c2d7fa1b9066ae3191e867bc9f1a24aa76370e2ba644c954030e1b72ba8694d6890bac5eee59c10"
       Suite = "bn256.adapter"
 `);
-const testRoster = OH19Roster;
 
 const DEDISRoster = Roster.fromTOML(`[[servers]]
   Address = "tls://conode.dedis.ch:7000"

@@ -199,7 +199,7 @@ export class Data {
             new Argument({name: CredentialsInstance.argumentDarcID, value: darcCred.getBaseID()}),
             new Argument({name: CredentialsInstance.argumentCredential, value: cred.toBytes()}),
         ]));
-        const amount = Long.fromNumber(1e9);
+        const amount = Long.fromNumber(1e10);
         instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
             CoinInstance.contractID,
             CoinInstance.commandMint,
