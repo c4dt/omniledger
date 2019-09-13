@@ -1,6 +1,6 @@
-import { localize } from "nativescript-localize";
 import Long from "long";
 import Moment from "moment";
+import { localize } from "nativescript-localize";
 import { sprintf } from "sprintf-js";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";

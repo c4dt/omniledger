@@ -1,6 +1,6 @@
-import { localize } from "nativescript-localize";
 import { randomBytes } from "crypto-browserify";
 import Long from "long";
+import { localize } from "nativescript-localize";
 import { fromObject } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
