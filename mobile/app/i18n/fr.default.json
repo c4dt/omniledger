@@ -17,9 +17,13 @@
     "recover": "Récupérer compte",
     "identity": "Données personelles",
     "identity_desc": [
-      "Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est 'pseudo', mais pour ",
-      "accéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu pourras bien sûr le faire plus ",
-      "tard également. Attention: actuellement, ces informations seront disponibles publiquement sur nos serveurs!"
+      "Ici tu peux enregistrer ton pseudonyme avec lequel les autres utilisateurs vont te reconnaître ",
+      "plus tard. Tu peux aussi le changer plus tard."
+      ],
+    "identity_desc_full": [
+      "Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est 'pseudo', mais pour",
+      "accéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu auras aussi la possibilité de faire",
+      "cela plus tard. Attention: actuellement, ces informations seront disponibles publiquement sur nos serveurs!"
       ],
     "poc": "Code Expérimental!",
     "asis": [

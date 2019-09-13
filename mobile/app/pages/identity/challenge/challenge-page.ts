@@ -5,6 +5,7 @@ logic, and to set up your page’s data binding.
 */
 
 import { localize } from "nativescript-localize";
+import Long from "long";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { Page } from "tns-core-modules/ui/frame";
@@ -33,8 +34,7 @@ export async function navigatingTo(args: EventData) {
         if (!join) {
             return frame.navigate("pages/home/home-page");
         }
-        uData.contact.credential.setAttribute("1-public", "challenge", Buffer.from("true"));
-        uData.contact.incVersion();
+        uData.contact.joinedChallenge = Long.fromNumber(Date.now());
         uData.save();
     }
     await adminView.updateList();
@@ -42,4 +42,10 @@ export async function navigatingTo(args: EventData) {
 
 export async function updateList() {
     return adminView.updateList();
+}
+
+export async function resetDate() {
+    uData.contact.joinedChallenge = Long.fromNumber(Date.now());
+    uData.save();
+    adminView.updateList();
 }

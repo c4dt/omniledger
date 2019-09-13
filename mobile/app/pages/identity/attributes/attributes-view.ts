@@ -3,7 +3,7 @@ import { ImageSource } from "tns-core-modules/image-source";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Data } from "~/lib/dynacred/Data";
 import { qrcodeIdentity } from "~/lib/qrcode";
-import { uData } from "~/lib/user-data";
+import { isAdmin, noAttributes, uData } from "~/lib/user-data";
 
 export class AttributesViewModel extends Observable {
 
@@ -26,6 +26,14 @@ export class AttributesViewModel extends Observable {
 
     get hasCoins(): boolean {
         return uData.coinInstance != null;
+    }
+
+    get isAdmin(): boolean {
+        return isAdmin;
+    }
+
+    get noAttributes(): boolean {
+        return noAttributes;
     }
 
     setProgress(text: string = "", width: number = 0) {

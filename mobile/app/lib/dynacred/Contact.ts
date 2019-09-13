@@ -137,6 +137,16 @@ export class Contact {
         }
     }
 
+    get joinedChallenge(): Long {
+        const longArray = this.credential.getAttribute("1-public", "challenge");
+        return Long.fromBytesLE(Array.from(longArray));
+    }
+
+    set joinedChallenge(v: Long) {
+        this.credential.setAttribute("1-public", "challenge", Buffer.from(v.toBytesLE()));
+        this.incVersion();
+    }
+
     get personhoodPub(): Public {
         const buf = this.credential.getAttribute("1-public", "personhood");
         return buf ? Public.fromBuffer(buf) : null;
@@ -179,7 +189,7 @@ export class Contact {
 
     set ltsX(X: Point) {
         if (X &&
-            ( !this.ltsX || !X.equals(this.ltsX) )) {
+            (!this.ltsX || !X.equals(this.ltsX))) {
             this.credential.setAttribute("1-config", "ltsX", X.toProto());
             this.incVersion();
         }
@@ -219,8 +229,8 @@ export class Contact {
             c ? Buffer.from("true") : Buffer.from("false"));
         this.incVersion();
     }
-    static readonly structVersionLatest = 1;
 
+    static readonly structVersionLatest = 1;
     static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
 

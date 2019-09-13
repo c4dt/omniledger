@@ -28,7 +28,8 @@ Here the user can enter his alias
                     </df:EntityProperty>
                     <df:EntityProperty name="email" index="1"
                                        displayName="{{ L('attributes.email') }}"
-                                       hintText="{{ L('attributes.email_hint') }}">
+                                       hintText="{{ L('attributes.email_hint') }}"
+                    visibility="{{ noAttributes ? 'hidden' : 'visible' }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -40,7 +41,8 @@ Here the user can enter his alias
                     </df:EntityProperty>
                     <df:EntityProperty name="phone" index="2"
                                        displayName="{{ L('attributes.phone') }}"
-                                       hintText="{{ L('attributes.phone_hint') }}">
+                                       hintText="{{ L('attributes.phone_hint') }}"
+                                       visibility="{{ noAttributes ? 'hidden' : 'visible' }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>
@@ -52,7 +54,8 @@ Here the user can enter his alias
                     </df:EntityProperty>
                     <df:EntityProperty name="url" index="2"
                                        displayName="{{ L('attributes.url') }}"
-                                       hintText="{{ L('attributes.url_hint') }}">
+                                       hintText="{{ L('attributes.url_hint') }}"
+                                       visibility="{{ noAttributes ? 'hidden' : 'visible' }}">
                         <df:EntityProperty.editor>
                             <df:PropertyEditor type="Text">
                                 <df:PropertyEditor.propertyEditorStyle>

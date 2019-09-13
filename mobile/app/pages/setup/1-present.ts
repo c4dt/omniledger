@@ -69,7 +69,7 @@ export function goAlias(args: EventData) {
 }
 
 export function goPersonhood() {
-    openUrl("https://personhood.online");
+    openUrl("https://oh19.c4dt.org");
 }
 
 export async function goRecover(args: EventData) {

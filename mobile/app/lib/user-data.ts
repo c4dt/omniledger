@@ -41,21 +41,23 @@ export let calypsoRoster: Roster;
 // LTS data
 export let ltsID: InstanceID;
 export let ltsX: Point;
+// Reduce the privacy surface until we have calypso-stored attributes
+export let noAttributes = true;
 
 // Returns an initialized BC or a failed promise if the given BC is not available.
 export async function initBC() {
     if (testingMode) {
-        calypsoRoster = testRoster;
         bc = await bcTest();
+        calypsoRoster = testRoster;
     } else {
-        bc = await bcDEDIS();
-        calypsoRoster = C4DTCalypsoRoster;
+        bc = await bcOH19();
+        calypsoRoster = OH19Roster;
     }
 }
 
 // Sends a status message to the nodes and checks which node replies the fastest
 export async function speedTest(): Promise<string> {
-    const r = testingMode ? testRoster : DEDISRoster;
+    const r = testingMode ? testRoster : OH19Roster;
     const wsc = new RosterWSConnection(r, StatusRPC.serviceName);
     await wsc.send(new StatusRequest(), StatusResponse);
     Log.lvl2("fastest node:", wsc.getURL());
@@ -126,11 +128,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("22209391b6aacc4c655849e64a48409cc869790d169e74c09d5f69fac180a960", "hex");
-        spawnerID = Buffer.from("bf1ba35a31ba2fa2a84bcd157aae4b20ffa98f146c7117f1d8f8772b4206d60c", "hex");
-        adminDarc = Buffer.from("9e9b93fdf38b7026d2e6cb55434b6c167eb770a775ce7a95b622cd2d9a3ef18d", "hex");
-        ltsID = Buffer.from("fe7152b0a3a555e934941aa367d400f892ef21218a8a6b23b0aeb992160c58eb", "hex");
-        ltsX = Public.fromHex("1a0d103a01eaf8fd373e8d44d988038afebf643e5a4e48643a06ddb307db0322").point;
+        byzCoinID = Buffer.from("be0d276851fcf584fb7b44a36c4655c754ca4b0146b5f14128914b2a967d8b08", "hex");
+        spawnerID = Buffer.from("d572b27d5379c043b013a86eb389527cc7fd837203730804a881f25517bc3fed", "hex");
+        adminDarc = Buffer.from("1f0c31d14fa7aca37b1664d10da90de1dd0cc6f5a8260e7832d6ba29d430a8b2", "hex");
+        ltsID = Buffer.from("e9d658ac831d88ffc19865640663e7ea5f547e1c4c45decdceb74f088a3f3ad3", "hex");
+        ltsX = Public.fromHex("372f3cd24bbc5a844d0240a080398f76b89bc942919e20440bcb6172b4acd325").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");
@@ -197,8 +199,53 @@ async function bcDEDIS(): Promise<ByzCoinRPC> {
     return newBC;
 }
 
+// Connects to the byzcoin for OpenHouse19.
+async function bcOH19(): Promise<ByzCoinRPC> {
+    // *******
+    //
+    // Paste in config info here to sync two emulators to the same byzcoin.
+    //
+    // *******
+
+    byzCoinID = Buffer.from("329e749bffcf00fe56474071e2fb6c2f10a2b80062ace4eba87c104e061e3b66", "hex");
+    spawnerID = Buffer.from("a5fd84bbb177361741bacd2fc7637718cda9b9cd1f0ff6f27a8d2f12f5f488bc", "hex");
+    adminDarc = Buffer.from("3ce379e2fe3f6270093337dfd75f113add06f1e7b8fecdbb3d57c8e8771f7784", "hex");
+    ltsID = Buffer.from("bcf3bb32e552a83042364544acb5d74aa92ca51edb1d11baa441a98c678d68f8", "hex");
+    ltsX = Public.fromHex("cfb4c50c35062633fb4f80d998742e21f3b9e0d26c2d8efbb4b2a4bfa8787bb8").point;
+
+    let latest: SkipBlock;
+    try {
+        const latestBuf = await StorageFile.get("latest");
+        latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
+        Log.lvl2("got stored latest skipblock");
+    } catch (e) {
+        Log.lvl2("No skipblock stored yet - getting hardcoded one");
+        // const scRPC = new SkipchainRPC(OH19Roster);
+        // const sb = await scRPC.getSkipBlockByIndex(byzCoinID, 13705);
+        // if (sb.skipblock.computeHash()
+        //     .equals(Buffer.from("78ccc5d917514dc8ac03503659646dc6cff3f334d8a6165144770c9cf99ba1f6", "hex"))) {
+        //     Log.lvl2("Successfully got hardcoded block");
+        //     latest = sb.skipblock;
+        // }
+    }
+    let newBC: ByzCoinRPC;
+    try {
+        newBC = await ByzCoinRPC.fromByzcoin(OH19Roster, byzCoinID, 0, 1000, latest);
+    } catch (e) {
+        if (latest) {
+            Log.warn("probably wrong latest");
+            newBC = await ByzCoinRPC.fromByzcoin(OH19Roster, byzCoinID);
+        } else {
+            throw new Error(e);
+        }
+    }
+    await StorageFile.set("latest", Buffer.from(SkipBlock.encode(newBC.latest).finish()).toString("hex"));
+    Log.lvl2(newBC.latest.index, newBC.latest.hash);
+    return newBC;
+}
+
 // tslint:disable
-const testRoster = Roster.fromTOML(`[[servers]]
+const testRoster1 = Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"
   Suite = "Ed25519"
   Public = "ed2494dfd826cd2c2ea23adedf564fb19619c6004bff91f08bc76e80bdb4ec7f"
@@ -247,6 +294,61 @@ const testRoster = Roster.fromTOML(`[[servers]]
       Public = "0524681253b82af55c0976e792014707c39405fe215bb1ebf6a3159dcbbb944535619f32ed4a91a4d1fcf4d9aa4ad14a1d349d5354dbbd6fb51907087a09ce7862ee5808a4c3f5b3b23ee631f1ce42b56107acec13fa06817263d1e7f77938f1149249e598fd24207e7e5e33ece750d36fe966faf8fda9c7ace13a6a8b0b9fa4"
       Suite = "bn256.adapter"
 `);
+
+const OH19Roster = Roster.fromTOML(`[[servers]]
+  Address = "tls://oh19.c4dt.org:10006"
+  Suite = "Ed25519"
+  Public = "82060e48dd6c7843ee341b069262679a0bd414d9b621c6bbdd19be3290370cd7"
+  Description = "Conode_4"
+  Url = "https://oh19.c4dt.org:10007"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "7225ef09a9b06b3dd7c8a051eafdd01fdc2949553075df6fbb7c020b8e7ba29853a157dfd2b9d67c1e7414005eb6feb9a29128d11bb44c9bfbd00abd04c73f2c1617ca039747a8f19d8a878993f6bfa99a77e0469ab617311a425e10df231b2c56c34f2c132e4741850b28682ff8f026c2435850b12ae85ea519aa3b4708ce63"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "2caa167a366ed86f21152099e4c40b6175a368c269405a8f86d72602943454bc8aa6c614c9e130f69eb4e8a35a061ebbda398b0f1d956d50b49e88acd61d18a0783c30bfaf396e2d2a355d9ae29887f40f869f7618f65ebf19d87aa21b3a191810e3d9ff86ea696de5a191bcafd1abc0f2562c19597439c619b47c7e12bee584"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://oh19.c4dt.org:10004"
+  Suite = "Ed25519"
+  Public = "2e0213d241a48b700715e8752b75d3f6c354e80662446157ac08e4ec02557e4c"
+  Description = "Conode_3"
+  Url = "https://oh19.c4dt.org:10005"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "5e9f5314b1a51fc07d5200a08c48d88ca99b9c1296aee5bb8f4c5a4f9c56f4888aebfe80154dda2fafaa0eeb63100a5a2f9c8c2fd81224dea9496288794682235aa94473f10507c2bce9b5bd144db8e3692666497a9205208e8c152d1a128c8250781bf2cd07d55d612725244a94faff270d948a78c0dd2d6feae0552dba8ab6"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "62b299bfe932a9e6f9a1f3ebd51b75bb74c2bf015fdaaccf492320e2c6184ea67473825261b33484fe62482a74412804dd683dda5bd82577bd5aff41cfcd406c12518fb9c5764e42bce8437897b94463328c8b99d06ea5d5cecd0a7ce40ca82b5370c5cac11a11fc30459c03af2b4094b58d9efbe356e90d468f41251d75b283"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://oh19.c4dt.org:10002"
+  Suite = "Ed25519"
+  Public = "92fd0f479a3512586c0da9e560577f200afb08a2883526253037a22c77862351"
+  Description = "Conode_2"
+  Url = "https://oh19.c4dt.org:10003"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "1a2dae0cdceaaaea21657ca15e3c36d46d1c54100ae2c8157d2a228d7e78581166c88183809a7a6e46e6581ecd4c1da6b8960fc6297ac5a7de5f859b9b481f940f651c640f9308d92822a5ee301ebaeff8fd87fd2f13c0c5f2ec3508ac8395db49194323f5c5826dca204b4dddceb16d5fd30a3eb5d06cf9032832e280b81ffc"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "661db79d2334915c9c2e924afb4724393c39d5e48ed2fd3bbe5fa4d378a58c8e1ed05b1300eb6cfaa35fb84a7b29feb949bbbc9e023ba5d84d316afde76dcd401962576b07590c755a94177432932e9340c5deecc725c7db6c3fd7bfe7bbb0b76da99f9ed84e11b89244b6c67735920db608705db45ce20d69753825ebddb01a"
+      Suite = "bn256.adapter"
+[[servers]]
+  Address = "tls://oh19.c4dt.org:10000"
+  Suite = "Ed25519"
+  Public = "118eb54cc31b01b54483af965007384289d115586a223cc06c366ee9577078a1"
+  Description = "Conode_1"
+  Url = "https://oh19.c4dt.org:10001"
+  [servers.Services]
+    [servers.Services.ByzCoin]
+      Public = "36e4309cbb3c20b2ac83728f5909c4a0e6938e8dcc615dc556764a4cbb9f904d347f29bea138798c6d2349319fd52733511d49a33555242b4000bf94f8cecf537eb44a0324b9bdd92cfcc64517700e1ff6731d5e0d5db203a2d678b721ba1a100824b88a38acaec334466fc5686f9c248ad374c5130f37bb9de9e504921efa68"
+      Suite = "bn256.adapter"
+    [servers.Services.Skipchain]
+      Public = "86dd65fc4bfb9723fb2139eaf745aee4783b3ecbbfab972daf8df6d78406378e229ccd8d781b0c0d648e584ab37555868d28fbe111ae3182bb0d3211dbd084433bb1e5d9ca2ae4e1494f3439dd3b5ab52bdb8999865aedab8c2d7fa1b9066ae3191e867bc9f1a24aa76370e2ba644c954030e1b72ba8694d6890bac5eee59c10"
+      Suite = "bn256.adapter"
+`);
+const testRoster = OH19Roster;
 
 const DEDISRoster = Roster.fromTOML(`[[servers]]
   Address = "tls://conode.dedis.ch:7000"

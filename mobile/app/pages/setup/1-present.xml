@@ -11,7 +11,7 @@ This is the presentation screen when the user is not signed up yet.
                 <Label text="{{ L('presenting.personhood') }}" class="h2 text-center"/>
                 <Label text="{{ L('presenting.personhood_desc') }}" class="h3" textWrap="true"/>
                 <StackLayout orientation="horizontal" style="horizontal-align: center;">
-                    <HtmlView html="{{ L('presenting.personhood_link') + ' <u>https://personhood.online</u>' }}"
+                    <HtmlView html="{{ L('presenting.personhood_link') + ' <u>https://oh19.c4dt.org</u>' }}"
                               class="h3"
                               textWrap="true" width="60%" style="vertical-align: center;" tap="goPersonhood"/>
                     <Image src="~/images/icon-personhood-64.png" width="20%" tap="goPersonhood"/>
