@@ -11,7 +11,8 @@
 
                 <df:RadDataForm id="myDataForm" source="{{ userId }}">
                     <df:RadaForm.properties>
-                        <df:EntityProperty name="alias" displayName="{{ L('attributes.alias') }}" index="0" hintIndex="{{ L('attributes.alias_hint') }}">
+                        <df:EntityProperty name="alias" displayName="{{ L('attributes.alias') }}" index="0"
+                                           hintIndex="{{ L('attributes.alias_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -21,7 +22,8 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="email" displayName="{{ L('attributes.email') }}" index="1" hintText="{{ L('attributes.email_hint') }}">
+                        <df:EntityProperty name="email" displayName="{{ L('attributes.email') }}" index="1"
+                                           hintText="{{ L('attributes.email_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Email">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -31,7 +33,8 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="phone" displayName="{{ L('attributes.phone') }}" index="2" hintText="{{ L('attributes.phone_hint') }}">
+                        <df:EntityProperty name="phone" displayName="{{ L('attributes.phone') }}" index="2"
+                                           hintText="{{ L('attributes.phone_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Phone">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -41,21 +44,12 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="url" displayName="{{ L('attributes.url') }}" index="2" hintText="{{ L('attributes.url_hint') }}">
+                        <df:EntityProperty name="url" displayName="{{ L('attributes.url') }}" index="2"
+                                           hintText="{{ L('attributes.url_hint') }}">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
                                         <df:PropertyEditorStyle labelPosition="Left" labelWidth="60"
-                                                                labelFontStyle="Italic" labelTextColor="#00695c"/>
-                                    </df:PropertyEditor.propertyEditorStyle>
-                                </df:PropertyEditor>
-                            </df:EntityProperty.editor>
-                        </df:EntityProperty>
-                        <df:EntityProperty name="publishPersonhood" displayName="{{ L('attributes.publish') }}" index="3">
-                            <df:EntityProperty.editor>
-                                <df:PropertyEditor type="Switch">
-                                    <df:PropertyEditor.propertyEditorStyle>
-                                        <df:PropertyEditorStyle labelPosition="Left" labelWidth="160"
                                                                 labelFontStyle="Italic" labelTextColor="#00695c"/>
                                     </df:PropertyEditor.propertyEditorStyle>
                                 </df:PropertyEditor>
@@ -68,15 +62,43 @@
                                 <df:EntityProperty name="email"/>
                                 <df:EntityProperty name="phone"/>
                                 <df:EntityProperty name="url"/>
+                                <df:EntityProperty name="publishPersonhood"/>
                             </df:PropertyGroup.properties>
                         </df:PropertyGroup>
-<!--                        <df:PropertyGroup collapsible="false" name="Admin" hidden="{{ isAdmin ? 'false' : 'true' }}">-->
-<!--                            <df:PropertyGroup.properties>-->
-<!--                                <df:EntityProperty name="publishPersonhood"/>-->
-<!--                            </df:PropertyGroup.properties>-->
-<!--                        </df:PropertyGroup>-->
+                        <!--                        <df:PropertyGroup collapsible="false" name="Admin" hidden="{{ isAdmin ? 'false' : 'true' }}">-->
+                        <!--                            <df:PropertyGroup.properties>-->
+                        <!--                                <df:EntityProperty name="publishPersonhood"/>-->
+                        <!--                            </df:PropertyGroup.properties>-->
+                        <!--                        </df:PropertyGroup>-->
                     </df:RadDataForm.groups>
                 </df:RadDataForm>
+                <StackLayout visibility="{{ isAdmin ? 'visible' : 'collapsed' }}">
+                    <df:RadDataForm id="myDataForm" source="{{ userId }}">
+                        <df:RadaForm.properties>
+                            <df:EntityProperty name="publishPersonhood" displayName="{{ L('attributes.publish') }}"
+                                               index="3">
+                                <df:EntityProperty.editor>
+                                    <df:PropertyEditor type="Switch">
+                                        <df:PropertyEditor.propertyEditorStyle>
+                                            <df:PropertyEditorStyle labelPosition="Left" labelWidth="160"
+                                                                    labelFontStyle="Italic" labelTextColor="#00695c"/>
+                                        </df:PropertyEditor.propertyEditorStyle>
+                                    </df:PropertyEditor>
+                                </df:EntityProperty.editor>
+                            </df:EntityProperty>
+                        </df:RadaForm.properties>
+                        <df:RadDataForm.groups>
+                            <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
+                                <df:PropertyGroup.properties>
+                                    <df:EntityProperty name="email"/>
+                                    <df:EntityProperty name="phone"/>
+                                    <df:EntityProperty name="url"/>
+                                    <df:EntityProperty name="alias"/>
+                                </df:PropertyGroup.properties>
+                            </df:PropertyGroup>
+                        </df:RadDataForm.groups>
+                    </df:RadDataForm>
+                </StackLayout>
 
                 <Button text="{{ L('button.save') }}" tap="tapSave" class="btn btn-primary"/>
             </StackLayout>

@@ -20,7 +20,7 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Sooner or later this should be changeable to 'false' and thus run the system on the production-chain.
-export let testingMode = true;
+export let testingMode = false;
 // The global uData that is used all over the pages.
 export let uData: Data;
 // Initialized BC
@@ -139,11 +139,11 @@ async function bcTest(): Promise<ByzCoinRPC> {
     // *******
 
     try {
-        byzCoinID = Buffer.from("e6a33e6cd7c367030c751b887ed8ec21097687ae5ece5d897b36534d086616ee", "hex");
-        spawnerID = Buffer.from("5143002d780b0d3e5c7044a72c13c1e0e17e9a3f9b62c1a13f5196f716228205", "hex");
-        adminDarc = Buffer.from("241c7ef13fa65985410112d132891297a5f5554dbe224b364ecc0556e1f9cc73", "hex");
-        ltsID = Buffer.from("c066404411e85a8ab6bd265739f394b327c757e0a367609bfd4280d76b7f8452", "hex");
-        ltsX = Public.fromHex("cf7a27ea497b07a6ae3a1c9a26a6f0f1a6565030920d1824d7e11765bf2361ba").point;
+        byzCoinID = Buffer.from("9b94ee52308ac7e315b4b1af53f3de6c63e5aa0d537e803c334edd01388f799f", "hex");
+        spawnerID = Buffer.from("7669af341035cd815e1e746a8d36089de6ef0491df6020c155e205be7639a330", "hex");
+        adminDarc = Buffer.from("84aa6f3be486e2e63bf0563b81e4ce68863b4e6e7e6288c695d20fed887b702f", "hex");
+        ltsID = Buffer.from("1dd918b56387870afa9ca97a870dbf87ed723e938dbe6936cc7a7dab4ed70e34", "hex");
+        ltsX = Public.fromHex("69a8dc181ce70a23c1cd2f74c84b5c760c49544f08373349c2f915df0b5fad14").point;
 
         let latest: SkipBlock;
         await StorageFile.set("latest", "");

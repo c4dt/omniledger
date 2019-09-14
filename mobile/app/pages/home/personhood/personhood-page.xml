@@ -26,7 +26,7 @@
 <!--                <Label text="{{ meetups_rundown_label }}" class="fas h2" style="vertical-align: center;"/>-->
 <!--                <Label text="{{meetups_rundown}}" class="h3" textWrap="true"/>-->
 <!--            </StackLayout>-->
-            <Label text="{{ L('score.header_parties', 45) }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_parties', 40) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ parties_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{parties_rundown}}" class="h3" textWrap="true"/>
@@ -41,7 +41,12 @@
                 <Label text="{{ polls_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{polls_rundown}}" class="h3" textWrap="true"/>
             </StackLayout>
-            <Label text="{{ L('score.header_invites', 20) }}" class="h2 text-center"/>
+            <Label text="{{ L('score.header_snack', 10) }}" class="h2 text-center"/>
+            <StackLayout orientation="horizontal">
+                <Label text="{{ snack_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
+                <Label text="{{snack_rundown}}" class="h3" textWrap="true"/>
+            </StackLayout>
+            <Label text="{{ L('score.header_invites', 15) }}" class="h2 text-center"/>
             <StackLayout orientation="horizontal">
                 <Label text="{{ invites_rundown_label }}" class="fas h2" style="vertical-align: center;"/>
                 <Label text="{{invites_rundown}}" class="h3" textWrap="true"/>

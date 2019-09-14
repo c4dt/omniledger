@@ -69,10 +69,11 @@
     "scanning": "Scannage d'un nouvel utilisateur",
     "updating_contacts": "Mise à jour de la liste de contacts",
     "nosnack": "Il ne te reste pas assez de poplets pour un snack.",
-    "snack": "Est-ce que tu veux payer 500'000 poplets pour un snack?",
+    "snack": "Est-ce que tu veux payer 600'000 poplets pour un snack?",
     "pay": "Oui",
     "cancel": "Non",
     "check_admin": "Vérification du destinataire",
+    "no_admin": "Seulement un organisateur peut te donner un snack",
     "snack_paid": "Merci d'avoir payé ton snack. Montre ce message à l'organisateur pour recevoir un snack."
   },
   "identity": {
@@ -142,6 +143,10 @@
     "polls": "sondages",
     "polls_improve": "Réponds à des sondages pour augmenter ton score.",
     "polls_done": "Tu as tout répondu",
+    "header_snack": "Snack (%d%%)",
+    "snack": "snack",
+    "snack_improve": "Achète-toi un snack pour tes efforts!",
+    "snack_done": "J'espère que le snack été bon.",
     "header_invites": "Invitations (%d%%)",
     "invites": "invitations",
     "invites_improve": "Invite d'autres joueurs et inscris-les.",

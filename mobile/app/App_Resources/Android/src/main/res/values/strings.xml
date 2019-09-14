@@ -123,6 +123,10 @@
   <string name="_score_invites_improve_Z1fLY0C">"Invite d\'autres joueurs et inscris-les."</string>
   <string name="_score_invites_p5UKu">"invitations"</string>
   <string name="_score_header_invites_18WYDm">"Invitations (%1$d%%)"</string>
+  <string name="_score_snack_done_4CJow">"J\'espère que le snack été bon."</string>
+  <string name="_score_snack_improve_Ry57A">"Achète-toi un snack pour tes efforts!"</string>
+  <string name="_score_snack_wDuR0">"snack"</string>
+  <string name="_score_header_snack_ZPRqRN">"Snack (%1$d%%)"</string>
   <string name="_score_polls_done_xuWuO">"Tu as tout répondu"</string>
   <string name="_score_polls_improve_8muwd">"Réponds à des sondages pour augmenter ton score."</string>
   <string name="_score_polls_wrtdj">"sondages"</string>
@@ -178,10 +182,11 @@
   <string name="_identity_attributes_ZXT80j">"Attributs"</string>
   <string name="_identity_title_Z1lEvro">"Identité"</string>
   <string name="_home_snack_paid_Z16MNxX">"Merci d\'avoir payé ton snack. Montre ce message à l\'organisateur pour recevoir un snack."</string>
+  <string name="_home_no_admin_ZCCtQj">"Seulement un organisateur peut te donner un snack"</string>
   <string name="_home_check_admin_Z2v59fN">"Vérification du destinataire"</string>
   <string name="_home_cancel_Z1tb1eD">"Non"</string>
   <string name="_home_pay_ZzbXP3">"Oui"</string>
-  <string name="_home_snack_ZbO5Gt">"Est-ce que tu veux payer 500\'000 poplets pour un snack?"</string>
+  <string name="_home_snack_ZbO5Gt">"Est-ce que tu veux payer 600\'000 poplets pour un snack?"</string>
   <string name="_home_nosnack_1NblWG">"Il ne te reste pas assez de poplets pour un snack."</string>
   <string name="_home_updating_contacts_ZTWXJe">"Mise à jour de la liste de contacts"</string>
   <string name="_home_scanning_2eKMaw">"Scannage d\'un nouvel utilisateur"</string>

@@ -70,10 +70,11 @@
     "scanning": "Scanning new user",
     "updating_contacts": "Updating contact list",
     "nosnack": "Not enough poplets left to pay a snack, sorry!",
-    "snack": "Do you want to pay a snack for 500'000 poplets?",
+    "snack": "Do you want to pay a snack for 600'000 poplets?",
     "pay": "Yes",
     "cancel": "No",
     "check_admin": "Verifying it's an admin",
+    "no_admin": "Only an organizer can pay you a snack",
     "snack_paid": "Thanks for paying your snack. Show this message to the organizer to get your snack."
   },
   "identity": {
@@ -142,6 +143,10 @@
     "polls": "polls",
     "polls_improve": "Answer polls to raise your score.",
     "polls_done": "Fervent poller!",
+    "header_snack": "Snack (%d%%)",
+    "snack": "snack",
+    "snack_improve": "Buy a snack to recover from your efforts.",
+    "snack_done": "I hope the snack was good!",
     "header_invites": "Invites (%d%%)",
     "invites": "invites",
     "invites_improve": "Invite and sign up new players.",
