@@ -13,16 +13,19 @@
     </ActionBar>
     <GridLayout>
         <ScrollView row="0">
-            <GridLayout rows="*, auto, auto, auto">
+            <GridLayout rows="auto, auto, auto, auto">
                 <StackLayout class="p-20" row="1">
                     <FlexboxLayout justifyContent="center">
-                        <StackLayout orientation="horizontal"
+                        <StackLayout orientation="vertical"
                                      visibility="{{ hasCoins ? 'visible' : 'collapse' }}">
-                            <StackLayout style="vertical-align: center">
-                                <Label text="PopCoins" class="h2"/>
-                                <Label text="{{ L('home.balance', coins) }}" class="h3"/>
+                            <StackLayout orientation="horizontal" width="100%" class="center">
+                                <Label text="Poplets: " class="h2"/>
+                                <Label text="{{ coins }}" class="h2"/>
                             </StackLayout>
-                            <Button text="{{ L('home.invite') }}" tap="coins" class="btn btn-primary"/>
+                            <StackLayout orientation="horizontal">
+                                <Button text="Payer Snack" tap="paySnack" class="btn btn-primary"/>
+                                <Button text="{{ L('home.invite') }}" tap="invite" class="btn btn-primary"/>
+                            </StackLayout>
                         </StackLayout>
                         <Label text="{{ L('home.register') }}"
                                textWrap="true" class="h3"
@@ -48,9 +51,9 @@
                         <Label width="{{ widthRegistered }}" text=" "
                                style="horizontal-align:left; opacity:0.5; background-color: #9DBAD5;"
                                row="0" col="1"/>
-<!--                        <Label width="{{ widthMeetups }}" text=" "-->
-<!--                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"-->
-<!--                               row="0" col="2"/>-->
+                        <!--                        <Label width="{{ widthMeetups }}" text=" "-->
+                        <!--                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"-->
+                        <!--                               row="0" col="2"/>-->
                         <Label width="{{ widthParty }}" text=" "
                                style="horizontal-align:left; opacity:0.5; background-color: #C8D6B9;"
                                row="0" col="3"/>
@@ -73,7 +76,7 @@
                 </StackLayout>
 
                 <StackLayout row="3">
-<!--                    <Button text="{{ L('home.meetup') }}" tap="meetup" class="btn"/>-->
+                    <!--                    <Button text="{{ L('home.meetup') }}" tap="meetup" class="btn"/>-->
                     <Button text="Cycle personhood" tap="cyclePersonhood" class="btn btn-test"
                             visibility="{{ testing ? 'visible' : 'collapse' }}"/>
                 </StackLayout>
