@@ -230,6 +230,15 @@ export class Contact {
         this.incVersion();
     }
 
+    get hasSnack(): boolean {
+        return this.credential.getAttribute("1-public", "snacked") != null;
+    }
+
+    set hasSnack(v: boolean) {
+        this.credential.setAttribute("1-public", "snacked", Buffer.alloc(32));
+        this.incVersion();
+    }
+
     static readonly structVersionLatest = 1;
     static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";

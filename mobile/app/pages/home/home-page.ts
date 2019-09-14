@@ -79,12 +79,13 @@ export function personhoodDesc() {
 export function cyclePersonhood() {
     const score: IScore = {
         attributes: 0, invites: 0, meetups: 0, parties: 0,
-        polls: 0, registered: 0, roPaScis: 0,
+        polls: 0, registered: 0, roPaScis: 0, snack: 0,
     };
     for (let i = 0; i <= identityShow; i++) {
         switch (i) {
             case 0:
                 score.attributes = 4;
+                score.snack = 1;
                 break;
             case 1:
                 score.registered = 1;
@@ -132,6 +133,7 @@ function setScore(s: IScore) {
     identity.set("widthParty", scores.parties + "%");
     identity.set("widthRPS", scores.roPaScis + "%");
     identity.set("widthPolls", scores.polls + "%");
+    identity.set("widthSnack", scores.snack + "%");
     identity.set("widthReferences", scores.invites + "%");
     // Total score
     identity.set("personhoodScore", Object.values(scores).reduce((a, b) => a + b) + "%");
@@ -189,7 +191,7 @@ export async function invite(args: EventData) {
 }
 
 export async function paySnack() {
-    if (uData.coinInstance.value.lessThan(Long.fromNumber(5e5))) {
+    if (uData.coinInstance.value.lessThan(Long.fromNumber(6e5))) {
         return msgFailed(localize("home.nosnack"));
     }
     if (!(await msgOKCancel(localize("home.snack"), localize("home.pay"), localize("home.cancel")))) {
@@ -204,7 +206,9 @@ export async function paySnack() {
             return msgFailed(localize("home.no_admin"));
         }
         setProgress(localize("home.send_coins"), 66);
-        await uData.coinInstance.transfer(Long.fromNumber(5e5), u.coinID, [uData.keyIdentitySigner]);
+        await uData.coinInstance.transfer(Long.fromNumber(6e5), u.coinID, [uData.keyIdentitySigner]);
+        uData.contact.hasSnack = true;
+        await uData.save();
         setProgress("Done", 100);
         await msgOK(localize("home.snack_paid"));
     } catch (e) {

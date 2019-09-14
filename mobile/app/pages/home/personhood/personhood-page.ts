@@ -20,6 +20,7 @@ export async function navigatingTo(args: EventData) {
         addRundown(count.parties, max.parties, "parties");
         addRundown(count.roPaScis, max.roPaScis, "ropascis");
         addRundown(count.polls, max.polls, "polls");
+        addRundown(count.snack, max.snack, "snack");
         addRundown(count.invites, max.invites, "invites");
         page.bindingContext = rundown;
     } catch (e) {
