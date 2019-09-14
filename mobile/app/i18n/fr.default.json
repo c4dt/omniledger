@@ -67,7 +67,13 @@
     "send_coins": "Envoyer des jetons",
     "invite": "Inviter quelqu'un",
     "scanning": "Scannage d'un nouvel utilisateur",
-    "updating_contacts": "Mise à jour de la liste de contacts"
+    "updating_contacts": "Mise à jour de la liste de contacts",
+    "nosnack": "Il ne te reste pas assez de poplets pour un snack.",
+    "snack": "Est-ce que tu veux payer 500'000 poplets pour un snack?",
+    "pay": "Oui",
+    "cancel": "Non",
+    "check_admin": "Vérification du destinataire",
+    "snack_paid": "Merci d'avoir payé ton snack. Montre ce message à l'organisateur pour recevoir un snack."
   },
   "identity": {
     "title": "Identité",
@@ -147,12 +153,12 @@
   },
   "personhood": {
       "title": "Gestion des badges et rencontres",
-      "mine_coins": "Miner des PopCoins",
-      "register": "S'inscrire sur ByzCoin et Miner des PopCoins",
+      "mine_coins": "Miner des Poplets",
+      "register": "S'inscrire sur ByzCoin et Miner des Poplets",
       "updating_parties": "Mise à jour des rencontres",
       "parties_updated": "Rencontres mises à jour",
       "updating_badges": "Mise à jour des badges",
-      "mining": "Minage de PopCoins",
+      "mining": "Minage de Poplets",
       "registering": "Inscription du contact",
       "deleting": "Effacement de la rencontre",
       "barrier": "Activation du signal",
@@ -184,10 +190,10 @@
       "updating_others": "Mise à jour des autres utilisateurs",
       "saving_byzcoin": "Enregistrement de la liste sur ByzCoin",
       "fetching": "Mise à jour de %s",
-	  "transfer": "Transfert de PopCoins",
+	  "transfer": "Transfert de Poplets",
 	  "transferred": "%s transférés à %s",
 	  "transfer_fail1": "Adresse de destination non trouvée",
-	  "transfer_fail2": "Impossible de payer %s PopCoins"
+	  "transfer_fail2": "Impossible de payer %s Poplets"
   },
   "contact_info": {
       "title": "Contact",

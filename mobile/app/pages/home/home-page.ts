@@ -4,17 +4,19 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import Long from "long";
 import { localize } from "nativescript-localize";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
+import { IdentityWrapper } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
-import { msgFailed, msgOK } from "~/lib/messages";
+import { msgFailed, msgOK, msgOKCancel } from "~/lib/messages";
 import { getRawData, IScore, rawToPercent } from "~/lib/personhood";
 import { qrcodeIdentity } from "~/lib/qrcode";
-import { finishData, testingMode, uData, updateIsAdmin } from "~/lib/user-data";
+import { adminDarc, finishData, testingMode, uData, updateIsAdmin } from "~/lib/user-data";
 import { scanNewUser } from "~/lib/users";
 import { UserView } from "../identity/contacts/contacts-view";
 
@@ -170,13 +172,12 @@ export async function update() {
     }
 }
 
-export async function coins(args: EventData) {
+export async function invite(args: EventData) {
     try {
         setProgress(localize("home.scanning"), 1);
         const u = await scanNewUser(uData);
         setProgress(localize("home.updating_contacts"), 10);
         await uData.addContact(u);
-        await uData.save();
         await UserView.inviteUser(u, setProgress);
         await update();
         await uData.save();
@@ -185,6 +186,34 @@ export async function coins(args: EventData) {
         await msgFailed("Something unforseen happened: " + e.toString());
     }
     setProgress();
+}
+
+export async function paySnack() {
+    if (uData.coinInstance.value.lessThan(Long.fromNumber(5e5))) {
+        return msgFailed(localize("home.nosnack"));
+    }
+    if (!(await msgOKCancel(localize("home.snack"), localize("home.pay"), localize("home.cancel")))) {
+        return;
+    }
+    try {
+        setProgress(localize("home.scanning"), 33);
+        const u = await scanNewUser(uData);
+        setProgress(localize("home.check_admin"), 50);
+        if (u.personhoodPub == null) {
+            setProgress();
+            return msgFailed(localize("home.no_admin"));
+        }
+        setProgress(localize("home.send_coins"), 66);
+        await uData.coinInstance.transfer(Long.fromNumber(5e5), u.coinID, [uData.keyIdentitySigner]);
+        setProgress("Done", 100);
+        await msgOK(localize("home.snack_paid"));
+    } catch (e) {
+        Log.catch(e);
+        setProgress(e.toString(), -100);
+        await msgFailed("Error:" + e.toString());
+    }
+    setProgress();
+    return update();
 }
 
 export async function switchHome(args: SelectedIndexChangedEventData) {

@@ -29,7 +29,7 @@
     "poc": "Proof-of-concept code!",
     "asis": [
       "This software is given as-is. More specifically: all of your data is stored in clear on our blockchain.",
-      "Calls are done unprotected. Coins will disappear. Feel free to open issues on ",
+      "Calls are done unprotected. Poplets will disappear. Feel free to open issues on ",
       "github.com/c4dt/omniledger anyway."
     ],
     "congrats": [
@@ -65,10 +65,16 @@
     "score": "Your Personhood-score: %s",
     "meetup": "Start Meetup",
     "balance": "Balance: %s",
-    "send_coins": "Send coins",
+    "send_coins": "Send Poplets",
     "invite": "Invite someone",
     "scanning": "Scanning new user",
-    "updating_contacts": "Updating contact list"
+    "updating_contacts": "Updating contact list",
+    "nosnack": "Not enough poplets left to pay a snack, sorry!",
+    "snack": "Do you want to pay a snack for 500'000 poplets?",
+    "pay": "Yes",
+    "cancel": "No",
+    "check_admin": "Verifying it's an admin",
+    "snack_paid": "Thanks for paying your snack. Show this message to the organizer to get your snack."
   },
   "identity": {
     "title": "Identity",
@@ -147,12 +153,12 @@
   },
   "personhood": {
       "title": "Manage Badges and Parties",
-      "mine_coins": "Mine Coins",
-      "register": "Register on ByzCoin and Mine Coins",
+      "mine_coins": "Mine Poplets",
+      "register": "Register on ByzCoin and Mine Poplets",
       "updating_parties": "Updating Parties",
       "parties_updated": "Parties updated",
       "updating_badges": "Updating Badges",
-      "mining": "Mining coins",
+      "mining": "Mining Poplets",
       "registering": "Registering contact",
       "deleting": "Deleting party",
       "barrier": "Activating barrier point",
@@ -184,10 +190,10 @@
       "updating_others": "Updating all other users",
       "saving_byzcoin": "Saving list to ByzCoin",
       "fetching": "Fetching latest %s",
-	  "transfer": "Transferring coins",
+	  "transfer": "Transferring Poplets",
 	  "transferred": "Transferred %s to %s",
 	  "transfer_fail1": "Coundn't get target address",
-	  "transfer_fail2": "Cannot pay %s coins"
+	  "transfer_fail2": "Cannot pay %s Poplets"
   },
   "contact_info": {
     "title": "Show Contact",
