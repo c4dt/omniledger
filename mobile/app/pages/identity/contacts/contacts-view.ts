@@ -73,7 +73,7 @@ export class UserView extends Observable {
                     const pay = await dialogs.confirm({
                         title: "Register user",
                         message: "This user is not registered yet - do you want to pay " +
-                            uData.signupCost().toString() + " for the registration of user " +
+                            (uData.signupCost().toNumber() / 1e4).toString() + " for the registration of user " +
                             u.alias + "?",
                         okButtonText: "Yes, pay",
                         cancelButtonText: "No, don't pay",
@@ -103,17 +103,17 @@ export class UserView extends Observable {
                 message: "How many coins do you want to send to " + u.alias,
                 okButtonText: "Send",
                 cancelButtonText: "Cancel",
-                defaultText: "10000",
+                defaultText: "10",
             });
             if (reply.result) {
-                const coins = Long.fromString(reply.text);
+                const coins = Long.fromString(reply.text).mul(1e4);
                 if (await uData.canPay(coins)) {
                     const target = u.getCoinAddress();
                     if (target) {
                         progress(localize("contacts.transfer"), 50);
                         await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
                         progress(localize("progress.success"), 100);
-                        await msgOK(localize("contacts.transferred", coins.toString(), u.alias));
+                        await msgOK(localize("contacts.transferred", coins.div(1e4).toString(), u.alias));
                         progress();
                     } else {
                         await msgFailed(localize("contacts.transfer_fail1"));
@@ -140,7 +140,7 @@ export class UserView extends Observable {
                     const pay = await dialogs.confirm({
                         title: "Invite user",
                         message: "This user is not invited yet - do you want to pay " +
-                            (10000 + uData.signupCost().toNumber()) + " to invite the user " +
+                            (10000 + uData.signupCost().toNumber()) / 1e4 + " to invite the user " +
                             u.alias + "?",
                         okButtonText: "Yes, pay",
                         cancelButtonText: "No, don't pay",
@@ -174,13 +174,13 @@ export class UserView extends Observable {
                     progress("Transferring coin", 50);
                     await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
                     progress("Success", 100);
-                    await msgOK("Transferred " + coins.toString() + " to " + u.alias);
+                    await msgOK("Transferred " + coins.div(1e4).toString() + " to " + u.alias);
                     progress();
                 } else {
                     await msgFailed("couldn't get targetAddress");
                 }
             } else {
-                await msgFailed("Cannot pay " + coins.toString() + " coins.");
+                await msgFailed("Cannot pay " + coins.div(1e4).toString() + " poplets.");
             }
         } catch (e) {
             Log.catch(e);

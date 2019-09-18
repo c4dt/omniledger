@@ -24,7 +24,7 @@ export class ScanAttsView extends Observable {
     }
 
     get keys(): Public[] {
-        return this.party.partyInstance.getAttendees().map((p) => new Public(p));
+        return this.party.partyInstance.getTmpAttendees().map((p) => new Public(p));
     }
 
     get hash(): string {

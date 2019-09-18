@@ -118,7 +118,7 @@ export class PopPartyInstance extends Instance {
     /**
      * Returns a copy of the list of all attendees.
      */
-    getAttendees(): Point[] {
+    getTmpAttendees(): Point[] {
         return this.tmpAttendees.slice();
     }
 

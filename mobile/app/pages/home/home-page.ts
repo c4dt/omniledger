@@ -6,6 +6,7 @@ logic, and to set up your page’s data binding.
 
 import Long from "long";
 import { localize } from "nativescript-localize";
+import { sprintf } from "sprintf-js";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { topmost } from "tns-core-modules/ui/frame";
@@ -165,7 +166,7 @@ export async function update() {
             identity.set("hasCoins", true);
             identity.set("init", false);
             await uData.coinInstance.update();
-            identity.set("coins", uData.coinInstance.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+            identity.set("coins", sprintf("%.02f", uData.coinInstance.value.toNumber() / 1e4).replace(".", ","));
         }
         await updateIsAdmin();
         setProgress();
