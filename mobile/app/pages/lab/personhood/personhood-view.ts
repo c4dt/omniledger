@@ -140,8 +140,11 @@ export class BadgeView extends Observable {
     }
 
     async onTap(arg: GestureEventData) {
-        const p = this.badge.party.partyInstance.popPartyStruct.description;
-        const details = [p.name.toUpperCase(), p.purpose,
+        const pi = this.badge.party.partyInstance.popPartyStruct;
+        const p = pi.description;
+        const orgAtt = sprintf("Organizers: %d - Attendees: %d",
+            pi.organizers, pi.attendees.keys.length - pi.organizers);
+        const details = [p.name.toUpperCase(), p.purpose, orgAtt,
             p.dateString.replace(/:00$/, ""), p.location].join("\n");
         if (this.badge.mined) {
             return msgOK(details, "Details for badge");

@@ -1,4 +1,13 @@
+## Default
+## $ make
+## sets up system for
+## $ tns run (android|ios)
+
 .DEFAULT_GOAL := apply-patches
+
+##
+## Release related targets
+##
 
 gradle-simul:
 	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
@@ -70,7 +79,13 @@ ios-release: apply-patches
 xcode-dev: ios-dev
 	open platforms/ios/mobile.xcworkspace/
 
+release: android-release-32
+	tns prepare ios
+	open platforms/ios/mobile.xcworkspace/
 
+##
+## Code-related targets
+##
 
 cothority_src: dynacred_src cothority-pull app/lib/cothority
 
