@@ -1,31 +1,42 @@
 # CAS - Central Authentication Service
 
-CAS is described here: https://en.wikipedia.org/wiki/Central_Authentication_Service.
+CAS is described here
+ - overview: https://en.wikipedia.org/wiki/Central_Authentication_Service.
+ - specs: https://apereo.github.io/cas/6.0.x/protocol/CAS-Protocol-Specification.html
+
 It is used for OmniLedger authentication with common tools.
 
-A very small subset of CAS is implemented here. Currently only the following two endpoints are implemented,
-and even those two not fully:
+A small subset of CAS is implemented in `cmd/cas`. Currently only the following endpoints are implemented, and are not feature full.
 
-- `api/v0/cas/login` - to start the login procedure and return a ticket
-  - as the user keys are inside the StorageDB of the browser, it's currently provided directly by the webapp
-- `api/v0/cas/serviceValidate` - to validate and return the username of the ticket
+CAS 3.0
+  - `api/v0/cas/login` - to start the login procedure and return a ticket
+    - as the user keys are inside the StorageDB of the browser, it's currently provided directly by the webapp
+  - `api/v0/cas/p3/serviceValidate` - to validate and return the username of the ticket
+  - `api/v0/cas/logout` - to logout
 
-To better understand the interactions of the system, one can look at the [messages' UML](login.uml).
+CAS 2.0 (Matrix needs that)
+- `api/v0/cas/proxyValidate` - to validate and return the username of the ticket
 
-### TODOs for CAS
+To better understand the interactions of the system, one can look at the [messages' UML](login.uml) (built with `make login.png`).
 
-- Check if we need an access control system
+To test integration, we also provide `cmd/cas-stress`, a small user story simulator. In this case, it simulates the user login into either WordPress or Matrix using CAS. It needs a user data extracted from the browser' IndexedDB (the value of `IndexedDB.dynasent.contacts`). For example, one could use it as
 
-# Configuration
+`
+cas-stress --with-matrix-url https://matrix.c4dt.org --with-wordpress-url https://c4dt.org --user-data-path path/to/extracted/user/data
+`
+
+It will regularly take one of the services, simulate a login until it fails then exit with an return code != 0.
+
+# Configuration for `cas`
 
 A few elements are needed to start `cas`. Here goes an example to fill in
 ```toml
-ByzCoinID = # same as the webapp's asset
+ByzCoinID = "hex encoded instance ID" # same as the webapp's asset
 
 CoinCost = 1 # number of coin to transfer back and forth
 ChallengeSize = 20  # size of challenge to generate
 ChallengeHash = "sha256"  # how it the challenge hashed
-TicketEncoding = "base64"  # how is the ticket's payload is encoded
+TicketEncoding = "base64url"  # how is the ticket's payload is encoded
 TxArgumentName = "challenge"  # field name to find in transaction
 TxValidityDuration = "5m"  # maximum validity time of ticket
 
@@ -35,9 +46,10 @@ localhost = "8c22411f1aaf3248542f6b677fd066db3178bc0a2b60adc2aaa9d6cc80938b0f"
 
 # same as the webapp's asset
 [[servers]]
-Address = ...
-Suite = ...
-Public = ...
+Address = ""
+Public = ""
+Suite = ""
+Url = ""
 ```
 
 # Deployment
