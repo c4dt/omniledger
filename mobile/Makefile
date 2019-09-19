@@ -46,15 +46,19 @@ android-compile: update-version
 		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 
-android-release: android-check apply-patches gradle-prod android-compile gradle-simul
+android-release-copy:
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
 
-android-release-32: gradle-simul android-check apply-patches android-compile
+android-release: android-check apply-patches gradle-prod android-compile gradle-simul android-release-copy
+
+android-release-32-copy:
 	@mkdir -p releases; \
 	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
 	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2-32.$$REL.apk
+
+android-release-32: gradle-simul android-check apply-patches android-compile android-release-32-copy
 
 android-run: android-check gradle-simul
 	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
@@ -79,7 +83,7 @@ ios-release: apply-patches
 xcode-dev: ios-dev
 	open platforms/ios/mobile.xcworkspace/
 
-release: android-release-32
+release: android-release-32 gradle-prod android-compile gradle-build android-release-copy
 	tns prepare ios
 	open platforms/ios/mobile.xcworkspace/
 
