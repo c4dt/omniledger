@@ -37,10 +37,8 @@ export class DialogTransactionComponent<T> implements OnInit {
         this.updateBlocks();
         if (!this.bcv.currentBlock) {
             await new Promise((resolve) => {
-                this.bcv.newStatus.subscribe((update) => {
-                    if (update) {
-                        resolve();
-                    }
+                this.bcv.newStatus.subscribe(() => {
+                    resolve();
                 });
             });
         }
