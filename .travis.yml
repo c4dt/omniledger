@@ -61,7 +61,7 @@ jobs:
         - go vet ./...
         - golint -set_exit_status
       script:
-        - make cas
+        - make cas cas-stress
         - go test ./...
 
     - stage: deploy
