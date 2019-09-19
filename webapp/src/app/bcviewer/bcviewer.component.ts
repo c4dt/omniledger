@@ -9,7 +9,6 @@ import Proof from "@c4dt/cothority/byzcoin/proof";
 import DataBody from "@c4dt/cothority/byzcoin/proto/data-body";
 import DataHeader from "@c4dt/cothority/byzcoin/proto/data-header";
 import TxResult from "@c4dt/cothority/byzcoin/proto/tx-result";
-import Log from "@c4dt/cothority/log";
 import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
 import { ForwardLink, SkipBlock } from "@c4dt/cothority/skipchain";
 import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
@@ -20,12 +19,12 @@ import { UserData } from "../user-data.service";
 })
 export class BcviewerService {
 
-    @Output() update: EventEmitter<boolean> = new EventEmitter();
-    @Output() newStatus: EventEmitter<boolean> = new EventEmitter();
+    @Output() update: EventEmitter<void> = new EventEmitter();
+    @Output() newStatus: EventEmitter<void> = new EventEmitter();
     currentBlock: SkipBlock;
 
     updateBlocks() {
-        this.update.emit(true);
+        this.update.emit();
     }
 
 }
@@ -69,7 +68,7 @@ export class BcviewerComponent implements OnInit {
                 this.blocks.splice(0, this.blocks.length - 4);
             }
             this.showBlockService.currentBlock = this.blocks[this.blocks.length - 1].sb;
-            this.showBlockService.newStatus.emit(true);
+            this.showBlockService.newStatus.emit();
         }
     }
 
@@ -79,10 +78,8 @@ export class BcviewerComponent implements OnInit {
     }
 
     async ngOnInit() {
-        this.showBlockService.update.subscribe(async (update) => {
-            if (update) {
-                await this.updateBlocks();
-            }
+        this.showBlockService.update.subscribe(async () => {
+            await this.updateBlocks();
         });
     }
 }
