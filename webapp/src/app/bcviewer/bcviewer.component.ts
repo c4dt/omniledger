@@ -21,6 +21,7 @@ import { UserData } from "../user-data.service";
 export class BcviewerService {
 
     @Output() update: EventEmitter<boolean> = new EventEmitter();
+    @Output() newStatus: EventEmitter<boolean> = new EventEmitter();
     currentBlock: SkipBlock;
 
     updateBlocks() {
@@ -68,6 +69,7 @@ export class BcviewerComponent implements OnInit {
                 this.blocks.splice(0, this.blocks.length - 4);
             }
             this.showBlockService.currentBlock = this.blocks[this.blocks.length - 1].sb;
+            this.showBlockService.newStatus.emit(true);
         }
     }
 

@@ -34,12 +34,21 @@ export class DialogTransactionComponent<T> implements OnInit {
     }
 
     async ngOnInit() {
-        this.bcv.updateBlocks();
+        this.updateBlocks();
+        if (!this.bcv.currentBlock) {
+            await new Promise((resolve) => {
+                this.bcv.newStatus.subscribe((update) => {
+                    if (update) {
+                        resolve();
+                    }
+                });
+            });
+        }
         this.ubTimer = setInterval(() => this.updateBlocks(), 500);
         setTimeout(() => this.startTransactions(), 200);
     }
 
-    async updateBlocks() {
+    updateBlocks() {
         this.bcv.updateBlocks();
         if (this.bcv.currentBlock &&
             this.blockIndex < this.bcv.currentBlock.index) {
