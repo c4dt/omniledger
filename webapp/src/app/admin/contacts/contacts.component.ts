@@ -452,10 +452,6 @@ export class UserCredComponent {
         data.groups = [];
     }
 
-    show(): void {
-        Log.lvl1(this.data.groups, this.data.view);
-    }
-
     cancel(): void {
         this.dialogRef.close();
     }
