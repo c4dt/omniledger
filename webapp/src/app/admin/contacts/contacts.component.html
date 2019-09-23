@@ -6,12 +6,12 @@
         -
         <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
         -
-        <button mat-button (click)="contactDelete(contact)">Delete</button>
+        <button mat-button (click)="contactDelete(contact)">Unlink</button>
     </li>
 </ul>
 <div style="padding:10px;">
     <button mat-stroked-button color="primary" (click)="createContact()">Create Contact</button>
-    <button mat-stroked-button color="primary" (click)="addContact()">Add Contact</button>
+    <button mat-stroked-button color="primary" (click)="addContact()">Link Contact</button>
 </div>
 
 <h2>Groups</h2>
@@ -21,12 +21,12 @@
 	-
         <button mat-button (click)="changeGroups(group, 'contact,group')">Change users</button>
         -
-        <button mat-button (click)="groupDelete(group)">Delete group</button>
+        <button mat-button (click)="groupDelete(group)">Unlink group</button>
     </li>
 </ul>
 <div style="padding:10px;">
     <button mat-stroked-button color="primary" (click)="groupCreate()">Create Group</button>
-    <button mat-stroked-button color="primary" (click)="groupAdd()">Add Group</button>
+    <button mat-stroked-button color="primary" (click)="groupAdd()">Link Group</button>
 </div>
 
 <h2>Actions</h2>
@@ -36,10 +36,10 @@
 	-
         <button mat-button (click)="changeGroups(action, 'group')">Change groups</button>
         -
-        <button mat-button (click)="actionDelete(action)">Delete action</button>
+        <button mat-button (click)="actionDelete(action)">Unlink action</button>
     </li>
 </ul>
 <div style="padding:10px;">
     <button mat-stroked-button color="primary" (click)="actionCreate()">Create Action</button>
-    <button mat-stroked-button color="primary" (click)="actionAdd()">Add Action</button>
+    <button mat-stroked-button color="primary" (click)="actionAdd()">Link Action</button>
 </div>
