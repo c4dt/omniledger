@@ -2,8 +2,10 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
+import { IdentityWrapper } from "@c4dt/cothority/darc";
 import Log from "@c4dt/cothority/log";
 
+import { showDialogOKC } from "src/lib/Ui";
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
 
@@ -38,6 +40,16 @@ export class AppComponent implements OnInit {
         } else {
             try {
                 await this.uData.load();
+                const signerDarc = await this.uData.contact.getDarcSignIdentity();
+                const rules = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, signerDarc.id,
+                    IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+                if (rules.length === 0) {
+                    this.uData.setValues({});
+                    await this.uData.save();
+                    await showDialogOKC(this.dialog, "Device revoked", "Sorry, but this device has been revoked." +
+                    " If you want to use it again, you'll have to re-activate it.");
+                    return this.newUser();
+                }
                 this.loading = false;
                 this.bcs.updateBlocks();
             } catch (e) {
