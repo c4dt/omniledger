@@ -4,11 +4,10 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 
 import Log from "@c4dt/cothority/log";
 
-import { Data, StorageDB } from "@c4dt/dynacred";
-import { TProgress } from "@c4dt/dynacred";
+import { Data, StorageDB, TProgress } from "@c4dt/dynacred";
 
 import { Router } from "@angular/router";
-import { showTransactions } from "../../../lib/Ui";
+import { showDialogOKC, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
 @Component({
@@ -30,6 +29,14 @@ export class DeviceComponent implements OnInit {
 
     async ngOnInit() {
         try {
+            const buf = await StorageDB.get(this.uData.dataFileName);
+            if (buf.length > 0) {
+                if (!(await showDialogOKC(this.dialog, "Overwrite user?", "There seems to" +
+                    "be a user already defined on this browser. Do you want to overwrite it?",
+                    {OKButton: "Overwrite", CancelButton: "Keep existing"}))) {
+                    return this.router.navigate(["/"]);
+                }
+            }
             await showTransactions(this.dialog, "Attaching to existing user",
                 async (progress: TProgress) => {
                     progress(50, "Attaching new device");
