@@ -108,78 +108,87 @@ func (cas CAS) containsLoginProof(userCoinID, servCoinID skipchain.SkipBlockID, 
 	return false, nil
 }
 
-func (cas CAS) credInstIDtoCoinInstID(credID byzcoin.InstanceID) (skipchain.SkipBlockID, error) {
+func (cas CAS) credInstIDtoCoinInstIDAndAlias(credID byzcoin.InstanceID) (skipchain.SkipBlockID, string, error) {
 	proof, err := cas.Client.GetProof(credID.Slice())
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	val, contractID, _, err := proof.Get(credID.Slice())
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if contractID != personhood.ContractCredentialID {
-		return nil, errors.New("creds id aren't for a CoinInstance")
+		return nil, "", errors.New("creds id aren't for a CoinInstance")
 	}
 
 	// TODO personhood.ContractCredentialFromBytes doesn't check for empty buffer
 	if val == nil {
-		return nil, errors.New("unknown user cred id")
+		return nil, "", errors.New("unknown user cred id")
 	}
 	credContract, err := personhood.ContractCredentialFromBytes(val)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
+	var coinInstID []byte
+	var alias string
 	for _, c := range credContract.(*personhood.ContractCredential).Credentials {
 		if c.Name != "1-public" {
 			continue
 		}
 
 		for _, a := range c.Attributes {
-			if a.Name == "coin" {
-				return a.Value, nil
+			switch a.Name {
+			case "coin":
+				coinInstID = a.Value
+			case "alias":
+				alias = string(a.Value)
 			}
 		}
 	}
 
-	return nil, errors.New("CoinInstance not found in creds")
+	if coinInstID == nil {
+		return nil, "", errors.New("CoinInstance not found in creds")
+	}
+
+	return coinInstID, alias, nil
 }
 
-func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
+func (cas CAS) validateAndGetUserInfo(url url.URL, ticket string) (string, string, error) {
 	const ServiceTicketPrefix = "ST-"
 	const InstanceIDSize = 32
 
 	servCoinID, ok := cas.Config.ServiceToCoinInstanceIDs[url.Host]
 	if !ok {
-		return "", errors.New("invalid host")
+		return "", "", errors.New("invalid host")
 	}
 
 	if ticket[:3] != ServiceTicketPrefix {
-		return "", errors.New("invalid ticket prefix")
+		return "", "", errors.New("invalid ticket prefix")
 	}
 
 	packed, err := cas.Config.TicketDecoder(ticket[3:])
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	challenge := packed[:cas.Config.ChallengeSize]
 	userCredIDRaw := packed[cas.Config.ChallengeSize:]
 	if len(challenge) != int(cas.Config.ChallengeSize) ||
 		len(userCredIDRaw) != InstanceIDSize {
-		return "", errors.New("invalid ticket size")
+		return "", "", errors.New("invalid ticket size")
 	}
 
 	userID := byzcoin.NewInstanceID(userCredIDRaw)
-	userCoinID, err := cas.credInstIDtoCoinInstID(userID)
+	userCoinID, alias, err := cas.credInstIDtoCoinInstIDAndAlias(userID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	latest, err := cas.Client.GetLatestBlock()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	hashedChallenge := cas.Config.ChallengeHasher(challenge)
@@ -187,7 +196,7 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 	for {
 		found, err := cas.containsLoginProof(userCoinID, servCoinID, *block, hashedChallenge)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		if found {
 			break
@@ -196,15 +205,15 @@ func (cas CAS) validateAndGetUser(url url.URL, ticket string) (string, error) {
 		id := block.BackLinkIDs[0]
 		block, err = cas.Client.GetSingleBlock(id)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return "ol-" + hex.EncodeToString(userID[:8]), nil
+	return "ol-" + hex.EncodeToString(userID[:8]), alias, nil
 }
 
 // ServiceValidateXML implement cas:/p3/serviceValidate
@@ -214,10 +223,16 @@ func (cas CAS) ServiceValidateXML(urlRaw, ticket string) tXML {
 		Sub     tXML
 	}
 
+	type Attributes struct {
+		XMLName xml.Name `xml:"attributes"`
+		Alias   string   `xml:"alias"`
+	}
+
 	type AuthenticationSuccess struct {
-		XMLName  xml.Name `xml:"authenticationSuccess"`
-		Username string   `xml:"user"`
-		Ticket   string   `xml:"proxyGrantingSuccess"`
+		XMLName    xml.Name `xml:"authenticationSuccess"`
+		Username   string   `xml:"user"`
+		Ticket     string   `xml:"proxyGrantingSuccess"`
+		Attributes Attributes
 	}
 
 	type AuthenticationFailure struct {
@@ -239,14 +254,15 @@ func (cas CAS) ServiceValidateXML(urlRaw, ticket string) tXML {
 			return fail(err)
 		}
 
-		username, err := cas.validateAndGetUser(*url, ticket)
+		username, alias, err := cas.validateAndGetUserInfo(*url, ticket)
 		if err != nil {
 			return fail(err)
 		}
 
 		return AuthenticationSuccess{
-			Username: username,
-			Ticket:   ticket,
+			Username:   username,
+			Ticket:     ticket,
+			Attributes: Attributes{Alias: alias},
 		}
 	}()
 
