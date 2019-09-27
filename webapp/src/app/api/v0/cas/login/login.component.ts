@@ -28,6 +28,7 @@ export class LoginComponent implements OnInit {
     // TODO eww, better use Config (as a service maybe?)
     private static readonly coinInstanceIDForService: Map<string, InstanceID> = new Map([
         ["c4dt.org", "aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"],
+        ["c4dt.paperboy.ch", "aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"],
         ["matrix.c4dt.org:8448", "90b03f42b85540981f71a5e52f18e1df94a6ae68cd34ced132282a6219c2ad3d"],
     ].map((l) => [l[0], Buffer.from(l[1], "hex")]));
     private static readonly coinCost = 1;
