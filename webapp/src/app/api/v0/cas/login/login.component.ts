@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { Argument, ClientTransaction, InstanceID, Instruction, Proof } from "@c4dt/cothority/byzcoin";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 
+import { showTransactions } from "../../../../../lib/Ui";
 import { UserData } from "../../../../user-data.service";
 
 enum State {
@@ -70,7 +71,11 @@ export class LoginComponent implements OnInit {
         const challenge = new Buffer(LoginComponent.challengeSize);
         await promisify(crypto.randomFill)(challenge);
 
-        if (! await this.putChallenge(challenge)) {
+        const success = await showTransactions(
+            this.dialog, "Generating login proof",
+            () => this.putChallenge(challenge));
+
+        if (!success) {
             this.state = State.FAILURE;
             return;
         }
@@ -106,7 +111,6 @@ export class LoginComponent implements OnInit {
      */
     private async putChallenge(challenge: Buffer): Promise<boolean> {
         const challengeHashed = LoginComponent.challengeHasher(challenge);
-
         const coinInstID = LoginComponent.coinInstanceIDForService.get(this.service);
         if (coinInstID === undefined) {
             throw Error("no such service found");
