@@ -4,11 +4,11 @@
 <div *ngIf="!loading">
     <div fxLayout="column" style="margin-top:2em; min-height: 95vh;">
         <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
-            <div fxFlex="90%" fxFlexOffset="0" class="mat-body">
+            <div fxFlex="90%" fxFlexOffset="0">
                 <router-outlet></router-outlet>
             </div>
         </div>
-        <div fxFlex="0 0 9em" class="mat-body" fxLayoutAlign="center end">
+        <div fxFlex="0 0 9em" fxLayoutAlign="center end">
             <app-bcviewer></app-bcviewer>
         </div>
     </div>
