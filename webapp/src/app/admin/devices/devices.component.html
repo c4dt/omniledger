@@ -5,3 +5,10 @@
   </li>
   <button mat-stroked-button (click)="add()">Add Device</button>
 </ul>
+<h2>Recovery accounts</h2>
+<ul>
+  <li *ngFor="let device of recovery">
+    {{device.name}} - <button mat-button (click)="deleteRecovery(device)">Delete</button>
+  </li>
+  <button mat-stroked-button (click)="addRecovery()">Add Recovery</button>
+</ul>

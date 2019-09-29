@@ -21,6 +21,12 @@
                 <mat-option *ngFor="let group of data.groupsAvail" [value]="group">{{group}}</mat-option>
             </mat-select>
         </mat-form-field>
+        <mat-form-field *ngIf="showGroups">
+            <mat-label>Group for recovery</mat-label>
+            <mat-select [(value)]="data.recovery">
+                <mat-option *ngFor="let group of recoveryGroups" [value]="group">{{group}}</mat-option>
+            </mat-select>
+        </mat-form-field>
     </p>
     <p>
         <button mat-raised-button (click)="cancel()">Cancel</button>

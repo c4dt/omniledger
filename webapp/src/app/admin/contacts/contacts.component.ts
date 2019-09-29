@@ -10,14 +10,16 @@ import { Argument, Instruction } from "@c4dt/cothority/byzcoin";
 import ClientTransaction from "@c4dt/cothority/byzcoin/client-transaction";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc, Rule } from "@c4dt/cothority/darc";
+import { IdentityDarc, IdentityWrapper, Rule } from "@c4dt/cothority/darc";
 import Darc from "@c4dt/cothority/darc/darc";
 import ISigner from "@c4dt/cothority/darc/signer";
 import Log from "@c4dt/cothority/log";
 import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import Long from "long";
 
-import { showTransactions, storeCredential } from "../../../lib/Ui";
+import { sprintf } from "sprintf-js";
+import { DeviceShowComponent } from "src/app/admin/devices/devices.component";
+import { showDialogInfo, showSnack, showTransactions, storeCredential } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
 import { ManageDarcComponent } from "../manage-darc";
@@ -53,8 +55,10 @@ export class ContactsComponent implements OnInit {
 
     async ngOnInit() {
         Log.lvl3("init contacts");
-        await this.updateActions();
-        await this.updateGroups();
+        await showSnack(this.snackBar, "Updating actions and groups", async () => {
+            await this.updateActions();
+            await this.updateGroups();
+        });
     }
 
     /**
@@ -68,7 +72,7 @@ export class ContactsComponent implements OnInit {
     async createContact(view?: string, groups?: string[]) {
         const groupsInstAvail = await this.uData.contact.getGroups();
         const groupsAvail = groupsInstAvail.map((g) => g.darc.description.toString());
-        const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail};
+        const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail, recovery: null};
         // Search if the proposed groups are really available to the user
         if (groups && groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
             return Promise.reject("unknown group");
@@ -147,8 +151,22 @@ export class ContactsComponent implements OnInit {
                             signers.push([nu.keyIdentitySigner]);
                             const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(), ...instructions);
                             await ctx.updateCountersAndSign(this.uData.bc, signers);
+
                             progress(60, "Updating User Information");
                             await this.uData.bc.sendTransactionAndWait(ctx);
+
+                            if (result.recovery && result.recovery !== UserCredComponent.noRecovery) {
+                                progress(70, "Adding recovery");
+                                Log.print("adding recovery");
+                                await nu.contact.updateOrConnect();
+                                const gInst = groupsInstAvail.find((g) =>
+                                    result.recovery === g.darc.description.toString());
+                                await gInst.update();
+                                await nu.contact.addSigner(gInst.darc.description.toString(),
+                                    gInst.id, [nu.keyIdentitySigner]);
+                                await nu.contact.sendUpdate();
+                                Log.print(nu.contact.credential.getCredential("1-recovery"));
+                            }
 
                             progress(80, "Adding User to Contacts");
                             this.uData.addContact(nu.contact);
@@ -188,6 +206,12 @@ export class ContactsComponent implements OnInit {
         });
     }
 
+    async userShow(c: Contact) {
+        const cid = await c.getDarcSignIdentity();
+        return showDialogInfo(this.dialog, "User " + c.alias,
+            "Credential-ID: " + cid.id.toString("hex"), "Dismiss");
+    }
+
     async transferCoin(c: Contact) {
         const tc = this.dialog.open(TransferCoinComponent,
             {
@@ -209,6 +233,37 @@ export class ContactsComponent implements OnInit {
                 }
             }
         });
+    }
+
+    async contactRecover(c: Contact) {
+        const cid = await c.getDarcSignIdentity();
+        if ((await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, cid.id,
+            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner))).length === 0) {
+            return showDialogInfo(this.dialog, "No recovery",
+                "Don't have the right to recover this user", "Understood");
+        }
+        const signers = [this.uData.keyIdentitySigner];
+        const device: string =
+            await showTransactions(this.dialog, "Adding new device",
+                async (progress: TProgress) => {
+                    c.spawnerInstance = this.uData.contact.spawnerInstance;
+                    c.data = this.uData;
+                    const now = new Date();
+                    const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
+                        this.uData.contact.alias,
+                        now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
+                    const d = await c.createDevice(name, (p, s) => {
+                        progress(25 + p / 2, s);
+                    }, signers);
+                    progress(75, "Updating Device List");
+                    await c.sendUpdate(signers);
+                    return d;
+                });
+        if (device) {
+            const url = window.location.protocol + "//" + window.location.host +
+                this.location.prepareExternalUrl(device);
+            this.dialog.open(DeviceShowComponent, {data: url});
+        }
     }
 
     async contactDelete(toDelete: Contact) {
@@ -430,6 +485,7 @@ export interface IUserCred {
     view: string;
     groups: string[];
     groupsAvail: string[];
+    recovery: string;
 }
 
 @Component({
@@ -437,9 +493,12 @@ export interface IUserCred {
     templateUrl: "user-cred.html",
 })
 export class UserCredComponent {
+
+    static noRecovery = "No recovery";
     views = Data.views;
     showGroups: boolean;
     showViews: boolean;
+    recoveryGroups: string[];
 
     constructor(
         public dialogRef: MatDialogRef<TransferCoinComponent>,
@@ -450,6 +509,8 @@ export class UserCredComponent {
             data.view = Data.views[0];
         }
         data.groups = [];
+        this.recoveryGroups = [UserCredComponent.noRecovery].concat(data.groupsAvail);
+        data.recovery = this.recoveryGroups[0];
     }
 
     cancel(): void {

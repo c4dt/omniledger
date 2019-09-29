@@ -112,9 +112,13 @@ export async function showTransactions<T>(dialog: MatDialog, title: string, work
         disableClose: true,
     });
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         tc.afterClosed().subscribe((res) => {
-            resolve(res);
+            if (res && res.error) {
+                reject(res.error);
+            } else {
+                resolve(res);
+            }
         });
     });
 }
