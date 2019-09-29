@@ -1,0 +1,16 @@
+<div class="mat-body">
+    <h2>Add a new recovery</h2>
+    <p>
+        <mat-form-field class="width100">
+            <mat-select [(value)]="selected">
+                <mat-option *ngFor="let account of data" [value]="account.id">
+                    {{account.name}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </p>
+    <p>
+        <button mat-raised-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button color='primary' [mat-dialog-close]="selected" cdkFocusInitial>Allow Recovery</button>
+    </p>
+</div>

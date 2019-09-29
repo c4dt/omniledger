@@ -90,7 +90,7 @@ export class Data {
     static readonly urlNewDevice = "/register/device";
     static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
     static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
-    static readonly views = ["default", "c4dt_admin", "c4dt_partner", "c4dt_user"];
+    static readonly views = ["c4dt_user", "c4dt_partner", "c4dt_admin", "admin"];
     static readonly defaultStorage = "storage/data.json";
 
     /**
@@ -838,72 +838,6 @@ export class Data {
         newDeviceDarc.rules.setRule("invoke:darc.evolve", this.keyIdentitySigner);
         const signer = new SignerEd25519(pub.point, ephemeral.scalar);
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [signer], 5);
-    }
-
-    /**
-     * creates a new darc for an additional device and adjusts the signer darc to include
-     * the new device with OR. This means that the new device has the same rights as all
-     * the other devices.
-     *
-     * The returned string can be used directly to navigate to the page that offers to register
-     * the new device. Registration can be done using Data.attachDevice.
-     *
-     * @param name the name of the new device
-     */
-    async createDevice(name: string, progress?: TProgress): Promise<string> {
-        const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
-        const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
-        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
-        const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
-        if (progress) {
-            progress(30, "Adding Device Darc");
-        }
-        const deviceDarc = (await this.spawnerInstance.spawnDarcs(this.coinInstance, [this.keyIdentitySigner],
-            dDarc))[0];
-        const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
-        const newSigner = signerDarc.darc.evolve();
-        newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
-        const re = "invoke:darc.evolve";
-        newSigner.rules.appendToRule(re, deviceDarcIdentity, Rule.OR);
-        if (progress) {
-            progress(60, "Updating Signer Darc");
-        }
-        await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
-        this.contact.credential.setAttribute("1-devices", name, deviceDarc.darc.getBaseID());
-        this.contact.incVersion();
-        return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
-            this.contact.credentialIID.toString("hex"),
-            ephemeralIdentity.secret.marshalBinary().toString("hex"));
-    }
-
-    /**
-     * Removes a given device from the signerDarc, so that it cannot be used anymore
-     * to do anything related to it.
-     *
-     * @param name of the device to remove
-     */
-    async deleteDevice(name: string) {
-        const device = this.contact.credential.getAttribute("1-devices", name);
-        if (!device) {
-            throw new Error("didn't find this device");
-        }
-        const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
-        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
-        const newSigner = signerDarc.darc.evolve();
-        const deviceStr = `darc:${device.toString("hex")}`;
-        let updateDarc = true;
-        try {
-            newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
-            newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
-        } catch (e) {
-            Log.warn("Couldn't update rule");
-            updateDarc = false;
-        }
-        if (updateDarc) {
-            await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
-        }
-        this.contact.credential.deleteAttribute("1-devices", name);
-        this.contact.incVersion();
     }
 }
 

@@ -110,7 +110,7 @@ describe("Data class should", async () => {
     it("spawn to another device correctly and works with Data.overwrite", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
 
-        const deviceURL = await device1.createDevice("newdevice");
+        const deviceURL = await device1.contact.createDevice("newdevice");
         await device1.save();
         const device2 = await Data.attachDevice(tdAdmin.bc, deviceURL);
         device2.storage = StorageLocalStorage;
@@ -150,19 +150,19 @@ describe("Data class should", async () => {
 
     it("create a device from a device", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
-        const device2 = await Data.attachDevice(tdAdmin.bc, await device1.createDevice("newdevice"));
-        const device3 = await Data.attachDevice(tdAdmin.bc, await device2.createDevice("newdevice2"));
+        const device2 = await Data.attachDevice(tdAdmin.bc, await device1.contact.createDevice("newdevice"));
+        const device3 = await Data.attachDevice(tdAdmin.bc, await device2.contact.createDevice("newdevice2"));
         expect(device3.contact.credentialIID).toEqual(device1.contact.credentialIID);
     });
 
     it("remove a device", async () => {
         const device1 = await tdAdmin.createTestUser("user1");
-        const device2 = await Data.attachDevice(tdAdmin.bc, await device1.createDevice("newdevice"));
+        const device2 = await Data.attachDevice(tdAdmin.bc, await device1.contact.createDevice("newdevice"));
         await device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
             [device1.keyIdentitySigner]);
         await device1.coinInstance.update();
         Log.print(device1.coinInstance.value);
-        await device2.deleteDevice("initial");
+        await device2.contact.deleteDevice("initial");
         await expectAsync(device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
             [device1.keyIdentitySigner])).toBeRejected();
         await device1.coinInstance.update();

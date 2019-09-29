@@ -14,7 +14,7 @@
         <div class="error">Error: {{ error }}</div>
 
         <p>
-            <button mat-raised-button color='primary' [mat-dialog-close]="error" cdkFocusInitial>Close</button>
+            <button mat-raised-button color='primary' [mat-dialog-close]="{error: error}" cdkFocusInitial>Close</button>
         </p>
     </div>
 </div>

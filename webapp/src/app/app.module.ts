@@ -20,7 +20,12 @@ import {
     TransferCoinComponent,
     UserCredComponent,
 } from "./admin/contacts/contacts.component";
-import { DeviceAddComponent, DevicesComponent, DeviceShowComponent } from "./admin/devices/devices.component";
+import {
+    DeviceAddComponent,
+    DeviceRecoveryComponent,
+    DevicesComponent,
+    DeviceShowComponent,
+} from "./admin/devices/devices.component";
 import { ManageDarcComponent } from "./admin/manage-darc";
 import { PersonhoodComponent } from "./admin/personhood/personhood.component";
 import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./admin/secure/secure.component";
@@ -73,6 +78,7 @@ export function loadUserDataConfig(d: UserData) {
         DevicesComponent,
         DeviceAddComponent,
         DeviceShowComponent,
+        DeviceRecoveryComponent,
         DeviceComponent,
         C4dtComponent,
         NewuserComponent,
@@ -99,6 +105,7 @@ export function loadUserDataConfig(d: UserData) {
         ShowBlockComponent,
         DeviceAddComponent,
         DeviceShowComponent,
+        DeviceRecoveryComponent,
     ],
     imports: [
         BrowserModule,

@@ -1,6 +1,7 @@
 import Timer = NodeJS.Timer;
 import { Component, ElementRef, Inject, OnInit, Renderer2, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import Log from "@c4dt/cothority/log";
 import { BcviewerService } from "../app/bcviewer/bcviewer.component";
 import { TWorker } from "./Ui";
 

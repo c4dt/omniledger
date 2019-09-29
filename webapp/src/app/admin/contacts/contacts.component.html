@@ -1,10 +1,13 @@
 <h2>Contacts</h2>
 <ul>
     <li *ngFor="let contact of uData.contacts">
-        {{ contact.alias | titlecase }} -
+        <button mat-button (click)="userShow(contact)">{{ contact.alias | titlecase }}</button>
+        -
         <button mat-button (click)="transferCoin(contact)">Transfer</button>
         -
         <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+        -
+        <button mat-button (click)="contactRecover(contact)">Recover</button>
         -
         <button mat-button (click)="contactDelete(contact)">Unlink</button>
     </li>

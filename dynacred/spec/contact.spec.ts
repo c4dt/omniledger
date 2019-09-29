@@ -1,5 +1,6 @@
-import { Darc } from "@c4dt/cothority/darc";
+import { Darc, IdentityDarc, IdentityWrapper } from "@c4dt/cothority/darc";
 import Log from "@c4dt/cothority/log";
+import { randomBytes } from "crypto";
 import Long from "long";
 import { Data } from "src";
 import { StorageLocalStorage } from "src/Storage";
@@ -85,5 +86,27 @@ describe("Contact should", async () => {
         expect((await tdAdmin.contact.getActions()).length).toBe(1);
         const userCopy = await Data.load(tdAdmin.bc, StorageLocalStorage, tdAdmin.dataFileName);
         expect((await userCopy.contact.getActions()).length).toBe(1);
+    });
+
+    it("adds and removes signer", async () => {
+        const darcID = randomBytes(32);
+
+        await expectAsync(tdAdmin.contact.rmSigner(darcID)).toBeRejected();
+        Log.lvl2("adding signer");
+        await tdAdmin.contact.addSigner("recoverer", darcID, [tdAdmin.keyIdentitySigner]);
+        const idDarc = await tdAdmin.contact.getDarcSignIdentity();
+        Log.lvl2("checking authorization");
+        let authArray = await tdAdmin.bc.checkAuthorization(tdAdmin.bc.genesisID, idDarc.id,
+            IdentityWrapper.fromIdentity(new IdentityDarc({id: darcID})));
+        expect(authArray.length).toBeGreaterThan(0);
+        expect(tdAdmin.contact.credential.getAttribute("1-recovery", "recoverer")).toEqual(darcID);
+
+        Log.lvl2("removing signer");
+        await tdAdmin.contact.rmSigner(darcID);
+        expect(tdAdmin.contact.credential.getAttribute("1-recovery", "recoverer")).toBeNull();
+        Log.lvl2("checking authorization");
+        authArray = await tdAdmin.bc.checkAuthorization(tdAdmin.bc.genesisID, idDarc.id,
+            IdentityWrapper.fromIdentity(new IdentityDarc({id: darcID})));
+        expect(authArray.length).toBe(0);
     });
 });
