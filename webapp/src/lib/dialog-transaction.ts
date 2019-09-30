@@ -19,7 +19,7 @@ export class DialogTransactionComponent<T> implements OnInit {
     percentage: number;
     blockIndex: number;
     text: string;
-    error: string;
+    error: Error | undefined;
 
     private blocks: Element[] = [];
     private transaction: Element;
@@ -72,7 +72,7 @@ export class DialogTransactionComponent<T> implements OnInit {
             }, 1000);
         } catch (e) {
             clearTimeout(this.ubTimer);
-            this.error = e.toString();
+            this.error = e;
         }
     }
 
