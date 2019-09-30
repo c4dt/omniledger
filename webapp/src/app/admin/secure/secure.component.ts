@@ -163,10 +163,6 @@ export class CalypsoUploadComponent {
         @Inject(MAT_DIALOG_DATA) public data: Buffer) {
     }
 
-    cancel(): void {
-        this.dialogRef.close();
-    }
-
     async handleFileInput(e: Event) {
         this.file = (e.target as any).files[0] as File;
     }

@@ -36,7 +36,7 @@ export class DevicesComponent implements OnInit {
             this.devices = cred.attributes.map((a) => new Device(a.name, a.value));
         }
         const rec = this.uData.contact.credential.getCredential("1-recovery");
-        if (rec) {
+        if (rec !== undefined) {
             this.recovery = rec.attributes.map((a) => new Device(a.name, a.value));
         }
     }
@@ -83,11 +83,9 @@ export class DevicesComponent implements OnInit {
                             this.updateDevices();
                             return d;
                         });
-                if (device) {
-                    const url = window.location.protocol + "//" + window.location.host +
-                        this.location.prepareExternalUrl(device);
-                    this.dialog.open(DeviceShowComponent, {data: url});
-                }
+                const url = window.location.protocol + "//" + window.location.host +
+                    this.location.prepareExternalUrl(device);
+                this.dialog.open(DeviceShowComponent, {data: url});
             }
         });
     }
@@ -119,21 +117,21 @@ export class DevicesComponent implements OnInit {
         }
         const ac = this.dialog.open(DeviceRecoveryComponent, {data: accounts});
         ac.afterClosed().subscribe(async (result) => {
-            if (result) {
-                const d = accounts.find((acc) => acc.id.equals(result));
-                if (d == null) {
+            if (result === undefined) { return; }
+
+            const d = accounts.find((acc) => acc.id.equals(result));
+            if (d === undefined) {
                     return showDialogInfo(this.dialog, "No such account",
                         "Didn't find the chosen account.", "Go on");
                 }
-                this.recovery.push(new Device(d.name, d.id));
-                await showTransactions(this.dialog, "Adding recovery account",
+            this.recovery.push(new Device(d.name, d.id));
+            await showTransactions(this.dialog, "Adding recovery account",
                     async (progress: TProgress) => {
                         progress(33, "Adding new recovery account");
                         await this.uData.contact.addSigner(d.name, result);
                         progress(66, "Updating account");
                         await this.uData.contact.sendUpdate();
                     });
-            }
         });
     }
 
@@ -162,10 +160,6 @@ export class DeviceAddComponent {
         public dialogRef: MatDialogRef<DeviceAddComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
     }
-
-    cancel(): void {
-        this.dialogRef.close();
-    }
 }
 
 @Component({
@@ -176,10 +170,6 @@ export class DeviceShowComponent {
     constructor(
         public dialogRef: MatDialogRef<DeviceShowComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
-    }
-
-    cancel(): void {
-        this.dialogRef.close();
     }
 }
 
@@ -199,9 +189,5 @@ export class DeviceRecoveryComponent {
         public dialogRef: MatDialogRef<DeviceShowComponent>,
         @Inject(MAT_DIALOG_DATA) public data: IAccount[]) {
         this.selected = data[0].id;
-    }
-
-    cancel(): void {
-        this.dialogRef.close();
     }
 }
