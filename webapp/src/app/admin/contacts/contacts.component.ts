@@ -4,7 +4,8 @@ import { FormControl, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { Contact, Data, FileBlob, Private, TProgress } from "@c4dt/dynacred";
+import Long from "long";
+import { sprintf } from "sprintf-js";
 
 import { Argument, Instruction } from "@c4dt/cothority/byzcoin";
 import ClientTransaction from "@c4dt/cothority/byzcoin/client-transaction";
@@ -15,13 +16,13 @@ import Darc from "@c4dt/cothority/darc/darc";
 import ISigner from "@c4dt/cothority/darc/signer";
 import Log from "@c4dt/cothority/log";
 import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
-import Long from "long";
 
-import { sprintf } from "sprintf-js";
-import { DeviceShowComponent } from "src/app/admin/devices/devices.component";
+import { Contact, Data, FileBlob, Private, TProgress } from "@c4dt/dynacred";
+
 import { showDialogInfo, showSnack, showTransactions, storeCredential } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
+import { DeviceShowComponent } from "../devices/devices.component";
 import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
@@ -72,7 +73,7 @@ export class ContactsComponent implements OnInit {
     async createContact(view?: string, groups?: string[]) {
         const groupsInstAvail = await this.uData.contact.getGroups();
         const groupsAvail = groupsInstAvail.map((g) => g.darc.description.toString());
-        const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail, recovery: null};
+        const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail, recovery: undefined};
         // Search if the proposed groups are really available to the user
         if (groups && groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
             return Promise.reject("unknown group");
@@ -473,10 +474,6 @@ export class TransferCoinComponent {
         public dialogRef: MatDialogRef<TransferCoinComponent>,
         @Inject(MAT_DIALOG_DATA) public data: ITransferCoin) {
     }
-
-    cancel(): void {
-        this.dialogRef.close();
-    }
 }
 
 export interface IUserCred {
@@ -512,10 +509,6 @@ export class UserCredComponent {
         this.recoveryGroups = [UserCredComponent.noRecovery].concat(data.groupsAvail);
         data.recovery = this.recoveryGroups[0];
     }
-
-    cancel(): void {
-        this.dialogRef.close();
-    }
 }
 
 @Component({
@@ -547,10 +540,6 @@ export class AddContactComponent {
         public dialogRef: MatDialogRef<AddContactComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
     }
-
-    cancel(): void {
-        this.dialogRef.close();
-    }
 }
 
 @Component({
@@ -561,10 +550,6 @@ export class CreateComponent {
     constructor(
         public dialogRef: MatDialogRef<CreateComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
-    }
-
-    cancel(): void {
-        this.dialogRef.close();
     }
 }
 

@@ -567,14 +567,6 @@ export class Contact {
     }
 
     /**
-     * Forces an update by increasing the version and then calling sendUpdate.
-     */
-    async forceUpdate() {
-        this.incVersion();
-        return this.sendUpdate();
-    }
-
-    /**
      * getSecureData returns an array of SecureData of this credential that the
      * reader is allowed to access.
      *
@@ -609,8 +601,9 @@ export class Contact {
      * the new device. Registration can be done using Data.attachDevice.
      *
      * @param name the name of the new device
-     * @param progress? allows callbacks during creation of the device
-     * @param signers? defines who can attach new devices to this contact
+     * @param progress allows callbacks during creation of the device
+     * @param signers defines who can attach new devices to this contact
+     * @return an url that will register the user to the browser in use
      */
     async createDevice(name: string, progress?: TProgress,
                        signers: ISigner[] = [this.data.keyIdentitySigner]): Promise<string> {
@@ -635,7 +628,7 @@ export class Contact {
      * to do anything related to it.
      *
      * @param name of the device to remove
-     * @param signers? defines who can attach new devices to this contact
+     * @param signers defines who can attach new devices to this contact
      */
     async deleteDevice(name: string, signers: ISigner[] = [this.data.keyIdentitySigner]) {
         const device = this.credential.getAttribute("1-devices", name);
@@ -646,16 +639,12 @@ export class Contact {
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
         const newSigner = signerDarc.darc.evolve();
         const deviceStr = `darc:${device.toString("hex")}`;
-        let updateDarc = true;
         try {
             newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
-            newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
+            newSigner.rules.getRule(DarcInstance.ruleEvolve).remove(deviceStr);
+            await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
         } catch (e) {
             Log.warn("Couldn't update rule");
-            updateDarc = false;
-        }
-        if (updateDarc) {
-            await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
         }
         this.credential.deleteAttribute("1-devices", name);
         this.incVersion();
@@ -674,8 +663,7 @@ export class Contact {
         const newSigner = signerDarc.darc.evolve();
         const deviceDarcIdentity = new IdentityDarc({id});
         newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
-        const re = "invoke:darc.evolve";
-        newSigner.rules.appendToRule(re, deviceDarcIdentity, Rule.OR);
+        newSigner.rules.appendToRule(DarcInstance.ruleEvolve, deviceDarcIdentity, Rule.OR);
         await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
         this.credential.setAttribute("1-recovery", name, id);
         this.incVersion();
@@ -692,19 +680,8 @@ export class Contact {
         const signerDarc = await DarcInstance.fromByzcoin(this.data.bc, signerDarcID);
         const newSigner = signerDarc.darc.evolve();
         const idStr = new IdentityDarc({id}).toString();
-        const signerRule = newSigner.rules.getRule(Darc.ruleSign);
-        let expr = signerRule.getExpr().toString();
-        const darcIndex = expr.indexOf(idStr);
-        if (darcIndex < 0) {
-            throw new Error("Couldn't find this darc in the signer");
-        }
-        if (darcIndex > 0) {
-            expr = expr.replace(" " + Rule.OR + " " + idStr, "");
-        } else {
-            expr = expr.replace(sprintf("%s\\s*(\\|\\s*)?", idStr), "");
-        }
-        newSigner.rules.setRuleExp(Darc.ruleSign, Buffer.from(expr));
-        newSigner.rules.setRuleExp("invoke:darc.evolve", Buffer.from(expr));
+        newSigner.rules.getRule(Darc.ruleSign).remove(idStr);
+        newSigner.rules.getRule(DarcInstance.ruleEvolve).remove(idStr);
         await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
         const att = this.credential.getCredential("1-recovery").attributes.find((a) =>
             a.value.equals(id));

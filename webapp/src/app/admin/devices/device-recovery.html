@@ -10,7 +10,7 @@
         </mat-form-field>
     </p>
     <p>
-        <button mat-raised-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button mat-dialog-close>Cancel</button>
         <button mat-raised-button color='primary' [mat-dialog-close]="selected" cdkFocusInitial>Allow Recovery</button>
     </p>
 </div>

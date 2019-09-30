@@ -114,7 +114,7 @@ export async function showTransactions<T>(dialog: MatDialog, title: string, work
 
     return new Promise((resolve, reject) => {
         tc.afterClosed().subscribe((res) => {
-            if (res && res.error) {
+            if (res !== undefined && "error" in res && res.error !== undefined) {
                 reject(res.error);
             } else {
                 resolve(res);

@@ -124,10 +124,6 @@ export class ManageDarcComponent {
         this.updateDarc();
     }
 
-    cancel(): void {
-        this.dialogRef.close();
-    }
-
     updateDarc() {
         if (this.chosen.length > 0) {
             this.newDarc.rules.setRule(this.rule, this.idWrapToId(this.chosen[0].identity));

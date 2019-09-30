@@ -27,7 +27,7 @@
         </tr>
     </table>
     <p>
-        <button mat-raised-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button mat-dialog-close>Cancel</button>
         <button mat-raised-button color='primary' (click)="updateDarc()" [mat-dialog-close]="newDarc" cdkFocusInitial>Apply</button>
     </p>
 </div>
