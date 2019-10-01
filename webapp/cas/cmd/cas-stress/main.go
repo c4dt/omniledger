@@ -34,18 +34,16 @@ func main() {
 			return err
 		}
 
-		driver := agouti.ChromeDriver()
+		driver := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"headless"}))
 		if err := driver.Start(); err != nil {
 			return err
 		}
 
 		clickers := make([]func(*agouti.Page) error, 0)
-		url := c.String("with-matrix-url")
-		if url != "" {
+		if url := c.String("with-matrix-url"); url != "" {
 			clickers = append(clickers, func(p *agouti.Page) error { return clickMatrix(url, p) })
 		}
-		url = c.String("with-wordpress-url")
-		if url != "" {
+		if url := c.String("with-wordpress-url"); url != "" {
 			clickers = append(clickers, func(p *agouti.Page) error { return clickWordpress(url, p) })
 		}
 
@@ -120,10 +118,6 @@ func injectUser(page *agouti.Page, userData string) error {
 	// TODO eww, how to wait for javascript async then?
 	time.Sleep(10 * time.Second)
 
-	if err := page.Navigate(omniledgerURL); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -141,7 +135,7 @@ func clickMatrix(matrixURL string, page *agouti.Page) error {
 		return err
 	}
 
-	visible, err := page.Find("main").Visible()
+	visible, err := page.FindByID("matrixchat").Visible()
 	if err != nil {
 		return err
 	}
@@ -192,5 +186,4 @@ func getNewPage(driver *agouti.WebDriver, userData string) (*agouti.Page, error)
 	}
 
 	return page, nil
-
 }
