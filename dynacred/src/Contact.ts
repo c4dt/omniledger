@@ -212,18 +212,24 @@ export class Contact {
     static prepareInitialCred(alias: string, pub: Public, spawner?: InstanceID, deviceDarcID?: InstanceID,
                               lts?: LongTermSecret): CredentialStruct {
         const cred = new CredentialStruct();
+
         cred.setAttribute("1-public", "alias", Buffer.from(alias));
         cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
         cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
         cred.setAttribute("1-public", "seedPub", pub.toBuffer());
-        cred.setAttribute("1-config", "spawner", spawner);
-        if (deviceDarcID !== undefined) {
-            cred.setAttribute("1-devices", "initial", deviceDarcID);
+
+        if (spawner !== undefined) {
+            cred.setAttribute("1-config", "spawner", spawner);
         }
         if (lts !== undefined) {
             cred.setAttribute("1-config", "ltsID", lts.id);
             cred.setAttribute("1-config", "ltsX", lts.X.toProto());
         }
+
+        if (deviceDarcID !== undefined) {
+            cred.setAttribute("1-devices", "initial", deviceDarcID);
+        }
+
         return cred;
     }
 
