@@ -44,14 +44,6 @@ export class Contact {
         Contact.setVersion(this.credential, v);
     }
 
-    get structVersion(): number {
-        const svBuf = this.credential.getAttribute("1-config", "structVersion");
-        if (!svBuf || svBuf.length === 0) {
-            return 0;
-        }
-        return svBuf.readInt32LE(0);
-    }
-
     get credentialIID(): InstanceID {
         return CredentialsInstance.credentialIID(this.seedPublic.toBuffer());
     }
@@ -195,7 +187,6 @@ export class Contact {
         this.incVersion();
     }
 
-    static readonly structVersionLatest = 1;
     static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
 
@@ -226,9 +217,6 @@ export class Contact {
         cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
         cred.setAttribute("1-public", "seedPub", pub.toBuffer());
         cred.setAttribute("1-config", "spawner", spawner);
-        const svBuf = Buffer.alloc(4);
-        svBuf.writeInt32LE(Contact.structVersionLatest, 0);
-        cred.setAttribute("1-config", "structVersion", svBuf);
         cred.setAttribute("1-devices", "initial", deviceDarcID);
         if (lts !== undefined) {
             cred.setAttribute("1-config", "ltsID", lts.id);
@@ -444,15 +432,6 @@ export class Contact {
             }
             this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID);
             this.coinInstance = await CoinInstance.fromByzcoin(this.bc, this.coinID);
-        }
-
-        Log.lvl2("Updating credential version");
-        for (let i = this.structVersion; i < Contact.structVersionLatest; i++) {
-            switch (i) {
-                case 0:
-                    this.credential.setAttribute("1-devices", "initial", this.seedPublic.toBuffer());
-                    break;
-            }
         }
 
         Log.lvl2("Updating contacts");
