@@ -41,8 +41,7 @@ export class Badge {
             await this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
                 null, darc);
             // Setting spawner-id
-            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, d.spawnerInstance.id,
-                null, null);
+            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, d.spawnerInstance.id);
             d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, d.spawnerInstance.id);
             // Use the coin and the darc to create a new user
             const ci = await CoinInstance.fromByzcoin(d.bc, CoinInstance.coinIID(darc.getBaseID()));
