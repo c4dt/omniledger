@@ -185,17 +185,6 @@ export class Contact {
         }
     }
 
-    get spawnerID(): InstanceID {
-        return this.credential.getAttribute("1-config", "spawner");
-    }
-
-    set spawnerID(id: InstanceID) {
-        if (id) {
-            this.credential.setAttribute("1-config", "spawner", id);
-            this.incVersion();
-        }
-    }
-
     get view(): string {
         const v = this.credential.getAttribute("1-config", "view");
         if (v) {
@@ -452,9 +441,13 @@ export class Contact {
             this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID, 1);
             this.credential = this.credentialInstance.credential.copy();
             if (getContacts) {
+                const spawnerID = this.credential.getAttribute("1-config", "spawner");
+                if (spawnerID === undefined) {
+                    throw new Error("unable to get contacts without spawner");
+                }
                 this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID, 1);
                 this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID, 1);
-                this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID, 1);
+                this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, spawnerID, 1);
             }
         } else {
             Log.lvl2("Updating user", this.alias);
