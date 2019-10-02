@@ -32,7 +32,7 @@ export class DevicesComponent implements OnInit {
 
     updateDevices() {
         const cred = this.uData.contact.credential.getCredential("1-devices");
-        if (cred) {
+        if (cred !== undefined) {
             this.devices = cred.attributes.map((a) => new Device(a.name, a.value));
         }
         const rec = this.uData.contact.credential.getCredential("1-recovery");

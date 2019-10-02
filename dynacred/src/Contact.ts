@@ -217,7 +217,9 @@ export class Contact {
         cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
         cred.setAttribute("1-public", "seedPub", pub.toBuffer());
         cred.setAttribute("1-config", "spawner", spawner);
-        cred.setAttribute("1-devices", "initial", deviceDarcID);
+        if (deviceDarcID !== undefined) {
+            cred.setAttribute("1-devices", "initial", deviceDarcID);
+        }
         if (lts !== undefined) {
             cred.setAttribute("1-config", "ltsID", lts.id);
             cred.setAttribute("1-config", "ltsX", lts.X.toProto());
@@ -590,7 +592,7 @@ export class Contact {
      */
     async deleteDevice(name: string, signers: ISigner[] = [this.data.keyIdentitySigner]) {
         const device = this.credential.getAttribute("1-devices", name);
-        if (!device) {
+        if (device === undefined) {
             throw new Error("didn't find this device");
         }
         const signerDarcID = this.darcInstance.getSignerDarcIDs()[0];
