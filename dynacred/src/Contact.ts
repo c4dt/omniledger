@@ -243,8 +243,8 @@ export class Contact {
         return darc;
     }
 
-    static prepareInitialCred(alias: string, pub: Public, spawner: InstanceID, deviceDarcID: InstanceID,
-                              lts: LongTermSecret): CredentialStruct {
+    static prepareInitialCred(alias: string, pub: Public, spawner?: InstanceID, deviceDarcID?: InstanceID,
+                              lts?: LongTermSecret): CredentialStruct {
         const cred = new CredentialStruct();
         cred.setAttribute("1-public", "alias", Buffer.from(alias));
         cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
