@@ -166,23 +166,9 @@ export class Contact {
         return this.credential.getAttribute("1-config", "ltsID");
     }
 
-    set ltsID(id: InstanceID) {
-        if (id) {
-            this.credential.setAttribute("1-config", "ltsID", id);
-            this.incVersion();
-        }
-    }
-
-    get ltsX(): Point {
+    get ltsX(): Point | undefined {
         const lx = this.credential.getAttribute("1-config", "ltsX");
-        return lx ? PointFactory.fromProto(lx) : null;
-    }
-
-    set ltsX(X: Point) {
-        if (X) {
-            this.credential.setAttribute("1-config", "ltsX", X.toProto());
-            this.incVersion();
-        }
+        return lx !== undefined ? PointFactory.fromProto(lx) : undefined;
     }
 
     get view(): string {
@@ -244,7 +230,7 @@ export class Contact {
         svBuf.writeInt32LE(Contact.structVersionLatest, 0);
         cred.setAttribute("1-config", "structVersion", svBuf);
         cred.setAttribute("1-devices", "initial", deviceDarcID);
-        if (lts) {
+        if (lts !== undefined) {
             cred.setAttribute("1-config", "ltsID", lts.id);
             cred.setAttribute("1-config", "ltsX", lts.X.toProto());
         }
