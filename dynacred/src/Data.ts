@@ -343,8 +343,7 @@ export class Data {
             this.contact = Contact.fromObject(obj.contact);
             this.contact.data = this;
         } else {
-            const cred = Contact.prepareInitialCred("new identity", this.keyIdentity._public,
-                null, null, null);
+            const cred = Contact.prepareInitialCred("new identity", this.keyIdentity._public);
             this.contact = new Contact(cred, this);
         }
     }
@@ -445,9 +444,8 @@ export class Data {
             const d = new Data(this.bc);
             d.storage = storage;
             d.contact = contact;
-            d.contact.credential =
-                Contact.prepareInitialCred(contact.alias, contact.seedPublic, this.spawnerInstance.id,
-                    null, this.lts);
+            d.contact.credential = Contact.prepareInitialCred(
+                contact.alias, contact.seedPublic, this.spawnerInstance.id, undefined, this.lts);
             d.spawnerInstance = this.spawnerInstance;
             progress(50, "Writing credential to chain");
             await d.registerSelf(this.coinInstance, [this.keyIdentitySigner]);
@@ -774,7 +772,7 @@ export class Data {
             d.keyIdentity = new KeyPair(ephemeral.toHex());
         }
         d.contact.credential = Contact.prepareInitialCred(alias, d.keyIdentity._public, this.spawnerInstance.id,
-            null, this.lts);
+            undefined, this.lts);
         d.spawnerInstance = this.spawnerInstance;
         return d.registerSelf(this.coinInstance, [this.keyIdentitySigner]);
     }
