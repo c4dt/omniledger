@@ -1,0 +1,44 @@
+<h2>Details of "{{ data.contact.alias }}"</h2>
+<p>
+
+version: {{ data.contact.version }}<br />
+struct version: {{ data.contact.structVersion }}<br />
+<p>
+
+email: {{ data.contact.email }}<br />
+url: {{ data.contact.url }}<br />
+phone: {{ data.contact.phone }}<br />
+view: {{ data.contact.view }}<br />
+subscribed to newsletter: {{ data.contact.subscribe }}<br />
+<p>
+
+credentials instance ID (user ID): {{ data.contact.credentialIID.toString("hex") }}<br />
+spawner instance ID: {{ data.contact.spawnerID.toString("hex") }}<br />
+coin instance ID: {{ data.contact.coinID.toString("hex") }}<br />
+LTS instance ID: {{ data.contact.ltsID.toString("hex") }}<br />
+signer instance ID:
+<span *ngIf="signerInstanceID === undefined" class="waiting">fetching</span>
+<span *ngIf="signerInstanceID !== undefined">{{ signerInstanceID.id.toString("hex") }}</span>
+<p>
+
+seed public: {{ data.contact.seedPublic.toHex() }}<br />
+personhood public:
+<span *ngIf="data.contact.personhoodPub === undefined" class="undefined">undefined</span>
+<span *ngIf="data.contact.personhoodPub !== undefined">{{ data.contact.personhoodPub.toHex() }}</span>
+<br />
+LTS X: {{ data.contact.ltsX }}<br />
+<p>
+
+contacts:
+<span *ngIf="contacts === undefined" class="waiting">fetching</span>
+<ul *ngIf="contacts !== undefined"><li *ngFor="let c of contacts">{{ c.alias }}</li></ul>
+<p>
+
+actions:
+<span *ngIf="actions === undefined" class="waiting">fetching</span>
+<ul *ngIf="actions !== undefined"><li *ngFor="let a of actions">{{ a.darc.description }}</li></ul>
+<p>
+
+groups:
+<span *ngIf="actions === undefined" class="waiting">fetching</span>
+<ul *ngIf="actions !== undefined"><li *ngFor="let g of groups">{{ g.darc.description }}</li></ul>
