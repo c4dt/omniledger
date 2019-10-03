@@ -12,6 +12,7 @@ import { DemoMaterialModule } from "../material-module";
 import { AdminComponent } from "./admin/admin.component";
 import {
     AddContactComponent,
+    ContactInfoComponent,
     ContactsComponent,
     CreateComponent,
     DarcInstanceAddComponent,
@@ -87,12 +88,14 @@ export function loadUserDataConfig(d: UserData) {
         WPLoginComponent,
         WelcomeComponent,
         PersonhoodComponent,
+        ContactInfoComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
         DarcInstanceAddComponent,
         DarcInstanceInfoComponent,
         AddContactComponent,
+        ContactInfoComponent,
         SignupLinkComponent,
         TransferCoinComponent,
         UserCredComponent,

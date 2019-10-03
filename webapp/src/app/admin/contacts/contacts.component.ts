@@ -25,6 +25,8 @@ import { UserData } from "../../user-data.service";
 import { DeviceShowComponent } from "../devices/devices.component";
 import { ManageDarcComponent } from "../manage-darc";
 
+import { ContactInfoComponent } from "./contact-info/contact-info.component";
+
 @Component({
     selector: "app-contacts",
     styleUrls: ["./contacts.component.css"],
@@ -207,10 +209,8 @@ export class ContactsComponent implements OnInit {
         });
     }
 
-    async userShow(c: Contact) {
-        const cid = await c.getDarcSignIdentity();
-        return showDialogInfo(this.dialog, "User " + c.alias,
-            "Credential-ID: " + cid.id.toString("hex"), "Dismiss");
+    async contactShow(contact: Contact) {
+        this.dialog.open(ContactInfoComponent, {data: {contact}});
     }
 
     async transferCoin(c: Contact) {
@@ -583,3 +583,7 @@ export class DarcInstanceAddComponent implements OnInit {
         ]);
     }
 }
+
+export {
+    ContactInfoComponent,
+};
