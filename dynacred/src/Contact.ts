@@ -140,8 +140,12 @@ export class Contact {
         }
     }
 
-    get personhoodPub(): Public {
-        return Public.fromBuffer(this.credential.getAttribute("1-public", "personhood"));
+    get personhoodPub(): Public | undefined {
+        const raw = this.credential.getAttribute("1-public", "personhood");
+        if (raw === undefined) {
+            return undefined;
+        }
+        return Public.fromBuffer(raw);
     }
 
     set personhoodPub(pub: Public) {
