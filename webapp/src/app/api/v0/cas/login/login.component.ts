@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 
 import { Argument, ClientTransaction, InstanceID, Instruction, Proof } from "@c4dt/cothority/byzcoin";
 import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import { TProgress } from "@c4dt/dynacred";
 
 import { showTransactions } from "../../../../../lib/Ui";
 import { UserData } from "../../../../user-data.service";
@@ -72,7 +73,10 @@ export class LoginComponent implements OnInit {
 
         const success = await showTransactions(
             this.dialog, "Generating login proof",
-            () => this.putChallenge(challenge));
+            async (progress: TProgress) => {
+                progress(50, "Creating login token");
+                return this.putChallenge(challenge);
+            });
 
         if (!success) {
             this.state = State.FAILURE;
