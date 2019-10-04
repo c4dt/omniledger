@@ -2,11 +2,16 @@
 <h1>Logging service</h1>
 
 <p>An external app coming from <strong>{{ service }}</strong> asked to log you in</p>
-<p *ngIf="state == 0">we are checking if you have access</p>
-<p *ngIf="state == 1">unfortunately you don't have access :(</p>
-<div *ngIf="state == 2">
+<p [ngSwitch]="state">
+<ng-container *ngSwitchCase="StateT.LOADING">we are checking if you have access</ng-container>
+<ng-container *ngSwitchCase="StateT.NO_ACCESS_WITH_CHECKAUTH || StateT.NO_ACCESS_WITH_TRANSACTION">
+	unfortunately, you don't have access :(</ng-container>
+<ng-container *ngSwitchCase="StateT.ASKING_IF_LOGIN">
+	<div>
 	<p>do you want to accept or deny the request?</p>
 	<button mat-raised-button (click)="login()">Login</button>
 	<button mat-raised-button (click)="deny()">Deny</button>
-</div>
+	</div></ng-container>
+<ng-container *ngSwitchCase="StateT.REDIRECTING">you are getting redirected</ng-container>
+</p>
 </div></section>
