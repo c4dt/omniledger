@@ -145,6 +145,10 @@ export class Contact {
         if (raw === undefined) {
             return undefined;
         }
+        if (raw === null) {
+            Log.warn(`Contact("${this.alias}").credential has null 1-public/personhood`);
+            return undefined;
+        }
         return Public.fromBuffer(raw);
     }
 
