@@ -62,8 +62,8 @@ export class LoginComponent implements OnInit {
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
 
+    state: StateT;
     readonly service: string;
-    readonly state: StateT;
     readonly StateT = StateT;
 
     private readonly redirect: URL;
