@@ -22,7 +22,7 @@
                         source="{{ dataForm }}"
                         row="1" colSpan="3">
                     <df:RadaForm.properties>
-                        <df:EntityProperty name="name" index="0">
+                        <df:EntityProperty name="name" displayName="{{ L('add_party.prop_name') }}" index="0">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -32,7 +32,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="date" index="1">
+                        <df:EntityProperty name="date" displayName="{{ L('add_party.prop_date') }}" index="1">
                             <df:PropertyEditor.editor>
                                 <df:PropertyEditor type="DatePicker">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -42,7 +42,7 @@
                                 </df:PropertyEditor>
                             </df:PropertyEditor.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="time" index="2">
+                        <df:EntityProperty name="time" displayName="{{ L('add_party.prop_time') }}" index="2">
                             <df:PropertyEditor.editor>
                                 <df:PropertyEditor type="TimePicker">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -52,7 +52,7 @@
                                 </df:PropertyEditor>
                             </df:PropertyEditor.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="purpose" index="3">
+                        <df:EntityProperty name="purpose" displayName="{{ L('add_party.prop_purpose') }}" index="3">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -62,7 +62,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="location" index="4">
+                        <df:EntityProperty name="location" displayName="{{ L('add_party.prop_location') }}" index="4">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -72,7 +72,7 @@
                                 </df:PropertyEditor>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="reward" index="5">
+                        <df:EntityProperty name="reward" displayName="{{ L('add_party.prop_reward') }}" index="5">
                             <df:EntityProperty.editor>
                                 <df:PropertyEditor type="Number">
                                     <df:PropertyEditor.propertyEditorStyle>
