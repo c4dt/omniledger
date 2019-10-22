@@ -1,4 +1,4 @@
-COT := \@c4dt/cothority
+COT := dedis/cothority
 
 none:
 	@echo "Not breaking if you don't tell me what to do"
@@ -7,7 +7,7 @@ cothority_src: dynacred_src cothority-pull src/lib/cothority
 
 src/lib/cothority: cothority/external/js/cothority/src
 	@cp -a $< $@
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:${COT}:src/lib/cothority:"
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@${COT}:src/lib/cothority:"
 
 cothority_npm: kyber_npm
 	@echo "Using cothority-npm libraries"
@@ -18,10 +18,10 @@ cothority_npm: kyber_npm
 	diff -Naurq cothority/external/js/cothority/src/ src/lib/cothority/ || \
 		( echo "Moving changes to cothority"; cp -a src/lib/cothority/ cothority/external/js/cothority/src ); \
 	rm -rf src/lib/cothority; \
-	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:${COT}:"
+	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@${COT}:"
 
 cothority:
-	git clone https://github.com/c4dt/cothority
+	git clone https://github.com/${COT}
 
 cothority-pull: cothority
 	cd cothority && git pull

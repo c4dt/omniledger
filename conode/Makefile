@@ -1,3 +1,4 @@
+COT := dedis/cothority
 CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
@@ -6,7 +7,7 @@ WEBAPP_ASSET := ../webapp/src/assets/config.toml
 all: docker
 
 cothority:
-	git clone --depth 1 https://github.com/c4dt/cothority
+	git clone --depth 1 https://github.com/${COT}
 
 conode: cothority
 	@( cd cothority; git pull )

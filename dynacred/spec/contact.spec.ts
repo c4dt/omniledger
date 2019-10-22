@@ -1,5 +1,5 @@
-import { Darc, IdentityDarc, IdentityWrapper } from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
+import { Darc, IdentityDarc, IdentityWrapper } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { Data } from "src";
@@ -72,7 +72,7 @@ describe("Contact should", async () => {
         const data = Buffer.alloc(1e5);
         await user1.contact.calypso.add(data, [(await user2.contact.getDarcSignIdentity()).id]);
         const sd = await user2.contact.calypso.read(user1.contact);
-        Log.print("contact size is:", user2.contact.credential.toBytes().length);
+        Log.lvl3("contact size is:", user2.contact.credential.toBytes().length);
         expect(sd.length).toBe(1);
         expect(sd[0].plainData).toEqual(data);
     });
@@ -88,7 +88,7 @@ describe("Contact should", async () => {
         expect((await userCopy.contact.getActions()).length).toBe(1);
     });
 
-    it("adds and removes signer", async () => {
+    it("add and remove signer", async () => {
         const darcID = randomBytes(32);
 
         await expectAsync(tdAdmin.contact.rmSigner(darcID)).toBeRejected();
@@ -103,7 +103,7 @@ describe("Contact should", async () => {
 
         Log.lvl2("removing signer");
         await tdAdmin.contact.rmSigner(darcID);
-        expect(tdAdmin.contact.credential.getAttribute("1-recovery", "recoverer")).toBeNull();
+        expect(tdAdmin.contact.credential.getAttribute("1-recovery", "recoverer")).toBeUndefined();
         Log.lvl2("checking authorization");
         authArray = await tdAdmin.bc.checkAuthorization(tdAdmin.bc.genesisID, idDarc.id,
             IdentityWrapper.fromIdentity(new IdentityDarc({id: darcID})));

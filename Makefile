@@ -1,10 +1,10 @@
 swap:
 	@if egrep -q "COT.*${to}" dynacred/Makefile; then \
-	    echo "Already pointing to @${to}/cothority"; exit 1; \
+	    echo "Already pointing to ${to}/cothority"; exit 1; \
 	 fi
-	@for d in dynacred webapp; do \
+	@for d in conode dynacred webapp; do \
 	  cd $$d; \
-	  perl -pi -e "s:\@${from}/cothority:\@${to}/cothority:" Makefile $$( find app spec src -name "*.ts" ); \
+	  perl -pi -e "s:${from}/cothority:${to}/cothority:" Makefile $$( find app spec src -name "*.ts" ); \
 	  npm remove @${from}/cothority; \
 	  npm i --save @${to}/cothority; \
 	  npm run lint:fix; \

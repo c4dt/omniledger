@@ -3,13 +3,12 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Darc } from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
+import { InstanceID } from "@dedis/cothority/byzcoin";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { Darc } from "@dedis/cothority/darc";
 
 import { Device, TProgress } from "@c4dt/dynacred";
 
-import { InstanceID } from "@c4dt/cothority/byzcoin";
 import { showDialogInfo, showDialogOKC, showSnack, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
@@ -92,9 +91,7 @@ export class DevicesComponent implements OnInit {
 
     async addRecovery() {
         const accounts: IAccount[] = [];
-        Log.print("updating uData");
         await this.uData.contact.updateOrConnect(this.uData.bc, true);
-        Log.print(this.uData.contacts);
         await showSnack(this.snack, "Searching actions and groups", async () => {
             for (const c of this.uData.contacts) {
                 accounts.push({

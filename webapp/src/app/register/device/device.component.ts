@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 
 import { Data, StorageDB, TProgress } from "@c4dt/dynacred";
 

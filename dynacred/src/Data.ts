@@ -1,34 +1,35 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
-import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
-import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
-import Darc from "@c4dt/cothority/darc/darc";
-import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
-import Signer from "@c4dt/cothority/darc/signer";
-import ISigner from "@c4dt/cothority/darc/signer";
-import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
-import Log from "@c4dt/cothority/log";
+import { Buffer } from "buffer";
+import Long from "long";
+import { sprintf } from "sprintf-js";
+import URL from "url-parse";
+
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
+import { LongTermSecret } from "@dedis/cothority/calypso/calypso-rpc";
+import { IdentityEd25519, Rule } from "@dedis/cothority/darc";
+import Darc from "@dedis/cothority/darc/darc";
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import Signer from "@dedis/cothority/darc/signer";
+import ISigner from "@dedis/cothority/darc/signer";
+import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
+import Log from "@dedis/cothority/log";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "@c4dt/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
+} from "@dedis/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { ICreateCost, SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
 import { curve, Point, Scalar, sign } from "@dedis/kyber";
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
-import Long from "long";
-import { sprintf } from "sprintf-js";
-import URL from "url-parse";
+
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { KeyPair, Private, Public } from "./KeyPair";
@@ -158,7 +159,7 @@ export class Data {
         const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
 
         Log.lvl2("Creating spawner");
-        const costs = {
+        const costs: ICreateCost = {
             costCRead: Long.fromNumber(100),
             costCWrite: Long.fromNumber(1000),
             costCoin: Long.fromNumber(100),
@@ -166,6 +167,7 @@ export class Data {
             costDarc: Long.fromNumber(100),
             costParty: Long.fromNumber(1000),
             costRoPaSci: Long.fromNumber(10),
+            costValue: Long.fromNumber(10),
         };
         const spawner = await SpawnerInstance.spawn({
             bc,

@@ -12,4 +12,5 @@ require (
 	go.dedis.ch/kyber/v3 v3.0.6
 	go.dedis.ch/onet/v3 v3.0.25
 	go.dedis.ch/protobuf v1.0.9
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
 )
