@@ -1,11 +1,11 @@
-import { Rule, Rules } from "@c4dt/cothority/darc";
-import { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import { Rule, Rules } from "@dedis/cothority/darc";
+import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
 
 describe("plain credential test should", () => {
     it("allow to set the credential", async () => {
         const cs = new CredentialStruct();
         cs.setAttribute("one", "two", Buffer.from("three"));
-        cs.setAttribute("one", "four", null);
+        cs.setAttribute("one", "four", undefined);
         cs.setAttribute("one", "five", Buffer.from("six"));
         const cred = cs.copy().getCredential("one");
         expect(cred.attributes.length).toBe(3);

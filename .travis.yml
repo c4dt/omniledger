@@ -54,6 +54,7 @@ jobs:
       go: 1.12.x
       install:
         - cd webapp/cas
+        - export GO111MODULE=on
         - go get golang.org/x/lint/golint
         - go get ./...
       before_script:

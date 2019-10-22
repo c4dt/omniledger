@@ -1,4 +1,4 @@
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { Buffer } from "buffer";
 import Dexie from "dexie";
 

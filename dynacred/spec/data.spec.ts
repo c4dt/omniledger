@@ -1,4 +1,4 @@
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import Long from "long";
 import { Data } from "src/Data";
 import { KeyPair } from "src/KeyPair";
@@ -60,7 +60,7 @@ describe("Data class should", async () => {
             d.contact.email = "test@test.com";
             d.addContact(tdAdmin.contact);
             tdAdmin.addContact(d.contact);
-            Log.print("Credential-size is:", tdAdmin.contact.credential.toBytes().length);
+            Log.lvl3("Credential-size is:", tdAdmin.contact.credential.toBytes().length);
             await tdAdmin.save();
             // Wait for block to be propagated
             await new Promise((resolve) => {
@@ -161,11 +161,9 @@ describe("Data class should", async () => {
         await device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
             [device1.keyIdentitySigner]);
         await device1.coinInstance.update();
-        Log.print(device1.coinInstance.value);
         await device2.contact.deleteDevice("initial");
         await expectAsync(device1.coinInstance.transfer(Long.fromNumber(100), tdAdmin.coinInstance.id,
             [device1.keyIdentitySigner])).toBeRejected();
         await device1.coinInstance.update();
-        Log.print(device1.coinInstance.value);
     });
 });
