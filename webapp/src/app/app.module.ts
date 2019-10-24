@@ -33,7 +33,6 @@ import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } f
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
 import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
-import { LoginComponent as WPLoginComponent } from "./api/v0/wordpress/login/login.component";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent, RetryLoadComponent } from "./app.component";
 import { BcviewerComponent, ShowBlockComponent } from "./bcviewer/bcviewer.component";
@@ -85,7 +84,6 @@ export function loadUserDataConfig(d: UserData) {
         NewuserComponent,
         PartnerComponent,
         CASLoginComponent,
-        WPLoginComponent,
         WelcomeComponent,
         PersonhoodComponent,
         ContactInfoComponent,

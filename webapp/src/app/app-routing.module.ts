@@ -7,8 +7,7 @@ import { DevicesComponent } from "./admin/devices/devices.component";
 import { PersonhoodComponent } from "./admin/personhood/personhood.component";
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
-import {LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
-import {LoginComponent as WPLoginComponent } from "./api/v0/wordpress/login/login.component";
+import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
 import { C4dtComponent } from "./c4dt/c4dt.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
 import { ProfileComponent } from "./c4dt/profile/profile.component";
@@ -58,7 +57,6 @@ const routes: Routes = [
         // tslint:disable-next-line
         path: "api/v0", children: [
             {path: "cas/login", component: CASLoginComponent},
-            {path: "wordpress/login", component: WPLoginComponent},
         ],
     },
 ];
