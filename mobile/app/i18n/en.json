@@ -62,7 +62,7 @@
   "home": {
     "title": "Hello %s",
     "register": "To register, ask someone to invite you and scan this QR Code, or go to a personhood-party.",
-    "score": "Your Personhood-score: %s",
+    "score": "Achievements: %s",
     "meetup": "Start Meetup",
     "balance": "Balance: %s",
     "send_coins": "Send Poplets",
@@ -75,7 +75,8 @@
     "cancel": "No",
     "check_admin": "Verifying it's an admin",
     "no_admin": "Only an organizer can pay you a snack",
-    "snack_paid": "Thanks for paying your snack. Show this message to the organizer to get your snack."
+    "snack_paid": "Thanks for paying your snack. Show this message to the organizer to get your snack.",
+    "pay_snack": "Pay Snack"
   },
   "identity": {
     "title": "Identity",
@@ -112,10 +113,10 @@
   },
   "score": {
     "title": "Personhood",
-    "header": "Personhood-score",
+    "header": "Achievements",
     "desc": [
-      "Your personhood score is an evaluation of how much you can prove that you're a unique human being. ",
-      "The higher the score, the more the system can trust that your account is uniquely tied to one person only."
+      "Your achievement represents how much of the app you already explored. The higher the score, the more",
+      "of the functionalities you explored."
     ],
     "improve": "You got %d out of %d %s. %s",
     "done": "You got all %d %s. %s",
@@ -141,7 +142,7 @@
     "ropascis_done": "Good gamer!",
     "header_polls": "Polls (%d%%)",
     "polls": "polls",
-    "polls_improve": "Answer polls to raise your score.",
+    "polls_improve": "Answer polls to raise your achievements.",
     "polls_done": "Fervent poller!",
     "header_snack": "Snack (%d%%)",
     "snack": "snack",
@@ -302,5 +303,6 @@
       "done": "Done",
       "error": "Error: %s",
 	  "success": "Success"
-  }
+  },
+  "decimal": "."
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="decimal">","</string>
   <string name="_progress_success_1Jcnfq">"Opération réussie"</string>
   <string name="_progress_error_1yFLqO">"Erreur: %1$s"</string>
   <string name="_progress_done_R75Vp">"Terminé"</string>
@@ -128,7 +129,7 @@
   <string name="_score_snack_wDuR0">"snack"</string>
   <string name="_score_header_snack_ZPRqRN">"Snack (%1$d%%)"</string>
   <string name="_score_polls_done_xuWuO">"Tu as tout répondu"</string>
-  <string name="_score_polls_improve_8muwd">"Réponds à des sondages pour augmenter ton score."</string>
+  <string name="_score_polls_improve_8muwd">"Réponds à des sondages pour augmenter ton accomplissement."</string>
   <string name="_score_polls_wrtdj">"sondages"</string>
   <string name="_score_header_polls_ZQ4swu">"Sondages (%1$d%%)"</string>
   <string name="_score_ropascis_done_1UHneY">"Tu es un bon joueur!"</string>
@@ -153,9 +154,9 @@
   <string name="_score_header_attributes_1IpA9K">"Attributs (%1$d%%)"</string>
   <string name="_score_done_1O5zTM">"Tu as complété les %1$d %2$s. %3$s"</string>
   <string name="_score_improve_mDxz3">"Tu as fait %1$d sur %2$d %3$s. %4$s"</string>
-  <string name="_score_desc_1O5xmK">"Ton degré d\'individualité est une évaluation faite par le système que tu es bien un individu unique. Plus ce degré est élevé, plus le système sera confiant que tu ne va pas l\'attaquer en te faisant passer pour plusieurs personnes."</string>
-  <string name="_score_header_W8cDM">"Degré d\'individualité"</string>
-  <string name="_score_title_wH00B">"Individualité"</string>
+  <string name="_score_desc_1O5xmK">"L\'accomplissement montre combien des functionlaités de l\'app tu as déjà utilisé. Plus tu utilises les différentes functionalités, plus ton accomplissement sera élevé."</string>
+  <string name="_score_header_W8cDM">"Accomplissement"</string>
+  <string name="_score_title_wH00B">"Accomplissement"</string>
   <string name="_settings_data_deleted_Z1jPIW">"TOUTES TES DONNÉES ONT ÉTÉ EFFACÉES"</string>
   <string name="_settings_clear_confirm_2_10gDo2">"Tu perdras toutes tes données! Plus de recours possible!"</string>
   <string name="_settings_clear_confirm_1_10gDo1">"Es-tu sûr de bien vouloir tout effacer? Il n\'est plus possible de revenir en arrière!"</string>
@@ -181,6 +182,7 @@
   <string name="_identity_contacts_1SMHhw">"Contacts"</string>
   <string name="_identity_attributes_ZXT80j">"Attributs"</string>
   <string name="_identity_title_Z1lEvro">"Identité"</string>
+  <string name="_home_pay_snack_Z6pNpD">"Payer Snack"</string>
   <string name="_home_snack_paid_Z16MNxX">"Merci d\'avoir payé ton snack. Montre ce message à l\'organisateur pour recevoir un snack."</string>
   <string name="_home_no_admin_ZCCtQj">"Seulement un organisateur peut te donner un snack"</string>
   <string name="_home_check_admin_Z2v59fN">"Vérification du destinataire"</string>
@@ -194,7 +196,7 @@
   <string name="_home_send_coins_Z8Ooem">"Envoyer des jetons"</string>
   <string name="_home_balance_Z172Ikl">"Solde: %1$s"</string>
   <string name="_home_meetup_Z18fxAO">"Commencer une rencontre"</string>
-  <string name="_home_score_ZbPt1x">"Ton degré d\'individualité: %1$s"</string>
+  <string name="_home_score_ZbPt1x">"Accomplissement: %1$s"</string>
   <string name="_home_register_2taLr3">"Pour t\'inscrire, demande à quelqu\'un de t\'inviter et de scanner ce QR Code, ou visite une rencontre \'Personhood\'."</string>
   <string name="_home_title_ZbKAxR">"Salut %1$s"</string>
   <string name="_main_settings_2rm8Gr">"Préf."</string>

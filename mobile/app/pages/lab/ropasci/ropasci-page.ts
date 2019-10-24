@@ -19,6 +19,7 @@ let page: Page;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
+    Log.print("ropasci");
     page = args.object as Page;
     elRoPaSci = new RopasciView();
     page.bindingContext = elRoPaSci;

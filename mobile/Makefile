@@ -68,8 +68,12 @@ release-key:
 	if [ -e c4dt-development.jks ]; then echo "Please remove c4dt-development.jks first"; exit 1; fi
 	keytool -genkey -v -storetype pkcs12 -keystore c4dt-development.jks -keyalg RSA -keysize 4096 -validity 10000 -alias personhood
 
-ios-dev: apply-patches
+ios-prepare: update-version
+	perl -pi -e "s/org.c4dt.personhood2/ch.epfl.personhood2/" package.json
 	tns prepare ios
+	perl -pi -e "s/ch.epfl.personhood2/org.c4dt.personhood2/" package.json
+
+ios-dev: apply-patches ios-prepare
 
 # To be able to use ios-release you need to first run a manual
 # build once, which will use Xcode to download the signing profile.
@@ -83,8 +87,7 @@ ios-release: apply-patches
 xcode-dev: ios-dev
 	open platforms/ios/mobile.xcworkspace/
 
-release: android-release-32 gradle-prod android-compile gradle-build android-release-copy
-	tns prepare ios
+release: android-release-32 gradle-prod android-compile gradle-simul android-release-copy ios-prepare
 	open platforms/ios/mobile.xcworkspace/
 
 ##

@@ -30,7 +30,7 @@ export let spawnerID: InstanceID;
 // ID if the ByzCoin instance
 export let byzCoinID: InstanceID;
 // Version of the app - this is automatically copied from package.json
-export let appVersion = "0.4.2";
+export let appVersion = "0.4.5";
 // Node for game-communication
 export let gameNode: ServerIdentity;
 // Admin darc defining who has super powers

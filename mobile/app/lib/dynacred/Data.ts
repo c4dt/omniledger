@@ -37,6 +37,7 @@ import { PartyItem } from "./PartyItem";
 import { PersonhoodRPC, PollStruct, RoPaSci } from "./personhood-rpc";
 import { SocialNode } from "./SocialNode";
 import { IStorage, StorageDB } from "./Storage";
+import {coinToPoplet} from "~/lib/messages";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -436,7 +437,7 @@ export class Data {
             throw new Error("Cannot send 0 or less coins");
         }
         if (amount.greaterThanOrEqual(this.coinInstance.value)) {
-            throw new Error("You only have " + this.coinInstance.value.toString() + " coins.");
+            throw new Error("You only have " + coinToPoplet(this.coinInstance.value) + " coins.");
         }
         return true;
     }
