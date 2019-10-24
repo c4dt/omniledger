@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
     private static readonly serviceToDarcAndCoin: Map<string, Action> = (() => {
         const tr = (raw: string) => Buffer.from(raw, "hex");
         return new Map([
-        ["c4dt.org", new Action(
+        ["www.c4dt.org", new Action(
             tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
             tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
         )], ["c4dt.paperboy.ch", new Action(
