@@ -8,7 +8,7 @@ import DarcInstance from "~/lib/cothority/byzcoin/contracts/darc-instance";
 import { Darc, Rule } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
 import { Contact } from "~/lib/dynacred/Contact";
-import { msgFailed, msgOK } from "~/lib/messages";
+import { coinToPoplet, msgFailed, msgOK, popletToCoin } from "~/lib/messages";
 import { adminDarc, isAdmin, uData } from "~/lib/user-data";
 import { friendsUpdateList, setProgress } from "~/pages/identity/contacts/contacts-page";
 
@@ -73,7 +73,7 @@ export class UserView extends Observable {
                     const pay = await dialogs.confirm({
                         title: "Register user",
                         message: "This user is not registered yet - do you want to pay " +
-                            (uData.signupCost().toNumber() / 1e4).toString() + " for the registration of user " +
+                            coinToPoplet(uData.signupCost()) + " for the registration of user " +
                             u.alias + "?",
                         okButtonText: "Yes, pay",
                         cancelButtonText: "No, don't pay",
@@ -99,21 +99,21 @@ export class UserView extends Observable {
                 }
             }
             const reply = await dialogs.prompt({
-                title: "Send coins",
-                message: "How many coins do you want to send to " + u.alias,
+                title: "Send poplets",
+                message: "How many poplets do you want to send to " + u.alias,
                 okButtonText: "Send",
                 cancelButtonText: "Cancel",
                 defaultText: "10",
             });
             if (reply.result) {
-                const coins = Long.fromString(reply.text).mul(1e4);
+                const coins = popletToCoin(reply.text);
                 if (await uData.canPay(coins)) {
                     const target = u.getCoinAddress();
                     if (target) {
                         progress(localize("contacts.transfer"), 50);
                         await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
                         progress(localize("progress.success"), 100);
-                        await msgOK(localize("contacts.transferred", coins.div(1e4).toString(), u.alias));
+                        await msgOK(localize("contacts.transferred", coinToPoplet(coins), u.alias));
                         progress();
                     } else {
                         await msgFailed(localize("contacts.transfer_fail1"));
@@ -140,7 +140,7 @@ export class UserView extends Observable {
                     const pay = await dialogs.confirm({
                         title: "Invite user",
                         message: "This user is not invited yet - do you want to pay " +
-                            (10000 + uData.signupCost().toNumber()) / 1e4 + " to invite the user " +
+                            coinToPoplet(uData.signupCost().add(1e4)) + " to invite the user " +
                             u.alias + "?",
                         okButtonText: "Yes, pay",
                         cancelButtonText: "No, don't pay",
@@ -174,13 +174,13 @@ export class UserView extends Observable {
                     progress("Transferring coin", 50);
                     await uData.coinInstance.transfer(coins, target, [uData.keyIdentitySigner]);
                     progress("Success", 100);
-                    await msgOK("Transferred " + coins.div(1e4).toString() + " to " + u.alias);
+                    await msgOK("Transferred " + coinToPoplet(coins) + " to " + u.alias);
                     progress();
                 } else {
                     await msgFailed("couldn't get targetAddress");
                 }
             } else {
-                await msgFailed("Cannot pay " + coins.div(1e4).toString() + " poplets.");
+                await msgFailed("Cannot pay " + coinToPoplet(coins) + " poplets.");
             }
         } catch (e) {
             Log.catch(e);

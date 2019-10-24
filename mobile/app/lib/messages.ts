@@ -1,4 +1,6 @@
+import Long from "long";
 import { localize } from "nativescript-localize";
+import { sprintf } from "sprintf-js";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 
 const okStrs = [
@@ -56,4 +58,12 @@ export async function msgFailed(msg: string, title?: string) {
         okButtonText: getFailed(),
         title: title ? title : localize("dialog.failure"),
     });
+}
+
+export function coinToPoplet(v: Long): string {
+    return sprintf("%.02f", v.div(100).toNumber() / 100).replace(".", localize("decimal"));
+}
+
+export function popletToCoin(p: string): Long {
+    return Long.fromNumber(parseFloat(p.replace(localize("decimal"), ".")) * 1e4);
 }

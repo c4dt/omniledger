@@ -23,7 +23,7 @@
                                 <Label text="{{ coins }}" class="h2"/>
                             </StackLayout>
                             <StackLayout orientation="horizontal">
-                                <Button text="Payer Snack" tap="paySnack" class="btn btn-primary"/>
+                                <Button text="{{ L('home.pay_snack') }}" tap="paySnack" class="btn btn-primary"/>
                                 <Button text="{{ L('home.invite') }}" tap="invite" class="btn btn-primary"/>
                             </StackLayout>
                         </StackLayout>

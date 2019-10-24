@@ -30,6 +30,7 @@ import CredentialInstance, {
 import { PopPartyInstance } from "~/lib/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "~/lib/cothority/personhood/ro-pa-sci-instance";
 import SpawnerInstance, { SPAWNER_COIN } from "~/lib/cothority/personhood/spawner-instance";
+import { coinToPoplet } from "~/lib/messages";
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
 import { KeyPair, Private, Public } from "./KeyPair";
@@ -436,7 +437,7 @@ export class Data {
             throw new Error("Cannot send 0 or less coins");
         }
         if (amount.greaterThanOrEqual(this.coinInstance.value)) {
-            throw new Error("You only have " + this.coinInstance.value.toString() + " coins.");
+            throw new Error("You only have " + coinToPoplet(this.coinInstance.value) + " coins.");
         }
         return true;
     }
