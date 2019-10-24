@@ -7,7 +7,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import Log from "~/lib/cothority/log";
 import RoPaSciInstance, { RoPaSciStruct } from "~/lib/cothority/personhood/ro-pa-sci-instance";
-import { msgFailed, msgOK } from "~/lib/messages";
+import { coinToPoplet, msgFailed, msgOK } from "~/lib/messages";
 import { isAdmin, uData } from "~/lib/user-data";
 import { elRoPaSci, setProgress, updateRoPaSci } from "~/pages/lab/ropasci/ropasci-page";
 
@@ -61,7 +61,7 @@ export class RopasciViewElement extends Observable {
     }
 
     get stake(): string {
-        return this.rps.stake.value.toString();
+        return coinToPoplet(this.rps.stake.value);
     }
 
     get firstMove(): string {

@@ -5,7 +5,7 @@ import { fromObject } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import Log from "~/lib/cothority/log";
-import { msgFailed, msgOK, msgOKCancel } from "~/lib/messages";
+import { msgFailed, msgOK, msgOKCancel, popletToCoin } from "~/lib/messages";
 import { isAdmin, uData } from "~/lib/user-data";
 
 let page: Page;
@@ -14,7 +14,7 @@ const dataForm = fromObject({
     calypso: true,
     choice: "Rock",
     description: "",
-    stake: 100,
+    stake: "1",
 });
 
 const viewModel = fromObject({
@@ -41,7 +41,7 @@ export function goBack() {
 
 export async function save() {
     try {
-        const stake = Long.fromNumber(dataForm.get("stake"));
+        const stake = popletToCoin(dataForm.get("stake"));
         const choice = ["Rock", "Paper", "Scissors"].findIndex((c) => c === dataForm.get("choice"));
         let calypso = dataForm.get("calypso");
         if (!calypso) {

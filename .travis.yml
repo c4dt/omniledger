@@ -16,6 +16,8 @@ jobs:
       name: conode
       language: go
       go: "1.12.x"
+      install:
+        - export GO111MODULE=on
       script:
         - cd conode
         - make docker

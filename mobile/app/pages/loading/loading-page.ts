@@ -52,7 +52,7 @@ export async function navigatingTo(args: EventData) {
             await StorageFile.set("latest", "");
             return appRootSetup();
         } else {
-            return again(args);
+            return again(args, e.toString());
         }
     }
 
@@ -77,7 +77,7 @@ export async function navigatingTo(args: EventData) {
             // This is to be _really_ sure we don't overwrite the user's data. We could reason that it's
             // nearly impossible to be able to connect, but not to load the user's data from BC. But, only
             // nearly impossible... see also https://xkcd.com/2200/
-            return again(args);
+            return again(args, e.toString());
         }
     }
 }
@@ -90,12 +90,12 @@ function quit() {
     }
 }
 
-async function again(args: EventData) {
+async function again(args: EventData, err: string) {
     const actions = ["Again", "Delete"];
     // tslint:disable:object-literal-sort-keys
     switch (await dialogs.action({
         title: "Network error",
-        message: "Make sure you have a network connection. Do you want to try again?",
+        message: "Error: " + err + "\n\nMake sure you have a network connection. Do you want to try again?",
         cancelButtonText: "Quit",
         actions,
         // tslint:enable:object-literal-sort-keys

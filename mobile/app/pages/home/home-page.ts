@@ -14,7 +14,7 @@ import { Page } from "tns-core-modules/ui/page";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
 import { IdentityWrapper } from "~/lib/cothority/darc";
 import Log from "~/lib/cothority/log";
-import { msgFailed, msgOK, msgOKCancel } from "~/lib/messages";
+import { coinToPoplet, msgFailed, msgOK, msgOKCancel } from "~/lib/messages";
 import { getRawData, IScore, rawToPercent } from "~/lib/personhood";
 import { qrcodeIdentity } from "~/lib/qrcode";
 import { adminDarc, finishData, testingMode, uData, updateIsAdmin } from "~/lib/user-data";
@@ -166,7 +166,7 @@ export async function update() {
             identity.set("hasCoins", true);
             identity.set("init", false);
             await uData.coinInstance.update();
-            identity.set("coins", sprintf("%.02f", uData.coinInstance.value.toNumber() / 1e4).replace(".", ","));
+            identity.set("coins", coinToPoplet(uData.coinInstance.value));
         }
         await updateIsAdmin();
         setProgress();
