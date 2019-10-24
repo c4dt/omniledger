@@ -1,25 +1,19 @@
-module github.com/c4dt/omniledger/mobile/conode
+module github.com/c4dt/omniledger/conode
 
 require (
-	github.com/BurntSushi/toml v0.3.1
-	github.com/bford/golang-x-crypto v0.0.0-20160518072526-27db609c9d03
-	github.com/coreos/go-oidc v2.1.0+incompatible
-	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
-	github.com/prataprc/goparsec v0.0.0-20180806094145-2600a2a4a410
-	github.com/qantik/qrgo v0.0.0-20160917134849-0c6b902c59f6
-	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.4.0
-	go.dedis.ch/cothority/v3 v3.1.3
-	go.dedis.ch/kyber/v3 v3.0.6
-	go.dedis.ch/onet/v3 v3.0.26
-	go.dedis.ch/protobuf v1.0.9
-	go.etcd.io/bbolt v1.3.3
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20190912141932-bc967efca4b8
-	gopkg.in/satori/go.uuid.v1 v1.2.0
-	gopkg.in/urfave/cli.v1 v1.20.0
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/gorilla/websocket v1.4.1 // indirect
+	github.com/urfave/cli v1.22.1
+	go.dedis.ch/cothority/v4 v4.0.0-20191024075351-deb5ea40a851
+	go.dedis.ch/kyber/v4 v4.0.0-pre1
+	go.dedis.ch/onet/v4 v4.0.0-pre1
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
+	golang.org/x/net v0.0.0-20191021144547-ec77196f6094 // indirect
+	golang.org/x/sys v0.0.0-20191024073052-e66fe6eb8e0c // indirect
+	google.golang.org/appengine v1.6.5 // indirect
+	gopkg.in/square/go-jose.v2 v2.4.0 // indirect
 )
 
-replace go.dedis.ch/cothority/v3 => ./cothority
+replace go.dedis.ch/cothority/v4 => ./cothority
 
 go 1.13
