@@ -31,7 +31,7 @@ newdb: conode
 	echo; echo "Shutting down conodes"; pkill -x conode; rm -f conodes/running
 
 # Use this target to build from local source
-docker: build/Dockerfile cothority
+docker: build/Dockerfile conode
 	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
 	go build -o build/conode; \
 	cd cothority; \

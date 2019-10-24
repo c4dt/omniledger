@@ -18,11 +18,8 @@ jobs:
       go: "1.12.x"
       script:
         - cd conode
-        - make docker
-        - make docker_run &
-        - go version
         - export GO111MODULE=on
-        - make conode
+        - make docker_run &
         - make docker_wait
         - build/bcadmin latest --bc bc*cfg
     - name: dynacred
