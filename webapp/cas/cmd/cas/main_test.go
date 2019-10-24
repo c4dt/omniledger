@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/c4dt/omniledger/webapp/cas"
-	"go.dedis.ch/cothority/v3/byzcoin"
-	"go.dedis.ch/cothority/v3/skipchain"
+	"go.dedis.ch/cothority/v4/byzcoin"
+	"go.dedis.ch/cothority/v4/skipchain"
 
 	"github.com/c4dt/omniledger/webapp/cas/test"
 	"github.com/stretchr/testify/require"
