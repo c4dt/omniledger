@@ -29,7 +29,7 @@ export class NativescriptWebSocketAdapter extends WebSocketAdapter {
 
     /** @inheritdoc */
     onMessage(callback: (data: Buffer) => void): void {
-        this.ws.on("message", (socket, msg: ArrayBuffer) => {
+        this.ws.on("message", (socket, msg) => {
             if (msg instanceof Buffer || msg instanceof ArrayBuffer) {
                 callback(Buffer.from(msg));
             } else {
