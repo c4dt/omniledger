@@ -7,11 +7,11 @@ import (
 	"errors"
 	"time"
 
-	"go.dedis.ch/cothority/v4/skipchain"
-	"go.dedis.ch/kyber/v4/suites"
-	"go.dedis.ch/kyber/v4/util/encoding"
-	"go.dedis.ch/onet/v4"
-	"go.dedis.ch/onet/v4/network"
+	"go.dedis.ch/cothority/v3/skipchain"
+	"go.dedis.ch/kyber/v3/suites"
+	"go.dedis.ch/kyber/v3/util/encoding"
+	"go.dedis.ch/onet/v3"
+	"go.dedis.ch/onet/v3/network"
 
 	"github.com/pelletier/go-toml"
 )

@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"time"
 
-	"go.dedis.ch/cothority/v4/byzcoin"
-	"go.dedis.ch/cothority/v4/byzcoin/contracts"
-	"go.dedis.ch/cothority/v4/personhood"
-	"go.dedis.ch/cothority/v4/skipchain"
-	"go.dedis.ch/onet/v4/log"
+	"go.dedis.ch/cothority/v3/byzcoin"
+	"go.dedis.ch/cothority/v3/byzcoin/contracts"
+	"go.dedis.ch/cothority/v3/personhood"
+	"go.dedis.ch/cothority/v3/skipchain"
+	"go.dedis.ch/onet/v3/log"
 	"go.dedis.ch/protobuf"
 )
 
