@@ -12,6 +12,7 @@ return				"Sign in with OmniLedger"
 
 User		-> OmniLedger:	GET /api/v0/cas/login?service=...
 return				Static JavaScript generating login proof
+User		-> Conodes:	`isAuthorized` to see if member of Action
 User		-> User:	Generate random $challenge
 User		-> Conodes:	ClientTransaction putting a coin\ninto the Action and getting it back,\nwith hash($challenge) as unused argument
 Conodes		-> Conodes:	Validation of sent ClientTransaction
