@@ -17,7 +17,7 @@ CAS 3.0
 CAS 2.0 (Matrix needs that)
 - `api/v0/cas/proxyValidate` - to validate and return the username of the ticket
 
-To better understand the interactions of the system, one can look at the [messages' UML](login.uml) (built with `make login.png`).
+To better understand the interactions of the system, one can look at the [messages' UML](login.png).
 
 To test integration, we also provide `cmd/cas-stress`, a small user story simulator. In this case, it simulates the user login into either WordPress or Matrix using CAS. It needs a user data extracted from the browser' IndexedDB (the value of `IndexedDB.dynasent.contacts`). For example, one could use it as
 
