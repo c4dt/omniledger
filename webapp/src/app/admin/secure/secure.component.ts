@@ -15,7 +15,6 @@ import { ManageDarcComponent } from "../manage-darc";
 
 @Component({
     selector: "app-secure",
-    styleUrls: ["./secure.component.css"],
     templateUrl: "./secure.component.html",
 })
 export class SecureComponent implements OnInit {

@@ -12,7 +12,6 @@ import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-yourself",
-    styleUrls: ["./yourself.component.css"],
     templateUrl: "./yourself.component.html",
 })
 export class YourselfComponent implements OnInit {
