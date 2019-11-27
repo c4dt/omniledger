@@ -7,7 +7,6 @@ import { UserData } from "../user-data.service";
 
 @Component({
     selector: "app-c4dt",
-    styleUrls: ["./c4dt.component.css"],
     templateUrl: "./c4dt.component.html",
 })
 export class C4dtComponent implements OnInit {

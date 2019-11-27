@@ -11,7 +11,6 @@ import { UserData } from "../../user-data.service";
 
 @Component({
   selector: "app-status",
-  styleUrls: ["./status.component.css"],
   templateUrl: "./status.component.html",
 })
 export class StatusComponent implements OnInit {
