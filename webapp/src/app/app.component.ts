@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        if (!this.uData.isAvailableInStorage()) {
+        if (!(await this.uData.isAvailableInStorage())) {
             // No data saved - show how to get a new user
             this.loading = false;
             return this.newUser();

@@ -4,8 +4,7 @@ import { Injectable } from "@angular/core";
 
 import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 
-import { Config, Data } from "@c4dt/dynacred";
-import { StorageDB } from "@c4dt/dynacred";
+import { Config, Data, StorageDB } from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 
 @Injectable({
@@ -36,7 +35,7 @@ export class UserData extends Data {
     async load() {
         Log.lvl1("Loading data from", this.dataFileName);
         const values = await this.storage.getObject(this.dataFileName);
-        if (!values || values === {}) {
+        if (Object.keys(values).length === 0) {
             throw new Error("No data available");
         }
         this.setValues(values);

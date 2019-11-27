@@ -21,7 +21,7 @@ export class StorageDB {
 
     static async get(key: string): Promise<string> {
         const entry = await this.getDB().get(key);
-        if (entry) {
+        if (entry !== undefined) {
             return entry.buffer;
         }
         return "";
@@ -32,13 +32,22 @@ export class StorageDB {
     }
 
     static async getObject(entry: string): Promise<any> {
-        const obj = JSON.parse(await this.get(entry), (key, value) => {
-            if (value && typeof value === "object" && value.type === "Buffer") {
-                return Buffer.from(value);
-            }
-            return value;
-        });
-        return obj == null ? {} : obj;
+        const d = await this.get(entry);
+        if (d === "") {
+            return {};
+        }
+        try {
+            const obj = JSON.parse(d, (key, value) => {
+                if (value && typeof value === "object" && value.type === "Buffer") {
+                    return Buffer.from(value);
+                }
+                return value;
+            });
+            return obj == null ? {} : obj;
+        } catch (e) {
+            Log.catch(e, "couldn't parse data", d);
+            return {};
+        }
     }
 
     private static getDB(): Dexie.Table<IContact, string> {
