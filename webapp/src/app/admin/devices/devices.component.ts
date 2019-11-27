@@ -14,7 +14,6 @@ import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-devices",
-    styleUrls: ["./devices.component.css"],
     templateUrl: "./devices.component.html",
 })
 export class DevicesComponent implements OnInit {

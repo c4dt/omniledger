@@ -5,7 +5,6 @@ import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-welcome",
-    styleUrls: ["./welcome.component.css"],
     templateUrl: "./welcome.component.html",
 })
 export class WelcomeComponent {

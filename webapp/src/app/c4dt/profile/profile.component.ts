@@ -10,7 +10,6 @@ import { UserData } from "../../user-data.service";
 
 @Component({
     selector: "app-profile",
-    styleUrls: ["./profile.component.css"],
     templateUrl: "./profile.component.html",
 })
 export class ProfileComponent implements OnInit {

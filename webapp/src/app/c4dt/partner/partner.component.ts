@@ -5,7 +5,6 @@ import { ContactsComponent } from "../../admin/contacts/contacts.component";
 
 @Component({
     selector: "app-partner",
-    styleUrls: ["./partner.component.css"],
     templateUrl: "./partner.component.html",
 })
 export class PartnerComponent extends ContactsComponent {
