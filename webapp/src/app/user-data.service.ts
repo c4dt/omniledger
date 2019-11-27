@@ -35,7 +35,7 @@ export class UserData extends Data {
     async load() {
         Log.lvl1("Loading data from", this.dataFileName);
         const values = await this.storage.getObject(this.dataFileName);
-        if (Object.keys(values).length === 0) {
+        if (values === undefined) {
             throw new Error("No data available");
         }
         this.setValues(values);
