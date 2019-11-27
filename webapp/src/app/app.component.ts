@@ -46,6 +46,12 @@ export class AppComponent implements OnInit {
             return;
         }
 
+        if (window.location.pathname.match(/\/explorer\//)) {
+            Log.lvl2("using explorer - don't load user");
+            this.loading = false;
+            return;
+        }
+
         if (!(await this.uData.isAvailableInStorage())) {
             // No data saved - show how to get a new user
             this.loading = false;
