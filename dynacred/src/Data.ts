@@ -403,9 +403,8 @@ export class Data {
         }
     }
 
-    async isAvailableInStorage() {
-        const got = await this.storage.getObject(this.dataFileName);
-        return got !== {};
+    async isAvailableInStorage(): Promise<boolean> {
+        return (await this.storage.getObject(this.dataFileName)) !== undefined;
     }
 
     async save(): Promise<Data> {
