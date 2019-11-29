@@ -1,6 +1,6 @@
 {
   "name": "@c4dt/dynacred",
-  "version": "0.1.0",
+  "version": "0.3.2",
   "description": "The library used by the omniledger-ui and the personhood.online app",
   "repository": {
     "type": "git",
@@ -21,8 +21,9 @@
   "author": "C4DT",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@dedis/cothority": "^3.4.1",
+    "@c4dt/cothority": "^3.4.1-1",
     "cross-fetch": "^3.0.4",
+    "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",
     "tweetnacl-ts": "^1.0.3",
     "url-parse": "^1.4.7"

@@ -1,18 +1,18 @@
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import Log from "@dedis/cothority/log";
+import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
+import ISigner from "@dedis/cothority/darc/signer";
 import { Roster, ServerIdentity } from "@dedis/cothority/network";
-import { IConnection, RosterWSConnection, WebSocketConnection } from "@dedis/cothority/network/connection";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
+import { WebSocketConnection } from "@dedis/cothority/network/connection";
+import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import { Sign } from "@dedis/cothority/personhood/ring-sig";
 import { registerMessage } from "@dedis/cothority/protobuf";
 import { Scalar } from "@dedis/kyber";
-import * as crypto from "crypto";
-import { randomBytes } from "crypto";
+import { randomBytes } from "crypto-browserify";
+import * as crypto from "crypto-browserify";
 import Long from "long";
-import { Message, Properties } from "protobufjs";
+import { Message, Properties } from "protobufjs/light";
 
 /**
  * PersonhoodRPC interacts with the personhood service and all personhood-related contracts, like personhood-party,
@@ -21,13 +21,13 @@ import { Message, Properties } from "protobufjs";
  * depend on anything from dynacred.
  */
 export class PersonhoodRPC {
-    static serviceID = "Personhood";
-    private socket: IConnection;
-    private list: ServerIdentity[];
+    static readonly serviceID = "Personhood";
 
-    constructor(public rpc: ByzCoinRPC) {
-        this.socket = new RosterWSConnection(rpc.getConfig().roster, PersonhoodRPC.serviceID);
-        this.list = this.rpc.getConfig().roster.list;
+    static fromByzCoin(rpc: ByzCoinRPC): PersonhoodRPC {
+        return new PersonhoodRPC(rpc.genesisID, rpc.getConfig().roster.list);
+    }
+
+    constructor(private genesisID: InstanceID, private list: ServerIdentity[]) {
     }
 
     /**
@@ -45,7 +45,7 @@ export class PersonhoodRPC {
             return parties.findIndex((p) => p.instanceID.equals(py.instanceID)) === i;
         });
         // Only take parties from our byzcoin
-        return parties.filter((party) => party.byzCoinID.equals(this.rpc.genesisID));
+        return parties.filter((party) => party.byzCoinID.equals(this.genesisID));
     }
 
     // this removes all parties from the list, but not from byzcoin.
@@ -53,6 +53,15 @@ export class PersonhoodRPC {
         await Promise.all(this.list.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             await socket.send(new PartyList({wipeparties: true}), PartyListResponse);
+        }));
+    }
+
+    // this removes one party from the list and the service, but not from byzcoin.
+    async deleteParty(partyID: InstanceID, identity: IdentityWrapper) {
+        const partydelete = new PartyDelete({partyID, identity, signature: Buffer.alloc(0)});
+        await Promise.all(this.list.map(async (addr) => {
+            const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
+            await socket.send(new PartyList({partydelete}), PartyListResponse);
         }));
     }
 
@@ -108,6 +117,25 @@ export class PersonhoodRPC {
         }));
     }
 
+    async lockRPS(id: InstanceID) {
+        const ropasci = new RoPaSciList({
+            lock: new RoPaSci({
+                byzcoinID: this.genesisID,
+                roPaSciID: id,
+            }),
+        });
+        await Promise.all(this.list.map(async (addr) => {
+            const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
+            const reply: RoPaSciListResponse = await socket.send(ropasci, RoPaSciListResponse);
+        }));
+    }
+
+    async challenge(update: ChallengeCandidate = null): Promise<ChallengeCandidate[]> {
+        const socket = new WebSocketConnection(this.list[0].getWebSocketAddress(), PersonhoodRPC.serviceID);
+        const reply: ChallengeReply = await socket.send(new Challenge({update}), ChallengeReply);
+        return reply.list;
+    }
+
     async pollNew(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
         const newPoll = new PollStruct({
             choices,
@@ -117,7 +145,7 @@ export class PersonhoodRPC {
             title,
         });
         const ps = await this.callPoll(new Poll({
-            byzcoinID: this.rpc.genesisID,
+            byzcoinID: this.genesisID,
             newPoll,
         }));
         return ps[0];
@@ -125,7 +153,7 @@ export class PersonhoodRPC {
 
     async pollList(partyIDs: InstanceID[]): Promise<PollStruct[]> {
         return this.callPoll(new Poll({
-            byzcoinID: this.rpc.genesisID,
+            byzcoinID: this.genesisID,
             list: new PollList({partyIDs}),
         }));
     }
@@ -133,7 +161,7 @@ export class PersonhoodRPC {
     async pollAnswer(priv: Scalar, personhood: PopPartyInstance, pollID: Buffer, choice: number): Promise<PollStruct> {
         const context = Buffer.alloc(68);
         context.write("Poll");
-        this.rpc.genesisID.copy(context, 4);
+        this.genesisID.copy(context, 4);
         pollID.copy(context, 36);
         const msg = Buffer.alloc(7);
         msg.write("Choice");
@@ -145,18 +173,26 @@ export class PersonhoodRPC {
         const answer = new PollAnswer({
             choice,
             lrs: lrs.encode(),
+            partyID: personhood.id,
             pollID,
         });
         const ps = await this.callPoll(new Poll({
-            answer,
-            byzcoinID: this.rpc.genesisID,
+                answer,
+                byzcoinID: this.genesisID,
             },
         ));
         return ps[0];
     }
 
     async pollWipe() {
-        return this.callPoll(new Poll({byzcoinID: this.rpc.genesisID}));
+        return this.callPoll(new Poll({byzcoinID: this.genesisID}));
+    }
+
+    async pollDelete(signer: ISigner, pollID: Buffer) {
+        const pd: PollDelete = new PollDelete({
+            identity: IdentityWrapper.fromIdentity(signer), pollID, signature: Buffer.alloc(0),
+        });
+        return this.callPoll(new Poll({byzcoinID: this.genesisID, delete: pd}));
     }
 
     async callPoll(p: Poll): Promise<PollStruct[]> {
@@ -220,6 +256,7 @@ export class RoPaSciList extends Message<RoPaSciList> {
     }
     readonly newRoPaSci: RoPaSci;
     readonly wipe: boolean;
+    readonly lock: RoPaSci;
 
     constructor(props?: Properties<RoPaSciList>) {
         super(props);
@@ -266,6 +303,7 @@ export class Poll extends Message<Poll> {
     readonly newPoll: PollStruct;
     readonly list: PollList;
     readonly answer: PollAnswer;
+    readonly delete: PollDelete;
 
     constructor(props?: Properties<Poll>) {
         super(props);
@@ -357,8 +395,41 @@ export class PollAnswer extends Message<PollAnswer> {
     readonly pollID: Buffer;
     readonly choice: number;
     readonly lrs: Buffer;
+    readonly partyID: InstanceID;
 
     constructor(props?: Properties<PollAnswer>) {
+        super(props);
+
+        Object.defineProperty(this, "pollid", {
+            get(): Buffer {
+                return this.pollID;
+            },
+            set(value: Buffer) {
+                this.pollID = value;
+            },
+        });
+        Object.defineProperty(this, "partyid", {
+            get(): Buffer {
+                return this.partyID;
+            },
+            set(value: Buffer) {
+                this.partyID = value;
+            },
+        });
+    }
+}
+
+// PollDelete can be used to delete a given poll
+export class PollDelete extends Message<PollDelete> {
+
+    static register() {
+        registerMessage("PollDelete", PollDelete);
+    }
+    readonly identity: IdentityWrapper;
+    readonly pollID: Buffer;
+    readonly signature: Buffer;
+
+    constructor(props?: Properties<PollDelete>) {
         super(props);
 
         Object.defineProperty(this, "pollid", {
@@ -490,9 +561,32 @@ export class PartyList extends Message<PartyList> {
     }
     readonly newparty: Party;
     readonly wipeparties: boolean;
+    readonly partydelete: PartyDelete;
 
     constructor(props?: Properties<PartyList>) {
         super(props);
+    }
+}
+
+export class PartyDelete extends Message<PartyDelete> {
+
+    static register() {
+        registerMessage("PartyDelete", PartyDelete);
+    }
+    readonly partyID: InstanceID;
+    readonly identity: IdentityWrapper;
+    readonly signature: Buffer;
+
+    constructor(props?: Properties<PartyDelete>) {
+        super(props);
+        Object.defineProperty(this, "partyid", {
+            get(): InstanceID {
+                return this.partyID;
+            },
+            set(value: InstanceID) {
+                this.partyID = value;
+            },
+        });
     }
 }
 
@@ -543,6 +637,44 @@ export class MeetupResponse extends Message<MeetupResponse> {
     }
 }
 
+export class Challenge extends Message<Challenge> {
+
+    static register() {
+        registerMessage("Challenge", Challenge);
+    }
+    readonly update: ChallengeCandidate;
+
+    constructor(props?: Properties<Challenge>) {
+        super(props);
+    }
+}
+
+export class ChallengeCandidate extends Message<ChallengeCandidate> {
+
+    static register() {
+        registerMessage("ChallengeCandidate", ChallengeCandidate);
+    }
+    readonly credential: InstanceID;
+    readonly score: number;
+    readonly signup: Long;
+
+    constructor(props?: Properties<ChallengeCandidate>) {
+        super(props);
+    }
+}
+
+export class ChallengeReply extends Message<ChallengeReply> {
+
+    static register() {
+        registerMessage("ChallengeReply", ChallengeReply);
+    }
+    readonly list: ChallengeCandidate[];
+
+    constructor(props?: Properties<ChallengeReply>) {
+        super(props);
+    }
+}
+
 RoPaSci.register();
 RoPaSciList.register();
 RoPaSciListResponse.register();
@@ -552,9 +684,14 @@ PollStruct.register();
 PollAnswer.register();
 PollChoice.register();
 PollResponse.register();
+PollDelete.register();
 UserLocation.register();
 Party.register();
 PartyList.register();
+PartyDelete.register();
 PartyListResponse.register();
 Meetup.register();
 MeetupResponse.register();
+Challenge.register();
+ChallengeCandidate.register();
+ChallengeReply.register();

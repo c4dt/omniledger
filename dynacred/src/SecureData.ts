@@ -7,7 +7,7 @@ import { IdentityDarc, IIdentity } from "@dedis/cothority/darc";
 import Signer from "@dedis/cothority/darc/signer";
 import Log from "@dedis/cothority/log";
 import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
-import { randomBytes } from "crypto";
+import { randomBytes } from "crypto-browserify";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
 import { KeyPair } from "./KeyPair";

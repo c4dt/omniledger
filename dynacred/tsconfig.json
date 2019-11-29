@@ -1,17 +1,36 @@
 {
   "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
     "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noEmitHelpers": false,
+    "noEmitOnError": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "moduleResolution": "Node",
-    "target": "ES6",
-    "outDir": "build",
     "resolveJsonModule": true,
-    "baseUrl": "./"
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "outDir": "./build",
+    "paths": {
+      "~/*": [
+        "src/*"
+      ],
+      "@c4dt/cothority/*": [
+        "node_modules/@c4dt/cothority/*",
+        "node_modules/@c4dt/cothority/dist/*"
+      ],
+      "@dedis/cothority/*": [
+        "node_modules/@dedis/cothority/*",
+        "node_modules/@dedis/cothority/dist/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
+    "src"
   ]
 }

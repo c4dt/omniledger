@@ -1,7 +1,9 @@
 /** This is the main library for storing and getting things from the phone's file
  * system.
  */
+
 import { Buffer } from "buffer";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import URL from "url-parse";
@@ -298,7 +300,9 @@ export class Data {
     meetups: SocialNode[] = [];
     // Non-stored fields
     recoverySignatures: RecoverySignature[] = [];
-    storage: IStorage;
+    storage: IStorage = StorageDB;
+    references: string[] = [];
+    phrpc: PersonhoodRPC;
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
@@ -348,6 +352,7 @@ export class Data {
             const cred = Contact.prepareInitialCred("new identity", this.keyIdentity._public);
             this.contact = new Contact(cred, this);
         }
+        this.references = obj.references ? obj.references : [];
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
@@ -355,7 +360,7 @@ export class Data {
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc);
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-
+        this.phrpc = PersonhoodRPC.fromByzCoin(this.bc);
         return this.bc;
     }
 
@@ -375,6 +380,7 @@ export class Data {
             parties: [] as any,
             personhoodPublished: this.personhoodPublished,
             polls: [] as any,
+            references: this.references,
             ropascis: [] as any,
         };
         if (this.bc) {
@@ -424,7 +430,6 @@ export class Data {
         if (!(this.coinInstance && this.spawnerInstance)) {
             throw new Error("Cannot sign up a contact without coins and spawner");
         }
-        await this.coinInstance.update();
         if (amount.lessThanOrEqual(0)) {
             throw new Error("Cannot send 0 or less coins");
         }
@@ -616,10 +621,32 @@ export class Data {
         this.contacts = this.contacts.filter((u) => !u.equals(nu));
     }
 
+    async updateParties(): Promise<PartyItem[]> {
+        await Promise.all(this.parties.map(async (p) => p.partyInstance.update()));
+        // Move all finalized parties into badges
+        const parties: PartyItem[] = [];
+        this.parties.forEach((p) => {
+            if (p.state === PartyItem.finalized) {
+                if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
+                    k.equals(this.keyPersonhood._public.point.toProto()))) {
+                    this.badges.push(new Badge(p, this.keyPersonhood));
+                    Log.lvl2("added party to our badges");
+                } else {
+                    Log.lvl2("removing party that doesn't have our key stored");
+                }
+            } else {
+                parties.push(p);
+            }
+        });
+        this.parties = parties;
+        await this.save();
+        return this.parties;
+    }
+
     async reloadParties(): Promise<PartyItem[]> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        const phParties = await phrpc.listParties();
+        const phParties = await this.phrpc.listParties();
         await Promise.all(phParties.map(async (php) => {
+            Log.lvl2("Searching party", php.instanceID);
             if (this.parties.find((p) => p.partyInstance.id.equals(php.instanceID)) == null) {
                 Log.lvl2("Found new party id", php.instanceID, this.bc.genesisID);
                 const ppi = await PopPartyInstance.fromByzcoin(this.bc, php.instanceID);
@@ -643,7 +670,7 @@ export class Data {
         const piDarc = await DarcInstance.fromByzcoin(this.bc, ppi.darcID);
         const orgDarcs = piDarc.darc.rules.list.find((l) => l.action === "invoke:popParty.finalize").getIdentities();
         const orgPers: Point[] = [];
-        const contacts = this.contacts.concat(this.contact);
+        const contacts = [this.contact].concat(this.contacts);
 
         for (const orgDarc of orgDarcs) {
             // Remove leading "darc:" from expression
@@ -663,38 +690,19 @@ export class Data {
         return orgPers;
     }
 
-    async updateParties(): Promise<PartyItem[]> {
-        await Promise.all(this.parties.map(async (p) => p.partyInstance.update()));
-        // Move all finalized parties into badges
-        const parties: PartyItem[] = [];
-        this.parties.forEach((p) => {
-            if (p.state === PartyItem.finalized) {
-                if (p.partyInstance.popPartyStruct.attendees.keys.find((k) =>
-                    k.equals(this.keyPersonhood._public.point.toProto()))) {
-                    this.badges.push(new Badge(p, this.keyPersonhood));
-                    Log.lvl2("added party to our badges");
-                } else {
-                    Log.lvl2("removing party that doesn't have our key stored");
-                }
-            } else {
-                parties.push(p);
-            }
-        });
-        this.parties = parties;
-        await this.save();
-        return this.parties;
-    }
-
     async addParty(p: PartyItem) {
         this.parties.push(p);
-        const phrpc = new PersonhoodRPC(this.bc);
+        await this.phrpc.listParties(p.toParty(this.bc));
         await this.save();
-        await phrpc.listParties(p.toParty(this.bc));
     }
 
     async reloadRoPaScis(): Promise<RoPaSciInstance[]> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        const phRoPaScis = await phrpc.listRPS();
+        this.ropascis = this.ropascis.filter((ropasci: RoPaSciInstance) => {
+            return ropasci.isDone() ||
+                ropasci.ourGame(this.coinInstance.id) ||
+                ropasci.struct.secondPlayer >= 0;
+        });
+        const phRoPaScis = await this.phrpc.listRPS();
         await Promise.all(phRoPaScis.map(async (rps) => {
             if (this.ropascis.find((r) => r.id.equals(rps.roPaSciID)) == null) {
                 Log.lvl2("Found new ropasci");
@@ -705,7 +713,6 @@ export class Data {
             }
         }));
         Log.lvl2("finished with searching");
-        await this.save();
         return this.ropascis;
     }
 
@@ -713,15 +720,13 @@ export class Data {
         await Promise.all(this.ropascis
             .filter((rps) => rps.struct.firstPlayer < 0)
             .map(async (rps) => rps.update()));
-        await this.save();
         return this.ropascis;
     }
 
     async addRoPaSci(rps: RoPaSciInstance) {
         this.ropascis.push(rps);
-        const phrpc = new PersonhoodRPC(this.bc);
         await this.save();
-        await phrpc.listRPS(new RoPaSci({
+        await this.phrpc.listRPS(new RoPaSci({
             byzcoinID: this.bc.genesisID,
             roPaSciID: rps.id,
         }));
@@ -736,14 +741,12 @@ export class Data {
     }
 
     async reloadPolls(): Promise<PollStruct[]> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        this.polls = await phrpc.pollList(this.badges.map((b) => b.party.partyInstance.id));
+        this.polls = await this.phrpc.pollList(this.badges.map((b) => b.party.partyInstance.id));
         return this.polls;
     }
 
     async addPoll(personhood: InstanceID, title: string, description: string, choices: string[]): Promise<PollStruct> {
-        const phrpc = new PersonhoodRPC(this.bc);
-        const rps = await phrpc.pollNew(personhood, title, description, choices);
+        const rps = await this.phrpc.pollNew(personhood, title, description, choices);
         this.polls.push(rps);
         await this.save();
         return rps;
@@ -815,6 +818,16 @@ export class Data {
     }
 
     /**
+     * Returns the coins needed to create a new user
+     */
+    signupCost(): Long {
+        const c = this.spawnerInstance.costs;
+        return c.costCoin.value.mul(4).add(
+            c.costCredential.value).add(
+            c.costCoin.value);
+    }
+
+    /**
      * Attaches to an existing darc using an ephemeral private key. As soon as the darc
      * is found, a new random key is generated and used to replace the ephemeral key.
      *
@@ -837,6 +850,60 @@ export class Data {
         newDeviceDarc.rules.setRule("invoke:darc.evolve", this.keyIdentitySigner);
         const signer = new SignerEd25519(pub.point, ephemeral.scalar);
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [signer], 5);
+    }
+
+    /**
+     * creates a new darc for an additional device and adjusts the signer darc to include
+     * the new device with OR. This means that the new device has the same rights as all
+     * the other devices.
+     *
+     * The returned string can be used directly to navigate to the page that offers to register
+     * the new device. Registration can be done using Data.attachDevice.
+     *
+     * @param name the name of the new device
+     */
+    async createDevice(name: string): Promise<string> {
+        const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
+        const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
+        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
+        const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
+        const deviceDarc = (await this.spawnerInstance.spawnDarcs(this.coinInstance, [this.keyIdentitySigner],
+            dDarc))[0];
+        const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
+        const newSigner = signerDarc.darc.evolve();
+        newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
+        const re = "invoke:darc.evolve";
+        newSigner.rules.appendToRule(re, deviceDarcIdentity, Rule.OR);
+        await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
+        this.contact.credential.setAttribute("1-devices", name, deviceDarc.darc.getBaseID());
+        this.contact.incVersion();
+        await this.contact.sendUpdate();
+        return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
+            this.contact.credentialIID.toString("hex"),
+            ephemeralIdentity.secret.marshalBinary().toString("hex"));
+    }
+
+    /**
+     * Removes a given device from the signerDarc, so that it cannot be used anymore
+     * to do anything related to it.
+     *
+     * @param name of the device to remove
+     */
+    async deleteDevice(name: string) {
+        const device = this.contact.credential.getAttribute("1-devices", name);
+        if (!device) {
+            throw new Error("didn't find this device");
+        }
+        const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
+        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
+        const newSigner = signerDarc.darc.evolve();
+        const deviceStr = `darc:${device.toString("hex")}`;
+        newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
+        newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
+        await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
+        this.contact.credential.deleteAttribute("1-devices", name);
+        this.contact.incVersion();
+        await this.contact.sendUpdate();
     }
 }
 

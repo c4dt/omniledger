@@ -14,7 +14,7 @@ import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personho
 import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
 import { Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 import URL from "url-parse";
@@ -65,7 +65,7 @@ export class Contact {
     }
 
     set alias(a: string) {
-        if (a) {
+        if (a && this.alias !== a) {
             this.credential.setAttribute("1-public", "alias", Buffer.from(a));
             this.incVersion();
         }
@@ -80,7 +80,7 @@ export class Contact {
     }
 
     set email(e: string) {
-        if (e) {
+        if (e && this.email !== e) {
             this.credential.setAttribute("1-public", "email", Buffer.from(e));
             this.incVersion();
         }
@@ -95,7 +95,7 @@ export class Contact {
     }
 
     set url(u: string) {
-        if (u) {
+        if (u && this.url !== u) {
             this.credential.setAttribute("1-public", "url", Buffer.from(u));
             this.incVersion();
         }
@@ -105,8 +105,8 @@ export class Contact {
         return this.contactsCache || [];
     }
 
-    set contacts(cs: Contact[]) {
-        if (cs) {
+    set contacts(cs: Contact[] | undefined) {
+        if (cs !== undefined) {
             this.contactsCache = cs;
             const csBuf = Buffer.concat(cs.map((c) => c.credentialIID));
             this.credential.setAttribute("1-public", "contactsBuf", csBuf);
@@ -122,20 +122,37 @@ export class Contact {
         return "";
     }
 
-    set phone(p: string) {
-        if (p) {
+    set phone(p: string | undefined) {
+        if (p !== undefined && this.phone !== p) {
             this.credential.setAttribute("1-public", "phone", Buffer.from(p));
             this.incVersion();
         }
     }
 
-    get seedPublic(): Public {
-        return Public.fromBuffer(this.credential.getAttribute("1-public", "seedPub"));
+    get seedPublic(): Public | undefined {
+        const raw = this.credential.getAttribute("1-public", "seedPub");
+        if (raw === undefined) {
+            return undefined;
+        }
+        return Public.fromBuffer(raw);
     }
 
-    set seedPublic(pub: Public) {
-        if (pub) {
+    set seedPublic(pub: Public | undefined) {
+        if (pub !== undefined &&
+            (this.seedPublic === undefined || !this.seedPublic.equal(pub))) {
             this.credential.setAttribute("1-public", "seedPub", pub.toBuffer());
+            this.incVersion();
+        }
+    }
+
+    get joinedChallenge(): Long {
+        const longArray = this.credential.getAttribute("1-public", "challenge");
+        return Long.fromBytesLE(Array.from(longArray));
+    }
+
+    set joinedChallenge(v: Long) {
+        if (!this.joinedChallenge.equals(v)) {
+            this.credential.setAttribute("1-public", "challenge", Buffer.from(v.toBytesLE()));
             this.incVersion();
         }
     }
@@ -152,30 +169,34 @@ export class Contact {
         return Public.fromBuffer(raw);
     }
 
-    set personhoodPub(pub: Public) {
-        if (pub) {
+    set personhoodPub(pub: Public | undefined) {
+        if (pub !== undefined &&
+            (this.personhoodPub === undefined ||
+                !pub.equal(this.personhoodPub))) {
             this.credential.setAttribute("1-public", "personhood", pub.toBuffer());
             this.incVersion();
         }
     }
 
-    get coinID(): InstanceID {
+    get coinID(): InstanceID | undefined {
         return this.credential.getAttribute("1-public", "coin");
     }
 
-    set coinID(id: InstanceID) {
-        if (id) {
+    set coinID(id: InstanceID | undefined) {
+        if (id !== undefined &&
+            (this.coinID === undefined || Buffer.compare(this.coinID, id) !== 0)) {
             this.credential.setAttribute("1-public", "coin", id);
             this.incVersion();
         }
     }
 
-    get ltsID(): InstanceID {
+    get ltsID(): InstanceID | undefined {
         return this.credential.getAttribute("1-config", "ltsID");
     }
 
-    set ltsID(id: InstanceID) {
-        if (id) {
+    set ltsID(id: InstanceID | undefined) {
+        if (id !== undefined &&
+            (!this.ltsID || !id.equals(this.ltsID))) {
             this.credential.setAttribute("1-config", "ltsID", id);
             this.incVersion();
         }
@@ -186,19 +207,21 @@ export class Contact {
         return lx ? PointFactory.fromProto(lx) : null;
     }
 
-    set ltsX(X: Point) {
-        if (X) {
+    set ltsX(X: Point | undefined) {
+        if (X !== undefined &&
+            (!this.ltsX || !X.equals(this.ltsX))) {
             this.credential.setAttribute("1-config", "ltsX", X.toProto());
             this.incVersion();
         }
     }
 
-    get spawnerID(): InstanceID {
+    get spawnerID(): InstanceID | undefined {
         return this.credential.getAttribute("1-config", "spawner");
     }
 
-    set spawnerID(id: InstanceID) {
-        if (id) {
+    set spawnerID(id: InstanceID | undefined) {
+        if (id !== undefined ||
+            (this.spawnerID === undefined || Buffer.compare(this.spawnerID, id) !== 0)) {
             this.credential.setAttribute("1-config", "spawner", id);
             this.incVersion();
         }
@@ -213,8 +236,10 @@ export class Contact {
     }
 
     set view(v: string) {
-        this.credential.setAttribute("1-config", "view", Buffer.from(v));
-        this.incVersion();
+        if (this.view !== v) {
+            this.credential.setAttribute("1-config", "view", Buffer.from(v));
+            this.incVersion();
+        }
     }
 
     get subscribe(): boolean {
@@ -223,9 +248,22 @@ export class Contact {
     }
 
     set subscribe(c: boolean) {
-        this.credential.setAttribute("1-public", "subscribe",
-            c ? Buffer.from("true") : Buffer.from("false"));
-        this.incVersion();
+        if (this.subscribe !== c) {
+            this.credential.setAttribute("1-public", "subscribe",
+                c ? Buffer.from("true") : Buffer.from("false"));
+            this.incVersion();
+        }
+    }
+
+    get hasSnack(): boolean {
+        return this.credential.getAttribute("1-public", "snacked") !== undefined;
+    }
+
+    set hasSnack(v: boolean) {
+        if (this.hasSnack !== v) {
+            this.credential.setAttribute("1-public", "snacked", Buffer.alloc(32));
+            this.incVersion();
+        }
     }
 
     static readonly structVersionLatest = 1;
@@ -453,6 +491,10 @@ export class Contact {
 
     async updateOrConnect(bc: ByzCoinRPC = null, getContacts: boolean = true): Promise<Contact> {
         if (bc) {
+            if (!(await this.isRegisteredByzCoin(bc))) {
+                Log.lvl2("This user is not yet registered");
+                return null;
+            }
             this.bc = bc;
             Log.lvl1("Connecting user", this.alias,
                 "with public key", this.seedPublic.toHex(), "and id", this.credentialIID.toString("hex"),
@@ -511,19 +553,26 @@ export class Contact {
         this.contactsCache = [];
         if (csBuf) {
             let hasFaulty: boolean = false;
+            const contactsBuf: Buffer[] = [];
             for (let c = 0; c < csBuf.length; c += 32) {
-                try {
-                    const d = new Date();
-                    const cont = await Contact.fromByzcoin(this.bc, csBuf.slice(c, c + 32), false);
-                    Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
-                    this.contactsCache.push(cont);
-                } catch (e) {
-                    Log.error("couldn't get contact - removing contact from the list");
-                    hasFaulty = true;
-                }
+                contactsBuf.push(csBuf.slice(c, c + 32));
             }
+            this.contactsCache = await Promise.all(contactsBuf.map((buf) => {
+                return new Promise<Contact>(async (resolve) => {
+                    try {
+                        const d = new Date();
+                        const cont = await Contact.fromByzcoin(this.bc, buf, false);
+                        Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
+                        resolve(cont);
+                    } catch (e) {
+                        Log.error("couldn't get contact - removing contact from the list");
+                        hasFaulty = true;
+                        resolve(null as Contact);
+                    }
+                });
+            }));
             if (hasFaulty) {
-                this.contacts = this.contactsCache;
+                this.contacts = this.contactsCache.filter((c) => c != null);
             }
         }
     }

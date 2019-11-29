@@ -1,6 +1,6 @@
 import { curve, Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
+import { randomBytes } from "crypto-browserify";
 
 const curve25519 = curve.newCurve("edwards25519");
 

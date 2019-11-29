@@ -3,9 +3,9 @@ import "cross-fetch/polyfill";
 import { Injectable } from "@angular/core";
 
 import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
+import Log from "@dedis/cothority/log";
 
 import { Config, Data, StorageDB } from "@c4dt/dynacred";
-import Log from "@dedis/cothority/log";
 
 @Injectable({
     providedIn: "root",
