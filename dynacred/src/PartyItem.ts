@@ -1,6 +1,6 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import Instance from "@dedis/cothority/byzcoin/instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
+import Instance from "src/lib/cothority/byzcoin/instance";
+import { PopPartyInstance } from "src/lib/cothority/personhood/pop-party-instance";
 import { Party } from "./personhood-rpc";
 
 export class PartyItem {

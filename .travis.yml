@@ -28,7 +28,7 @@ jobs:
       install:
        - gimme 1.12.4
        - . $HOME/.gimme/envs/go1.12.4.env
-       - go get github.com/dedis/Coding || true
+       - cd conode && make docker_run
        - ( git clone --depth=1 https://github.com/dedis/cothority; cd cothority; make docker )
        - cd dynacred && npm ci
       script: npm run test

@@ -1,5 +1,5 @@
-import { Darc, IdentityDarc, IdentityWrapper } from "@dedis/cothority/darc";
-import Log from "@dedis/cothority/log";
+import { Darc, IdentityDarc, IdentityWrapper } from "src/lib/cothority/darc";
+import Log from "src/lib/cothority/log";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { Data } from "src";

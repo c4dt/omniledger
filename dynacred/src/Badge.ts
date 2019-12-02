@@ -1,6 +1,6 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
+import SpawnerInstance from "src/lib/cothority/personhood/spawner-instance";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";
@@ -33,13 +33,13 @@ export class Badge {
         this.mined = true;
         if (d.contact.isRegistered()) {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
-                d.coinInstance.id, null);
+                d.coinInstance.id);
         } else {
             const darc = Contact.prepareUserDarc(d.keyIdentity._public.point,
                 d.alias);
             // Create a coin and a darc
             await this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
-                null, darc);
+                undefined, darc);
             // Setting spawner-id
             d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, d.spawnerInstance.id);
             d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, d.spawnerInstance.id);

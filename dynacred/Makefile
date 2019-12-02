@@ -7,9 +7,11 @@ cothority_src: cothority-pull src/lib/cothority
 
 src/lib/cothority: cothority/external/js/cothority/src
 	@mkdir -p src/lib
-	@cp -a $< $@
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@${COT}/cothority:src/lib/cothority:"
-	@find spec/ -name "*.ts" | xargs perl -pi -e "s:\@${COT}/cothority:src/lib/cothority:"
+	@ln -s ../../$< $@
+	@rm -rf $@/dist
+	@rm -rf $@/node_modules
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@${COT}:src/lib/cothority:"
+	@find spec/ -name "*.ts" | xargs perl -pi -e "s:\@${COT}:src/lib/cothority:"
 	@npm run lint:fix
 
 cothority_npm: cothority-pull
@@ -18,11 +20,9 @@ cothority_npm: cothority-pull
 		echo "there is no cothority-source present, aborting"; \
 		exit 1; \
 	fi
-	@diff -Naurq cothority/external/js/cothority/src/ src/lib/cothority/ || \
-		( echo "Moving changes to cothority"; cp -a src/lib/cothority/ cothority/external/js/cothority/src )
-	@rm -rf src/lib/cothority
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@${COT}/cothority:"
-	@find spec/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@${COT}/cothority:"
+	@rm -f src/lib/cothority
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@${COT}:"
+	@find spec/ -name "*.ts" | xargs perl -pi -e "s:src/lib/cothority:\@${COT}:"
 	@rmdir src/lib
 	@npm run lint:fix
 

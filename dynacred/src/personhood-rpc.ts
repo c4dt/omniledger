@@ -1,18 +1,19 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
-import ISigner from "@dedis/cothority/darc/signer";
-import { Roster, ServerIdentity } from "@dedis/cothority/network";
-import { WebSocketConnection } from "@dedis/cothority/network/connection";
-import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
-import { Sign } from "@dedis/cothority/personhood/ring-sig";
-import { registerMessage } from "@dedis/cothority/protobuf";
 import { Scalar } from "@dedis/kyber";
-import { randomBytes } from "crypto-browserify";
 import * as crypto from "crypto-browserify";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
+import { InstanceID } from "src/lib/cothority/byzcoin/instance";
+import IdentityWrapper from "src/lib/cothority/darc/identity-wrapper";
+import ISigner from "src/lib/cothority/darc/signer";
+import Log from "src/lib/cothority/log";
+import { Roster, ServerIdentity } from "src/lib/cothority/network";
+import { WebSocketConnection } from "src/lib/cothority/network/connection";
+import { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "src/lib/cothority/personhood/pop-party-instance";
+import { Sign } from "src/lib/cothority/personhood/ring-sig";
+import { registerMessage } from "src/lib/cothority/protobuf";
 
 /**
  * PersonhoodRPC interacts with the personhood service and all personhood-related contracts, like personhood-party,
@@ -27,15 +28,18 @@ export class PersonhoodRPC {
         return new PersonhoodRPC(rpc.genesisID, rpc.getConfig().roster.list);
     }
 
-    constructor(private genesisID: InstanceID, private list: ServerIdentity[]) {
+    constructor(private readonly genesisID: InstanceID, private readonly nodes: ServerIdentity[]) {
+        if (nodes.length === 0) {
+            throw new Error("need to have at least 1 node");
+        }
     }
 
     /**
      */
-    async listParties(newParty: Party = null): Promise<Party[]> {
+    async listParties(newParty?: Party): Promise<Party[]> {
         const partyList = new PartyList({newparty: newParty});
         let parties: Party[] = [];
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             const resp = await socket.send(partyList, PartyListResponse) as PartyListResponse;
             parties.push(...resp.parties);
@@ -50,7 +54,7 @@ export class PersonhoodRPC {
 
     // this removes all parties from the list, but not from byzcoin.
     async wipeParties() {
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             await socket.send(new PartyList({wipeparties: true}), PartyListResponse);
         }));
@@ -59,7 +63,7 @@ export class PersonhoodRPC {
     // this removes one party from the list and the service, but not from byzcoin.
     async deleteParty(partyID: InstanceID, identity: IdentityWrapper) {
         const partydelete = new PartyDelete({partyID, identity, signature: Buffer.alloc(0)});
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             await socket.send(new PartyList({partydelete}), PartyListResponse);
         }));
@@ -69,14 +73,14 @@ export class PersonhoodRPC {
     // currently stored meetups, but can either add a new meetup, or wipe  all meetups.
     async meetups(meetup: Meetup = new Meetup()): Promise<UserLocation[]> {
         const uls: UserLocation[] = [];
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             const resp = (await socket.send(meetup, MeetupResponse)) as MeetupResponse;
             if (resp.users) {
                 uls.push(...resp.users);
             }
         }));
-        return uls.filter((m) => m != null).filter((userlocation, i) => {
+        return uls.filter((m) => m !== undefined).filter((userlocation, i) => {
             return uls.findIndex((ul) => ul.equals(userlocation)) === i;
         });
     }
@@ -91,13 +95,13 @@ export class PersonhoodRPC {
         return this.meetups(new Meetup({wipe: true}));
     }
 
-    async listRPS(newRoPaSci: RoPaSci = null): Promise<RoPaSci[]> {
+    async listRPS(newRoPaSci?: RoPaSci): Promise<RoPaSci[]> {
         const ropascis: RoPaSci[] = [];
         let rpsList = new RoPaSciList();
         if (newRoPaSci) {
             rpsList = new RoPaSciList({newRoPaSci});
         }
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             const resp: RoPaSciListResponse = await socket.send(rpsList, RoPaSciListResponse);
             if (resp && resp.roPaScis) {
@@ -111,7 +115,7 @@ export class PersonhoodRPC {
 
     async wipeRPS() {
         const ropasci = new RoPaSciList({wipe: true});
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             await socket.send(ropasci, RoPaSciListResponse);
         }));
@@ -124,14 +128,14 @@ export class PersonhoodRPC {
                 roPaSciID: id,
             }),
         });
-        await Promise.all(this.list.map(async (addr) => {
+        await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
-            const reply: RoPaSciListResponse = await socket.send(ropasci, RoPaSciListResponse);
+            await socket.send(ropasci, RoPaSciListResponse);
         }));
     }
 
-    async challenge(update: ChallengeCandidate = null): Promise<ChallengeCandidate[]> {
-        const socket = new WebSocketConnection(this.list[0].getWebSocketAddress(), PersonhoodRPC.serviceID);
+    async challenge(update?: ChallengeCandidate): Promise<ChallengeCandidate[]> {
+        const socket = new WebSocketConnection(this.nodes[0].getWebSocketAddress(), PersonhoodRPC.serviceID);
         const reply: ChallengeReply = await socket.send(new Challenge({update}), ChallengeReply);
         return reply.list;
     }
@@ -212,7 +216,7 @@ export class PersonhoodRPC {
     }
 
     async callAllPoll(query: Poll, response: PollResponse[]): Promise<any> {
-        return await Promise.all(this.list.map(async (addr) => {
+        return await Promise.all(this.nodes.map(async (addr) => {
             const socket = new WebSocketConnection(addr.getWebSocketAddress(), PersonhoodRPC.serviceID);
             response.push(await socket.send(query, PollResponse));
         }));
@@ -474,6 +478,9 @@ export class PollResponse extends Message<PollResponse> {
 export class UserLocation extends Message<UserLocation> {
 
     get alias(): string {
+        if (this.credential === undefined) {
+            return "undefined";
+        }
         const aliasbuf = this.credential.getAttribute("1-public", "alias");
         return aliasbuf ? aliasbuf.toString() : "unknown";
     }
@@ -489,7 +496,7 @@ export class UserLocation extends Message<UserLocation> {
         registerMessage("UserLocation", UserLocation);
     }
 
-    readonly credential: CredentialStruct;
+    readonly credential: CredentialStruct = undefined;
     readonly location: string;
     readonly publicKey: Buffer;
     readonly credentialIID: InstanceID;

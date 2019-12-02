@@ -1,5 +1,5 @@
-import { Rule, Rules } from "@dedis/cothority/darc";
-import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
+import { Rule, Rules } from "src/lib/cothority/darc";
+import { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
 
 describe("plain credential test should", () => {
     it("allow to set the credential", async () => {

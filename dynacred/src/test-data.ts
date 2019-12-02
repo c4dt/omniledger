@@ -1,9 +1,9 @@
-import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
-import { Signer, SignerEd25519 } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import Log from "@dedis/cothority/log";
-import { Roster } from "@dedis/cothority/network";
 import Long from "long";
+import { ByzCoinRPC } from "src/lib/cothority/byzcoin";
+import { Signer, SignerEd25519 } from "src/lib/cothority/darc";
+import Darc from "src/lib/cothority/darc/darc";
+import Log from "src/lib/cothority/log";
+import { Roster } from "src/lib/cothority/network";
 import { Data } from "./Data";
 import { Private } from "./KeyPair";
 import { IStorage } from "./Storage";
@@ -23,8 +23,10 @@ export class TestData extends Data {
             throw new Error("No data available");
         }
         const d = new TestData(bc, values, sf);
+        Log.print(d.contact);
         if (d.contact && d.contact.isRegisteredByzCoin(bc)) {
             await d.connectByzcoin();
+            Log.print("coin", d.coinInstance);
         }
         return d;
     }

@@ -4,7 +4,7 @@ import { ROSTER, startConodes } from "./conondes";
 
 export class TData {
     static async init(): Promise<TestData> {
-        await startConodes();
+        // await startConodes();
         const roster = ROSTER.slice(0, 4);
         return TestData.init("admin", roster, StorageLocalStorage);
     }

@@ -1,13 +1,13 @@
-import { ByzCoinRPC, InstanceID } from "@dedis/cothority/byzcoin";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { CalypsoReadInstance, CalypsoWriteInstance } from "@dedis/cothority/calypso/calypso-instance";
-import { LongTermSecret, OnChainSecretRPC } from "@dedis/cothority/calypso/calypso-rpc";
-import { IdentityDarc, IIdentity } from "@dedis/cothority/darc";
-import Signer from "@dedis/cothority/darc/signer";
-import Log from "@dedis/cothority/log";
-import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
 import { randomBytes } from "crypto-browserify";
+import { ByzCoinRPC, InstanceID } from "src/lib/cothority/byzcoin";
+import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoReadInstance, CalypsoWriteInstance } from "src/lib/cothority/calypso/calypso-instance";
+import { LongTermSecret, OnChainSecretRPC } from "src/lib/cothority/calypso/calypso-rpc";
+import { IdentityDarc, IIdentity } from "src/lib/cothority/darc";
+import Signer from "src/lib/cothority/darc/signer";
+import Log from "src/lib/cothority/log";
+import SpawnerInstance from "src/lib/cothority/personhood/spawner-instance";
 import { secretbox, secretbox_open } from "tweetnacl-ts";
 import { Contact } from "./Contact";
 import { KeyPair } from "./KeyPair";
@@ -142,7 +142,7 @@ export class FileBlob {
         const fbObj: any = JSON.parse(b.toString());
         return new FileBlob(fbObj.name, Buffer.from(fbObj.data), fbObj.attributes);
     }
-    constructor(public name: string, public data: Buffer, public attributes: IFBAttribute[] = null) {
+    constructor(public name: string, public data: Buffer, public attributes?: IFBAttribute[]) {
     }
 
     toBuffer(): Buffer {

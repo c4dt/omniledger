@@ -1,27 +1,29 @@
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@dedis/cothority/calypso";
-import { IdentityDarc, Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
-import ISigner from "@dedis/cothority/darc/signer";
-import Signer from "@dedis/cothority/darc/signer";
-import SignerEd25519 from "@dedis/cothority/darc/signer-ed25519";
-import Log from "@dedis/cothority/log";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
 import { Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { sprintf } from "sprintf-js";
+import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
+import { InstanceID } from "src/lib/cothority/byzcoin/instance";
+import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "src/lib/cothority/calypso";
+import { IdentityDarc, Rule } from "src/lib/cothority/darc";
+import Darc from "src/lib/cothority/darc/darc";
+import IdentityEd25519 from "src/lib/cothority/darc/identity-ed25519";
+import ISigner from "src/lib/cothority/darc/signer";
+import Signer from "src/lib/cothority/darc/signer";
+import SignerEd25519 from "src/lib/cothority/darc/signer-ed25519";
+import Log from "src/lib/cothority/log";
+import CredentialsInstance, { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
+import SpawnerInstance from "src/lib/cothority/personhood/spawner-instance";
 import URL from "url-parse";
 import { Data, TProgress } from "./Data";
 import { Public } from "./KeyPair";
 import { UserLocation } from "./personhood-rpc";
 import { SecureData } from "./SecureData";
+
+const iidLen = 32;
 
 /**
  * Contact represents a user that is either registered or not. It holds
@@ -65,7 +67,10 @@ export class Contact {
     }
 
     set alias(a: string) {
-        if (a && this.alias !== a) {
+        if (a === "") {
+            throw new Error("alias cannot be empty");
+        }
+        if (this.alias !== a) {
             this.credential.setAttribute("1-public", "alias", Buffer.from(a));
             this.incVersion();
         }
@@ -80,7 +85,7 @@ export class Contact {
     }
 
     set email(e: string) {
-        if (e && this.email !== e) {
+        if (this.email !== e) {
             this.credential.setAttribute("1-public", "email", Buffer.from(e));
             this.incVersion();
         }
@@ -95,7 +100,7 @@ export class Contact {
     }
 
     set url(u: string) {
-        if (u && this.url !== u) {
+        if (this.url !== u) {
             this.credential.setAttribute("1-public", "url", Buffer.from(u));
             this.incVersion();
         }
@@ -105,13 +110,11 @@ export class Contact {
         return this.contactsCache || [];
     }
 
-    set contacts(cs: Contact[] | undefined) {
-        if (cs !== undefined) {
-            this.contactsCache = cs;
-            const csBuf = Buffer.concat(cs.map((c) => c.credentialIID));
-            this.credential.setAttribute("1-public", "contactsBuf", csBuf);
-            this.incVersion();
-        }
+    set contacts(cs: Contact[]) {
+        this.contactsCache = cs;
+        const csBuf = Buffer.concat(cs.map((c) => c.credentialIID));
+        this.credential.setAttribute("1-public", "contactsBuf", csBuf);
+        this.incVersion();
     }
 
     get phone(): string {
@@ -122,8 +125,8 @@ export class Contact {
         return "";
     }
 
-    set phone(p: string | undefined) {
-        if (p !== undefined && this.phone !== p) {
+    set phone(p: string) {
+        if (this.phone !== p) {
             this.credential.setAttribute("1-public", "phone", Buffer.from(p));
             this.incVersion();
         }
@@ -137,9 +140,8 @@ export class Contact {
         return Public.fromBuffer(raw);
     }
 
-    set seedPublic(pub: Public | undefined) {
-        if (pub !== undefined &&
-            (this.seedPublic === undefined || !this.seedPublic.equal(pub))) {
+    set seedPublic(pub: Public) {
+        if (this.seedPublic === undefined || !this.seedPublic.equal(pub)) {
             this.credential.setAttribute("1-public", "seedPub", pub.toBuffer());
             this.incVersion();
         }
@@ -162,17 +164,12 @@ export class Contact {
         if (raw === undefined) {
             return undefined;
         }
-        if (raw === null) {
-            Log.warn(`Contact("${this.alias}").credential has null 1-public/personhood`);
-            return undefined;
-        }
         return Public.fromBuffer(raw);
     }
 
-    set personhoodPub(pub: Public | undefined) {
-        if (pub !== undefined &&
-            (this.personhoodPub === undefined ||
-                !pub.equal(this.personhoodPub))) {
+    set personhoodPub(pub: Public) {
+        if (this.personhoodPub === undefined ||
+                !pub.equal(this.personhoodPub)) {
             this.credential.setAttribute("1-public", "personhood", pub.toBuffer());
             this.incVersion();
         }
@@ -182,9 +179,8 @@ export class Contact {
         return this.credential.getAttribute("1-public", "coin");
     }
 
-    set coinID(id: InstanceID | undefined) {
-        if (id !== undefined &&
-            (this.coinID === undefined || Buffer.compare(this.coinID, id) !== 0)) {
+    set coinID(id: InstanceID) {
+        if (this.coinID === undefined || Buffer.compare(this.coinID, id) !== 0) {
             this.credential.setAttribute("1-public", "coin", id);
             this.incVersion();
         }
@@ -194,22 +190,20 @@ export class Contact {
         return this.credential.getAttribute("1-config", "ltsID");
     }
 
-    set ltsID(id: InstanceID | undefined) {
-        if (id !== undefined &&
-            (!this.ltsID || !id.equals(this.ltsID))) {
+    set ltsID(id: InstanceID) {
+        if (this.ltsID === undefined || !id.equals(this.ltsID)) {
             this.credential.setAttribute("1-config", "ltsID", id);
             this.incVersion();
         }
     }
 
-    get ltsX(): Point {
+    get ltsX(): Point | undefined {
         const lx = this.credential.getAttribute("1-config", "ltsX");
-        return lx ? PointFactory.fromProto(lx) : null;
+        return lx ? PointFactory.fromProto(lx) : undefined;
     }
 
-    set ltsX(X: Point | undefined) {
-        if (X !== undefined &&
-            (!this.ltsX || !X.equals(this.ltsX))) {
+    set ltsX(X: Point) {
+        if (this.ltsX === undefined || !X.equals(this.ltsX)) {
             this.credential.setAttribute("1-config", "ltsX", X.toProto());
             this.incVersion();
         }
@@ -220,8 +214,10 @@ export class Contact {
     }
 
     set spawnerID(id: InstanceID | undefined) {
-        if (id !== undefined ||
-            (this.spawnerID === undefined || Buffer.compare(this.spawnerID, id) !== 0)) {
+        if (id === undefined) {
+            throw new Error("spawnerID cannot be undefined");
+        }
+        if (this.spawnerID === undefined || Buffer.compare(this.spawnerID, id) !== 0) {
             this.credential.setAttribute("1-config", "spawner", id);
             this.incVersion();
         }
@@ -261,7 +257,7 @@ export class Contact {
 
     set hasSnack(v: boolean) {
         if (this.hasSnack !== v) {
-            this.credential.setAttribute("1-public", "snacked", Buffer.alloc(32));
+            this.credential.setAttribute("1-public", "snacked", Buffer.alloc(iidLen));
             this.incVersion();
         }
     }
@@ -312,6 +308,7 @@ export class Contact {
         const u = new Contact();
         if (obj.credential) {
             u.credential = CredentialStruct.decode(Buffer.from(obj.credential));
+            Log.print("setting credential", u.credential);
         }
         if (obj.calypso) {
             u.calypso = Calypso.fromObject(u, obj.calypso);
@@ -362,7 +359,7 @@ export class Contact {
 
     static getVersion(c: CredentialStruct): number {
         const b = c.getAttribute("1-public", "version");
-        if (b == null) {
+        if (b === undefined) {
             return 0;
         }
         return b.readUInt32LE(0);
@@ -387,20 +384,20 @@ export class Contact {
             return Log.rcatch(e, "couldn't convert to Contact from UserLocation");
         }
     }
-    credentialInstance: CredentialsInstance = null;
-    darcInstance: DarcInstance = null;
-    coinInstance: CoinInstance = null;
-    spawnerInstance: SpawnerInstance = null;
-    recover: Recover = null;
-    calypso: Calypso = null;
-    bc: ByzCoinRPC = null;
-    contactsCache: Contact[] = null;
-    actionsCache: DarcInstance[] = null;
-    groupsCache: DarcInstance[] = null;
+    credentialInstance: CredentialsInstance = undefined;
+    darcInstance: DarcInstance = undefined;
+    coinInstance: CoinInstance = undefined;
+    spawnerInstance: SpawnerInstance = undefined;
+    recover: Recover = undefined;
+    calypso: Calypso = undefined;
+    bc: ByzCoinRPC = undefined;
+    contactsCache: Contact[] = undefined;
+    actionsCache: DarcInstance[] = undefined;
+    groupsCache: DarcInstance[] = undefined;
 
-    constructor(public credential: CredentialStruct = null,
-                public data: Data = null) {
-        if (credential == null) {
+    constructor(public credential?: CredentialStruct,
+                public data?: Data) {
+        if (credential === undefined) {
             this.credential = new CredentialStruct();
             Contact.setVersion(this.credential, 0);
         }
@@ -465,7 +462,7 @@ export class Contact {
             await this.updateOrConnect();
         }
         const signRule = this.darcInstance.darc.rules.list.find((r) => r.action === Darc.ruleSign);
-        if (signRule == null) {
+        if (signRule === undefined) {
             throw new Error("didn't find signer darc");
         }
         const expr = signRule.getExpr().toString();
@@ -489,11 +486,26 @@ export class Contact {
         };
     }
 
-    async updateOrConnect(bc: ByzCoinRPC = null, getContacts: boolean = true): Promise<Contact> {
-        if (bc) {
+    async getInstances(): Promise<any> {
+        this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID, 1);
+        this.coinInstance = await CoinInstance.fromByzcoin(this.bc, this.coinID, 1);
+        this.spawnerInstance = await SpawnerInstance.fromByzcoin(this.bc, this.spawnerID, 1);
+    }
+
+    /**
+     * If the instance is already connected to byzcoin, it will be updated with the latest data from byzcoin.
+     * Else it takes a byzcoinrpc as parameters and uses it to connect to byzcoin.
+     *
+     * If the structure is old, it will be updated to the latest structure.
+     *
+     * @param bc
+     * @param getContacts
+     */
+    async updateOrConnect(bc?: ByzCoinRPC, getContacts?: boolean): Promise<Contact | undefined> {
+        if (bc !== undefined) {
             if (!(await this.isRegisteredByzCoin(bc))) {
                 Log.lvl2("This user is not yet registered");
-                return null;
+                return undefined;
             }
             this.bc = bc;
             Log.lvl1("Connecting user", this.alias,
@@ -502,16 +514,14 @@ export class Contact {
             this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID, 1);
             this.credential = this.credentialInstance.credential.copy();
             if (getContacts) {
-                this.darcInstance = await DarcInstance.fromByzcoin(bc, this.credentialInstance.darcID, 1);
-                this.coinInstance = await CoinInstance.fromByzcoin(bc, this.coinID, 1);
-                this.spawnerInstance = await SpawnerInstance.fromByzcoin(bc, this.spawnerID, 1);
+                await this.getInstances();
             }
         } else {
             Log.lvl2("Updating user", this.alias);
             await this.credentialInstance.update();
             if (Contact.getVersion(this.credentialInstance.credential) > this.version) {
                 this.credential = this.credentialInstance.credential.copy();
-                this.contactsCache = null;
+                this.contactsCache = undefined;
             }
             this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID);
             this.coinInstance = await CoinInstance.fromByzcoin(this.bc, this.coinID);
@@ -552,33 +562,29 @@ export class Contact {
         const csBuf = this.credential.getAttribute("1-public", "contactsBuf");
         this.contactsCache = [];
         if (csBuf) {
-            let hasFaulty: boolean = false;
             const contactsBuf: Buffer[] = [];
-            for (let c = 0; c < csBuf.length; c += 32) {
-                contactsBuf.push(csBuf.slice(c, c + 32));
+            for (let c = 0; c < csBuf.length; c += iidLen) {
+                contactsBuf.push(csBuf.slice(c, c + iidLen));
             }
             this.contactsCache = await Promise.all(contactsBuf.map((buf) => {
                 return new Promise<Contact>(async (resolve) => {
                     try {
-                        const d = new Date();
+                        const start = new Date();
                         const cont = await Contact.fromByzcoin(this.bc, buf, false);
-                        Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - d.getTime());
+                        Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - start.getTime());
                         resolve(cont);
                     } catch (e) {
                         Log.error("couldn't get contact - removing contact from the list");
-                        hasFaulty = true;
-                        resolve(null as Contact);
+                        resolve(undefined as Contact);
                     }
                 });
             }));
-            if (hasFaulty) {
-                this.contacts = this.contactsCache.filter((c) => c != null);
-            }
+            this.contacts = this.contactsCache.filter((c) => c !== undefined);
         }
     }
 
     isRegistered(): boolean {
-        return this.credentialInstance != null;
+        return this.credentialInstance !== undefined;
     }
 
     async isRegisteredByzCoin(bc: ByzCoinRPC): Promise<boolean> {
@@ -594,7 +600,7 @@ export class Contact {
             Log.error("don't have the credentials");
             return;
         }
-        if (this.coinID != null && this.coinID.length === 32) {
+        if (this.coinID !== undefined && this.coinID.length === iidLen) {
             return this.coinID;
         }
         return CoinInstance.coinIID(this.seedPublic.toBuffer());
@@ -608,8 +614,8 @@ export class Contact {
     }
 
     // this method sends the current state of the Credentials to ByzCoin.
-    async sendUpdate(signers: Signer[] = null) {
-        if (this.credentialInstance != null) {
+    async sendUpdate(signers?: Signer[]) {
+        if (this.credentialInstance !== undefined) {
             if (this.coinInstance && !this.coinID) {
                 this.coinID = this.coinInstance.id;
                 this.version = this.version + 1;
@@ -664,7 +670,7 @@ export class Contact {
      */
     async createDevice(name: string, progress?: TProgress,
                        signers: ISigner[] = [this.data.keyIdentitySigner]): Promise<string> {
-        const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
+        const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(iidLen));
         const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
         if (progress) {
             progress(30, "Adding Device Darc");
@@ -757,7 +763,7 @@ class Recover {
 
     get trusteesBuf(): Buffer {
         const b = this.contact.credential.getAttribute("1-recover", "trustees");
-        return b == null ? Buffer.alloc(0) : b;
+        return b === undefined ? Buffer.alloc(0) : b;
     }
 
     set trusteesBuf(t: Buffer) {
@@ -767,21 +773,21 @@ class Recover {
 
     get trustees(): InstanceID[] {
         const ts: InstanceID[] = [];
-        for (let t = 0; t < this.trusteesBuf.length; t += 32) {
-            ts.push(this.trusteesBuf.slice(t, t + 32));
+        for (let t = 0; t < this.trusteesBuf.length; t += iidLen) {
+            ts.push(this.trusteesBuf.slice(t, t + iidLen));
         }
         return ts;
     }
 
     set trustees(ts: InstanceID[]) {
-        const tsBuf = Buffer.alloc(ts.length * 32);
-        ts.forEach((t, i) => t.copy(tsBuf, i * 32));
+        const tsBuf = Buffer.alloc(ts.length * iidLen);
+        ts.forEach((t, i) => t.copy(tsBuf, i * iidLen));
         this.trusteesBuf = tsBuf;
     }
 
     get threshold(): number {
         const tBuf = this.contact.credential.getAttribute("1-recover", "threshold");
-        if (tBuf == null) {
+        if (tBuf === undefined) {
             return 0;
         }
         return tBuf.readUInt32LE(0);
@@ -795,12 +801,12 @@ class Recover {
     }
 
     findTrustee(trustee: InstanceID | Contact): number {
-        if (this.trusteesBuf == null || this.trusteesBuf.length === 0) {
+        if (this.trusteesBuf === undefined || this.trusteesBuf.length === 0) {
             return -1;
         }
         const tBuf = this.getBuffer(trustee);
-        for (let t = 0; t < this.trusteesBuf.length; t += 32) {
-            if (this.trusteesBuf.slice(t, t + 32).equals(tBuf)) {
+        for (let t = 0; t < this.trusteesBuf.length; t += iidLen) {
+            if (this.trusteesBuf.slice(t, t + iidLen).equals(tBuf)) {
                 return t;
             }
         }
@@ -812,7 +818,7 @@ class Recover {
             return;
         }
         const tBuf = this.getBuffer(trustee);
-        const result = Buffer.alloc(this.trusteesBuf.length + 32);
+        const result = Buffer.alloc(this.trusteesBuf.length + iidLen);
         this.trusteesBuf.copy(result);
         tBuf.copy(result, this.trusteesBuf.length);
         this.trusteesBuf = result;
@@ -823,10 +829,10 @@ class Recover {
         if (pos < 0) {
             return;
         }
-        const result = Buffer.alloc(this.trusteesBuf.length - 32);
+        const result = Buffer.alloc(this.trusteesBuf.length - iidLen);
         if (result.length > 0) {
-            this.trusteesBuf.copy(result, 0, 0, pos * 32);
-            this.trusteesBuf.copy(result, pos * 32, (pos + 1) * 32);
+            this.trusteesBuf.copy(result, 0, 0, pos * iidLen);
+            this.trusteesBuf.copy(result, pos * iidLen, (pos + 1) * iidLen);
         }
         this.trusteesBuf = result;
     }

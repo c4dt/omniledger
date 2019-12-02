@@ -35,7 +35,7 @@ export class KeyPair {
 
     setPrivate(priv: Private) {
         this._private = priv;
-        this._public = new Public(curve25519.point().mul(this._private.scalar, null));
+        this._public = new Public(curve25519.point().mul(this._private.scalar));
     }
 
     randomize() {

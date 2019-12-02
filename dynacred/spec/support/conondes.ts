@@ -1,6 +1,6 @@
 /* tslint:disable no-console */
-import { SignerEd25519 } from "@dedis/cothority/darc";
-import { Roster } from "@dedis/cothority/network";
+import { SignerEd25519 } from "src/lib/cothority/darc";
+import { Roster } from "src/lib/cothority/network";
 import Docker from "dockerode";
 import fs from "fs";
 import Long from "long";
