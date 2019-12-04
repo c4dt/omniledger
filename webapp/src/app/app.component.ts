@@ -17,6 +17,7 @@ import { UserData } from "./user-data.service";
 
 export class AppComponent implements OnInit {
     loading = true;
+    log: string = "";
 
     constructor(
         private router: Router,
@@ -27,6 +28,10 @@ export class AppComponent implements OnInit {
     }
 
     async ngOnInit() {
+        await this.uData.loadConfig((msg: string) => {
+            this.log += `\n${msg}`;
+        });
+
         if (window.location.pathname.match(/\/register(\/device)?/)) {
             Log.lvl2("allowing registering with unknown Data");
             this.loading = false;

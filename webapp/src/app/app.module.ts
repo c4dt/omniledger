@@ -45,8 +45,10 @@ import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
 import { UserData } from "./user-data.service";
 
+// This is empty as the UserData is now initialized in the
+// app.component, so that the success can be logged.
 export function loadUserDataConfig(d: UserData) {
-    return () => d.loadConfig();
+    return () => {};
 }
 
 @NgModule({
