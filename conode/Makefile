@@ -1,4 +1,4 @@
-COT := dedis/cothority
+COT := c4dt/cothority
 CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)

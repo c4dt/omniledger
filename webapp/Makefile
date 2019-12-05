@@ -1,4 +1,4 @@
-COT := dedis/cothority
+COT := c4dt/cothority
 
 none:
 	@echo "Not breaking if you don't tell me what to do"
@@ -30,7 +30,7 @@ kyber_src: cothority_src cothority-pull src/lib/kyber
 
 src/lib/kyber: cothority/external/js/kyber/src
 	@cp -a $< $@
-	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/kyber:src/lib/kyber:"
+	@find src/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/kyber:src/lib/kyber:"
 
 kyber_npm:
 	@echo "Using kyber-npm libraries"
@@ -41,7 +41,7 @@ kyber_npm:
 	diff -Naurq cothority/external/js/kyber/src/ src/lib/kyber/ || \
 		( echo "Moving changes to kyber"; cp -a src/lib/kyber/ cothority/external/js/kyber/src ); \
 	rm -rf src/lib/kyber; \
-	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/kyber:\@dedis/kyber:"
+	find src/ -name "*.ts" | xargs perl -pi -e "s:src/lib/kyber:\@c4dt/kyber:"
 
 dynacred_src: src/lib/dynacred
 

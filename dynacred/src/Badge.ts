@@ -1,6 +1,6 @@
-import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
-import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
-import SpawnerInstance from "src/lib/cothority/personhood/spawner-instance";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";

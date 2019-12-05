@@ -8,29 +8,29 @@ import Long from "long";
 import { sprintf } from "sprintf-js";
 import URL from "url-parse";
 
-import { curve, Point, Scalar, sign } from "@dedis/kyber";
-import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "src/lib/cothority/byzcoin/client-transaction";
-import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "src/lib/cothority/byzcoin/instance";
-import { LongTermSecret } from "src/lib/cothority/calypso/calypso-rpc";
-import { IdentityEd25519, Rule } from "src/lib/cothority/darc";
-import Darc from "src/lib/cothority/darc/darc";
-import IdentityDarc from "src/lib/cothority/darc/identity-darc";
-import Signer from "src/lib/cothority/darc/signer";
-import ISigner from "src/lib/cothority/darc/signer";
-import SignerEd25519 from "src/lib/cothority/darc/signer-ed25519";
-import Log from "src/lib/cothority/log";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import ClientTransaction, { Argument, Instruction } from "@c4dt/cothority/byzcoin/client-transaction";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import Instance, { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { LongTermSecret } from "@c4dt/cothority/calypso/calypso-rpc";
+import { IdentityEd25519, Rule } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityDarc from "@c4dt/cothority/darc/identity-darc";
+import Signer from "@c4dt/cothority/darc/signer";
+import ISigner from "@c4dt/cothority/darc/signer";
+import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
+import Log from "@c4dt/cothority/log";
 import CredentialInstance, {
     Attribute,
     Credential,
     CredentialStruct,
     RecoverySignature,
-} from "src/lib/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "src/lib/cothority/personhood/pop-party-instance";
-import RoPaSciInstance from "src/lib/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { ICreateCost, SPAWNER_COIN } from "src/lib/cothority/personhood/spawner-instance";
+} from "@c4dt/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import RoPaSciInstance from "@c4dt/cothority/personhood/ro-pa-sci-instance";
+import SpawnerInstance, { ICreateCost, SPAWNER_COIN } from "@c4dt/cothority/personhood/spawner-instance";
+import { curve, Point, Scalar, sign } from "@c4dt/kyber";
 
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
@@ -345,7 +345,6 @@ export class Data {
         Log.lvl2("Getting polls");
         this.polls = obj.polls ? obj.polls.map((rps: any) => PollStruct.fromObject(rps)) : [];
 
-        Log.print("contact is", obj.contact);
         if (obj.contact !== undefined) {
             this.contact = Contact.fromObject(obj.contact);
             this.contact.data = this;
@@ -359,7 +358,7 @@ export class Data {
     async connectByzcoin(): Promise<ByzCoinRPC> {
         Log.lvl2("Getting contact informations");
         this.contact.data = this;
-        await this.contact.updateOrConnect(this.bc);
+        await this.contact.updateOrConnect(this.bc, true);
         await this.contact.getInstances();
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         this.phrpc = PersonhoodRPC.fromByzCoin(this.bc);
@@ -385,7 +384,6 @@ export class Data {
             references: this.references,
             ropascis: [] as any,
         };
-        Log.print("saving:", v.contact);
         if (this.bc) {
             v.bcRoster = this.bc.getConfig().roster.toJSON();
             v.bcID = this.bc.getGenesis().computeHash();
@@ -418,7 +416,6 @@ export class Data {
 
     async save(): Promise<Data> {
         Log.lvl1("Saving data to", this.dataFileName);
-        await this.storage.putObject(this.dataFileName, this.toObject());
         if (this.personhoodPublished) {
             this.contact.personhoodPub = this.keyPersonhood._public;
         }
@@ -426,6 +423,7 @@ export class Data {
             Log.lvl2("Sending update to chain");
             await this.contact.sendUpdate();
         }
+        await this.storage.putObject(this.dataFileName, this.toObject());
         return this;
     }
 

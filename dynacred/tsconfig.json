@@ -1,4 +1,5 @@
 {
+  "extends": "../tsconfig.common",
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
@@ -19,14 +20,6 @@
     "paths": {
       "~/*": [
         "src/*"
-      ],
-      "@c4dt/cothority/*": [
-        "node_modules/@c4dt/cothority/*",
-        "node_modules/@c4dt/cothority/dist/*"
-      ],
-      "@dedis/cothority/*": [
-        "node_modules/@dedis/cothority/*",
-        "node_modules/@dedis/cothority/dist/*"
       ]
     }
   },

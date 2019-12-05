@@ -1,6 +1,6 @@
+import Log from "@c4dt/cothority/log";
 import { Buffer } from "buffer";
 import Dexie from "dexie";
-import Log from "src/lib/cothority/log";
 
 export interface IStorage {
     set(key: string, buffer: string);

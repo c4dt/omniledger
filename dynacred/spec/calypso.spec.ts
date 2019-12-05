@@ -1,8 +1,8 @@
-import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
-import { CalypsoReadInstance, CalypsoWriteInstance, OnChainSecretRPC, Write } from "src/lib/cothority/calypso";
-import { Darc, Rule } from "src/lib/cothority/darc";
-import Log from "src/lib/cothority/log";
-import { curve } from "@dedis/kyber";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { CalypsoReadInstance, CalypsoWriteInstance, OnChainSecretRPC, Write } from "@c4dt/cothority/calypso";
+import { Darc, Rule } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
+import { curve } from "@c4dt/kyber";
 import Keccak from "keccak";
 import { KeyPair } from "src/KeyPair";
 import { TestData } from "src/test-data";
@@ -129,7 +129,6 @@ describe("In a full byzcoin setting, it should", () => {
         const key = Buffer.from("Very Secret Key");
 
         Log.lvl2("Creating Write instance");
-        Log.print("tdadmin.coin:", tdAdmin.coinInstance);
         const wrInst = await tdAdmin.spawnerInstance.spawnCalypsoWrite(tdAdmin.coinInstance,
             [tdAdmin.keyIdentitySigner], tdAdmin.lts, key,
             [await tdAdmin.contact.getDarcSignIdentity()]);

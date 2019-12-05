@@ -1,24 +1,24 @@
-import { Scalar } from "@dedis/kyber";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
+import ISigner from "@c4dt/cothority/darc/signer";
+import Log from "@c4dt/cothority/log";
+import { Roster, ServerIdentity } from "@c4dt/cothority/network";
+import { WebSocketConnection } from "@c4dt/cothority/network/connection";
+import { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
+import { Sign } from "@c4dt/cothority/personhood/ring-sig";
+import { registerMessage } from "@c4dt/cothority/protobuf";
+import { Scalar } from "@c4dt/kyber";
 import * as crypto from "crypto-browserify";
 import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
-import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
-import { InstanceID } from "src/lib/cothority/byzcoin/instance";
-import IdentityWrapper from "src/lib/cothority/darc/identity-wrapper";
-import ISigner from "src/lib/cothority/darc/signer";
-import Log from "src/lib/cothority/log";
-import { Roster, ServerIdentity } from "src/lib/cothority/network";
-import { WebSocketConnection } from "src/lib/cothority/network/connection";
-import { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "src/lib/cothority/personhood/pop-party-instance";
-import { Sign } from "src/lib/cothority/personhood/ring-sig";
-import { registerMessage } from "src/lib/cothority/protobuf";
 
 /**
  * PersonhoodRPC interacts with the personhood service and all personhood-related contracts, like personhood-party,
  * rock-paper-scissors, and spawner.
- * Once it's more stable, it should go into dedis/cothority/external/js/cothority. For this reason it should not
+ * Once it's more stable, it should go into c4dt/cothority/external/js/cothority. For this reason it should not
  * depend on anything from dynacred.
  */
 export class PersonhoodRPC {

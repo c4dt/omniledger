@@ -1,22 +1,22 @@
-import { Point, PointFactory } from "@dedis/kyber";
+import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
+import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@c4dt/cothority/calypso";
+import { IdentityDarc, Rule } from "@c4dt/cothority/darc";
+import Darc from "@c4dt/cothority/darc/darc";
+import IdentityEd25519 from "@c4dt/cothority/darc/identity-ed25519";
+import ISigner from "@c4dt/cothority/darc/signer";
+import Signer from "@c4dt/cothority/darc/signer";
+import SignerEd25519 from "@c4dt/cothority/darc/signer-ed25519";
+import Log from "@c4dt/cothority/log";
+import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
+import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
+import { Point, PointFactory } from "@c4dt/kyber";
 import { Buffer } from "buffer";
 import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { sprintf } from "sprintf-js";
-import ByzCoinRPC from "src/lib/cothority/byzcoin/byzcoin-rpc";
-import CoinInstance from "src/lib/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "src/lib/cothority/byzcoin/contracts/darc-instance";
-import { InstanceID } from "src/lib/cothority/byzcoin/instance";
-import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "src/lib/cothority/calypso";
-import { IdentityDarc, Rule } from "src/lib/cothority/darc";
-import Darc from "src/lib/cothority/darc/darc";
-import IdentityEd25519 from "src/lib/cothority/darc/identity-ed25519";
-import ISigner from "src/lib/cothority/darc/signer";
-import Signer from "src/lib/cothority/darc/signer";
-import SignerEd25519 from "src/lib/cothority/darc/signer-ed25519";
-import Log from "src/lib/cothority/log";
-import CredentialsInstance, { CredentialStruct } from "src/lib/cothority/personhood/credentials-instance";
-import SpawnerInstance from "src/lib/cothority/personhood/spawner-instance";
 import URL from "url-parse";
 import { Data, TProgress } from "./Data";
 import { Public } from "./KeyPair";
@@ -52,6 +52,15 @@ export class Contact {
             return 0;
         }
         return svBuf.readInt32LE(0);
+    }
+
+    set structVersion(sv: number) {
+        if (sv !== this.structVersion) {
+            const svBuf = Buffer.alloc(4);
+            svBuf.writeInt32LE(sv, 0);
+            this.credential.setAttribute("1-config", "structVersion", svBuf);
+            this.incVersion();
+        }
     }
 
     get credentialIID(): InstanceID {
@@ -262,7 +271,7 @@ export class Contact {
         }
     }
 
-    static readonly structVersionLatest = 1;
+    static readonly structVersionLatest = 2;
     static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
 
@@ -308,7 +317,6 @@ export class Contact {
         const u = new Contact();
         if (obj.credential) {
             u.credential = CredentialStruct.decode(Buffer.from(obj.credential));
-            Log.print("setting credential", u.credential);
         }
         if (obj.calypso) {
             u.calypso = Calypso.fromObject(u, obj.calypso);
@@ -513,8 +521,9 @@ export class Contact {
                 "on chain", bc.genesisID.toString("hex"));
             this.credentialInstance = await CredentialsInstance.fromByzcoin(bc, this.credentialIID, 1);
             this.credential = this.credentialInstance.credential.copy();
+            await this.getInstances();
             if (getContacts) {
-                await this.getInstances();
+                await this.getContacts();
             }
         } else {
             Log.lvl2("Updating user", this.alias);
@@ -533,6 +542,22 @@ export class Contact {
                 case 0:
                     this.credential.setAttribute("1-devices", "initial", this.seedPublic.toBuffer());
                     break;
+                case 1:
+                    const csBufOld = this.credential.getAttribute("1-public", "contacts");
+                    if (csBufOld && csBufOld.length > 0) {
+                        Log.lvl1("converting old contacts");
+                        const csArray: string[] = JSON.parse(csBufOld.toString());
+                        this.contactsCache = csArray.map((c) => Contact.fromObject(c));
+                        for (const c of this.contactsCache) {
+                            await c.updateOrConnect(this.bc, false);
+                            await c.getInstances();
+                            await c.getContacts();
+                        }
+                        this.credential.setAttribute("1-public", "contacts", Buffer.alloc(0));
+                        this.contacts = this.contactsCache;
+                        return;
+                    }
+                    break;
             }
         }
 
@@ -547,18 +572,6 @@ export class Contact {
 
     async getContacts() {
         Log.lvl2("Reloading contacts of", this.alias);
-        const csBufOld = this.credential.getAttribute("1-public", "contacts");
-        if (csBufOld && csBufOld.length > 0) {
-            Log.lvl1("converting old contacts");
-            const csArray: string[] = JSON.parse(csBufOld.toString());
-            this.contactsCache = csArray.map((c) => Contact.fromObject(c));
-            for (const c of this.contactsCache) {
-                await c.updateOrConnect(this.bc, false);
-            }
-            this.credential.setAttribute("1-public", "contacts", Buffer.alloc(0));
-            this.contacts = this.contactsCache;
-            return;
-        }
         const csBuf = this.credential.getAttribute("1-public", "contactsBuf");
         this.contactsCache = [];
         if (csBuf) {
@@ -566,12 +579,13 @@ export class Contact {
             for (let c = 0; c < csBuf.length; c += iidLen) {
                 contactsBuf.push(csBuf.slice(c, c + iidLen));
             }
-            this.contactsCache = await Promise.all(contactsBuf.map((buf) => {
+            const cc = await Promise.all(contactsBuf.map((buf) => {
                 return new Promise<Contact>(async (resolve) => {
                     try {
                         const start = new Date();
                         const cont = await Contact.fromByzcoin(this.bc, buf, false);
                         Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - start.getTime());
+                        await cont.getInstances();
                         resolve(cont);
                     } catch (e) {
                         Log.error("couldn't get contact - removing contact from the list");
@@ -579,7 +593,7 @@ export class Contact {
                     }
                 });
             }));
-            this.contacts = this.contactsCache.filter((c) => c !== undefined);
+            this.contactsCache = cc.filter((c) => c !== undefined);
         }
     }
 
