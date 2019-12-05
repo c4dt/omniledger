@@ -99,12 +99,7 @@ describe("In a full byzcoin setting, it should", () => {
         }
     }, 30 * 1000);
 
-    function checkOCS(): Promise<any> {
-        return ocs === undefined ? Promise.reject("couldn't initialize ocs") : Promise.resolve();
-    }
-
     it("be able to create an LTS", async () => {
-        await checkOCS();
         Log.lvl1("Creating new LTS");
         const lts = await ocs.createLTS(tdAdmin.bc.getConfig().roster, tdAdmin.darc.getBaseID(),
             [tdAdmin.admin]);

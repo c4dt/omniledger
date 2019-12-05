@@ -2,7 +2,6 @@ import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
 import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
 import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
 import ISigner from "@c4dt/cothority/darc/signer";
-import Log from "@c4dt/cothority/log";
 import { Roster, ServerIdentity } from "@c4dt/cothority/network";
 import { WebSocketConnection } from "@c4dt/cothority/network/connection";
 import { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";

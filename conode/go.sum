@@ -167,6 +167,7 @@ go.dedis.ch/kyber/v3 v3.0.4 h1:FDuC/S3STkvwxZ0ooo3gcp56QkUKsN7Jy7cpzBxL+vQ=
 go.dedis.ch/kyber/v3 v3.0.4/go.mod h1:OzvaEnPvKlyrWyp3kGXlFdp7ap1VC6RkZDTaPikqhsQ=
 go.dedis.ch/kyber/v3 v3.0.5/go.mod h1:V1z0JihG9+dUEUCKLI9j9tjnlIflBw3wx8UOg0g3Pnk=
 go.dedis.ch/kyber/v3 v3.0.6/go.mod h1:V1z0JihG9+dUEUCKLI9j9tjnlIflBw3wx8UOg0g3Pnk=
+go.dedis.ch/kyber/v3 v3.0.7/go.mod h1:V1z0JihG9+dUEUCKLI9j9tjnlIflBw3wx8UOg0g3Pnk=
 go.dedis.ch/kyber/v3 v3.0.9/go.mod h1:rhNjUUg6ahf8HEg5HUvVBYoWY4boAafX8tYxX+PS+qg=
 go.dedis.ch/kyber/v3 v3.0.11 h1:nmZQCxqcVBC8fUK1x26Z9/IhElMcCdoyRwCk1rYrarI=
 go.dedis.ch/kyber/v3 v3.0.11/go.mod h1:kXy7p3STAurkADD+/aZcsznZGKVHEqbtmdIzvPfrs1U=
@@ -175,6 +176,8 @@ go.dedis.ch/kyber/v4 v4.0.0-pre1/go.mod h1:cFStqSeD4d3Y7mal8kCRSq7I7QPeTBA0f5cRl
 go.dedis.ch/onet/v3 v3.0.26/go.mod h1:gwdcgrfh6OEzXFvMrgtAVEgdPrmcbZXDQZaDbqB0rjU=
 go.dedis.ch/onet/v3 v3.0.29 h1:7kG+gY0zQQ7mMjePewCxQQaMZwtns2020jY8uN5/Pcg=
 go.dedis.ch/onet/v3 v3.0.29/go.mod h1:eRhl/hDplVZQnvW9J67Q22vSMZO1umUS4DLY8wFY+b8=
+go.dedis.ch/onet/v3 v3.0.31 h1:iVIAxP9Zy1dEsJzRbVAgVcWtbtEOC3KVWBW0yaUYX5k=
+go.dedis.ch/onet/v3 v3.0.31/go.mod h1:P9R5g5BMoye1QvPVYY3LUmiq2YKodjgKfD2/nKDYosw=
 go.dedis.ch/onet/v4 v4.0.0-pre1 h1:sWZQj5tTrRCSeoBc3FYKfQmHrxq3DntLztbxdW5GjO4=
 go.dedis.ch/onet/v4 v4.0.0-pre1/go.mod h1:8jjB3FoDndY5weXSE+I1Nc9/6kwAGUyw4cXcJNswmSk=
 go.dedis.ch/protobuf v1.0.5/go.mod h1:eIV4wicvi6JK0q/QnfIEGeSFNG0ZeB24kzut5+HaRLo=
@@ -190,6 +193,7 @@ golang.org/x/crypto v0.0.0-20170930174604-9419663f5a44/go.mod h1:6SG95UA2DQfeDnf
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5 h1:bselrhR0Or1vomJZC8ZIjWtbDmn9OYFLX5Ik9alpJpE=
 golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5/go.mod h1:WFFai1msRO1wXaEeE5yQxYXgSfI8pQAWXbQop6sCtWE=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 h1:ObdrDkeb4kJdCP557AjRjq69pTHfNouLtWZG7j9rPN8=
@@ -224,6 +228,7 @@ golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5h
 golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190801041406-cbf593c0f2f3/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190912141932-bc967efca4b8 h1:41hwlulw1prEMBxLQSlMSux1zxJf07B3WPsdjJlKZxE=
 golang.org/x/sys v0.0.0-20190912141932-bc967efca4b8/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191024073052-e66fe6eb8e0c h1:usSYQsGq37L8RjJc5eznJ/AbwBxn3QFFEVkWNPAejLs=

@@ -327,7 +327,6 @@ export class Data {
         this.keyPersonhood = obj.keyPersonhood ? new KeyPair(obj.keyPersonhood) : new KeyPair();
         this.keyIdentity = obj.keyIdentity ? new KeyPair(obj.keyIdentity) : new KeyPair();
         this.meetups = obj.meetups ? obj.meetups.map((m: any) => SocialNode.fromObject(m)) : [];
-        Log.lvl2("getting parties and badges");
         this.parties = obj.parties ? obj.parties.map((p: any) => PartyItem.fromObject(this.bc, p)) : [];
 
         if (obj.badges) {
@@ -338,11 +337,9 @@ export class Data {
             this.badges = [];
         }
 
-        Log.lvl2("Getting rock-paper-scissors");
         this.ropascis = obj.ropascis ? obj.ropascis.map((rps: any) =>
             new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps)))) : [];
 
-        Log.lvl2("Getting polls");
         this.polls = obj.polls ? obj.polls.map((rps: any) => PollStruct.fromObject(rps)) : [];
 
         if (obj.contact !== undefined) {

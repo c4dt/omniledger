@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.common",
+  "extends": "../tsconfig.common.json",
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
@@ -16,12 +16,7 @@
       "dom"
     ],
     "baseUrl": ".",
-    "outDir": "./build",
-    "paths": {
-      "~/*": [
-        "src/*"
-      ]
-    }
+    "outDir": "./build"
   },
   "include": [
     "src"

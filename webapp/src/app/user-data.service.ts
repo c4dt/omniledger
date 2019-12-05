@@ -5,6 +5,9 @@ import { Injectable } from "@angular/core";
 import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
 import Log from "@c4dt/cothority/log";
 
+import { IConnection, RosterWSConnection } from "@c4dt/cothority/network/connection";
+import { StatusRequest, StatusResponse } from "@c4dt/cothority/status/proto";
+import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Config, Data, StorageDB } from "@c4dt/dynacred";
 
 @Injectable({
@@ -17,33 +20,34 @@ import { Config, Data, StorageDB } from "@c4dt/dynacred";
  */
 export class UserData extends Data {
     bc: ByzCoinRPC;
-    public config: Config;
+    config: Config;
+    conn: IConnection;
 
     constructor() {
         super(undefined); // poison
         this.storage = StorageDB;
     }
 
-    async loadConfig(logger: (msg: string) => void): Promise<void> {
+    async loadConfig(logger: (msg: string, percentage: number) => void): Promise<void> {
         Log.print("loading config");
-        logger("Loading config");
+        logger("Loading config", 0);
         const res = await fetch("assets/config.toml");
         if (!res.ok) {
             return Promise.reject(`fetching config gave: ${res.status}: ${res.body}`);
         }
         this.config = Config.fromTOML(await res.text());
-        logger("Fetching latest block");
-        this.bc = await ByzCoinRPC.fromByzcoin(this.config.roster, this.config.byzCoinID);
-        logger("Pinging nodes");
-        const wsc = (<any>this.bc).conn;
-        wsc.setParallel(5);
-        for (let i = 0; i < 3; i++) {
-            await this.bc.getSignerCounters([]);
-            const url = wsc.getURL();
-            logger(`Fastest node at ${i}/3: ${url}`);
+        logger("Pinging nodes", 10);
+        this.conn = new RosterWSConnection(this.config.roster, StatusRPC.serviceName);
+        this.conn.setParallel(this.config.roster.length);
+        for (let i = 0; i < 5; i++) {
+            await this.conn.send(new StatusRequest(), StatusResponse);
+            const url = this.conn.getURL();
+            logger(`Fastest node at ${i}/3: ${url}`, 20 + i * 15);
         }
-        wsc.setParallel(1);
-        logger("Done connecting")
+        this.conn.setParallel(1);
+        logger("Fetching latest block", 70);
+        this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID);
+        logger("Done connecting", 100);
     }
 
     async load() {

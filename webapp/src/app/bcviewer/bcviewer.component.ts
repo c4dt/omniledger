@@ -52,7 +52,7 @@ export class BcviewerComponent implements OnInit {
     async updateBlocks(): Promise<any> {
         if (this.uData.bc) {
             if (!this.scRPC) {
-                this.scRPC = new SkipchainRPC(this.uData.bc.getConfig().roster);
+                this.scRPC = new SkipchainRPC(this.uData.conn);
             }
             let latest = this.uData.bc.genesisID;
             if (this.blocks && this.blocks.length > 0) {

@@ -1,28 +1,35 @@
 {
-  "paths": {
-    "@c4dt/cothority/*": [
-      "src/lib/cothority/*",
-      "node_modules/@c4dt/cothority/*",
-    ],
-    "@dedis/cothority/*": [
-      "src/lib/cothority/*",
-      "node_modules/@dedis/cothority/*"
-    ],
-    "@dedis/kyber": [
-      "src/lib/kyber",
-      "node_modules/@dedis/kyber"
-    ],
-    "@dedis/kyber/*": [
-      "src/lib/kyber/*",
-      "node_modules/@dedis/kyber/*"
-    ],
-    "@c4dt/kyber": [
-      "src/lib/kyber",
-      "node_modules/@c4dt/kyber"
-    ],
-    "@c4dt/kyber/*": [
-      "src/lib/kyber/*",
-      "node_modules/@c4dt/kyber/*"
-    ]
+  "compilerOptions": {
+    "paths": {
+      "@c4dt/dynacred": [
+        "../dynacred/src",
+        "src/lib/dynacred",
+        "node_modules/@c4dt/dynacred"
+      ],
+      "@c4dt/cothority/*": [
+        "src/lib/cothority/*",
+        "node_modules/@c4dt/cothority/*"
+      ],
+      "@dedis/cothority/*": [
+        "src/lib/cothority/*",
+        "node_modules/@dedis/cothority/*"
+      ],
+      "@dedis/kyber": [
+        "src/lib/kyber",
+        "node_modules/@dedis/kyber"
+      ],
+      "@dedis/kyber/*": [
+        "src/lib/kyber/*",
+        "node_modules/@dedis/kyber/*"
+      ],
+      "@c4dt/kyber": [
+        "src/lib/kyber",
+        "node_modules/@c4dt/kyber"
+      ],
+      "@c4dt/kyber/*": [
+        "src/lib/kyber/*",
+        "node_modules/@c4dt/kyber/*"
+      ]
+    }
   }
 }

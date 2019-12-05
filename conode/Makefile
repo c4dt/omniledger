@@ -1,4 +1,3 @@
-COT := c4dt/cothority
 CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
@@ -6,17 +5,17 @@ WEBAPP_ASSET := ../webapp/src/assets/config.toml
 
 all: docker
 
-cothority:
-	git clone --depth 1 https://github.com/${COT}
+.PHONY: conode
 
-conode: cothority
-	@( cd cothority; git pull )
+conode:
+	make -C .. cothority-pull
+	@( cd ../cothority; git pull )
 	@echo "Compiling binaries"; \
 	go build -o build/conode; \
-	cd cothority; \
-		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
-		go build -o ../build/csadmin ./calypso/csadmin; \
-		go build -o ../build/phapp ./personhood/phapp
+	cd ../cothority; \
+		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin; \
+		go build -o ../conode/build/csadmin ./calypso/csadmin; \
+		go build -o ../conode/build/phapp ./personhood/phapp
 
 newdb: conode
 	rm -f build/conodes/*db;
@@ -34,9 +33,9 @@ newdb: conode
 docker: build/Dockerfile conode
 	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
 	go build -o build/conode; \
-	cd cothority; \
-		go build -o ../build/bcadmin ./byzcoin/bcadmin; \
-		go build -o ../build/csadmin ./calypso/csadmin
+	cd ../cothority; \
+		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin; \
+		go build -o ../conode/build/csadmin ./calypso/csadmin
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
@@ -64,4 +63,4 @@ docker_clean:
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
 
 clean:
-	rm -rf build/conode cothority
+	rm -rf build/conode
