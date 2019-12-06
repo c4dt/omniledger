@@ -1,4 +1,4 @@
-import { Roster } from "@dedis/cothority/network/proto";
+import { Roster } from "@c4dt/cothority/network/proto";
 
 import toml from "toml";
 
@@ -8,9 +8,9 @@ export class Config {
     static fromTOML(raw: string): Config {
         const parsed = toml.parse(raw);
 
-        const tryToGetField = <T>(name: string, func: (_: string) => T): T | null => {
+        const tryToGetField = <T>(name: string, func: (_: string) => T): T | undefined => {
             if (!(name in parsed)) {
-                return null;
+                return undefined;
             }
             return func(parsed[name]);
         };

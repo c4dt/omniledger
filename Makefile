@@ -1,15 +1,29 @@
+COT := c4dt
+
+help:
+	@echo "run with cothority_dedis or cothority_c4dt"
+
 swap:
-	@if egrep -q "COT.*${to}" dynacred/Makefile; then \
-	    echo "Already pointing to ${to}/cothority"; exit 1; \
+	@if [ ${COT} = ${to} ]; then \
+		echo "Already pointing to ${to}/cothority"; exit 1; \
 	 fi
-	@for d in conode dynacred webapp; do \
+	@for d in dynacred webapp; do \
 	  cd $$d; \
-	  perl -pi -e "s:${from}/cothority:${to}/cothority:" Makefile $$( find app spec src -name "*.ts" ); \
-	  npm remove @${from}/cothority; \
-	  npm i --save @${to}/cothority; \
+	  for p in cothority kyber; do \
+		perl -pi -e "s:${from}/$$p:${to}/$$p:" $$( find app spec src -name "*.ts" ); \
+		npm remove @${from}/$$p; \
+		npm i --save @${to}/$$p; \
+	  done; \
 	  npm run lint:fix; \
 	  cd ..; \
 	done
+	perl -pi -e "s/^COT := .*/COT := ${to}/" ./Makefile
+
+cothority:
+	git clone https://github.com/${COT}/cothority --depth 1
+
+cothority-pull: cothority
+	cd cothority && git pull
 
 cothority_dedis: from := c4dt
 cothority_dedis: to := dedis

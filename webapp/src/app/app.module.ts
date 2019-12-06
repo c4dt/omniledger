@@ -48,7 +48,7 @@ import { UserData } from "./user-data.service";
 // This is empty as the UserData is now initialized in the
 // app.component, so that the success can be logged.
 export function loadUserDataConfig(d: UserData) {
-    return () => {};
+    return () => {const a = 2; };
 }
 
 @NgModule({

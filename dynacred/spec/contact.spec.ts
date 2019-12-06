@@ -1,5 +1,5 @@
-import { Darc, IdentityDarc, IdentityWrapper } from "@dedis/cothority/darc";
-import Log from "@dedis/cothority/log";
+import { Darc, IdentityDarc, IdentityWrapper } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
 import { randomBytes } from "crypto";
 import Long from "long";
 import { Data } from "src";
@@ -41,10 +41,11 @@ describe("Contact should", async () => {
         contact1.contactsCache = [tdAdmin.contact];
         const csBuf = Buffer.from(JSON.stringify(contact1.contactsCache.map((c) => c.toObject())));
         contact1.credential.setAttribute("1-public", "contacts", csBuf);
+        contact1.structVersion = 1;
         contact1.version = contact1.version + 1;
         await user1.save();
         contact1.contactsCache = [];
-        await contact1.updateOrConnect();
+        await contact1.updateOrConnect(undefined, true);
         expect(contact1.contacts.length).toBe(1);
         expect(contact1.contacts[0].credentialIID).toEqual(tdAdmin.contact.credentialIID);
         expect(contact1.contacts[0].coinInstance).toBeDefined();

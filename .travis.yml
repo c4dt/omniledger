@@ -28,7 +28,6 @@ jobs:
       install:
        - gimme 1.12.4
        - . $HOME/.gimme/envs/go1.12.4.env
-       - go get github.com/dedis/Coding || true
        - ( git clone --depth=1 https://github.com/dedis/cothority; cd cothority; make docker )
        - cd dynacred && npm ci
       script: npm run test
@@ -43,9 +42,10 @@ jobs:
       before_script: npm run lint
       script:
         - npm run build --prod
-        - make -C ../conode docker_run &
-        - make -C ../conode docker_wait
-        - npm run test --no-watch
+# Currently there are no tests available, so we cannot test it...
+#        - make -C ../conode docker_run &
+#        - make -C ../conode docker_wait
+#        - npm run test --no-watch
     - name: webapp/cas
       language: go
       go: 1.12.x

@@ -1,17 +1,24 @@
 {
+  "extends": "../tsconfig.common.json",
   "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
     "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noEmitHelpers": false,
+    "noEmitOnError": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "moduleResolution": "Node",
-    "target": "ES6",
-    "outDir": "build",
     "resolveJsonModule": true,
-    "baseUrl": "./"
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "outDir": "./build"
   },
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
+    "src"
   ]
 }

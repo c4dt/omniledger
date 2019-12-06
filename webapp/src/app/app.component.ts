@@ -2,8 +2,8 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
-import { IdentityWrapper } from "@dedis/cothority/darc";
-import Log from "@dedis/cothority/log";
+import { IdentityWrapper } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
 
 import { showDialogOKC } from "src/lib/Ui";
 import { BcviewerService } from "./bcviewer/bcviewer.component";
@@ -17,7 +17,9 @@ import { UserData } from "./user-data.service";
 
 export class AppComponent implements OnInit {
     loading = true;
-    log: string = "";
+    log: string;
+    text: string;
+    percentage: number;
 
     constructor(
         private router: Router,
@@ -27,9 +29,15 @@ export class AppComponent implements OnInit {
     ) {
     }
 
+    logAppend(msg: string, perc: number) {
+        this.log += `${msg}\n`;
+        this.text = msg;
+        this.percentage = perc;
+    }
+
     async ngOnInit() {
-        await this.uData.loadConfig((msg: string) => {
-            this.log += `\n${msg}`;
+        await this.uData.loadConfig((msg: string, perc: number) => {
+            this.logAppend(msg, perc * 0.8);
         });
 
         if (window.location.pathname.match(/\/register(\/device)?/)) {
@@ -44,6 +52,7 @@ export class AppComponent implements OnInit {
             return this.newUser();
         } else {
             try {
+                this.logAppend("Loading data", 90);
                 await this.uData.load();
                 const signerDarc = await this.uData.contact.getDarcSignIdentity();
                 const rules = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, signerDarc.id,
@@ -55,6 +64,7 @@ export class AppComponent implements OnInit {
                     " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();
                 }
+                this.logAppend("Done", 100);
                 this.loading = false;
                 this.bcs.updateBlocks();
             } catch (e) {

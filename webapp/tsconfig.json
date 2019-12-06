@@ -1,4 +1,5 @@
 {
+  "extends": "../tsconfig.common.json",
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
@@ -13,7 +14,7 @@
     "importHelpers": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "target": "es2015",
+    "target": "es5",
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -21,5 +22,8 @@
       "es2018",
       "dom"
     ]
-  }
+  },
+  "include": [
+    "./src"
+  ]
 }

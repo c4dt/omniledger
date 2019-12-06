@@ -1,4 +1,4 @@
-import Log from "@dedis/cothority/log";
+import Log from "@c4dt/cothority/log";
 import { Buffer } from "buffer";
 import Dexie from "dexie";
 
@@ -13,7 +13,7 @@ export interface IStorage {
 }
 
 export class StorageDB {
-    static db: Dexie = null;
+    static db: Dexie = undefined;
 
     static async set(key: string, buffer: string) {
         return this.getDB().put({key, buffer});

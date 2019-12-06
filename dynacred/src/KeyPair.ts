@@ -1,6 +1,6 @@
-import { curve, Point, PointFactory } from "@dedis/kyber";
+import { curve, Point, PointFactory } from "@c4dt/kyber";
 import { Buffer } from "buffer";
-import { randomBytes } from "crypto";
+import { randomBytes } from "crypto-browserify";
 
 const curve25519 = curve.newCurve("edwards25519");
 
@@ -35,7 +35,7 @@ export class KeyPair {
 
     setPrivate(priv: Private) {
         this._private = priv;
-        this._public = new Public(curve25519.point().mul(this._private.scalar, null));
+        this._public = new Public(curve25519.point().mul(this._private.scalar));
     }
 
     randomize() {
