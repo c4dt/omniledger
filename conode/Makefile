@@ -9,12 +9,11 @@ all: docker
 
 conode:
 	make -C .. cothority-pull
-	@( cd ../cothority; git pull )
 	@echo "Compiling binaries"; \
 	go build -o build/conode; \
-	cd ../cothority; \
-		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin; \
-		go build -o ../conode/build/csadmin ./calypso/csadmin; \
+	cd ../cothority && \
+		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin && \
+		go build -o ../conode/build/csadmin ./calypso/csadmin && \
 		go build -o ../conode/build/phapp ./personhood/phapp
 
 newdb: conode
@@ -33,8 +32,8 @@ newdb: conode
 docker: build/Dockerfile conode
 	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
 	go build -o build/conode; \
-	cd ../cothority; \
-		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin; \
+	cd ../cothority && \
+		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin && \
 		go build -o ../conode/build/csadmin ./calypso/csadmin
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev

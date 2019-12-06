@@ -1,4 +1,4 @@
-COT := `cat cot.txt`
+COT := c4dt
 
 swap:
 	@if [ ${COT} = ${to} ]; then \
@@ -6,7 +6,6 @@ swap:
 	 fi
 	@for d in dynacred webapp; do \
 	  cd $$d; \
-	  pwd; \
 	  for p in cothority kyber; do \
 		perl -pi -e "s:${from}/$$p:${to}/$$p:" $$( find app spec src -name "*.ts" ); \
 		npm remove @${from}/$$p; \
@@ -15,10 +14,10 @@ swap:
 	  npm run lint:fix; \
 	  cd ..; \
 	done
-	echo ${to} > cot.txt
+	perl -pi -e "s/COT := .*/COT := ${to}" ./Makefile
 
 cothority:
-	git clone https://github.com/${COT}/cothority --depth 10
+	git clone https://github.com/${COT}/cothority --depth 1
 
 cothority-pull: cothority
 	cd cothority && git pull

@@ -150,7 +150,7 @@ export class Contact {
     }
 
     set seedPublic(pub: Public) {
-        if (this.seedPublic === undefined || !this.seedPublic.equal(pub)) {
+        if (!pub.equal(this.seedPublic)) {
             this.credential.setAttribute("1-public", "seedPub", pub.toBuffer());
             this.incVersion();
         }
@@ -176,9 +176,9 @@ export class Contact {
         return Public.fromBuffer(raw);
     }
 
-    set personhoodPub(pub: Public) {
+    set personhoodPub(pub: Public | undefined) {
         if (this.personhoodPub === undefined ||
-                !pub.equal(this.personhoodPub)) {
+            !this.personhoodPub.equal(pub)) {
             this.credential.setAttribute("1-public", "personhood", pub.toBuffer());
             this.incVersion();
         }
@@ -188,8 +188,8 @@ export class Contact {
         return this.credential.getAttribute("1-public", "coin");
     }
 
-    set coinID(id: InstanceID) {
-        if (this.coinID === undefined || Buffer.compare(this.coinID, id) !== 0) {
+    set coinID(id: InstanceID | undefined) {
+        if (this.coinID === undefined || !this.coinID.equals(id)) {
             this.credential.setAttribute("1-public", "coin", id);
             this.incVersion();
         }
@@ -199,8 +199,8 @@ export class Contact {
         return this.credential.getAttribute("1-config", "ltsID");
     }
 
-    set ltsID(id: InstanceID) {
-        if (this.ltsID === undefined || !id.equals(this.ltsID)) {
+    set ltsID(id: InstanceID | undefined) {
+        if (this.ltsID === undefined || !this.ltsID.equals(id)) {
             this.credential.setAttribute("1-config", "ltsID", id);
             this.incVersion();
         }
@@ -211,8 +211,8 @@ export class Contact {
         return lx ? PointFactory.fromProto(lx) : undefined;
     }
 
-    set ltsX(X: Point) {
-        if (this.ltsX === undefined || !X.equals(this.ltsX)) {
+    set ltsX(X: Point | undefined) {
+        if (this.ltsX === undefined || !this.ltsX.equals(X)) {
             this.credential.setAttribute("1-config", "ltsX", X.toProto());
             this.incVersion();
         }
@@ -222,11 +222,8 @@ export class Contact {
         return this.credential.getAttribute("1-config", "spawner");
     }
 
-    set spawnerID(id: InstanceID | undefined) {
-        if (id === undefined) {
-            throw new Error("spawnerID cannot be undefined");
-        }
-        if (this.spawnerID === undefined || Buffer.compare(this.spawnerID, id) !== 0) {
+    set spawnerID(id: InstanceID) {
+        if (!id.equals(this.spawnerID)) {
             this.credential.setAttribute("1-config", "spawner", id);
             this.incVersion();
         }
@@ -392,16 +389,16 @@ export class Contact {
             return Log.rcatch(e, "couldn't convert to Contact from UserLocation");
         }
     }
-    credentialInstance: CredentialsInstance = undefined;
-    darcInstance: DarcInstance = undefined;
-    coinInstance: CoinInstance = undefined;
-    spawnerInstance: SpawnerInstance = undefined;
-    recover: Recover = undefined;
-    calypso: Calypso = undefined;
-    bc: ByzCoinRPC = undefined;
-    contactsCache: Contact[] = undefined;
-    actionsCache: DarcInstance[] = undefined;
-    groupsCache: DarcInstance[] = undefined;
+    credentialInstance: CredentialsInstance | undefined;
+    darcInstance: DarcInstance | undefined;
+    coinInstance: CoinInstance | undefined;
+    spawnerInstance: SpawnerInstance | undefined;
+    bc: ByzCoinRPC | undefined;
+    contactsCache: Contact[] | undefined;
+    actionsCache: DarcInstance[] | undefined;
+    groupsCache: DarcInstance[] | undefined;
+    recover: Recover;
+    calypso: Calypso;
 
     constructor(public credential?: CredentialStruct,
                 public data?: Data) {
@@ -494,7 +491,7 @@ export class Contact {
         };
     }
 
-    async getInstances(): Promise<any> {
+    async getInstances(): Promise<void> {
         this.darcInstance = await DarcInstance.fromByzcoin(this.bc, this.credentialInstance.darcID, 1);
         this.coinInstance = await CoinInstance.fromByzcoin(this.bc, this.coinID, 1);
         this.spawnerInstance = await SpawnerInstance.fromByzcoin(this.bc, this.spawnerID, 1);
@@ -544,7 +541,7 @@ export class Contact {
                     break;
                 case 1:
                     const csBufOld = this.credential.getAttribute("1-public", "contacts");
-                    if (csBufOld && csBufOld.length > 0) {
+                    if (csBufOld !== undefined && csBufOld.length > 0) {
                         Log.lvl1("converting old contacts");
                         const csArray: string[] = JSON.parse(csBufOld.toString());
                         this.contactsCache = csArray.map((c) => Contact.fromObject(c));
@@ -555,7 +552,6 @@ export class Contact {
                         }
                         this.credential.setAttribute("1-public", "contacts", Buffer.alloc(0));
                         this.contacts = this.contactsCache;
-                        return;
                     }
                     break;
             }
@@ -580,7 +576,7 @@ export class Contact {
                 contactsBuf.push(csBuf.slice(c, c + iidLen));
             }
             const cc = await Promise.all(contactsBuf.map((buf) => {
-                return new Promise<Contact>(async (resolve) => {
+                return new Promise<Contact | undefined>(async (resolve) => {
                     try {
                         const start = new Date();
                         const cont = await Contact.fromByzcoin(this.bc, buf, false);
@@ -776,8 +772,11 @@ class Recover {
     }
 
     get trusteesBuf(): Buffer {
-        const b = this.contact.credential.getAttribute("1-recover", "trustees");
-        return b === undefined ? Buffer.alloc(0) : b;
+        const t = this.contact.credential.getAttribute("1-recover", "trustees");
+        if (t === undefined || t.length === 0) {
+            return undefined;
+        }
+        return t;
     }
 
     set trusteesBuf(t: Buffer) {
@@ -787,6 +786,9 @@ class Recover {
 
     get trustees(): InstanceID[] {
         const ts: InstanceID[] = [];
+        if (this.trustees === undefined) {
+            return [];
+        }
         for (let t = 0; t < this.trusteesBuf.length; t += iidLen) {
             ts.push(this.trusteesBuf.slice(t, t + iidLen));
         }
@@ -815,27 +817,15 @@ class Recover {
     }
 
     findTrustee(trustee: InstanceID | Contact): number {
-        if (this.trusteesBuf === undefined || this.trusteesBuf.length === 0) {
-            return -1;
-        }
         const tBuf = this.getBuffer(trustee);
-        for (let t = 0; t < this.trusteesBuf.length; t += iidLen) {
-            if (this.trusteesBuf.slice(t, t + iidLen).equals(tBuf)) {
-                return t;
-            }
-        }
-        return -1;
+        return this.trustees.findIndex((t) => t.equals(tBuf));
     }
 
     addTrustee(trustee: InstanceID | Contact) {
         if (this.findTrustee(trustee) >= 0) {
             return;
         }
-        const tBuf = this.getBuffer(trustee);
-        const result = Buffer.alloc(this.trusteesBuf.length + iidLen);
-        this.trusteesBuf.copy(result);
-        tBuf.copy(result, this.trusteesBuf.length);
-        this.trusteesBuf = result;
+        this.trustees = this.trustees.concat(this.getBuffer(trustee));
     }
 
     rmTrustee(trustee: InstanceID | Contact) {
@@ -843,12 +833,7 @@ class Recover {
         if (pos < 0) {
             return;
         }
-        const result = Buffer.alloc(this.trusteesBuf.length - iidLen);
-        if (result.length > 0) {
-            this.trusteesBuf.copy(result, 0, 0, pos * iidLen);
-            this.trusteesBuf.copy(result, pos * iidLen, (pos + 1) * iidLen);
-        }
-        this.trusteesBuf = result;
+        this.trustees = this.trustees.splice(pos, 1);
     }
 
     getBuffer(trustee: InstanceID | Contact): Buffer {

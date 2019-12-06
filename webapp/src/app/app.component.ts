@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
     }
 
     logAppend(msg: string, perc: number) {
-        this.log += `\n${msg}`;
+        this.log += `${msg}\n`;
         this.text = msg;
         this.percentage = perc;
     }

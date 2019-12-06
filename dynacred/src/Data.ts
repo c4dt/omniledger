@@ -128,7 +128,7 @@ export class Data {
      * @param unrestricted whether the adminDarcID needs evolve_unrestricted
      */
     static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar,
-                                 alias: string, unrestricted?: boolean):
+                                 alias: string, unrestricted: boolean = false):
         Promise<Data> {
 
         // Prepare adminDarc to have all necessary rules
@@ -349,7 +349,7 @@ export class Data {
             const cred = Contact.prepareInitialCred("new identity", this.keyIdentity._public);
             this.contact = new Contact(cred, this);
         }
-        this.references = obj.references ? obj.references : [];
+        this.references = ("references" in obj) ? obj.references : [];
     }
 
     async connectByzcoin(): Promise<ByzCoinRPC> {
@@ -860,25 +860,25 @@ export class Data {
      *
      * @param name the name of the new device
      */
-    async createDevice(name: string): Promise<string> {
+    async createDevice(name: string): Promise<URL> {
         const ephemeralIdentity = SignerEd25519.fromBytes(randomBytes(32));
         const signerDarcID = this.contact.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
-        const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from("new device"));
+        const dDarc = Darc.createBasic([ephemeralIdentity], [ephemeralIdentity], Buffer.from(name));
         const deviceDarc = (await this.spawnerInstance.spawnDarcs(this.coinInstance, [this.keyIdentitySigner],
             dDarc))[0];
         const deviceDarcIdentity = new IdentityDarc({id: deviceDarc.darc.getBaseID()});
         const newSigner = signerDarc.darc.evolve();
         newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
-        const re = "invoke:darc.evolve";
+        const re = DarcInstance.ruleEvolve;
         newSigner.rules.appendToRule(re, deviceDarcIdentity, Rule.OR);
         await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
         this.contact.credential.setAttribute("1-devices", name, deviceDarc.darc.getBaseID());
         this.contact.incVersion();
         await this.contact.sendUpdate();
-        return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
+        return new URL(sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
             this.contact.credentialIID.toString("hex"),
-            ephemeralIdentity.secret.marshalBinary().toString("hex"));
+            ephemeralIdentity.secret.marshalBinary().toString("hex")));
     }
 
     /**
@@ -897,7 +897,7 @@ export class Data {
         const newSigner = signerDarc.darc.evolve();
         const deviceStr = `darc:${device.toString("hex")}`;
         newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
-        newSigner.rules.getRule("invoke:darc.evolve").remove(deviceStr);
+        newSigner.rules.getRule(DarcInstance.ruleEvolve).remove(deviceStr);
         await signerDarc.evolveDarcAndWait(newSigner, [this.keyIdentitySigner], 5);
         this.contact.credential.deleteAttribute("1-devices", name);
         this.contact.incVersion();

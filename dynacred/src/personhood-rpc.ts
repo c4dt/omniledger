@@ -495,7 +495,7 @@ export class UserLocation extends Message<UserLocation> {
         registerMessage("UserLocation", UserLocation);
     }
 
-    readonly credential: CredentialStruct = undefined;
+    readonly credential: CredentialStruct | undefined;
     readonly location: string;
     readonly publicKey: Buffer;
     readonly credentialIID: InstanceID;
@@ -649,10 +649,6 @@ export class Challenge extends Message<Challenge> {
         registerMessage("Challenge", Challenge);
     }
     readonly update: ChallengeCandidate;
-
-    constructor(props?: Properties<Challenge>) {
-        super(props);
-    }
 }
 
 export class ChallengeCandidate extends Message<ChallengeCandidate> {
@@ -660,25 +656,18 @@ export class ChallengeCandidate extends Message<ChallengeCandidate> {
     static register() {
         registerMessage("ChallengeCandidate", ChallengeCandidate);
     }
+
     readonly credential: InstanceID;
     readonly score: number;
     readonly signup: Long;
-
-    constructor(props?: Properties<ChallengeCandidate>) {
-        super(props);
-    }
 }
 
 export class ChallengeReply extends Message<ChallengeReply> {
 
     static register() {
-        registerMessage("ChallengeReply", ChallengeReply);
+        registerMessage("ChallengeReply", ChallengeReply, ChallengeCandidate);
     }
     readonly list: ChallengeCandidate[];
-
-    constructor(props?: Properties<ChallengeReply>) {
-        super(props);
-    }
 }
 
 RoPaSci.register();
