@@ -18,7 +18,7 @@ swap:
 	echo ${to} > cot.txt
 
 cothority:
-	git clone https://github.com/${COT}/cothority
+	git clone https://github.com/${COT}/cothority --depth 10
 
 cothority-pull: cothority
 	cd cothority && git pull
