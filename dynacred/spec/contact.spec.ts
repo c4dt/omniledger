@@ -92,9 +92,9 @@ describe("Contact should", async () => {
     it("add and remove signer", async () => {
         const darcID = randomBytes(32);
 
-        await expectAsync(tdAdmin.contact.rmSigner(darcID)).toBeRejected();
+        await expectAsync(tdAdmin.contact.rmSigner("1-devices", darcID)).toBeRejected();
         Log.lvl2("adding signer");
-        await tdAdmin.contact.addSigner("recoverer", darcID, [tdAdmin.keyIdentitySigner]);
+        await tdAdmin.contact.addSigner("1-recovery", "recoverer", darcID, [tdAdmin.keyIdentitySigner]);
         const idDarc = await tdAdmin.contact.getDarcSignIdentity();
         Log.lvl2("checking authorization");
         let authArray = await tdAdmin.bc.checkAuthorization(tdAdmin.bc.genesisID, idDarc.id,
@@ -103,7 +103,7 @@ describe("Contact should", async () => {
         expect(tdAdmin.contact.credential.getAttribute("1-recovery", "recoverer")).toEqual(darcID);
 
         Log.lvl2("removing signer");
-        await tdAdmin.contact.rmSigner(darcID);
+        await tdAdmin.contact.rmSigner("1-recovery", darcID);
         expect(tdAdmin.contact.credential.getAttribute("1-recovery", "recoverer")).toBeUndefined();
         Log.lvl2("checking authorization");
         authArray = await tdAdmin.bc.checkAuthorization(tdAdmin.bc.genesisID, idDarc.id,

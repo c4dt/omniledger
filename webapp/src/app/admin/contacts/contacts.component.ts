@@ -163,7 +163,7 @@ export class ContactsComponent implements OnInit {
                                 const gInst = groupsInstAvail.find((g) =>
                                     result.recovery === g.darc.description.toString());
                                 await gInst.update();
-                                await nu.contact.addSigner(gInst.darc.description.toString(),
+                                await nu.contact.addSigner("1-recovery", gInst.darc.description.toString(),
                                     gInst.id, [nu.keyIdentitySigner]);
                                 await nu.contact.sendUpdate();
                             }
@@ -266,7 +266,7 @@ export class ContactsComponent implements OnInit {
 
     async contactDelete(toDelete: Contact) {
         this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
-        await storeCredential(this.dialog, "Deleting contact " + toDelete.alias, this.uData);
+        await storeCredential(this.dialog, "Unlinking contact " + toDelete.alias, this.uData);
     }
 
     async calypsoSearch(c: Contact) {

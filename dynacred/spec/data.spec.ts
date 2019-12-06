@@ -34,6 +34,7 @@ describe("Data class should", async () => {
         const user1Copy = await Data.load(tdAdmin.bc, StorageLocalStorage, user1.dataFileName);
         expect(user1Copy.contacts.length).toEqual(1);
         expect(user1Copy.toObject()).toEqual(user1.toObject());
+        await user1Copy.contacts[0].getInstances();
         expect(user1Copy.contacts[0].coinInstance).toBeDefined();
     });
 

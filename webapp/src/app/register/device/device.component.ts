@@ -29,7 +29,7 @@ export class DeviceComponent implements OnInit {
     async ngOnInit() {
         try {
             const buf = await StorageDB.get(this.uData.dataFileName);
-            if (buf.length > 0) {
+            if (buf !== undefined && buf.length > 0) {
                 if (!(await showDialogOKC(this.dialog, "Overwrite user?", "There seems to" +
                     "be a user already defined on this browser. Do you want to overwrite it?",
                     {OKButton: "Overwrite", CancelButton: "Keep existing"}))) {
