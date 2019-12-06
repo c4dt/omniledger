@@ -1,5 +1,8 @@
 COT := c4dt
 
+help:
+	@echo "run with cothority_dedis or cothority_c4dt"
+
 swap:
 	@if [ ${COT} = ${to} ]; then \
 		echo "Already pointing to ${to}/cothority"; exit 1; \
@@ -14,7 +17,7 @@ swap:
 	  npm run lint:fix; \
 	  cd ..; \
 	done
-	perl -pi -e "s/COT := .*/COT := ${to}" ./Makefile
+	perl -pi -e "s/^COT := .*/COT := ${to}/" ./Makefile
 
 cothority:
 	git clone https://github.com/${COT}/cothority --depth 1
