@@ -40,6 +40,10 @@ import { C4dtComponent } from "./c4dt/c4dt.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
 import { ProfileComponent } from "./c4dt/profile/profile.component";
 import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
+import { CoinComponent } from "./explorer/coin/coin.component";
+import { CredentialComponent } from "./explorer/credential/credential.component";
+import { DarcComponent } from "./explorer/darc/darc.component";
+import { ExplorerComponent } from "./explorer/explorer.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
@@ -89,6 +93,10 @@ export function loadUserDataConfig(d: UserData) {
         WelcomeComponent,
         PersonhoodComponent,
         ContactInfoComponent,
+        CredentialComponent,
+        DarcComponent,
+        ExplorerComponent,
+        CoinComponent,
     ],
     entryComponents: [
         ManageDarcComponent,
@@ -109,6 +117,7 @@ export function loadUserDataConfig(d: UserData) {
         DeviceAddComponent,
         DeviceShowComponent,
         DeviceRecoveryComponent,
+        CredentialComponent,
     ],
     imports: [
         BrowserModule,

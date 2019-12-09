@@ -12,6 +12,7 @@ import { C4dtComponent } from "./c4dt/c4dt.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
 import { ProfileComponent } from "./c4dt/profile/profile.component";
 import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
+import { ExplorerComponent } from "./explorer/explorer.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
@@ -58,6 +59,10 @@ const routes: Routes = [
         path: "api/v0", children: [
             {path: "cas/login", component: CASLoginComponent},
         ],
+    },
+    {
+        // tslint:disable-next-line
+        path: "explorer/:id", component: ExplorerComponent,
     },
 ];
 
