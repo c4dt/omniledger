@@ -72,6 +72,7 @@ export class DevicesComponent implements OnInit {
                 const device: string =
                     await showTransactions(this.dialog, "Adding new device",
                         async (progress: TProgress) => {
+                            progress(25, "Creating new device darc");
                             const d = await this.uData.contact.createDevice(result, (p, s) => {
                                 progress(25 + p / 2, s);
                             });
@@ -124,7 +125,7 @@ export class DevicesComponent implements OnInit {
             await showTransactions(this.dialog, "Adding recovery account",
                     async (progress: TProgress) => {
                         progress(33, "Adding new recovery account");
-                        await this.uData.contact.addSigner(d.name, result);
+                        await this.uData.contact.addSigner("1-recovery", d.name, result);
                         progress(66, "Updating account");
                         await this.uData.contact.sendUpdate();
                     });
@@ -139,7 +140,7 @@ export class DevicesComponent implements OnInit {
                 async (progress: TProgress) => {
                     this.recovery.splice(this.recovery.findIndex((dev) => dev.darcID.equals(d.darcID)), 1);
                     progress(33, "Removing recovery account");
-                    await this.uData.contact.rmSigner(d.darcID);
+                    await this.uData.contact.rmSigner("1-recovery", d.darcID);
                     progress(66, "Updating account");
                     await this.uData.contact.sendUpdate();
                 });

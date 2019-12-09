@@ -581,7 +581,6 @@ export class Contact {
                         const start = new Date();
                         const cont = await Contact.fromByzcoin(this.bc, buf, false);
                         Log.lvl2(`Got contact ${cont.alias} in:`, new Date().getTime() - start.getTime());
-                        await cont.getInstances();
                         resolve(cont);
                     } catch (e) {
                         Log.error("couldn't get contact - removing contact from the list");
@@ -690,7 +689,7 @@ export class Contact {
         if (progress) {
             progress(60, "Updating Signer Darc");
         }
-        await this.addSigner(name, deviceDarc.darc.getBaseID(), signers);
+        await this.addSigner("1-devices", name, deviceDarc.darc.getBaseID(), signers);
         return sprintf("%s?credentialIID=%s&ephemeral=%s", Data.urlNewDevice,
             this.credentialIID.toString("hex"),
             ephemeralIdentity.secret.marshalBinary().toString("hex"));
@@ -703,34 +702,23 @@ export class Contact {
      * @param name of the device to remove
      * @param signers defines who can attach new devices to this contact
      */
-    async deleteDevice(name: string, signers: ISigner[] = [this.data.keyIdentitySigner]) {
+    async deleteDevice(name: string, signers: ISigner[] = [this.data.keyIdentitySigner]): Promise<void> {
         const device = this.credential.getAttribute("1-devices", name);
         if (!device) {
             throw new Error("didn't find this device");
         }
-        const signerDarcID = this.darcInstance.getSignerDarcIDs()[0];
-        const signerDarc = await DarcInstance.fromByzcoin(this.bc, signerDarcID);
-        const newSigner = signerDarc.darc.evolve();
-        const deviceStr = `darc:${device.toString("hex")}`;
-        try {
-            newSigner.rules.getRule(Darc.ruleSign).remove(deviceStr);
-            newSigner.rules.getRule(DarcInstance.ruleEvolve).remove(deviceStr);
-            await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
-        } catch (e) {
-            Log.warn("Couldn't update rule");
-        }
-        this.credential.deleteAttribute("1-devices", name);
-        this.incVersion();
+        return this.rmSigner("1-devices", device, signers);
     }
 
     /**
      * addSigner takes a darc-ID and adds it to the signer-darc of this user.
      *
+     * @param cred the attribute where the signer will be stored
      * @param name to store in the attribute
      * @param id the baseID of the darc used to sign
      * @param signers allowed to add a new rule to the signerDarc
      */
-    async addSigner(name: string, id: InstanceID, signers: ISigner[] = [this.data.keyIdentitySigner]) {
+    async addSigner(cred: string, name: string, id: InstanceID, signers: ISigner[] = [this.data.keyIdentitySigner]) {
         const signerDarcID = this.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.data.bc, signerDarcID);
         const newSigner = signerDarc.darc.evolve();
@@ -738,27 +726,34 @@ export class Contact {
         newSigner.rules.appendToRule(Darc.ruleSign, deviceDarcIdentity, Rule.OR);
         newSigner.rules.appendToRule(DarcInstance.ruleEvolve, deviceDarcIdentity, Rule.OR);
         await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
-        this.credential.setAttribute("1-recovery", name, id);
+        this.credential.setAttribute(cred, name, id);
         this.incVersion();
     }
 
     /**
      * rmSigner takes a darc-ID and removes it to the signer-darc of this user.
      *
+     * @param cred the attribute where the signer will be removed
      * @param id the baseID of the darc used to sign
      * @param signers allowed to add a new rule to the signerDarc
      */
-    async rmSigner(id: InstanceID, signers: ISigner[] = [this.data.keyIdentitySigner]) {
+    async rmSigner(cred: string, id: InstanceID, signers: ISigner[] = [this.data.keyIdentitySigner]) {
         const signerDarcID = this.darcInstance.getSignerDarcIDs()[0];
         const signerDarc = await DarcInstance.fromByzcoin(this.data.bc, signerDarcID);
         const newSigner = signerDarc.darc.evolve();
         const idStr = new IdentityDarc({id}).toString();
-        newSigner.rules.getRule(Darc.ruleSign).remove(idStr);
-        newSigner.rules.getRule(DarcInstance.ruleEvolve).remove(idStr);
-        await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
-        const att = this.credential.getCredential("1-recovery").attributes.find((a) =>
+        try {
+            newSigner.rules.getRule(Darc.ruleSign).remove(idStr);
+            newSigner.rules.getRule(DarcInstance.ruleEvolve).remove(idStr);
+            await signerDarc.evolveDarcAndWait(newSigner, signers, 5);
+        } catch (e) {
+            if (!e.toString().match("this identity is not part of the rule")) {
+                throw e;
+            }
+        }
+        const att = this.credential.getCredential(cred).attributes.find((a) =>
             a.value.equals(id));
-        this.credential.deleteAttribute("1-recovery", att.name);
+        this.credential.deleteAttribute(cred, att.name);
         this.incVersion();
     }
 }

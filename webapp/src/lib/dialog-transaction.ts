@@ -16,7 +16,7 @@ export interface IDialogTransactionConfig<T> {
 })
 export class DialogTransactionComponent<T> implements OnInit {
 
-    percentage: number;
+    percentage: number = 0;
     blockIndex: number;
     text: string;
     error: Error | undefined;

@@ -29,7 +29,6 @@ export class UserData extends Data {
     }
 
     async loadConfig(logger: (msg: string, percentage: number) => void): Promise<void> {
-        Log.print("loading config");
         logger("Loading config", 0);
         const res = await fetch("assets/config.toml");
         if (!res.ok) {
