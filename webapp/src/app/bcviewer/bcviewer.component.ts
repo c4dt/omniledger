@@ -9,6 +9,8 @@ import Proof from "@c4dt/cothority/byzcoin/proof";
 import DataBody from "@c4dt/cothority/byzcoin/proto/data-body";
 import DataHeader from "@c4dt/cothority/byzcoin/proto/data-header";
 import TxResult from "@c4dt/cothority/byzcoin/proto/tx-result";
+import { Darc } from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
 import CredentialsInstance, { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
 import { ForwardLink, SkipBlock } from "@c4dt/cothority/skipchain";
 import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
@@ -156,6 +158,7 @@ class InstStr {
     contractID: string;
     command: string;
     instance: LinkInstance;
+    explorer: string;
 
     constructor(bc: ByzCoinRPC, public inst: Instruction, public index: number) {
         switch (inst.type) {
@@ -163,16 +166,27 @@ class InstStr {
                 this.type = "spawn";
                 this.args = inst.spawn.args.map((arg) => arg.name);
                 this.contractID = inst.spawn.contractID;
+                if (this.contractID === "darc") {
+                    const darcBuf = inst.spawn.args.find((v) => v.name === "darc").value;
+                    const d = Darc.decode(darcBuf);
+                    Log.print(d);
+                    Log.print(d.getBaseID());
+                    this.explorer = d.getBaseID().toString("hex");
+                } else {
+                    this.explorer = inst.deriveId("").toString("hex");
+                }
                 break;
             case 1:
                 this.type = "invoke";
                 this.args = inst.invoke.args.map((arg) => arg.name);
                 this.contractID = inst.invoke.contractID;
                 this.command = inst.invoke.command;
+                this.explorer = inst.instanceID.toString("hex");
                 break;
             case 2:
                 this.type = "delete";
                 this.contractID = inst.delete.contractID;
+                this.explorer = inst.instanceID.toString("hex");
                 break;
         }
         this.instance = new LinkInstance(bc, inst, this.contractID);

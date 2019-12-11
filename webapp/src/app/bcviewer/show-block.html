@@ -14,11 +14,17 @@
                 <div fxLayout="column">
                     <div fxLayout="row">
                         <div fxFlex="1 1 10em">Index: {{data.sb.index}}</div>
-                        <div fxFlex="1 1 20em">Creation: {{data.timeStr}}</div>
+                        <div fxFlex="2 2 20em">Creation: {{data.timeStr}}</div>
+                        <div fxFlex="1 1 10em">Version: {{data.header.version}}</div>
                     </div>
                     <div fxLayout="row">
-                        <div fxFlex="1 1 10em">Leader: {{data.sb.roster.list[0].description}}</div>
-                        <div fxFlex="1 1 20em">Roster: {{roster}}</div>
+                        <div fxFlex="2 2 30em">Leader: {{data.sb.roster.list[0].description}}</div>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="2 2 40em">Roster: {{roster.join(" - ")}}</div>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="2 2 40em">Hash: {{data.sb.hash.toString('hex')}}</div>
                     </div>
                     <div fxLayout="row">
                         <div fxFlex="1 1 20em">BackwardLinks:
@@ -52,6 +58,7 @@
                                     <li>ContractID: {{inst.contractID}} :: Type: {{inst.type}}
                                         <span *ngIf="inst.command">:: Command: {{inst.command}}</span></li>
                                     <li *ngIf="inst.args">Arguments: {{inst.args.join(" - ")}}</li>
+                                    <li>Explore: <a [routerLink]="'/explorer/' + inst.explorer">{{inst.explorer}}</a> </li>
                                 </ul>
                             </div>
                         </ul>
