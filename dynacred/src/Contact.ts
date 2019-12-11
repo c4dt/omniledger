@@ -158,7 +158,11 @@ export class Contact {
 
     get joinedChallenge(): Long {
         const longArray = this.credential.getAttribute("1-public", "challenge");
-        return Long.fromBytesLE(Array.from(longArray));
+        if (longArray !== undefined) {
+            return Long.fromBytesLE(Array.from(longArray));
+        } else {
+            return Long.fromNumber(0);
+        }
     }
 
     set joinedChallenge(v: Long) {

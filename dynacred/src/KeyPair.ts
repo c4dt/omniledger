@@ -88,7 +88,10 @@ export class Private {
         return Buffer.from(this.scalar.marshalBinary());
     }
 
-    equal(p: Private): boolean {
+    equal(p: Private | undefined): boolean {
+        if (p === undefined) {
+            return false;
+        }
         return this.scalar.equal(p.scalar);
     }
 
@@ -132,7 +135,10 @@ export class Public {
     constructor(public point: Point) {
     }
 
-    equal(p: Public): boolean {
+    equal(p: Public | undefined): boolean {
+        if (p === undefined) {
+            return false;
+        }
         return this.point.equals(p.point);
     }
 
