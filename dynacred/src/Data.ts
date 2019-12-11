@@ -274,7 +274,7 @@ export class Data {
                     break;
                 }
             } catch (e) {
-                Log.lvl2("This darc doesn't match", e);
+                Log.warn("This darc doesn't match", e);
             }
         }
         if (!deviceDarc) {
@@ -337,8 +337,14 @@ export class Data {
             this.badges = [];
         }
 
-        this.ropascis = obj.ropascis ? obj.ropascis.map((rps: any) =>
-            new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps)))) : [];
+        if (obj.version !== undefined && obj.version >= 1) {
+            // Initialize RoPaSciInstance, even if bc === undefined. It will be set later.
+            this.ropascis = obj.ropascis ? obj.ropascis.map((rps: any) =>
+                RoPaSciInstance.fromObject(this.bc, rps)) : [];
+        } else {
+            this.ropascis = obj.ropascis ? obj.ropascis.map((rps: any) =>
+                new RoPaSciInstance(this.bc, Instance.fromBytes(Buffer.from(rps)))) : [];
+        }
 
         this.polls = obj.polls ? obj.polls.map((rps: any) => PollStruct.fromObject(rps)) : [];
 
@@ -356,9 +362,8 @@ export class Data {
         Log.lvl2("Getting contact informations");
         this.contact.data = this;
         await this.contact.updateOrConnect(this.bc, true);
-        await this.contact.getInstances();
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
-        this.phrpc = PersonhoodRPC.fromByzCoin(this.bc);
+        this.ropascis = this.ropascis.map((rps) => RoPaSciInstance.fromObject(this.bc, rps.toObject()));
         return this.bc;
     }
 
@@ -380,13 +385,14 @@ export class Data {
             polls: [] as any,
             references: this.references,
             ropascis: [] as any,
+            version: 1,
         };
         if (this.bc) {
             v.bcRoster = this.bc.getConfig().roster.toJSON();
             v.bcID = this.bc.getGenesis().computeHash();
             v.parties = this.parties ? this.parties.map((p) => p.toObject()) : undefined;
             v.badges = this.badges ? this.badges.map((b) => b.toObject()) : undefined;
-            v.ropascis = this.ropascis ? this.ropascis.map((rps) => rps.toBytes()) : undefined;
+            v.ropascis = this.ropascis ? this.ropascis.map((rps) => rps.toObject()) : undefined;
             v.polls = this.polls ? this.polls.map((pollStruct) => {
                 return Buffer.from(PollStruct.encode(pollStruct).finish());
             }) : undefined;
@@ -704,10 +710,14 @@ export class Data {
         await Promise.all(phRoPaScis.map(async (rps) => {
             if (this.ropascis.find((r) => r.id.equals(rps.roPaSciID)) === undefined) {
                 Log.lvl2("Found new ropasci");
-                const rpsInst = await RoPaSciInstance.fromByzcoin(this.bc, rps.roPaSciID);
-                Log.lvl2("RoPaSciInstance is:", rpsInst.struct.description, rpsInst.struct.firstPlayer,
-                    rpsInst.struct.secondPlayer);
-                this.ropascis.push(rpsInst);
+                try {
+                    const rpsInst = await RoPaSciInstance.fromByzcoin(this.bc, rps.roPaSciID);
+                    Log.lvl2("RoPaSciInstance is:", rpsInst.struct.description, rpsInst.struct.firstPlayer,
+                        rpsInst.struct.secondPlayer);
+                    this.ropascis.push(rpsInst);
+                } catch (e) {
+                    Log.catch(e, "while fetching new ropasci");
+                }
             }
         }));
         Log.lvl2("finished with searching");

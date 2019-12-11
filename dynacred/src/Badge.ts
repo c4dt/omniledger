@@ -1,3 +1,4 @@
+import { InstanceID } from "@dedis/cothority/byzcoin";
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
@@ -29,7 +30,7 @@ export class Badge {
         };
     }
 
-    async mine(d: Data) {
+    async mine(d: Data, sid: InstanceID) {
         this.mined = true;
         if (d.contact.isRegistered()) {
             return this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
@@ -41,8 +42,8 @@ export class Badge {
             await this.party.partyInstance.mine(d.keyPersonhood._private.scalar,
                 undefined, darc);
             // Setting spawner-id
-            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, d.spawnerInstance.id);
-            d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, d.spawnerInstance.id);
+            d.contact.credential = Contact.prepareInitialCred(d.alias, d.keyIdentity._public, sid);
+            d.spawnerInstance = await SpawnerInstance.fromByzcoin(d.bc, sid);
             // Use the coin and the darc to create a new user
             const ci = await CoinInstance.fromByzcoin(d.bc, CoinInstance.coinIID(darc.getBaseID()));
             await d.registerSelf(ci, [d.keyIdentitySigner]);

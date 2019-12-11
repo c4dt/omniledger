@@ -2,7 +2,6 @@
 
 deps:
 	npm ci
-	npm link ../dynacred
 
 src:
 	make -C ../dynacred use_src
