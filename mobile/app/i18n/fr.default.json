@@ -1,0 +1,314 @@
+{
+  "app.name": "Personhood III",
+  "presenting": {
+    "title": "Présentation",
+    "title2": "Configuration du pseudo",
+    "title3": "Étapes suivantes",
+    "personhood": "Qu'est-ce que Personhood?",
+    "personhood_desc": [
+      "Personhood est une application expérimentale utilisée pour explorer de nouvelles ",
+      "idées sur la gestion d'identités et la résistance aux 'trolls'. Elle est basée sur la ",
+      "recherche du laboratoire DEDIS de l'EPFL et développée activement par Linus Gasser. ",
+      "Cette version devrait tourner sans trop de bugs, mais tout retour via email ou sur le dépôt ",
+      "github est le bienvenu."
+    ],
+    "personhood_link": "Personhood est créé par",
+    "scan_device": "Lire Identité Web",
+    "recover": "Récupérer compte",
+    "identity": "Données personelles",
+    "identity_desc": [
+      "Ici tu peux enregistrer ton pseudonyme avec lequel les autres utilisateurs vont te reconnaître ",
+      "plus tard. Tu peux aussi le changer plus tard."
+    ],
+    "identity_desc_full": [
+      "Commençons par prendre quelques renseignements sur toi. Le seul champ obligatoire est 'pseudo', mais pour",
+      "accéder à plus de fonctionalités, tu peux aussi remplir les autres champs. Tu auras aussi la possibilité de faire",
+      "cela plus tard. Attention: actuellement, ces informations seront disponibles publiquement sur nos serveurs!"
+    ],
+    "poc": "Code Expérimental!",
+    "asis": [
+      "Ce logiciel est fourni sans garanties. Actuellement, toutes tes données sont enregistrées en clair ",
+      "sur la blockchain du DEDIS. Les appels ne sont pas protégés, tes jetons peuvent disparaître. ",
+      "Merci de reporter les problèmes rencontrés sur ",
+      "github.com/c4dt/omniledger"
+    ],
+    "congrats": [
+      "Félicitations! Tu es prêt. Pour le moment, toutes tes données sont encore confinées à ton téléphone. ",
+      "Mais tu peux déjà faire des rencontres avec d'autres utilisateurs et échanger ton identité avec eux."
+    ],
+    "parties": [
+      "Il faut maintenant visiter une rencontre 'Personhood'. Ceci prouvera que tu es un individu unique et ",
+      "te permettra de t'inscrire sur notre blockchain. Une fois inscrit, tu recevras des jetons ainsi qu'une ",
+      "preuve de ton identité individuelle. "
+    ],
+    "next_steps": [
+      "Une fois sur la blockchain, tu peux aussi jouer à 'feuille-caillou-ciseaux'. Si tu as une preuve de ton ",
+      "individualité, tu peux aussi participer aux sondages anonymes."
+    ],
+    "go_main": "Allons-y!",
+    "delete_all": "Tout effacer",
+    "creating_byzcoin": "Création de ByzCoin",
+    "verifying_registration": "Vérification de l'inscription",
+    "attaching_device": "Connection au dispositif",
+    "data_deleted": "Toutes les données ont été effacées"
+  },
+  "main": {
+    "home": "Accueil",
+    "identity": "Identité",
+    "lab": "Labo",
+    "settings": "Préf."
+  },
+  "home": {
+    "title": "Salut %s",
+    "register": "Pour t'inscrire, demande à quelqu'un de t'inviter et de scanner ce QR Code, ou visite une rencontre 'Personhood'.",
+    "score": "Accomplissement: %s",
+    "meetup": "Commencer une rencontre",
+    "balance": "Solde: %s",
+    "send_coins": "Envoyer des jetons",
+    "invite": "Inviter quelqu'un",
+    "scanning": "Scannage d'un nouvel utilisateur",
+    "updating_contacts": "Mise à jour de la liste de contacts",
+    "nosnack": "Il ne te reste pas assez de poplets pour un snack.",
+    "snack": "Est-ce que tu veux payer 60 poplets pour un snack?",
+    "pay": "Oui",
+    "cancel": "Non",
+    "check_admin": "Vérification du destinataire",
+    "no_admin": "Seulement un organisateur peut te donner un snack",
+    "snack_paid": "Merci d'avoir payé ton snack. Montre ce message à l'organisateur pour recevoir un snack.",
+    "pay_snack": "Payer Snack"
+  },
+  "identity": {
+    "title": "Identité",
+    "attributes": "Attributs",
+    "contacts": "Contacts",
+    "recover": "Récup'",
+    "challenge": "Concours"
+  },
+  "challenge": {
+    "title": "Concours",
+    "welcome": "Classement",
+    "update": "Mise à jour",
+    "updating": "Mise à jour de la liste",
+    "searching": "Recherche de nouveaux candidats",
+    "join_title": "Participation au concours",
+    "join_msg": "Ta participation au concours implique que tout le monde pourra voir ton progrès. Es-tu d'accord?",
+    "join_ok": "Montre mon progrès",
+    "join_cancel": "Je ne souhaite pas participer",
+    "need_register": "il faut d'abord t'enregistrer."
+  },
+  "lab": {
+    "title": "Labo des génies",
+    "personhood": "Individualité",
+    "ropasci": "Feuille-caillou-ciseaux",
+    "poll": "Sondages anonymes"
+  },
+  "settings": {
+    "title": "Préférences",
+    "continuous_scan": "Scan continu",
+    "clear": "Effacer toutes les données",
+    "clear_confirm_1": "Es-tu sûr de bien vouloir tout effacer? Il n'est plus possible de revenir en arrière!",
+    "clear_confirm_2": "Tu perdras toutes tes données! Plus de recours possible!",
+    "data_deleted": "TOUTES TES DONNÉES ONT ÉTÉ EFFACÉES"
+  },
+  "score": {
+    "title": "Accomplissement",
+    "header": "Accomplissement",
+    "desc": [
+      "L'accomplissement montre combien des fonctionnalités de l'app tu as déjà utilisé. Plus tu utilises les ",
+      "différentes functionalités, plus ton accomplissement sera élevé."
+    ],
+    "improve": "Tu as fait %d sur %d %s. %s",
+    "done": "Tu as complété les %d %s. %s",
+    "header_attributes": "Attributs (%d%%)",
+    "attributes": "attributs",
+    "attributes_improve": "Ajoute des informations sur ton identité.",
+    "attributes_done": "Bien joué!",
+    "header_registrations": "Inscription (%d%%)",
+    "registrations": "inscription",
+    "registrations_improve": "Fais-toi inscrire en demandant à quelqu'un de t'inviter, ou visite une rencontre 'Personhood'.",
+    "registrations_done": "Super! Amuse-toi bien sur la blockchain.",
+    "header_meetups": "Rencontres informelles (%d%%)",
+    "meetups": "rencontres informelles",
+    "meetups_improve": "Rencontre d'autres personnes et échange tes contacts. Seules les rencontres avec des groupes distincts sont comptées.",
+    "meetups_done": "Tu es au top!",
+    "header_parties": "Rencontres (%d%%)",
+    "parties": "rencontres",
+    "parties_improve": "Visite une rencontre 'Personhood' et fais inscrire ton identité.",
+    "parties_done": "Sacré fêtard!",
+    "header_ropascis": "Jeux (%d%%)",
+    "ropascis": "feuille-caillou-ciseaux",
+    "ropascis_improve": "Joue à des parties de feuille-caillou-ciseaux.",
+    "ropascis_done": "Tu es un bon joueur!",
+    "header_polls": "Sondages (%d%%)",
+    "polls": "sondages",
+    "polls_improve": "Réponds à des sondages pour augmenter ton accomplissement.",
+    "polls_done": "Tu as tout répondu",
+    "header_snack": "Snack (%d%%)",
+    "snack": "snack",
+    "snack_improve": "Achète-toi un snack pour tes efforts!",
+    "snack_done": "J'espère que le snack été bon.",
+    "header_invites": "Invitations (%d%%)",
+    "invites": "invitations",
+    "invites_improve": "Invite d'autres joueurs et inscris-les.",
+    "invites_done": "Wow - tu sais motiver les gens!"
+  },
+  "meetup": {
+    "title": "Rencontre informelle",
+    "add_contacts": "Ajouter tous les contacts"
+  },
+  "personhood": {
+    "title": "Gestion des badges et rencontres",
+    "mine_coins": "Miner des Poplets",
+    "register": "S'inscrire sur ByzCoin et Miner des Poplets",
+    "updating_parties": "Mise à jour des rencontres",
+    "parties_updated": "Rencontres mises à jour",
+    "updating_badges": "Mise à jour des badges",
+    "mining": "Minage de Poplets",
+    "registering": "Inscription du contact",
+    "deleting": "Effacement de la rencontre",
+    "barrier": "Activation du signal",
+    "finalizing": "Finaliztion de la rencontre",
+    "finalized": "Rencontre finalisée",
+    "creating": "Création de la rencontre sur ByzCoin",
+    "storing": "Enregistrement des rencontres"
+  },
+  "attributes": {
+    "title": "Attributs",
+    "alias": "Pseudo",
+    "alias_hint": "Saisis ton pseudonyme",
+    "email": "Courriel",
+    "email_hint": "Saisis ton courriel",
+    "phone": "Tél",
+    "phone_hint": "Saisis ton numéro de téléphone",
+    "url": "Web",
+    "url_hint": "Saisis ta page web personelle",
+    "publish": "Publier l'individualité",
+    "saving_attributes": "Enregistrement des attributs",
+    "attributes_to_byzcoin": "Envoi des attributs vers ByzCoin"
+  },
+  "contacts": {
+    "title": "Géstion des contacts",
+    "scanning": "Scannage d'un utilisateur",
+    "updating": "Mise à jour des utilisateurs",
+    "saving": "Enregistrement de la nouvelle liste",
+    "deleting": "Effacement d'un utilisateur de la liste interne",
+    "updating_others": "Mise à jour des autres utilisateurs",
+    "saving_byzcoin": "Enregistrement de la liste sur ByzCoin",
+    "fetching": "Mise à jour de %s",
+    "transfer": "Transfert de Poplets",
+    "transferred": "%s transférés à %s",
+    "transfer_fail1": "Adresse de destination non trouvée",
+    "transfer_fail2": "Impossible de payer %s Poplets"
+  },
+  "contact_info": {
+    "title": "Contact",
+    "alias": "Informations sur %s",
+    "email": "Courriel: %s",
+    "phone": "Téléphone: %s",
+    "url": "Page web: %s",
+    "instructions": "Clique sur les attributs pour appeler, envoyer un email ou ouvrir la page web.",
+    "close": "Fermer"
+  },
+  "add_party": {
+    "title": "Créer une nouvelle rencontre",
+    "organizers": "Organisateurs",
+    "prop_name": "Nom",
+    "prop_date": "Date",
+    "prop_time": "Heure",
+    "prop_purpose": "Objectif",
+    "prop_location": "Localisation",
+    "prop_reward": "Récompense"
+  },
+  "scan_atts": {
+    "title": "Clés publiques",
+    "finalize": "Finaliser",
+    "finalizing": "Finalisation de la rencontre"
+  },
+  "ropascis": {
+    "title": "Jouer à feuille-caillou-ciseaux",
+    "need_registration": "Il faut s'enregistrer sur la blockchain avant de pouvoir jouer",
+    "sending_move": "Envoi du choix",
+    "revealing": "Dévoilement",
+    "reloading": "Rechargement des parties",
+    "updating": "Mise à jour des parties",
+    "creating": "Création de la partie",
+    "publishing": "Publication de la partie",
+    "rock": "Caillou",
+    "paper": "Feuille",
+    "scissors": "Ciseaux",
+    "no_calypso": "Tu as choisi de ne pas utiliser Calypso - ceci va rendre le jeu plus difficile. Es-tu sûr?",
+    "use_calypso": "Utilise Calypso"
+  },
+  "add_ropascis": {
+    "title": "Configuration",
+    "header": "Description",
+    "action": "Créer le jeu dans la blockchain",
+    "prop_description": "Description",
+    "prop_stake": "Mise",
+    "prop_calypso": "Calypso",
+    "prop_choice": "Choix",
+    "description": [
+      "Le coût pour un jeu est la mise + 0.101 poplets pour la création du jeu sur la blockchain. Le premier joueur ",
+      "doit dépenser la mise + 0.101 poplets, tandis que le deuxième joueur ne paye que la mise.",
+      "\nLe gagnant reçoit 2 x la mise, tandis que le perdant ne reçois rien. En cas de match null, toutes les mises ",
+      "sont remises au système."
+    ]
+  },
+  "polls": {
+    "title": "Répondre anonymement à des sondages",
+    "reloading": "Rechargement des sondages",
+    "updating": "Mise à jour des sondages",
+    "deleting": "Effacement des sondages",
+    "missing_badge": "Avant de pouvoir participer aux sondages, tu dois obtenir un badge d'individualité"
+  },
+  "add_poll": {
+    "title": "Créer un nouveau sondage",
+    "action": "Enregistrer",
+    "prop_party": "Rencontre",
+    "prop_title": "Titre",
+    "prop_description": "Description",
+    "prop_choices": "Options"
+  },
+  "loading": {
+    "connecting": "Connection en cours"
+  },
+  "modal_user": {
+    "title": "Informations sur %s",
+    "scan": "Scanne le QR Code pour copier l'utilisateur",
+    "close": "Clique pour fermer"
+  },
+  "button": {
+    "continue": "Continuer",
+    "save": "Enregistrer"
+  },
+  "dialog": {
+    "success": "Opération réussie",
+    "choose": "Choisis une option",
+    "failure": "Échec",
+    "data_saved": "Données enregistrées",
+    "error": "Un problème est survenu: %s",
+    "yes": "Oui",
+    "ok_value1": "Trop cool",
+    "ok_value2": "Super",
+    "ok_value3": "Top",
+    "ok_value4": "Merveilleux",
+    "ok_value5": "Fantastique",
+    "ok_value6": "Nickel",
+    "ok_value7": ":stars:",
+    "fail_value1": "Tant pis",
+    "fail_value2": "Dommage",
+    "fail_value3": "Une autre fois",
+    "fail_value4": "Mince",
+    "fail_value5": "Mais pourquoi?",
+    "fail_value6": "La vie est dure",
+    "fail_value7": "Ça craint"
+  },
+  "progress": {
+    "updating": "Mise à jour",
+    "saving": "Enregistrement",
+    "done": "Terminé",
+    "error": "Erreur: %s",
+    "success": "Opération réussie"
+  },
+  "decimal": ","
+}

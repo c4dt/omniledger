@@ -1,0 +1,22 @@
+// Add your native dependencies here:
+
+// Uncomment to add recyclerview-v7 dependency
+//dependencies {
+//	implementation 'com.android.support:recyclerview-v7:+'
+//}
+
+android {  
+  defaultConfig {  
+    generatedDensities = []
+    ndk {
+         abiFilters.clear()
+         abiFilters.addAll(['armeabi-v7a','arm64-v8a'])
+    }
+  }
+  aaptOptions {
+    additionalParameters "--no-version-vectors"  
+  }
+  configurations {
+      compile.exclude group: 'com.google.zxing'
+  }
+} 

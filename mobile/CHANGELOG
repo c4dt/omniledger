@@ -1,0 +1,35 @@
+Write down important changes to the architecture here, especially if it touches other parts of the system.
+
+2019-12-12 Linus Gasser
+    * Merged all into the master branch, still waiting for some patches to go in at `dedis/cothority/external/js`
+    * rewrote how the different configurations are handled
+        - lib/byzcoin-rosters.ts holds the different rosters
+        - lib/byzcoin-defs.ts holds the definitions of the configurations
+        - lib/byzcoin-def.ts points to the used definition and gives some useful methods
+    * even though the system works now
+
+2019-10-xx - Linus Gasser
+    * Working version for OpenHouse19, but using a private chain
+
+2019-08-14 - Linus Gasser
+    * merged the latest dynacred and cothority changes to the src-directories
+    * because iOS and Android handle the "visibility" attribute differently, I didn't get a clean startup of the
+        app, and some pages were always called when they should not. So I re-arranged how the system starts:
+        - app-root.xml now holds one frame that points to one of:
+            - loading-page - during startup of the app
+            - setup/* pages - if the user needs to be set up fresh
+            - main-page - for normal operations
+        - loading-page now takes care of the correct loading of `uData`, directing either to the setup or the
+          main-page
+    * user-data.ts holds the global uData and contains method to initialize it.
+      * Preparations have been made to
+        easily integrate the DEDIS ByzCoin instance, but it has not been tested, as it would need a
+        "SpawnerInstance"
+      * BC-initialization and loading has been separated, so that the system can recognize if the BC
+        is not reachable (prod) / invalid (testing) and act accordingly
+    * I kept Jeff's method of copy/pasting the ByzCoinID and SpawnerID to a file - now it's "user-data.ts"
+    * this new startup-system has been tested with iOS and Android emulators in as many ways as possible, and
+      it seems to be running stable. The manual testing goes something like:
+        - (Clean startup|Existing user - delete it|Invalid user) then create ByzCoin
+        - Register using (transfer|pop-party)
+    * the merged dynacred library has been tested in the webapp, and it runs OK

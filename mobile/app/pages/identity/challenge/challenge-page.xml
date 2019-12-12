@@ -1,0 +1,41 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="{{ L('challenge.title') }}"></Label>
+    </ActionBar>
+    <GridLayout>
+        <GridLayout rows="auto, *, auto, auto" row="0">
+            <Label text="{{ L('challenge.welcome') }}" class="h1 text-center" row="0"/>
+
+            <ListView items="{{ participants }}" class="list-group" row="1" height="100%">
+                <ListView.itemTemplate>
+                    <FlexboxLayout orientation="horizontal" flexDirection="row"
+                                   class="basic-list-decorated"
+                                   tap="{{ showParticipant }}"
+                                   alignItems="center">
+                        <Label text="{{ alias }}" class="h3"
+                               height="100%"
+                               textTransform="uppercase"
+                               flexGrow="1"/>
+                        <Label text="{{ score }}" class="h3"/>
+                    </FlexboxLayout>
+                </ListView.itemTemplate>
+            </ListView>
+
+            <Button text="{{ L('challenge.update') }}" tap="updateList" class="btn btn-primary" row="2"/>
+            <Button text="Reset Date" tap="resetDate" class="btn btn-primary" row="3"
+                    visibility="{{ isAdmin ? 'visible' : 'collapsed' }}"/>
+
+        </GridLayout>
+
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>

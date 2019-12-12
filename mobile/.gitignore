@@ -1,0 +1,11 @@
+/.DS_Store
+/.idea
+/app/**/*.js
+/hooks/
+/node_modules/
+/platforms/
+/releases/
+/cothority/
+/archive/
+release
+.vscode

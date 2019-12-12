@@ -1,0 +1,9 @@
+<Page shownModally="onShownModally">
+    <StackLayout style="text-align: center;">
+        <Label text="{{ L('modal_user.title', alias) }}" class="h2"/>
+        <Image src="{{ qrcode }}" visibility="visible" width="100%"
+        tap="goBack"/>
+        <Label text="{{ L('modal_user.scan') }}"/>
+        <Label text="{{ L('modal_user.close') }}"/>
+    </StackLayout>
+</Page>
