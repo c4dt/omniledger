@@ -10,63 +10,63 @@
 ##
 
 gradle-simul:
-	@( cd app/App_Resources/Android; cp app.gradle.simul app.gradle )
+	cd app/App_Resources/Android && cp app.gradle.simul app.gradle
 
 gradle-prod:
-	@( cd app/App_Resources/Android; cp app.gradle.prod app.gradle )
+	cd app/App_Resources/Android && cp app.gradle.prod app.gradle
 
 clean: gradle-simul
 	rm -rf node_modules platforms hooks
 
 npm-install: clean
 	npm ci
-	find app -name "*js" | xargs rm -f
+	find app -name "*js" -delete
 
 apply-patches: npm-install
 	patch -p0 < nodeify_temporary_patch.patch
 	cp nodeify_noxml.js node_modules/nativescript-nodeify/nodeify.js
 	rm -rf node_modules/public-encrypt/test/
-	if [ ! -d app/lib/dynacred ]; then \
-	  npm link ../dynacred; \
-	fi
+	[ ! -d app/lib/dynacred ] || npm link ../dynacred
 
 android-dev: apply-patches
 	tns prepare android
 
 roster-check:
-	   @if [ ! "$$PERSONHOOD3_ANDROID_PASS" ]; then echo "Please set PERSONHOOD3_ANDROID_PASS"; exit 1; fi
-	   @if grep -q -l '^export const bcDef = bdDEDIS' app/lib/byzcoin-def.ts; then \
-		 echo "Correct roster"; else \
-		 echo "\nPUT 'bcDef = bdDEDIS' IN app/lib/byzcoin-def.ts !!\n"; exit 1; fi
+	[ -n "$$PERSONHOOD3_ANDROID_PASS" ]
+	@if grep -q -l '^export const bcDef = bdDEDIS' app/lib/byzcoin-def.ts; then \
+	  echo "Correct roster"; else \
+	  echo "\nPUT 'bcDef = bdDEDIS' IN app/lib/byzcoin-def.ts !!\n"; exit 1; fi
 
 update-version:
-	@REL=$$( grep version package.json | head -n 1 | sed -e "s/.*: .\(.*\).,/\1/" ); \
-	perl -pi -e "s/(versionName=\").*\"/\$${1}$$REL\"/" app/App_Resources/Android/src/main/AndroidManifest.xml; \
-	perl -0pi -e "s:(<key>CFBundleVersion</key>.*?<string>).*?</:\$${1}$$REL</:s" app/App_Resources/iOS/Info.plist; \
+	@REL=$$( grep version package.json | head -n 1 | sed -e "s/.*: .\(.*\).,/\1/" ) && \
+	perl -pi -e "s/(versionName=\").*\"/\$${1}$$REL\"/" app/App_Resources/Android/src/main/AndroidManifest.xml && \
+	perl -0pi -e "s:(<key>CFBundleVersion</key>.*?<string>).*?</:\$${1}$$REL</:s" app/App_Resources/iOS/Info.plist && \
 	perl -pi -e "s/appVersion.*/appVersion = \"$$REL\";/" app/lib/user-data.ts
 
 android-compile: update-version
-	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
-		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
+	[ -n "$$PERSONHOOD3_ANDROID_PASS" ]
+	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD3_ANDROID_PASS \
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD3_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 
 android-release-copy:
-	@mkdir -p releases; \
-	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
+	@mkdir -p releases && \
+	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ) && \
 	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2.$$REL.apk
 
 android-release: roster-check apply-patches gradle-prod android-compile gradle-simul android-release-copy
 
 android-release-32-copy:
-	@mkdir -p releases; \
-	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ); \
+	@mkdir -p releases && \
+	REL=$$( grep versionName app/App_Resources/Android/src/main/AndroidManifest.xml | sed -e "s:.*\"\(.*\)\".*:\1:" ) && \
 	cp -n platforms/android/app/build/outputs/apk/release/app-release.apk releases/personhood2-32.$$REL.apk
 
 android-release-32: gradle-simul roster-check apply-patches android-compile android-release-32-copy
 
 android-run: roster-check gradle-simul
-	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
-		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS
+	[ -n "$$PERSONHOOD3_ANDROID_PASS" ]
+	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD3_ANDROID_PASS \
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD3_ANDROID_PASS
 
 release-key:
 	if [ -e c4dt-development.jks ]; then echo "Please remove c4dt-development.jks first"; exit 1; fi
@@ -86,7 +86,6 @@ ios-release: apply-patches
 	rm -rf platforms/ios/build
 	xcodebuild -workspace platforms/ios/mobile.xcworkspace -scheme mobile -destination generic/platform=iOS archive -archivePath `pwd`/platforms/ios/build/mobile.xcarchive
 	xcodebuild -exportArchive -archivePath `pwd`/platforms/ios/build/mobile.xcarchive -exportOptionsPlist app/App_Resources/iOS/ExportOptions.plist -exportPath `pwd`/platforms/ios/build
-	ls -l `pwd`/platforms/ios/build/mobile.ipa
 
 xcode-dev: ios-dev
 	open platforms/ios/mobile.xcworkspace/
@@ -113,14 +112,14 @@ kyber_npm:
 	@echo "Using kyber-npm libraries"
 	@if [ ! -d app/lib/kyber ]; then \
 		echo "there is no kyber-source present, aborting"; \
-		exit 0; \
-	fi; \
-	find app/lib/kyber -name "*.js" | xargs rm ;\
+		exit 1; \
+	fi
+	@find app/lib/kyber -name "*.js" -delete && \
 	find app/lib/kyber -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh remove; \
 	diff -Naurq ../cothority/external/js/kyber/src/ app/lib/kyber/ || \
 		( echo "Moving changes to kyber"; cp -a app/lib/kyber/ ../cothority/external/js/kyber/src ); \
-	rm -rf app/lib/kyber; \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/kyber:\@c4dt/kyber:"
+	rm -rf app/lib/kyber && \
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/kyber:\@c4dt/kyber:" && \
 	npm i -s @c4dt/kyber
 
 cothority_src: dynacred_src cothority-pull app/lib/cothority
@@ -135,14 +134,14 @@ cothority_npm: kyber_npm
 	@echo "Using cothority-npm libraries"
 	@if [ ! -d app/lib/cothority ]; then \
 		echo "there is no cothority-source present"; \
-		exit 0; \
+		exit 1; \
 	fi; \
-	find app/lib/cothority -name "*.js" | xargs rm ;\
+	find app/lib/cothority -name "*.js" | xargs rm && \
 	find app/lib/cothority -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh remove; \
 	diff -Naurq ../cothority/external/js/cothority/src/ app/lib/cothority/ || \
 		( echo "Moving changes to cothority"; cp -a app/lib/cothority/ ../cothority/external/js/cothority/src ); \
-	rm -rf app/lib/cothority; \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@c4dt/cothority:"
+	rm -rf app/lib/cothority && \
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@c4dt/cothority:" && \
 	npm i -s @c4dt/cothority
 
 dynacred_src: app/lib/dynacred
@@ -157,15 +156,15 @@ dynacred_npm: cothority_npm
 	@echo "Using dynacred-npm libraries"
 	@if [ ! -d app/lib/dynacred ]; then \
 		echo "there is no dynacred-source present, aborting"; \
-		exit 0; \
+		exit 1; \
 	fi; \
-	find app/lib/dynacred -name "*.js" | xargs rm ; \
-	find app/lib/dynacred -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh remove; \
+	find app/lib/dynacred -name "*.js" | xargs rm && \
+	find app/lib/dynacred -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh remove && \
 	diff -Naurq ../dynacred/src/ app/lib/dynacred/ || \
 		( echo "Moving changes to dynacred"; cp -a app/lib/dynacred/* ../dynacred/src ); \
-	rm -rf app/lib/dynacred; \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:"; \
-	cd ../dynacred; npm run lint:fix
+	rm -rf app/lib/dynacred && \
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:" && \
+	cd ../dynacred; npm run lint:fix && \
 	npm i -s @c4dt/dynacred
 
 src: kyber_src
