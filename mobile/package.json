@@ -36,7 +36,7 @@
     "isomorphic-ws": "^4.0.1",
     "jsverify": "^0.8.4",
     "keccak": "^2.0.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "moment": "^2.24.0",
     "nativescript-barcodescanner": "^2.7.9",
     "nativescript-email": "^1.5.3",
