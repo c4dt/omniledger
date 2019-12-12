@@ -1,8 +1,8 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
 import { PartyItem, Public } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
 
 import { partyQrcode } from "~/lib/qrcode";
 import { viewScanModel } from "~/pages/lab/personhood/scan-atts/scan-atts-page";

@@ -1,9 +1,9 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
-import RoPaSciInstance, { RoPaSciStruct } from "@c4dt/cothority/personhood/ro-pa-sci-instance";
 import { TProgress } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
+import RoPaSciInstance, { RoPaSciStruct } from "@dedis/cothority/personhood/ro-pa-sci-instance";
 import { localize } from "nativescript-localize";
 import { sprintf } from "sprintf-js";
 import { Observable } from "tns-core-modules/data/observable";

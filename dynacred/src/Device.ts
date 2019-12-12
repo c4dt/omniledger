@@ -1,4 +1,4 @@
-import { InstanceID } from "@c4dt/cothority/byzcoin";
+import { InstanceID } from "@dedis/cothority/byzcoin";
 
 export class Device {
     constructor(public name: string, public darcID: InstanceID) {}

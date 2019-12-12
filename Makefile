@@ -1,4 +1,4 @@
-COT := c4dt
+COT := dedis
 
 help:
 	@echo "run with cothority_dedis or cothority_c4dt"
@@ -7,16 +7,17 @@ swap:
 	@if [ ${COT} = ${to} ]; then \
 		echo "Already pointing to ${to}/cothority"; exit 1; \
 	 fi
-	@for d in dynacred webapp; do \
-	  cd $$d; \
+	@for d in dynacred webapp mobile; do \
+	  cd $$d && \
 	  for p in cothority kyber; do \
-		perl -pi -e "s:${from}/$$p:${to}/$$p:" $$( find app spec src -name "*.ts" ); \
-		npm remove @${from}/$$p; \
-		npm i --save @${to}/$$p; \
-	  done; \
-	  npm run lint:fix; \
-	  cd ..; \
-	done
+		perl -pi -e "s:${from}/$$p:${to}/$$p:" $$( find app spec src -name "*.ts" ) && \
+		npm remove @${from}/$$p && \
+		npm i --save @${to}/$$p && \
+	  done && \
+	  npm audit fix && \
+	  npm run lint:fix && \
+	  cd .. && \
+	done && \
 	perl -pi -e "s/^COT := .*/COT := ${to}/" ./Makefile
 
 cothority:

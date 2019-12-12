@@ -1,10 +1,10 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Darc, Rule } from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
 import { Contact, TProgress } from "@c4dt/dynacred";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { Darc, Rule } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
 import Long from "long";
 import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";
