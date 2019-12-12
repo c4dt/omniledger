@@ -1,0 +1,27 @@
+<!--
+The TabView component provides a simple way to navigate between different views by
+tapping on some of the tabs or by swiping between the views.
+Learn more about the TabView component in this documentation article:
+http://docs.nativescript.org/cookbook/ui/tab-view
+-->
+<Page actionBarHidden="true" navigatingTo="navigatingTo">
+    <TabView androidTabsPosition="bottom" androidOffscreenTabLimit="0" selectedIndex="0"
+             selectedIndexChanged="onChangeTab" id="mainTabView">
+
+        <TabViewItem title="{{ L('main.home') }}" ios:iconSource="res://tabIcons/home" android:iconSource="res://home">
+            <Frame defaultPage="pages/home/home-page"/>
+        </TabViewItem>
+
+        <TabViewItem title="{{ L('main.identity') }}" ios:iconSource="res://tabIcons/browse" android:iconSource="res://browse">
+            <Frame defaultPage="pages/identity/identity-page"/>
+        </TabViewItem>
+
+        <TabViewItem title="{{ L('main.lab') }}" ios:iconSource="res://tabIcons/flask" android:iconSource="res://flask">
+            <Frame defaultPage="pages/lab/lab-page"/>
+        </TabViewItem>
+
+        <TabViewItem title="{{ L('main.settings') }}" ios:iconSource="res://tabIcons/admin" android:iconSource="res://admin">
+            <Frame defaultPage="pages/settings/settings-page"/>
+        </TabViewItem>
+    </TabView>
+</Page>

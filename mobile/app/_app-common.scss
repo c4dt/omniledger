@@ -1,0 +1,203 @@
+// Place any CSS rules you want to apply on both iOS and Android here.
+// This is where the vast majority of your CSS code goes.
+// Font icon class
+.fa {
+  font-family: "FontAwesome";
+}
+
+// Common page class
+.page-content {
+  .page-placeholder {
+    color: $page-icon-color;
+    font-size: $page-content-placeholder-font-size;
+    vertical-align: center;
+    horizontal-align: center;
+  }
+
+  .page-icon {
+    font-size: 72;
+    vertical-align: top;
+    horizontal-align: center;
+    color: $page-icon-color;
+    margin-top: 20%;
+  }
+}
+
+//Action coupon
+ActionBar .action-bar-title {
+  horizontal-align: center;
+}
+
+.far {
+  font-family: "FontAwesomeFree", fa-regular-400;
+  font-weight: 400;
+}
+
+.fab {
+  font-family: "FontAwesomeBrands", fa-brands-400;
+  font-weight: 400;
+}
+
+.fas {
+  font-family: "Font Awesome 5 Free", fa-solid-900;
+  font-weight: 900;
+}
+
+// Common page class
+.page-content {
+  background-color: rgba(242, 242, 242, 1);
+
+  .page-placeholder {
+    color: $page-icon-color;
+    font-size: $page-content-placeholder-font-size;
+    vertical-align: center;
+    horizontal-align: center;
+  }
+
+  .page-icon {
+    font-size: 72;
+    vertical-align: top;
+    horizontal-align: center;
+    color: $page-icon-color;
+    margin-top: 20%;
+  }
+}
+
+// Action coupon
+ActionBar .action-bar-title {
+  horizontal-align: center;
+}
+
+// Label
+.label-title {
+  font-size: 24;
+  horizontal-align: center;
+}
+
+.label-text {
+  horizontal-align: right;
+}
+
+.label-space {
+  vertical-align: center;
+  horizontal-align: center;
+}
+
+.list-view-label {
+  padding: 5px;
+}
+
+// Tab views
+//TabView {
+//  android-selected-tab-highlight-color: $accent-dark;
+//  tab-background-color: $accent-light;
+//  tab-text-color: $background-light;
+//  selected-tab-text-color: $background-light;
+//}
+
+// Basic list
+.basic-list {
+  border-bottom-width: 1;
+  border-bottom-color: #ced1d6;
+  //margin-top: 5;
+  //margin-left: 10;
+  //margin-right: 10;
+  box-shadow: 10;
+  padding: 10;
+  padding-left: 20;
+  background-color: white;
+}
+
+.party-owner {
+  background-color: #fff0e0;
+}
+
+.party-participate {
+  background-color: #e0fff0;
+}
+
+.party-available {
+  background-color: #eeeeee;
+}
+
+.badge {
+  background-color: #dddddd;
+}
+
+.basic-list-decorated {
+  @extend .basic-list;
+  border-left-width: 5;
+  border-left-color: $accent-dark;
+}
+
+.basic-list > * {
+  margin-top: 2;
+  margin-bottom: 2;
+}
+
+.list-title {
+  color: black;
+  font-weight: normal;
+  font-size: 17;
+}
+
+.empty-list-label {
+  vertical-align: center;
+  horizontal-align: center;
+  text-align: center;
+}
+
+// Inverted element
+.inverted-gray {
+  background-color: $gray-light;
+  color: white;
+}
+
+.inverted-accent {
+  background-color: $accent-dark;
+  color: white;
+}
+
+//Floating Button
+.fab-button {
+  background-color: $accent-dark;
+  margin: 15;
+  vertical-align: bottom;
+  horizontal-align: right;
+}
+
+// Status text for Org Party List
+// TODO Change this as soon as possible (CSS selector is not recognized in the page's SCSS ?)
+.status-text {
+  color: #adadad;
+  font-size: 17;
+  text-transform: uppercase;
+  horizontal-align: right;
+  text-align: right;
+  vertical-align: center;
+}
+
+.btn-test {
+  background-color: #fffff0;
+  color: #000000;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.network-progress {
+  color: #104040;
+  background-color: #e0ffff;
+  width: 100%;
+  text-align: center;
+}
+
+.network-progress-bar {
+  horizontal-align:left;
+  opacity:0.5;
+}
+
+.network-progress-grid {
+  vertical-align: bottom;
+}

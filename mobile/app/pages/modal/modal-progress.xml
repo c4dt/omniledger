@@ -1,0 +1,11 @@
+<Page shownModally="onShownModally">
+    <GridLayout rows="auto, auto, *" class="network-progress-grid">
+        <Label row="0" text="Network Communication" class="label-title h2"/>
+        <Label row="1" text="{{ networkStatus }}" class="label-title network-progress"
+               id="progress_text"/>
+        <Label row="1" width="100%" class="network-progress-bar"
+               id="progress_bar"/>
+        <Button row="2" visibility="{{ error ? 'visible' : 'hidden' }}" tap="close" class="btn btn-primary"
+                text="Close"/>
+    </GridLayout>
+</Page>

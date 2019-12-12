@@ -1,0 +1,15 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      navigatingTo="navigatingTo"
+      class="page">
+    <GridLayout rows="auto, auto, *">
+        <Label height="20%" row="0"/>
+        <Label text="{{ L('loading.connecting') }}" class="h1 text-center" row="1"/>
+        <ListView items="{{ steps }}" row="2" width="75%">
+            <ListView.itemTemplate>
+                <StackLayout>
+                    <Label text="{{ text }}"/>
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView>
+    </GridLayout>
+</Page>

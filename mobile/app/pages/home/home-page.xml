@@ -1,0 +1,100 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      loaded="navigatingToHome"
+      class="page">
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="{{ L('home.title', alias ) }}"
+               textTransform="uppercase"/>
+        <ActionItem tap="update" ios.position="right" android.position="actionBar">
+            <ActionItem.actionView>
+                <Label text="&#xf2f1;  " class="fas" style="font-size: 25%;"/>
+            </ActionItem.actionView>
+        </ActionItem>
+
+    </ActionBar>
+    <GridLayout>
+        <ScrollView row="0">
+            <GridLayout rows="auto, auto, auto, auto">
+                <StackLayout class="p-20" row="1">
+                    <FlexboxLayout justifyContent="center">
+                        <StackLayout orientation="vertical"
+                                     visibility="{{ hasCoins ? 'visible' : 'collapse' }}">
+                            <StackLayout orientation="horizontal" width="100%" class="center">
+                                <Label text="&#xf502;  " class="fas h1"
+                                       visibility="{{ isAdmin ? 'visible' : 'collapsed' }}"/>
+                                <Label text="Poplets: " class="h2"/>
+                                <Label text="{{ coins }}" class="h2"/>
+                            </StackLayout>
+                            <StackLayout orientation="horizontal">
+                                <Button text="{{ L('home.pay_snack') }}" tap="paySnack" class="btn btn-primary"/>
+                                <Button text="{{ L('home.invite') }}" tap="invite" class="btn btn-primary"/>
+                            </StackLayout>
+                        </StackLayout>
+                        <Label text="{{ L('home.register') }}"
+                               textWrap="true" class="h3"
+                               visibility="{{ hasCoins ? 'collapse' : 'visible' }}"/>
+                    </FlexboxLayout>
+                    <StackLayout width="50%" class="p-20">
+                        <GridLayout rows="auto">
+                            <Image src="{{ qrcode }}"
+                                   width="100%" row="0"/>
+                            <Image src="~/images/icon-personhood-64.png"
+                                   width="20%" row="0"
+                                   visibility="{{ hasCoins ? 'visible' : 'collapse' }}"/>
+                        </GridLayout>
+                    </StackLayout>
+                </StackLayout>
+
+                <StackLayout row="2" style="margin:30px;" tap="personhoodDesc">
+                    <Label text="{{ L('home.score', personhoodScore) }}" class="h2"/>
+                    <GridLayout columns="auto, auto, auto, auto, auto, auto, auto, *" width="100%">
+                        <!--                        <Label width="{{ widthAttributes }}" text=" "-->
+                        <!--                               style="horizontal-align:left; opacity:0.5; background-color: #769ECB;"-->
+                        <!--                               row="0" col="0"/>-->
+                        <Label width="{{ widthRegistered }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #9DBAD5;"
+                               row="0" col="1"/>
+                        <!--                        <Label width="{{ widthMeetups }}" text=" "-->
+                        <!--                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"-->
+                        <!--                               row="0" col="2"/>-->
+                        <Label width="{{ widthParty }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #FAF3DD;"
+                               row="0" col="3"/>
+                        <Label width="{{ widthRPS }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #C8D6B9;"
+                               row="0" col="4"/>
+                        <Label width="{{ widthPolls }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #8FC1A9;"
+                               row="0" col="5"/>
+                        <Label width="{{ widthSnack }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #7CAA98;"
+                               row="0" col="0"/>
+                        <Label width="{{ widthReferences }}" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #769ECB;"
+                               row="0" col="6"/>
+                        <Label width="100%" text=" "
+                               style="horizontal-align:left; opacity:0.5; background-color: #ffffff;"
+                               row="0" col="7"/>
+                        <Label width="100%" text=" "
+                               style="border-color: black; border-width: 2px;"
+                               row="0" colSpan="8"/>
+                    </GridLayout>
+                </StackLayout>
+
+                <StackLayout row="3">
+                    <Button text="{{ L('home.meetup') }}" tap="meetup" class="btn btn-primary"/>
+                    <Button text="Cycle personhood" tap="cyclePersonhood" class="btn btn-test"
+                            visibility="{{ testing ? 'visible' : 'collapse' }}"/>
+                </StackLayout>
+            </GridLayout>
+        </ScrollView>
+
+        <GridLayout rows="auto" row="0" class="network-progress-grid">
+            <GridLayout visibility="{{ networkStatus ? 'visible' : 'hidden'}}">
+                <Label row="0" text="{{ networkStatus }}" class="label-title network-progress"
+                       id="progress_text"/>
+                <Label row="0" width="100%" class="network-progress-bar"
+                       id="progress_bar" tap="setProgress"/>
+            </GridLayout>
+        </GridLayout>
+    </GridLayout>
+</Page>
