@@ -19,6 +19,11 @@ clean: gradle-simul
 	rm -rf node_modules platforms hooks
 
 npm-install: clean
+	# if dynacred is installed from the parent's directory with `npm i ../dynacred`,
+	# npm will install all dependencies, including @c4dt/cothority, and this will conflict with
+	# the @c4dt/cothority in mobile, which will lead to structures form the different cothorities not
+	# being recognized as the same, e.g., `r instanceof Roster` will not work over the two packages...
+	[ -d dynacred ] || ln -s $$(pwd)/../dynacred .
 	npm ci
 	find app -name "*js" -delete
 
@@ -26,7 +31,6 @@ apply-patches: npm-install
 	patch -p0 < nodeify_temporary_patch.patch
 	cp nodeify_noxml.js node_modules/nativescript-nodeify/nodeify.js
 	rm -rf node_modules/public-encrypt/test/
-	[ ! -d app/lib/dynacred ] || npm link ../dynacred
 
 android-dev: apply-patches
 	tns prepare android
@@ -164,7 +168,7 @@ dynacred_npm: cothority_npm
 		( echo "Moving changes to dynacred"; cp -a app/lib/dynacred/* ../dynacred/src ); \
 	rm -rf app/lib/dynacred && \
 	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:" && \
-	cd ../dynacred; npm run lint:fix && \
+	( cd ../dynacred; npm run lint:fix ) && \
 	npm i -s @c4dt/dynacred
 
 src: kyber_src

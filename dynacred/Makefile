@@ -1,11 +1,14 @@
+deps:
+    npm ci
+
 none:
 	@echo "Not breaking if you don't tell me what to do"
 
-use_src:
+src:
 	make -C .. cothority-pull
 	ln -s ../../../cothority/external/js/cothority/src src/lib/cothority
 	ln -s ../../../cothority/external/js/kyber/src src/lib/kyber
 
-use_npm:
+npm:
 	rm -f src/lib/{cothority,kyber}
 

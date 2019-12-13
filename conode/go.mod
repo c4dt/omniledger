@@ -12,4 +12,6 @@ require (
 	google.golang.org/appengine v1.6.5 // indirect
 )
 
+replace go.dedis.ch/cothority/v3 => ../cothority
+
 go 1.13
