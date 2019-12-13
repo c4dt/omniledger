@@ -4,7 +4,7 @@ require("nativescript-nodeify");
 // tslint:disable-next-line
 const fileSystem = require("tns-core-modules/file-system");
 const documents = fileSystem.knownFolders.documents();
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 
 /**
  * Implements a storage using the nativescript file-system

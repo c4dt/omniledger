@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit } from "@angular/core";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 
 type ExprValue = [string, string];
 type Rule = [string, ExprValue[]];

@@ -1,9 +1,9 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
-import { PopDesc } from "@c4dt/cothority/personhood/proto";
 import { Contact, PartyItem, TProgress } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
+import { PopDesc } from "@dedis/cothority/personhood/proto";
 import Long from "long";
 import Moment from "moment";
 import { localize } from "nativescript-localize";

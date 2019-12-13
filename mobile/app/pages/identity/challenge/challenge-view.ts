@@ -1,10 +1,10 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { InstanceID } from "@c4dt/cothority/byzcoin";
-import Log from "@c4dt/cothority/log";
 import { Contact } from "@c4dt/dynacred";
 import { ChallengeCandidate, Data } from "@c4dt/dynacred";
+import { InstanceID } from "@dedis/cothority/byzcoin";
+import Log from "@dedis/cothority/log";
 import Long from "long";
 import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";

@@ -1,5 +1,5 @@
 // tslint:disable
-import { Roster } from "@c4dt/cothority/network";
+import { Roster } from "@dedis/cothority/network";
 
 export const testRoster = Roster.fromTOML(`[[servers]]
   Address = "tls://192.168.100.1:7776"
