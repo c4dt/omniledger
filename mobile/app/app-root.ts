@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { Frame, getFrameById } from "tns-core-modules/ui/frame";
 
 // Sets the root frame to the main-app that contains the tabs for normal operation.

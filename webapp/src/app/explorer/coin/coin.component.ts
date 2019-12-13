@@ -1,5 +1,5 @@
 import { Component, Input } from "@angular/core";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 
 @Component({
   selector: "app-coin",

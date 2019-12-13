@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { UserData } from "../user-data.service";
 
 @Component({

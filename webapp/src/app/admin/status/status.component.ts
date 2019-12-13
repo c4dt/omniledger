@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 
-import Log from "@c4dt/cothority/log";
-import StatusRPC from "@c4dt/cothority/status/status-rpc";
+import Log from "@dedis/cothority/log";
+import StatusRPC from "@dedis/cothority/status/status-rpc";
 
 import { Data } from "@c4dt/dynacred";
 

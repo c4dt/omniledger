@@ -3,8 +3,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 
 import { Contact } from "@c4dt/dynacred";
 
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc } from "@c4dt/cothority/darc";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { IdentityDarc } from "@dedis/cothority/darc";
 
 @Component({
     selector: "app-contact-info",

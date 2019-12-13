@@ -1,4 +1,4 @@
-import { curve, Point, PointFactory } from "@c4dt/kyber";
+import { curve, Point, PointFactory } from "@dedis/kyber";
 import { Buffer } from "buffer";
 import { randomBytes } from "crypto-browserify";
 

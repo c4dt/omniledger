@@ -2,13 +2,13 @@ import "cross-fetch/polyfill";
 
 import { Injectable } from "@angular/core";
 
-import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
-import Log from "@c4dt/cothority/log";
+import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
+import Log from "@dedis/cothority/log";
 
-import { IConnection, RosterWSConnection } from "@c4dt/cothority/network/connection";
-import { StatusRequest, StatusResponse } from "@c4dt/cothority/status/proto";
-import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Config, Data, StorageDB } from "@c4dt/dynacred";
+import { IConnection, RosterWSConnection } from "@dedis/cothority/network/connection";
+import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
+import StatusRPC from "@dedis/cothority/status/status-rpc";
 
 @Injectable({
     providedIn: "root",
