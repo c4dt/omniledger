@@ -1,6 +1,6 @@
 import { Darc, IdentityDarc, IdentityWrapper } from "@c4dt/cothority/darc";
 import Log from "@c4dt/cothority/log";
-import { randomBytes } from "crypto";
+import { randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Data } from "src";
 import { StorageLocalStorage } from "src/Storage";

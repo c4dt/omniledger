@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "crypto-browserify";
 import Long from "long";
 import { promisify } from "util";
 
