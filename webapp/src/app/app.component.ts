@@ -17,7 +17,7 @@ import { UserData } from "./user-data.service";
 
 export class AppComponent implements OnInit {
     loading = true;
-    log: string;
+    log: string = "";
     text: string;
     percentage: number;
 
