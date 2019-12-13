@@ -1,14 +1,19 @@
-none:
-	@echo "Not breaking if you don't tell me what to do"
+.DEFAULT_GOAL := build_serve
 
-use_src:
+deps:
+	npm ci
+	npm link ../dynacred
+
+src:
 	make -C ../dynacred use_src
-	ln -s ../../../cothority/external/js/cothority/src src/lib/cothority
-	ln -s ../../../cothority/external/js/kyber/src src/lib/kyber
+	ln -s $$(pwd)/../cothority/external/js/cothority/src src/lib/cothority
+	ln -s $$(pwd)/../cothority/external/js/kyber/src src/lib/kyber
 
-use_npm:
+npm:
 	make -C ../dynacred use_npm
 	rm -f src/lib/{cothority,kyber}
 
 serve:
 	ng serve --disable-host-check --aot
+
+build_serve: deps serve

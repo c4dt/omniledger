@@ -19,8 +19,9 @@ jobs:
       script:
         - cd conode
         - export GO111MODULE=on
-        - make docker_run &
+        - make docker_run_travis &
         - make docker_wait
+        - make utils
         - build/bcadmin latest --bc bc*cfg
     - name: dynacred
       language: node_js

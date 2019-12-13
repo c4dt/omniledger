@@ -5,10 +5,11 @@ WEBAPP_ASSET := ../webapp/src/assets/config.toml
 
 all: docker
 
-.PHONY: conode
+.PHONY: cothority-pull conode newdb docker docker_run docker_wait docker_stop docker_start docker_clean clean
 
-conode:
-	make -C .. cothority-pull
+.DEFAULT_GOAL := docker_run
+
+utils: cothority-pull
 	@echo "Compiling binaries"; \
 	go build -o build/conode; \
 	cd ../cothority && \
@@ -16,7 +17,10 @@ conode:
 		go build -o ../conode/build/csadmin ./calypso/csadmin && \
 		go build -o ../conode/build/phapp ./personhood/phapp
 
-newdb: conode
+cothority-pull:
+	make -C .. cothority-pull
+
+newdb: utils
 	rm -f build/conodes/*db;
 	@echo "Starting nodes"; \
 	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null ) & \
@@ -29,20 +33,22 @@ newdb: conode
 	echo; echo "Shutting down conodes"; pkill -x conode; rm -f conodes/running
 
 # Use this target to build from local source
-docker: build/Dockerfile conode
+docker: build/Dockerfile cothority-pull
 	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
-	go build -o build/conode; \
-	cd ../cothority && \
-		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin && \
-		go build -o ../conode/build/csadmin ./calypso/csadmin
+	go build -o build/conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-docker_run: docker
+update_assets:
 	docker rm -f $(CONTAINER) || echo nothing to stop
 	echo "ByzCoinID = \"$$( grep ByzCoinID variables.txt | sed -e 's/.* //' )\"" > $(WEBAPP_ASSET)
 	echo >> $(WEBAPP_ASSET)
 	cat build/conodes/public.toml >> $(WEBAPP_ASSET)
+
+docker_run: docker update_assets
+	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+
+docker_run_travis: docker
 	docker run --rm -t -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_wait:
