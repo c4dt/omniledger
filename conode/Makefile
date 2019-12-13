@@ -39,17 +39,16 @@ docker: build/Dockerfile cothority-pull
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-update_assets:
-	docker rm -f $(CONTAINER) || echo nothing to stop
-	echo "ByzCoinID = \"$$( grep ByzCoinID variables.txt | sed -e 's/.* //' )\"" > $(WEBAPP_ASSET)
-	echo >> $(WEBAPP_ASSET)
-	cat build/conodes/public.toml >> $(WEBAPP_ASSET)
+$(WEPAPP_ASSET): variables.txt build/conodes/public.toml
+	 echo "ByzCoinID = \"$$( grep ByzCoinID $< | sed -e 's/.* //' )\"" > $@
+	 echo >> $@
+	 cat $(lastword $^) >> $@
 
 docker_run: docker update_assets
 	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_run_travis: docker
-	docker run --rm -t -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+	docker run --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_wait:
 	@for port in $$( seq 7771 2 7777 ); do \
