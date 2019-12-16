@@ -194,7 +194,6 @@ export class GroupContractCollection {
         if (!this.has(groupContract)) {
             this.append(groupContract);
         }
-
         const parent = this.getParent(groupContract);
         if (!groupContract.verify(...parent)) {
             return false;
