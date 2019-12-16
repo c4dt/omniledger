@@ -9,8 +9,7 @@ import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance
 import { Sign } from "@dedis/cothority/personhood/ring-sig";
 import { registerMessage } from "@dedis/cothority/protobuf";
 import { Scalar } from "@dedis/kyber";
-import * as crypto from "crypto-browserify";
-import { randomBytes } from "crypto-browserify";
+import { createHash, randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
 
@@ -169,7 +168,7 @@ export class PersonhoodRPC {
         const msg = Buffer.alloc(7);
         msg.write("Choice");
         msg.writeUInt8(choice, 6);
-        const contextHash = crypto.createHash("sha256");
+        const contextHash = createHash("sha256");
         contextHash.update(context);
         const points = personhood.popPartyStruct.attendees.publics;
         const lrs = await Sign(msg, points, contextHash.digest(), priv);
@@ -192,8 +191,9 @@ export class PersonhoodRPC {
     }
 
     async pollDelete(signer: ISigner, pollID: Buffer) {
+        const signature = signer.sign(pollID);
         const pd: PollDelete = new PollDelete({
-            identity: IdentityWrapper.fromIdentity(signer), pollID, signature: Buffer.alloc(0),
+            identity: IdentityWrapper.fromIdentity(signer), pollID, signature,
         });
         return this.callPoll(new Poll({byzcoinID: this.genesisID, delete: pd}));
     }

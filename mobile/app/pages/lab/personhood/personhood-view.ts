@@ -15,7 +15,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { appRootMain } from "~/app-root";
-import { finishData, isAdmin, uData } from "~/lib/byzcoin-def";
+import { bcDef, finishData, isAdmin, uData } from "~/lib/byzcoin-def";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { partyQrcode } from "~/lib/qrcode";
 import { elements } from "~/pages/lab/personhood/personhood-page";
@@ -159,7 +159,7 @@ export class BadgeView extends Observable {
             } else {
                 setProgress(50, localize("personhood.registering"));
             }
-            await this.badge.mine(uData);
+            await this.badge.mine(uData, bcDef.spawnerID);
             setProgress(80, localize("progress.saving"));
             if (registered) {
                 await uData.save();
