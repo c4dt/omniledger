@@ -70,7 +70,6 @@
                         <df:EntityProperty type="Text">
                         </df:EntityProperty>
                     </df:EntityProperty.editor>
-
                 </df:EntityProperty>
                 <df:RadDataForm.groups>
                     <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
