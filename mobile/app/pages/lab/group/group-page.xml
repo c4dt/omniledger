@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="navigatingTo" class="page">
+
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="{{ L('group.title') }}"/>
+        <ActionItem tap="createGroup"
+                    ios.systemIcon="4" ios.position="right"
+                    icon="res://ic_add_white" android.position="actionBar"/>
+    </ActionBar>
+
+    <GridLayout rows="*">
+        <ListView items="{{ groups }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <FlexboxLayout orientation="horizontal" flexDirection="row" class="basic-list-decorated" alignItems="center" tap="{{ selectGroup }}">
+                    <Label text="{{ alias }}" class="h3" textTransform="uppercase" height="100%" flewGrow="1" tap="{{ selectGroup }}"/>
+                </FlexboxLayout>
+            </ListView.itemTemplate>
+        </ListView>
+    </GridLayout>
+</Page>

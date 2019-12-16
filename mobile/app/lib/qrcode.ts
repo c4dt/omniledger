@@ -5,7 +5,7 @@ require("nativescript-nodeify");
 const ZXing = require("nativescript-zxing");
 // tslint:disable-next-line
 const QRGenerator = new ZXing();
-import { Contact, PartyItem, Public } from "@c4dt/dynacred";
+import { Contact, PartyItem, Public } from "~/lib/dynacred";
 import { sprintf } from "sprintf-js";
 import { fromNativeSource, ImageSource } from "tns-core-modules/image-source";
 import { screen } from "tns-core-modules/platform";

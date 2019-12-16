@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Data } from "@c4dt/dynacred";
+import { Data } from "~/lib/dynacred";
 import { Observable } from "tns-core-modules/data/observable";
 import { ImageSource } from "tns-core-modules/image-source";
 import { topmost } from "tns-core-modules/ui/frame";

@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Contact } from "@c4dt/dynacred";
+import { Contact } from "~/lib/dynacred";
 import { available, compose } from "nativescript-email";
 import { dial, requestCallPermission } from "nativescript-phone";
 import { fromObject } from "tns-core-modules/data/observable";

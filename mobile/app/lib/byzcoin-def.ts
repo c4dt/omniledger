@@ -14,13 +14,14 @@ import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Data, PersonhoodRPC } from "@c4dt/dynacred";
 import { Point } from "@c4dt/kyber";
 import { bdDEDIS, bdTest } from "~/lib/byzcoin-defs";
+import { Data, PersonhoodRPC } from "~/lib/dynacred";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Which byzcoinDefinition to use.
-export const bcDef = bdDEDIS;
-// export const bcDef = bdTest;
+// export const bcDef = bdDEDIS;
+export const bcDef = bdTest;
 
 // Version of the app - this is automatically copied from package.json
 export let appVersion = "0.5.8";
