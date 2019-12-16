@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Public } from "@c4dt/dynacred";
+import { Public } from "~/lib/dynacred";
 import { IByzcoinDef } from "./byzcoin-def";
 import { c4dtCalypsoRoster, dedisRoster, testRoster } from "./byzcoin-rosters";
 

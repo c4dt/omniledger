@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "~/*": [
+        "app/*"
+      ]
+    }
+  },
+  "extends": "./tsconfig.json",
+  "include": [
+    "spec/**/*.ts",
+    "app/**/*.ts"
+  ]
+}
