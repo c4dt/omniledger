@@ -122,6 +122,7 @@ export class GroupContract {
     }
 
     toObject(): object {
+        // tslint:disable: object-literal-sort-keys
         return {
             id: this._id,
             groupDefinition: this._groupDefinition.toObject(),
