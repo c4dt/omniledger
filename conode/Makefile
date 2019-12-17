@@ -39,12 +39,12 @@ docker: build/Dockerfile cothority-pull
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-$(WEPAPP_ASSET): variables.txt build/conodes/public.toml
+$(WEBAPP_ASSET): variables.txt build/conodes/public.toml
 	 echo "ByzCoinID = \"$$( grep ByzCoinID $< | sed -e 's/.* //' )\"" > $@
 	 echo >> $@
 	 cat $(lastword $^) >> $@
 
-docker_run: docker update_assets
+docker_run: docker $(WEBAPP_ASSET)
 	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_run_travis: docker
