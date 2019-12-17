@@ -25,7 +25,6 @@
                     <Label class="grid-list-text" text="{{ alias }}" textWrap="false"/>
                 </StackLayout>
             </nsListView:RadListView.itemTemplate>
-
         </nsListView:RadListView>
 
         <df:RadDataForm id="group-contract-form" source="{{ dataForm }}" row="2" colSpan="3" isReadOnly="false">

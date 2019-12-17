@@ -22,8 +22,11 @@ export class GroupContract {
 
     static fromObject(gc: any) {
         const groupDefinition = GroupDefinition.fromObject(gc.groupDefinition);
-        const groupContract = new GroupContract(groupDefinition, [...gc.signoff].map((s) => Buffer.from(s).toString()));
-        groupContract.successor = [...gc.successor].map((s) => Buffer.from(s).toString());
+        const groupContract = new GroupContract(groupDefinition, gc.signoffs ? gc.signoffs : []);
+        if (gc.successor) {
+            groupContract.successor = gc.successor;
+        }
+
         return groupContract;
     }
 
@@ -78,6 +81,7 @@ export class GroupContract {
     }
 
     toJSON(): IGroupContract {
+        // tslint:disable: object-literal-sort-keys
         return {
             id: this._id,
             groupDefinition: this._groupDefinition.toJSON(),
@@ -87,12 +91,13 @@ export class GroupContract {
     }
 
     toObject(): object {
+        // tslint:disable: object-literal-sort-keys
         return {
             id: this._id,
             groupDefinition: this._groupDefinition.toObject(),
-            signoff: Buffer.from(this._signoffs),
-            successor: Buffer.from(this._successor),
-        }
+            signoff: this._signoffs,
+            successor: this._successor,
+        };
     }
 
     get id(): string {

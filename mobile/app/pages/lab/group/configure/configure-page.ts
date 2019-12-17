@@ -3,13 +3,16 @@ import { fromObject } from "tns-core-modules/data/observable/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
+import { isAdmin, uData } from "~/lib/byzcoin-def";
 import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
 import { GroupDefinition, IGroupDefinition } from "~/lib/dynacred/group/groupDefinition";
-import { isAdmin, uData } from "~/lib/byzcoin-def";
 
 let page: Page;
-let gcCollection: GroupContractCollection;
+let publicKeyList = [];
+let selectedPublicKeys = [];
+
+// tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
     publicKeys: uData.keyIdentity._public.toHex() + ",fa19ecaa741b60fac42b5120229e3cea7cba1e8c045e8123531906a0d3e8f868",
     suite: "edwards25519",
@@ -17,13 +20,6 @@ const dataForm = fromObject({
     voteThreshold: ">1/2",
     predecessor: "",
 });
-let publicKeyList = [];
-// const dataForm = fromObject({
-//     publicKeys: "bonjour", //currentGroupContract ? currentGroupContract.groupDefinition.publicKeys[0] : [],
-//     purpose: "bonjour", //currentGroupContract ? currentGroupContract.groupDefinition.purpose : "",
-//     voteThreshold: "bonjour", //currentGroupContract ? currentGroupContract.groupDefinition.voteThreshold : ">50.0",
-//     predecessor: "bonjour", //currentGroupContract ? currentGroupContract.groupDefinition.predecessor[0] : [],
-// });
 
 const viewModel = fromObject({
     dataForm,
@@ -39,6 +35,8 @@ export async function navigatingTo(args: EventData) {
     page.bindingContext = viewModel;
     dataForm.set("description", uData.contact.alias);
     publicKeyList = [uData.contact];
+    selectedPublicKeys = [uData.keyIdentity._public];
+    viewModel.set("publicKeyList", publicKeyList);
     // dataForm.set("publicKeys", "bonjour"); TODO pour update le form
 }
 
@@ -49,6 +47,7 @@ export function goBack() {
 export async function propose() {
     Log.llvl1("propose new group contract");
     // TODO check the fields
+    // tslint:disable: object-literal-sort-keys
     const variables: IGroupDefinition = {
         orgPubKeys: dataForm.get("publicKeys").split(","),
         suite: dataForm.get("suite"),
@@ -58,32 +57,42 @@ export async function propose() {
     };
     let groupDefinition = new GroupDefinition(variables);
     let contract: GroupContract;
-    if (!gcCollection) {
-        gcCollection = new GroupContractCollection(variables.purpose);
-        // genesis group contract: c0
-        contract = gcCollection.createGroupContract(undefined, groupDefinition);
-        // group contract: c1
-        groupDefinition = new GroupDefinition(groupDefinition.allVariables);
-        contract = gcCollection.createGroupContract(contract, groupDefinition);
-        gcCollection.sign(contract, uData.keyIdentity._private);
-    }
+    const gcCollection = new GroupContractCollection(variables.purpose);
+    // genesis group contract: c0
+    contract = gcCollection.createGroupContract(undefined, groupDefinition);
+    // group contract: c1
+    groupDefinition = new GroupDefinition(groupDefinition.allVariables);
+    contract = gcCollection.createGroupContract(contract, groupDefinition);
+    gcCollection.sign(contract, uData.keyIdentity._private);
+
+    // save the new groupContractCollection
+    uData.addGroup(gcCollection);
+    await uData.save();
 
     return topmost().navigate({
         moduleName: "pages/lab/group/group-page",
-        context: {
-            gcCollection,
-        },
     });
 }
 
 export async function addPublicKey(args: any) {
+    console.log("1");
     const result = await dialogs.action({
         title: "Choose an organizer",
         cancelButtonText: "Cancel",
         actions: uData.contacts.map((c) => c.alias),
     });
-    const publicKey = uData.contacts.find((c) => c.alias === result);
+    console.log("2");
+    // console.log(uData.contacts);
+    console.log("3");
+    console.log("result");
+    console.log(uData);
+    const publicKey = uData.contacts.find((c) => {
+        console.log(c);
+        console.log(c.alias);
+        return c.alias === result;
+    });
     if (publicKey != null) {
         console.log(publicKey);
+        selectedPublicKeys.push(publicKey);
     }
 }

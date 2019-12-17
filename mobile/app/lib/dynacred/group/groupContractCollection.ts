@@ -9,9 +9,8 @@ import { GroupDefinition } from "./groupDefinition";
 export class GroupContractCollection {
 
     static fromObject(obj: any) {
-        // TODO
         const gcCollection = new GroupContractCollection();
-        Log.print(obj);
+
         if (obj.collection) {
             Object.keys(obj.collection).forEach((id) => {
                 gcCollection._collection.set(id,
@@ -19,12 +18,16 @@ export class GroupContractCollection {
                 );
             });
         }
+
         if (obj.currentGroupContract) {
-            gcCollection.currentGroupContract = obj.currentGroupContract;
+            gcCollection.currentGroupContract = GroupContract.fromObject(obj.currentGroupContract);
+        }
+
+        if (obj._purpose) {
+            gcCollection._purpose = obj._purpose;
         }
 
         return gcCollection;
-        // Log.print("bonjour");
     }
 
     private _collection: Map<string, GroupContract>; // key: contractID, value: GroupDefinition
@@ -252,7 +255,6 @@ export class GroupContractCollection {
     }
 
     toObject(): object {
-        // TODO
         const obj = {
             collection: {} as any,
             currentGroupContract: this.currentGroupContract.toObject(),
@@ -264,6 +266,10 @@ export class GroupContractCollection {
 
     get purpose(): string {
         return this._purpose;
+    }
+
+    set purpose(purpose: string) {
+        this._purpose = purpose;
     }
 
     get collection(): Map<string, GroupContract> {

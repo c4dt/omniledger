@@ -35,6 +35,13 @@ export function goPoll(args: GestureEventData) {
     });
 }
 
+export function goGroup(args: GestureEventData) {
+    frame = args.view.page.frame;
+    return frame.navigate({
+        moduleName: "pages/lab/group/group-page",
+    });
+}
+
 export async function switchLab(args: SelectedIndexChangedEventData) {
     try {
         if (frame) {

@@ -17,6 +17,7 @@ import { scan } from "~/lib/scan";
 import { GroupListView, GroupView } from "~/pages/lab/group/group-view";
 
 import Log from "@dedis/cothority/log";
+import { scanNewGroupContract } from "~/lib/group-ui";
 
 // QR code utilies
 const ZXing = require("nativescript-zxing");
@@ -24,20 +25,13 @@ const QrGenerator = new ZXing();
 
 export let groupList: GroupListView;
 let page: Page;
-const gcCollection: GroupContractCollection[] = [];
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
-    // Log.print(uData.groups);
     Log.print(uData.keyIdentity._public.toHex());
     page = args.object as Page;
-    // if (!page.navigationContext.gcCollection) {
-    gcCollection.push(page.navigationContext.gcCollection as GroupContractCollection);
-    // }
-    groupList = new GroupListView(gcCollection);
-    Log.print("groupList", groupList);
+    groupList = new GroupListView();
     page.bindingContext = groupList;
-    groupList.updateGroupList(gcCollection);
 }
 
 export async function createGroup(args: GestureEventData) {
@@ -47,6 +41,7 @@ export async function createGroup(args: GestureEventData) {
     const cancel = "Cancel";
 
     try {
+        // tslint:disable: object-literal-sort-keys
         const action = await dialogs.action({
             message: "How do you want to create a new group",
             cancelButtonText: cancel,
@@ -61,8 +56,9 @@ export async function createGroup(args: GestureEventData) {
                     moduleName: "pages/lab/group/configure/configure-page",
                 });
             case scanQr:
-                const gcCollection = new GroupContractCollection();
-                await gcCollection.scanNewGroupContract(uData.keyIdentity);
+                const gcCollection = await scanNewGroupContract(new GroupContractCollection(), uData.keyIdentity);
+                uData.addGroup(gcCollection);
+                await uData.save();
                 // const result = await scan("{{ L('group.camera_text') }}");
                 // Log.print("bonjour");
                 // const groupContract = GroupContract.createFromJSON(JSON.parse(result.text));
