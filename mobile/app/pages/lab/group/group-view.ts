@@ -8,8 +8,10 @@ import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { uData } from "~/lib/byzcoin-def";
 import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
+import { scanNewGroupContract } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 import { scan } from "~/lib/scan";
+import { groupList } from "./group-page";
 
 // QR code utilies
 const ZXing = require("nativescript-zxing");
@@ -19,24 +21,21 @@ export class GroupListView extends Observable {
 
     private _groups: GroupView[];
 
-    constructor(groupList: GroupContractCollection[]) {
+    constructor() {
         super();
 
         // Initialize default values
-        this.updateGroupList(groupList);
+        this.updateGroupList();
     }
 
-    updateGroupList(groupList: GroupContractCollection[]) {
-        console.log("updateGroupList1");
-        this._groups = groupList.map((g) => new GroupView(g));
-        console.log("updateGroupList2");
-        this.notifyUpdate();
-        console.log("updateGroupList3");
+    async updateGroupList() {
+        this._groups = uData.groups.map((g) => new GroupView(g));
+        this.set("groups", this._groups);
     }
 
-    notifyUpdate() {
-        this.notifyPropertyChange("groups", this._groups);
-    }
+    // notifyUpdate() {
+    //     this.notifyPropertyChange("groups", this._groups);
+    // }
 }
 
 export class GroupView extends Observable {
@@ -60,6 +59,7 @@ export class GroupView extends Observable {
         const cancel = "Cancel";
 
         try {
+            // tslint:disable: object-literal-sort-keys
             const action = await dialogs.action({
                 message: "Select action",
                 cancelButtonText: cancel,
@@ -71,7 +71,6 @@ export class GroupView extends Observable {
                     break;
                 case propNewContract:
                     // TODO
-                    console.log(this._group.getCurrentGroupContract(uData.keyIdentity._public.toHex()));
                     topmost().navigate({
                         moduleName: "pages/lab/group/configure/configure-page",
                         context: {
@@ -94,9 +93,12 @@ export class GroupView extends Observable {
                 case details:
                     break;
                 case update:
+                    // TODO il faut update l'affichage?
                     try {
-                        await this._group.scanNewGroupContract(uData.keyIdentity);
-                        // await this.addScan();
+                        const groupContractionCollection = await scanNewGroupContract(this._group, uData.keyIdentity);
+                        uData.addGroup(groupContractionCollection);
+                        await uData.save();
+                        groupList.updateGroupList();
                     } catch (e) {
                         await msgFailed(e.toString(), "Error");
                     }
@@ -127,36 +129,6 @@ export class GroupView extends Observable {
 
         topmost().showModal("pages/modal/modal-key", fromNativeSource(qrCode),
             () => { Log.print("ok"); }, false, false, false);
-    }
-
-    private async addScan() {
-        try {
-
-            // const result = await scan("{{ L('group.camera_text') }}");
-            // const groupContract = GroupContract.createFromJSON(JSON.parse(result.text));
-
-            // // cannot accept a group contract where the user public key is not included
-            // if (groupContract.groupDefinition.publicKeys.indexOf(uData.keyIdentity._public.toHex()) === -1) {
-            //     throw new Error("This group contract does not contain your public key.");
-            // }
-            // if (this._group.get(groupContract.id)) {
-            //     // already existing group contract
-            //     this._group.append(groupContract);
-            // } else {
-            //     // not yet aware of this group contract
-            //     const options = {
-            //         title: "Do you want to accept this new group contract?",
-            //         message: groupContract.groupDefinition.toString(),
-            //         okButtonText: "Yes",
-            //         cancelButtonText: "No",
-            //     };
-            //     dialogs.confirm(options).then((result: boolean) => {
-            //         console.log(result);
-            //     });
-            // }
-        } catch (e) {
-            await msgFailed(e.toString(), "Error");
-        }
     }
 
     get alias(): string {

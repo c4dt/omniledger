@@ -3,7 +3,6 @@ require("nativescript-nodeify");
 
 import { curve, Group, Point } from "@dedis/kyber";
 import { schnorr } from "@dedis/kyber/sign";
-import { createHash, Hash } from "crypto-browserify";
 import { Private, Public } from "../KeyPair";
 import { ENCODING } from "./groupContract";
 
@@ -45,11 +44,11 @@ export class GroupDefinition {
 
     static fromObject(gd: any): GroupDefinition {
         const variables: IGroupDefinition = {
-            orgPubKeys: [...gd.orgPubKeys].map((pk) => Buffer.from(pk).toString()),
-            predecessor: [...gd.predecessor].map((p) => Buffer.from(p).toString()),
-            purpose: Buffer.from(gd.purpose).toString(),
-            suite: Buffer.from(gd.suite).toString(),
-            voteThreshold: Buffer.from(gd.voteThreshold).toString(),
+            orgPubKeys: gd.orgPubKeys,
+            predecessor: gd.predecessor ? gd.predecessor : [],
+            purpose: gd.purpose,
+            suite: gd.suite,
+            voteThreshold: gd.voteThreshold,
         };
         return new GroupDefinition(variables);
     }
