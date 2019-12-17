@@ -39,7 +39,7 @@ export async function goInitTest(args: EventData) {
 
         setProgress(localize("progress.saving"), 100);
         await uData.save();
-        await msgOK("You should update user-data.ts now");
+        await msgOK("You should update app/lib/byzcoin-defs.ts now with the lines given in the console output.");
         appRootMain();
     } catch (e) {
         await Log.rcatch(e);
