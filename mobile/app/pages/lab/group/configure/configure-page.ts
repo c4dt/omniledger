@@ -59,6 +59,9 @@ export async function navigatingTo(args: EventData) {
             gcCollection = undefined;
             setDataForm();
         }
+        if ("id" in page.navigationContext) {
+            dataFormDetails.set("id", page.navigationContext.id);
+        }
     }
 
     page.bindingContext = viewModel;
