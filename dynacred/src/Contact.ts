@@ -3,7 +3,7 @@ import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { InstanceID } from "@dedis/cothority/byzcoin/instance";
 import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret } from "@dedis/cothority/calypso";
-import { IdentityDarc, Rule } from "@dedis/cothority/darc";
+import { IdentityDarc, IdentityWrapper, Rule } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
 import IdentityEd25519 from "@dedis/cothority/darc/identity-ed25519";
 import ISigner from "@dedis/cothority/darc/signer";
@@ -485,6 +485,17 @@ export class Contact {
     }
 
     /**
+     * Returns all devices of this contact.
+     */
+    async getDevices(): Promise<Device[]> {
+        const idID = await this.getDarcSignIdentity();
+        const idDarc = await DarcInstance.fromByzcoin(this.bc, idID.id);
+        const ids = idDarc.darc.rules.getRule(Darc.ruleSign).getIdentities()
+            .map((id) => IdentityWrapper.fromString(id));
+        return Promise.all(ids.map((id) => Device.fromByzcoin(this.bc, id.darc.id)));
+    }
+
+    /**
      * toObject returns an object that can be used to re-create the full contact. As it contains
      * the secrets in clear, this should never be used to store data on the blockchain.
      */
@@ -764,6 +775,40 @@ export class Contact {
 
 interface IHasAlias {
     alias: string;
+}
+
+/**
+ * Represents a device from a credential. New devices can be created with
+ * Contact.createDevice.
+ */
+class Device {
+
+    /**
+     * Fetch a new device from Byzcoin given the darcID of the signer.
+     * @param rpc
+     * @param darcID
+     */
+    static async fromByzcoin(rpc: ByzCoinRPC, darcID: InstanceID): Promise<Device> {
+        const d = await DarcInstance.fromByzcoin(rpc, darcID);
+        return new Device(d.darc);
+    }
+    pubKey: Public;
+
+    /**
+     * Constructor verifies the given darc is somewhat compatible with a device.
+     * @param darc
+     */
+    constructor(public darc: Darc) {
+        const ids = darc.rules.getRule(Darc.ruleSign).getIdentities();
+        if (ids.length > 1) {
+            throw new Error("a device darc cannot have more than one signer identity");
+        }
+        const iw = IdentityWrapper.fromString(ids[0]);
+        if (iw.ed25519 === undefined) {
+            throw new Error("the signer identity in the device darc must be an ed25519");
+        }
+        this.pubKey = new Public(iw.ed25519.public);
+    }
 }
 
 class Recover {
