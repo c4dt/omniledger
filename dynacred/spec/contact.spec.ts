@@ -89,6 +89,22 @@ describe("Contact should", async () => {
         expect((await userCopy.contact.getActions()).length).toBe(1);
     });
 
+    it("find public keys", async () => {
+        const user1 = await tdAdmin.createTestUser("user1");
+        const user2 = await tdAdmin.createTestUser("user2");
+
+        user1.addContact(user2.contact);
+        const dev = await user1.contacts[0].getDevices();
+        expect(dev[0].pubKey.equal(user2.keyIdentity._public)).toBeTruthy();
+
+        const dev2url = await user2.createDevice("device2");
+        const dev2 = await Data.attachDevice(tdAdmin.bc, dev2url.href);
+        const devs = await user1.contacts[0].getDevices();
+        expect(devs.length).toBe(2);
+        expect(devs[0].pubKey.equal(user2.keyIdentity._public)).toBeTruthy();
+        expect(devs[1].pubKey.equal(dev2.keyIdentity._public)).toBeTruthy();
+    });
+
     it("add and remove signer", async () => {
         const darcID = randomBytes(32);
 
