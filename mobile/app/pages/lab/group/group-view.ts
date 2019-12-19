@@ -38,10 +38,9 @@ export class GroupView extends Observable {
     }
 
     async selectGroup(arg: ItemEventData) {
-        console.log("salut les couilles");
-        const propNewContract = "Propose New Contract";
-        const propContract = "Proposed Contract";
-        const currContract = "Current Contract";
+        const propNewContract = "Propose New Group Contract";
+        const propContract = "Show Proposed Group Contract QR Code";
+        const currContract = "Show Current Group Contract QR Code";
         const details = "Details";
         const update = "Update";
         const _delete = "Delete";
@@ -63,6 +62,7 @@ export class GroupView extends Observable {
                     topmost().navigate({
                         moduleName: "pages/lab/group/configure/configure-page",
                         context: {
+                            isReadOnly: false,
                             predecessor: this._group.getCurrentGroupContract().id,
                             gcCollection: this._group,
                         },
