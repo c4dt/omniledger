@@ -3,6 +3,7 @@ require("nativescript-nodeify");
 
 import { curve, Group, Point } from "@dedis/kyber";
 import { schnorr } from "@dedis/kyber/sign";
+import crypto from "crypto-browserify";
 import { Private, Public } from "../KeyPair";
 import { ENCODING } from "./groupContract";
 
@@ -134,6 +135,23 @@ export class GroupDefinition {
         return schnorr.verify(this.suiteGroup, point, message, Buffer.from(signoff, ENCODING));
     }
 
+    isSimilarTo(groupDefinition: GroupDefinition): boolean {
+        let similarPublicKeys = true;
+        if (this.variables.orgPubKeys.length !== groupDefinition.publicKeys.length) {
+            similarPublicKeys = false;
+        }
+        this.variables.orgPubKeys.forEach((pk) => {
+            if (!groupDefinition.publicKeys.includes(pk)) {
+                similarPublicKeys = false;
+            }
+        });
+
+        return similarPublicKeys
+            && (this.variables.purpose === groupDefinition.purpose)
+            && (this.variables.suite === groupDefinition.suite)
+            && (this.variables.voteThreshold === groupDefinition.voteThreshold);
+    }
+
     toJSON(): IGroupDefinition {
         return {
             orgPubKeys: this.variables.orgPubKeys,
@@ -155,26 +173,26 @@ export class GroupDefinition {
     }
 
     toString(): string {
-        return  "public keys: " + this.variables.orgPubKeys + "\n"
-                + "suite: " + this.variables.suite + "\n"
-                + "vote threshold: " + this.variables.voteThreshold + "\n"
-                + "purpose: " + this.variables.purpose + "\n"
-                + (this.predecessor.length > 0 ? "predecessor: " + this.variables.predecessor : "");
+        return "public keys: " + this.variables.orgPubKeys + "\n"
+            + "suite: " + this.variables.suite + "\n"
+            + "vote threshold: " + this.variables.voteThreshold + "\n"
+            + "purpose: " + this.variables.purpose + "\n"
+            + (this.predecessor.length > 0 ? "predecessor: " + this.variables.predecessor : "");
     }
 
     getId(): string {
-        const toH: Buffer = Buffer.from(JSON.stringify(this.toJSON()));
+        // const toH: Buffer = Buffer.from(JSON.stringify(this.toJSON()));
         // TODO
         // createHash("sha256").update() il faut updater avec binaries
-        // const hashContext = createHash("sha256");
-        // this.publicKeys.forEach((pk: string) => hashContext.update(Buffer.from(pk, "hex")));
-        // hashContext.update(Buffer.from(this.suite));
-        // hashContext.update(Buffer.from(this.voteThreshold));
-        // if (this.predecessor) {
-        //     this.predecessor.forEach((p: string) => hashContext.update(Buffer.from(p, "hex")));
-        // }
-        // return hashContext.digest().toString(ENCODING);
-        return schnorr.hashSchnorr(this.suiteGroup, toH).marshalBinary().toString(ENCODING);
+        const hashContext = crypto.createHash("sha256");
+        this.publicKeys.forEach((pk: string) => hashContext.update(Buffer.from(pk, "hex")));
+        hashContext.update(Buffer.from(this.suite));
+        hashContext.update(Buffer.from(this.voteThreshold));
+        if (this.predecessor) {
+            this.predecessor.forEach((p: string) => hashContext.update(Buffer.from(p, "hex")));
+        }
+        return hashContext.digest().toString(ENCODING);
+        // return schnorr.hashSchnorr(this.suiteGroup, toH).marshalBinary().toString(ENCODING);
     }
 
     get publicKeys(): string[] {

@@ -1,6 +1,4 @@
-import Log from "@dedis/cothority/log";
 import { Observable } from "tns-core-modules/data/observable";
-import { fromNativeSource } from "tns-core-modules/image-source/image-source";
 import { screen } from "tns-core-modules/platform";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
@@ -8,14 +6,9 @@ import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { uData } from "~/lib/byzcoin-def";
 import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
-import { scanNewGroupContract } from "~/lib/group-ui";
+import { scanNewGroupContract, showQR } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
-import { scan } from "~/lib/scan";
 import { groupList } from "./group-page";
-
-// QR code utilies
-const ZXing = require("nativescript-zxing");
-const QrGenerator = new ZXing();
 
 export class GroupListView extends Observable {
 
@@ -24,7 +17,7 @@ export class GroupListView extends Observable {
     constructor() {
         super();
 
-        // Initialize default values
+        // Initialize
         this.updateGroupList();
     }
 
@@ -32,10 +25,6 @@ export class GroupListView extends Observable {
         this._groups = uData.groups.map((g) => new GroupView(g));
         this.set("groups", this._groups);
     }
-
-    // notifyUpdate() {
-    //     this.notifyPropertyChange("groups", this._groups);
-    // }
 }
 
 export class GroupView extends Observable {
@@ -49,6 +38,7 @@ export class GroupView extends Observable {
     }
 
     async selectGroup(arg: ItemEventData) {
+        console.log("salut les couilles");
         const propNewContract = "Propose New Contract";
         const propContract = "Proposed Contract";
         const currContract = "Current Contract";
@@ -70,30 +60,35 @@ export class GroupView extends Observable {
                 case cancel:
                     break;
                 case propNewContract:
-                    // TODO
                     topmost().navigate({
                         moduleName: "pages/lab/group/configure/configure-page",
                         context: {
-                            parent: this._group.getCurrentGroupContract(uData.keyIdentity._public.toHex()),
+                            predecessor: this._group.getCurrentGroupContract().id,
+                            gcCollection: this._group,
                         },
                     });
                     break;
                 case propContract:
                     const propGroupContract = this._group.getProposedGroupContract();
                     if (propGroupContract) {
-                        this.showQR(propGroupContract);
+                        showQR(propGroupContract);
                     }
                     break;
                 case currContract:
-                    const currGroupContract = this._group.getCurrentGroupContract(uData.keyIdentity._public.toHex());
+                    const currGroupContract = this._group.getCurrentGroupContract();
                     if (currGroupContract) {
-                        this.showQR(currGroupContract);
+                        showQR(currGroupContract);
                     }
                     break;
                 case details:
+                    topmost().navigate({
+                        moduleName: "pages/lab/group/details/details-page",
+                        context: {
+                            gcCollection: this._group,
+                        },
+                    });
                     break;
                 case update:
-                    // TODO il faut update l'affichage?
                     try {
                         const groupContractionCollection = await scanNewGroupContract(this._group, uData.keyIdentity);
                         uData.addGroup(groupContractionCollection);
@@ -104,9 +99,19 @@ export class GroupView extends Observable {
                     }
                     break;
                 case _delete:
+                    const options = {
+                        title: "Do you want to delete this group?",
+                        okButtonText: "Yes",
+                        cancelButtonText: "No",
+                    };
+                    dialogs.confirm(options).then(async (choice: boolean) => {
+                        if (choice) {
+                            uData.rmGroup(this._group);
+                            await uData.save();
+                            groupList.updateGroupList();
+                        }
+                    });
                     break;
-                default:
-                    console.log(action);
             }
         } catch (e) {
             await msgFailed(e.toString(), "Error");
@@ -114,24 +119,7 @@ export class GroupView extends Observable {
 
     }
 
-    private showQR(groupContract: GroupContract) {
-        const qrVariables = {
-            groupDefinition: groupContract.groupDefinition.toJSON(),
-            signoffs: groupContract.signoffs,
-        };
-        const sideLength = screen.mainScreen.widthPixels / 3;
-        const qrCode = QrGenerator.createBarcode({
-            encode: JSON.stringify(qrVariables),
-            format: ZXing.QR_CODE,
-            height: sideLength,
-            width: sideLength,
-        });
-
-        topmost().showModal("pages/modal/modal-key", fromNativeSource(qrCode),
-            () => { Log.print("ok"); }, false, false, false);
-    }
-
-    get alias(): string {
+    get purpose(): string {
         return this._group.purpose;
     }
 
