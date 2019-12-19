@@ -89,7 +89,6 @@ export class GroupView extends Observable {
                     });
                     break;
                 case update:
-                    // TODO il faut update l'affichage?
                     try {
                         const groupContractionCollection = await scanNewGroupContract(this._group, uData.keyIdentity);
                         uData.addGroup(groupContractionCollection);
