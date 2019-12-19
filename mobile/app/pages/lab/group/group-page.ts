@@ -28,8 +28,8 @@ export async function navigatingTo(args: EventData) {
 }
 
 export async function createGroup(args: GestureEventData) {
-    const propose = "Design a group definition";
-    const scanQr = "Scan a group contract";
+    const propose = "Design a Group Definition";
+    const scanQr = "Scan a Group Contract";
     const actions = [propose, scanQr];
     const cancel = "Cancel";
 

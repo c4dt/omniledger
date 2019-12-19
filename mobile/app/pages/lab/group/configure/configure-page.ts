@@ -7,6 +7,8 @@ import { isAdmin, uData } from "~/lib/byzcoin-def";
 import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
 import { GroupDefinition, IGroupDefinition } from "~/lib/dynacred/group/groupDefinition";
+import { msgFailed } from "~/lib/messages";
+import { Contact } from "~/lib/dynacred";
 
 let page: Page;
 let gcCollection: GroupContractCollection;
@@ -15,15 +17,21 @@ let selectedPublicKeys = [];
 
 // tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
-    publicKeys: uData.keyIdentity._public.toHex() + ",58d3b216f69dae701feec7595157459d00298a17061fdb13b6f07d6e06a0b00a,77752774c3b56c081a073bcd5793e7fe2cde5a28642af31db2958bdc868240d5",
+    publicKeys: uData.keyIdentity._public.toHex() + ",b4c19e66fc8a43b3c682fc62a854723d57b9ff440baf74be7222cc9fd08ac956,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc",
     suite: "edwards25519",
     purpose: "Testing",
     voteThreshold: ">1/2",
     predecessor: "",
 });
 
+const dataFormDetails = fromObject({
+    id: "",
+    signoffs: "",
+});
+
 const viewModel = fromObject({
     dataForm,
+    dataFormDetails,
     isAdmin,
     isReadOnly: false,
     networkStatus: "",
@@ -44,17 +52,15 @@ export async function navigatingTo(args: EventData) {
             dataForm.set("predecessor", page.navigationContext.predecessor);
             gcCollection = page.navigationContext.gcCollection;
         }
+        if ("id" in page.navigationContext) {
+            dataFormDetails.set("id", page.navigationContext.id);
+        }
     }
 
     dataForm.set("description", uData.contact.alias);
-    console.log("dataForm", dataForm.get("predecessor"));
-    console.log("1");
     publicKeyList = [uData.contact];
-    console.log("2");
     selectedPublicKeys = [uData.keyIdentity._public];
-    console.log("3");
     viewModel.set("publicKeyList", publicKeyList);
-    console.log("4");
     // dataForm.set("publicKeys", "bonjour"); TODO pour update le form
 }
 
@@ -107,25 +113,37 @@ export async function propose() {
 }
 
 export async function addPublicKey(args: any) {
-    console.log("1");
-    console.log(uData.contacts.length);
-    console.log(uData.contacts[0]);
-    const result = await dialogs.action({
-        title: "Choose an organizer",
-        cancelButtonText: "Cancel",
-        actions: uData.contacts.map((c) => c.alias),
-    });
-    console.log("2");
-    // console.log(uData.contacts);
-    console.log("3");
-    console.log("length", uData.contacts.length);
-    const publicKey = uData.contacts.find((c) => {
-        console.log(c);
-        console.log(c.alias);
-        return c.alias === result;
-    });
-    if (publicKey != null) {
-        console.log(publicKey);
-        selectedPublicKeys.push(publicKey);
+    try {
+        const result = await dialogs.action({
+            title: "Choose an organizer",
+            cancelButtonText: "Cancel",
+            actions: uData.contacts.map((c) => c.alias),
+        });
+        console.log("3");
+        console.log("length", uData.contacts.length);
+        // console.log("gris", await uData.contacts[0].getDevices());
+        // const devices = await uData.contact[0].getDevices();
+        // console.log("a");
+        // const pubKeys = devices.map((dev) => dev.pubKey);
+        // console.log("a");
+        // Log.print(pubKeys[0].point);
+        console.log("4");
+        const contact = uData.contacts.find((c) => {
+            console.log(c.alias);
+            return c.alias === result;
+        });
+        console.log("5", contact !== null);
+        if (contact != null) {
+            const devices = await contact.getDevices();
+            console.log("devices");
+            const publicKeys = devices.map((d) => d.pubKey);
+            // TODO if there is multiple public key need to choose!
+            publicKeyList.push(contact as Contact);
+            console.log("publicKeyList", publicKeyList);
+            viewModel.set("publicKeyList", publicKeyList);
+        }
+    } catch (e) {
+        console.log("error ma gueule");
+        msgFailed(e.toString(), "Error");
     }
 }
