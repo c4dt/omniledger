@@ -27,7 +27,7 @@
             </nsListView:RadListView.itemTemplate>
         </nsListView:RadListView>
 
-        <df:RadDataForm id="group-contract-form" source="{{ dataForm }}" row="2" colSpan="3" isReadOnly="false">
+        <df:RadDataForm id="group-contract-form" source="{{ dataForm }}" row="2" colSpan="3" isReadOnly="{{ isReadOnly }}">
             <df:RadDataForm.properties>
                 <df:EntityProperty name="publicKeys" displayName="Public Keys" index="0">
                     <df:EntityProperty.editor>
@@ -70,6 +70,7 @@
                         <df:EntityProperty type="Text">
                         </df:EntityProperty>
                     </df:EntityProperty.editor>
+
                 </df:EntityProperty>
                 <df:RadDataForm.groups>
                     <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
@@ -83,7 +84,7 @@
             </df:RadDataForm.properties>
         </df:RadDataForm>
 
-        <Button text="Propose" tap="propose" class="btn btn-primary" row="4" colSpan="3" />
+        <Button text="Propose" style="{{ isReadOnly ? 'visibility: hidden' : '' }}" tap="propose" class="btn btn-primary" row="4" colSpan="3" />
 
     </GridLayout>
 </Page>

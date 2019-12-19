@@ -11,7 +11,7 @@
         <ListView items="{{ groups }}" class="list-group" row="0">
             <ListView.itemTemplate>
                 <FlexboxLayout orientation="horizontal" flexDirection="row" class="basic-list-decorated" alignItems="center" tap="{{ selectGroup }}">
-                    <Label text="{{ alias }}" class="h3" textTransform="uppercase" height="100%" flewGrow="1" tap="{{ selectGroup }}"/>
+                    <Label text="{{ purpose }}" class="h3" textTransform="uppercase" height="100%" flexGrow="1"/>
                 </FlexboxLayout>
             </ListView.itemTemplate>
         </ListView>

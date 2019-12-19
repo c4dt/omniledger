@@ -95,7 +95,7 @@ describe("Group Management", () => {
         expect(contractCollection.isAccepted(contract2)).toBeTruthy();
         expect(contractCollection.getWorldView(contract1)).toEqual([[contract1, contract2]]);
         expect(contractCollection.getWorldView(contract2)).toEqual([contract2]);
-        expect(contractCollection.getCurrentGroupContract(user1._public.toHex())).toEqual(contract2);
+        expect(contractCollection.getCurrentGroupContract()).toEqual(contract2);
         Log.print("Second part of test GroupDescriptionCollection is passed!");
     });
     it("Test multiple signature by same user", () => {
@@ -172,7 +172,7 @@ describe("Group Management", () => {
         sleep(1000);
 
         expect(contractCollection.getWorldView(gc0)).toEqual([[gc0, gc1, gc2], [gc0, gc3]]);
-        expect(contractCollection.getCurrentGroupContract(user1._public.toHex())).toEqual(undefined);
+        expect(contractCollection.getCurrentGroupContract()).toEqual(undefined);
         Log.print("Test getWorldView with multiples branches passed!");
     });
     it("Test vote threshold", () => {

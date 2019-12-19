@@ -4,24 +4,17 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
+import Log from "@dedis/cothority/log";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures/gestures";
 import { Page } from "tns-core-modules/ui/page";
 import { uData } from "~/lib/byzcoin-def";
-import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
-import { msgFailed } from "~/lib/messages";
-import { scan } from "~/lib/scan";
-import { GroupListView, GroupView } from "~/pages/lab/group/group-view";
-
-import Log from "@dedis/cothority/log";
 import { scanNewGroupContract } from "~/lib/group-ui";
-
-// QR code utilies
-const ZXing = require("nativescript-zxing");
-const QrGenerator = new ZXing();
+import { msgFailed } from "~/lib/messages";
+import { GroupListView } from "~/pages/lab/group/group-view";
 
 export let groupList: GroupListView;
 let page: Page;
@@ -57,39 +50,12 @@ export async function createGroup(args: GestureEventData) {
                 });
             case scanQr:
                 const gcCollection = await scanNewGroupContract(new GroupContractCollection(), uData.keyIdentity);
-                uData.addGroup(gcCollection);
-                await uData.save();
-                // const result = await scan("{{ L('group.camera_text') }}");
-                // Log.print("bonjour");
-                // const groupContract = GroupContract.createFromJSON(JSON.parse(result.text));
-                // Log.print("aurevoir");
-                // // cannot accept a group contract where the user public key is not included
-                // if (groupContract.groupDefinition.publicKeys.indexOf(uData.keyIdentity._public.toHex()) === -1) {
-                //     throw new Error("This group contract does not contain your public key.");
-                // }
-                // // not yet aware of this group contract
-                // const options = {
-                //     title: "Do you want to accept this new group contract?",
-                //     message: groupContract.groupDefinition.toString(),
-                //     okButtonText: "Yes",
-                //     cancelButtonText: "No",
-                // };
-                // dialogs.confirm(options).then((choice: boolean) => {
-                //     if (choice) {
-                //         Log.print("1");
-                //         const coll = new GroupContractCollection(groupContract.groupDefinition.purpose);
-                //         Log.print("2");
-                //         gcCollection.push(coll);
-                //         Log.print("3");
-                //         coll.append(groupContract);
-                //         Log.print("4");
-                //         coll.sign(groupContract, uData.keyIdentity._private);
-                //         Log.print("5");
-                //         Log.print(groupList);
-                //         groupList.updateGroupList(gcCollection);
-                //         Log.print("6");
-                //     }
-                // });
+                // only save if the group contact was accepted
+                if (gcCollection.collection.size !== 0) {
+                    uData.addGroup(gcCollection);
+                    await uData.save();
+                    groupList.updateGroupList();
+                }
                 break;
         }
     } catch (e) {
