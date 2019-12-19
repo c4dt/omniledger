@@ -792,13 +792,13 @@ class Device {
         const d = await DarcInstance.fromByzcoin(rpc, darcID);
         return new Device(d.darc);
     }
-    pubKey: Public;
+    readonly pubKey: Public;
 
     /**
      * Constructor verifies the given darc is somewhat compatible with a device.
      * @param darc
      */
-    constructor(public darc: Darc) {
+    constructor(readonly darc: Darc) {
         const ids = darc.rules.getRule(Darc.ruleSign).getIdentities();
         if (ids.length > 1) {
             throw new Error("a device darc cannot have more than one signer identity");
