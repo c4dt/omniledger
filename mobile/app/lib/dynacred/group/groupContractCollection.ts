@@ -211,7 +211,7 @@ export class GroupContractCollection {
 
             return this.meetVoteThreshold(p.voteThreshold, numbSignoffsByParent / p.publicKeys.length);
         });
-        Log.print("isAccepted4");
+
         return verifiedParent.reduce((bool1, bool2) => bool1 && bool2);
     }
 

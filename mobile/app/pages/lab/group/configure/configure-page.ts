@@ -14,7 +14,7 @@ import { msgFailed } from "~/lib/messages";
 let page: Page;
 let gcCollection: GroupContractCollection;
 const publicKeyList = new ObservableArray<PublicKeyListItem>();
-const predecessorList = new ObservableArray();
+const predecessorList = new ObservableArray<PredecessorListItem>();
 
 // tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
@@ -62,7 +62,6 @@ export async function navigatingTo(args: EventData) {
         }
     }
 
-    publicKeyList.push(new PublicKeyListItem(uData.contact.alias, (await uData.contact.getDevices()).map((d) => d.pubKey.toHex())[0]));
     page.bindingContext = viewModel;
 
     // if (page.get("navigationContext")) {
@@ -107,17 +106,17 @@ export async function propose() {
     // TODO check the fields
     // tslint:disable: object-literal-sort-keys
     const variables: IGroupDefinition = {
-        orgPubKeys: dataForm.get("publicKeys").split(","),
+        orgPubKeys: publicKeyList.map((p) => p.publicKey),
         suite: dataForm.get("suite"),
         voteThreshold: dataForm.get("voteThreshold"),
         purpose: dataForm.get("purpose"),
-        predecessor: dataForm.get("predecessor") ? [dataForm.get("predecessor")] : undefined,
+        predecessor:  predecessorList.map((p) => p.id),
     };
+
     let groupDefinition = new GroupDefinition(variables);
     let contract: GroupContract;
     if (!gcCollection) {
         Log.print("new", groupDefinition.purpose);
-        Log.print("voteThreshold", groupDefinition.voteThreshold);
         gcCollection = new GroupContractCollection(variables.purpose);
         // genesis group contract: c0
         contract = gcCollection.createGroupContract(undefined, groupDefinition);
@@ -150,34 +149,26 @@ export async function propose() {
 
 export async function addPublicKey(args: any) {
     try {
+        const contactAliases = uData.contacts.map((c) => c.alias).filter((a) => {
+            return publicKeyList.map((p: PublicKeyListItem) => p.alias).indexOf(a) === -1;
+        });
         const cancelText = "Cancel";
         let result = await dialogs.action({
             title: "Choose an organizer",
             cancelButtonText: cancelText,
-            actions: uData.contacts.map((c) => c.alias),
+            actions: contactAliases,
         });
 
         if (result === cancelText) {
             return;
         }
 
-        Log.print("3");
-        Log.print("length", uData.contacts.length);
-        // Log.print("gris", await uData.contacts[0].getDevices());
-        // const devices = await uData.contact[0].getDevices();
-        // Log.print("a");
-        // const pubKeys = devices.map((dev) => dev.pubKey);
-        // Log.print("a");
-        // Log.print(pubKeys[0].point);
-        Log.print("4");
         const contact = uData.contacts.find((c) => {
-            Log.print(c.alias);
             return c.alias === result;
         });
-        Log.print("5", contact !== null);
+
         if (contact !== null) {
             const devices = await contact.getDevices();
-            Log.print("devices:", devices);
             const pubKeys = devices.map((d) => d.pubKey.toHex());
             // TODO if there is multiple public key need to choose!
             let selectedPubKey: string;
@@ -198,8 +189,6 @@ export async function addPublicKey(args: any) {
             }
 
             publicKeyList.push(new PublicKeyListItem(contact.alias, selectedPubKey));
-            // publicKeyList.push(contact);
-            // Log.print("publicKeyList", publicKeyList);
         }
     } catch (e) {
         Log.catch("error");
@@ -215,7 +204,8 @@ export async function addPredecessor(args: any) {
         }
 
         const gcIds = Array.from(gcCollection.collection.keys()).filter((id) => {
-            return !(id in predecessorList.map((p: PredecessorListItem) => p.id));
+
+            return predecessorList.map((p: PredecessorListItem) => p.id).indexOf(id) === -1;
         });
         const cancelText = "Cancel";
         const result = await dialogs.action({
@@ -239,13 +229,27 @@ export async function addPredecessor(args: any) {
     }
 }
 
-function setDataForm(groupContract?: GroupContract) {
+async function setDataForm(groupContract?: GroupContract) {
     if (groupContract) {
         dataForm.set("publicKeys", groupContract.publicKeys.join(","));
         dataForm.set("suite", groupContract.groupDefinition.suite);
         dataForm.set("purpose", groupContract.purpose);
         dataForm.set("voteThreshold", groupContract.voteThreshold);
 
+        // set publicKeyList
+        // TODO first add the user's public key
+        const userContact = await uData.contact.getDevices();
+        if (groupContract.publicKeys.indexOf(userContact[0].pubKey.toHex()) > -1) {
+            publicKeyList.push(new PublicKeyListItem(uData.contact.alias, userContact[0].pubKey.toHex()));
+        }
+        groupContract.publicKeys.forEach(async (pubKey) => {
+            const alias = await getAliasFromPublicKey(pubKey);
+            if (alias) {
+                publicKeyList.push(new PublicKeyListItem(alias, pubKey));
+            }
+        });
+
+        // set predecessorList
         if (page.navigationContext.isPredecessor) {
             dataForm.set("predecessor", groupContract.id);
             predecessorList.push(new PredecessorListItem(groupContract.id));
@@ -262,6 +266,23 @@ function setDataForm(groupContract?: GroupContract) {
         dataForm.set("voteThreshold", ">1/2");
         dataForm.set("predecessor", "");
         dataForm.set("description", uData.contact.alias);
+        publicKeyList.push(new PublicKeyListItem(uData.contact.alias, (await uData.contact.getDevices()).map((d) => d.pubKey.toHex())[0]));
+    }
+}
+
+// TODO is there a better way?
+async function getAliasFromPublicKey(publicKey: string): Promise<string> {
+    try {
+        for (const contact of uData.contacts) {
+            const devices = await contact.getDevices();
+            for (const device of devices) {
+                if (publicKey === device.pubKey.toHex()) {
+                    return contact.alias;
+                }
+            }
+        }
+    } catch (e) {
+        msgFailed(e.toString(), "Error");
     }
 }
 
