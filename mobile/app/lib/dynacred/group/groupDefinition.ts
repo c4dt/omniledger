@@ -19,8 +19,6 @@ export interface IGroupDefinition {
 export class GroupDefinition {
 
     static createFromJSON(json: IGroupDefinition): GroupDefinition {
-        // const jsonText = JSON.parse(json);
-
         // check the JSON soundness
         if (!json.hasOwnProperty("orgPubKeys")) {
             throw new Error("Property orgPubKeys is missing from the JSON");
