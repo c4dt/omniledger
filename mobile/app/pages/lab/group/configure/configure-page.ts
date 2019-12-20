@@ -6,6 +6,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { isAdmin, uData } from "~/lib/byzcoin-def";
+import { Contact } from "~/lib/dynacred";
 import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
 import { GroupDefinition, IGroupDefinition } from "~/lib/dynacred/group/groupDefinition";
