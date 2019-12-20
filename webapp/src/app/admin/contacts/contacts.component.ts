@@ -22,7 +22,7 @@ import { Contact, Data, FileBlob, Private, TProgress } from "@c4dt/dynacred";
 import { showDialogInfo, showSnack, showTransactions, storeCredential } from "../../../lib/Ui";
 import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
-import { DeviceShowComponent } from "../devices/devices.component";
+import { ShowComponent } from "../devices/devices.component";
 import { ManageDarcComponent } from "../manage-darc";
 
 import { ContactInfoComponent } from "./contact-info/contact-info.component";
@@ -260,7 +260,7 @@ export class ContactsComponent implements OnInit {
         if (device) {
             const url = window.location.protocol + "//" + window.location.host +
                 this.location.prepareExternalUrl(device);
-            this.dialog.open(DeviceShowComponent, {data: url});
+            this.dialog.open(ShowComponent, {data: url});
         }
     }
 

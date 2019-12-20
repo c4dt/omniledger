@@ -25,7 +25,8 @@ import {
     DeviceAddComponent,
     DeviceRecoveryComponent,
     DevicesComponent,
-    DeviceShowComponent,
+    RenameComponent,
+    ShowComponent,
 } from "./admin/devices/devices.component";
 import { ManageDarcComponent } from "./admin/manage-darc";
 import { PersonhoodComponent } from "./admin/personhood/personhood.component";
@@ -83,7 +84,8 @@ export function loadUserDataConfig(d: UserData) {
         ShowBlockComponent,
         DevicesComponent,
         DeviceAddComponent,
-        DeviceShowComponent,
+        ShowComponent,
+        RenameComponent,
         DeviceRecoveryComponent,
         DeviceComponent,
         C4dtComponent,
@@ -115,7 +117,8 @@ export function loadUserDataConfig(d: UserData) {
         DialogTransactionComponent,
         ShowBlockComponent,
         DeviceAddComponent,
-        DeviceShowComponent,
+        ShowComponent,
+        RenameComponent,
         DeviceRecoveryComponent,
         CredentialComponent,
     ],

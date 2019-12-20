@@ -6,9 +6,11 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { InstanceID } from "@dedis/cothority/byzcoin";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { Darc } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
 
 import { Device, TProgress } from "@c4dt/dynacred";
 
+import { Attribute, Credential } from "@dedis/cothority/personhood/credentials-instance";
 import { showDialogInfo, showDialogOKC, showSnack, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 
@@ -43,7 +45,7 @@ export class DevicesComponent implements OnInit {
         this.updateDevices();
     }
 
-    async delete(device: Device) {
+    async deleteDevice(device: Device) {
         if (this.devices.length <= 1) {
             return showDialogInfo(this.dialog, "Too few devices", "There must be at least one device available, so " +
                 "it's not possible to remove the only device you have.", "Understood");
@@ -53,22 +55,31 @@ export class DevicesComponent implements OnInit {
             return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                 "reasons.", "Understood");
         }
-        await showTransactions(this.dialog, "Deleting device " + device.name,
-            async (progress: TProgress) => {
-                progress(30, "Deleting Device");
-                await this.uData.contact.deleteDevice(device.name);
-                progress(60, "Updating Device List");
-                await this.uData.contact.sendUpdate();
-                progress(-90, "Fetching all devices");
-                this.updateDevices();
-            });
+        if (await showDialogOKC(this.dialog, `Deleting device`,
+            `Do you really want to delete the device ${device.name}?`,
+            {OKButton: `Delete`, CancelButton: `Keep`})) {
+            await showTransactions(this.dialog, "Deleting device " + device.name,
+                async (progress: TProgress) => {
+                    progress(30, "Deleting Device");
+                    await this.uData.contact.deleteDevice(device.name);
+                    progress(60, "Updating Device List");
+                    await this.uData.contact.sendUpdate();
+                    progress(-90, "Fetching all devices");
+                    this.updateDevices();
+                });
+        }
+
     }
 
-    async add() {
+    async addDevice() {
         const ac = this.dialog.open(DeviceAddComponent);
         ac.afterClosed().subscribe(async (result) => {
             if (result) {
-                // const result = "phone" + this.uData.contact.credential.getCredential("1-devices").attributes.length;
+                if (this.devices.find((d) => d.name === result)) {
+                    await showDialogInfo(this.dialog, "Duplicate name", `The device-name ${result} already exists`,
+                        "Change");
+                    return this.addDevice();
+                }
                 const device: string =
                     await showTransactions(this.dialog, "Adding new device",
                         async (progress: TProgress) => {
@@ -84,8 +95,37 @@ export class DevicesComponent implements OnInit {
                         });
                 const url = window.location.protocol + "//" + window.location.host +
                     this.location.prepareExternalUrl(device);
-                this.dialog.open(DeviceShowComponent, {data: url});
+                this.dialog.open(ShowComponent, {data: url});
             }
+        });
+    }
+
+    async renameDevice(dev: Device, typeStr: string) {
+        const ac = this.dialog.open(RenameComponent, {data: {name: dev.name, typeStr}});
+        ac.afterClosed().subscribe(async (result) => {
+            if (result === undefined || result === "") {
+                return;
+            }
+            if (this.devices.concat(this.recovery).find((d) => d.name === result)) {
+                await showDialogInfo(this.dialog, "Duplicate name", `The ${typeStr}-name ${result} already exists`,
+                    "Change");
+                return this.addDevice();
+            }
+
+            dev.name = result;
+            await showTransactions(this.dialog, `Renaming ${typeStr}`,
+                async (progress: TProgress) => {
+                    const name = typeStr === "devices" ? "1-devices" : "1-recovery";
+                    const atts = typeStr === "devices" ? this.devices : this.recovery;
+                    this.uData.contact.credential.setCredential(name,
+                        new Credential({
+                            attributes: atts.map((d) => new Attribute({name: d.name, value: d.darcID})),
+                            name,
+                        }));
+                    this.uData.contact.incVersion();
+                    progress(50, "Updating credential");
+                    await this.uData.save();
+                });
         });
     }
 
@@ -114,21 +154,28 @@ export class DevicesComponent implements OnInit {
         }
         const ac = this.dialog.open(DeviceRecoveryComponent, {data: accounts});
         ac.afterClosed().subscribe(async (result) => {
-            if (result === undefined) { return; }
+            if (result === undefined) {
+                return;
+            }
 
             const d = accounts.find((acc) => acc.id.equals(result));
             if (d === undefined) {
-                    return showDialogInfo(this.dialog, "No such account",
-                        "Didn't find the chosen account.", "Go on");
-                }
+                return showDialogInfo(this.dialog, "No such account",
+                    "Didn't find the chosen account.", "Go on");
+            }
+            if (this.recovery.find((r) => r.name === result)) {
+                await showDialogInfo(this.dialog, "Duplicate name", `The recovery-name ${result} already exists`,
+                    "Change");
+                return this.addRecovery();
+            }
             this.recovery.push(new Device(d.name, d.id));
             await showTransactions(this.dialog, "Adding recovery account",
-                    async (progress: TProgress) => {
-                        progress(33, "Adding new recovery account");
-                        await this.uData.contact.addSigner("1-recovery", d.name, result);
-                        progress(66, "Updating account");
-                        await this.uData.contact.sendUpdate();
-                    });
+                async (progress: TProgress) => {
+                    progress(33, "Adding new recovery account");
+                    await this.uData.contact.addSigner("1-recovery", d.name, result);
+                    progress(66, "Updating account");
+                    await this.uData.contact.sendUpdate();
+                });
         });
     }
 
@@ -153,6 +200,8 @@ export class DevicesComponent implements OnInit {
     templateUrl: "device-add.html",
 })
 export class DeviceAddComponent {
+    typeStr: string;
+
     constructor(
         public dialogRef: MatDialogRef<DeviceAddComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
@@ -160,13 +209,31 @@ export class DeviceAddComponent {
 }
 
 @Component({
-    selector: "device-show",
-    templateUrl: "device-show.html",
+    selector: "show",
+    templateUrl: "show.html",
 })
-export class DeviceShowComponent {
+export class ShowComponent {
     constructor(
-        public dialogRef: MatDialogRef<DeviceShowComponent>,
+        public dialogRef: MatDialogRef<ShowComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
+    }
+}
+
+interface IDeviceType {
+    typeStr: string;
+    name: string;
+}
+
+@Component({
+    selector: "rename",
+    templateUrl: "rename.html",
+})
+export class RenameComponent {
+    origName: string;
+    constructor(
+        public dialogRef: MatDialogRef<RenameComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: IDeviceType) {
+        this.origName = data.name;
     }
 }
 
@@ -183,7 +250,7 @@ export class DeviceRecoveryComponent {
     selected: InstanceID;
 
     constructor(
-        public dialogRef: MatDialogRef<DeviceShowComponent>,
+        public dialogRef: MatDialogRef<ShowComponent>,
         @Inject(MAT_DIALOG_DATA) public data: IAccount[]) {
         this.selected = data[0].id;
     }
