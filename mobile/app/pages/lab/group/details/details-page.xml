@@ -12,7 +12,7 @@
                     <GridLayout rows="auto" columns="auto, *">
                         <GridLayout rows="auto, auto" row="0" col="0">
                             <!-- <Label text="&#xf255" row="0" class="fas" style="{{ 'font-size: 25%; text-align: right;' + (isCurrentGroupContract ? '' : 'visibility: hidden;') }}"/> -->
-                            <Label text="{{ 'id: ' + id }}" row="0" class="h3" textTransform="uppercase" height="100%" flexGrow="1"/>
+                            <Label text="{{ id }}" row="0" class="h3" textTransform="uppercase" height="100%" flexGrow="1"/>
                             <Label text="{{ 'pred: ' + predecessor }}" row="1" class="h3" textTransform="uppercase" height="100%" flexGrow="1" style="{{ hasPredecessor ? '' : 'visibility: hidden' }}"/>
                         </GridLayout>
                         <GridLayout rows="auto, auto" col="1">
