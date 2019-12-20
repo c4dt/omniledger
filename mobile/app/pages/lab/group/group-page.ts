@@ -47,6 +47,9 @@ export async function createGroup(args: GestureEventData) {
             case propose:
                 return topmost().navigate({
                     moduleName: "pages/lab/group/configure/configure-page",
+                    context: {
+                        isReadOnly: false,
+                    }
                 });
             case scanQr:
                 const gcCollection = await scanNewGroupContract(new GroupContractCollection(), uData.keyIdentity);
