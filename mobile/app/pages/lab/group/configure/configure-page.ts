@@ -17,7 +17,7 @@ let selectedPublicKeys = [];
 
 // tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
-    publicKeys: uData.keyIdentity._public.toHex() + ",b4c19e66fc8a43b3c682fc62a854723d57b9ff440baf74be7222cc9fd08ac956,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc",
+    publicKeys: uData.keyIdentity._public.toHex() + ",17898659d4e9744ff23a49daecdff2d6f68dba985adaef19e84744d94198356b,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc",
     suite: "edwards25519",
     purpose: "Testing",
     voteThreshold: ">1/2",
@@ -40,28 +40,39 @@ const viewModel = fromObject({
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
-    Log.print("new groupContract");
+    Log.lvl1("new groupContract");
     page = args.object as Page;
-    page.bindingContext = viewModel;
 
+    // set the dataForm variables correctly
+    resetDataForm();
     if (page.get("navigationContext")) {
         if ("isReadOnly" in page.navigationContext) {
             viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
         }
+        if ("groupContract" in page.navigationContext) {
+            // dataForm.set("publicKe") TODO
+            const groupContract = page.navigationContext.groupContract;
+            dataForm.set("publicKeys", groupContract.publicKeys.join(","));
+            dataForm.set("suite", groupContract.groupDefinition.suite);
+            dataForm.set("purpose", groupContract.purpose);
+            dataForm.set("voteThreshold", groupContract.voteThreshold);
+            dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
+            // dataForm.set("description", groupContract.purpose);
+        }
         if ("predecessor" in page.navigationContext) {
             dataForm.set("predecessor", page.navigationContext.predecessor);
             gcCollection = page.navigationContext.gcCollection;
+        } else {
+            gcCollection = undefined;
         }
         if ("id" in page.navigationContext) {
             dataFormDetails.set("id", page.navigationContext.id);
         }
     }
-
-    dataForm.set("description", uData.contact.alias);
     publicKeyList = [uData.contact];
     selectedPublicKeys = [uData.keyIdentity._public];
     viewModel.set("publicKeyList", publicKeyList);
-    // dataForm.set("publicKeys", "bonjour"); TODO pour update le form
+    page.bindingContext = viewModel;
 }
 
 export function goBack() {
@@ -82,6 +93,8 @@ export async function propose() {
     let groupDefinition = new GroupDefinition(variables);
     let contract: GroupContract;
     if (!gcCollection) {
+        console.log("new", groupDefinition.purpose);
+        console.log("voteThreshold", groupDefinition.voteThreshold);
         gcCollection = new GroupContractCollection(variables.purpose);
         // genesis group contract: c0
         contract = gcCollection.createGroupContract(undefined, groupDefinition);
@@ -143,7 +156,16 @@ export async function addPublicKey(args: any) {
             viewModel.set("publicKeyList", publicKeyList);
         }
     } catch (e) {
-        console.log("error ma gueule");
+        console.log("error");
         msgFailed(e.toString(), "Error");
     }
+}
+
+function resetDataForm() {
+    dataForm.set("publicKeys", uData.keyIdentity._public.toHex() + ",e7c717a6f052fc4f6e665f7e3e38d153643313eb321ea042f1340daaf6d270e5,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc");
+    dataForm.set("suite", "edwards25519");
+    dataForm.set("purpose", "Testing");
+    dataForm.set("voteThreshold", ">1/2");
+    dataForm.set("predecessor", "");
+    dataForm.set("description", uData.contact.alias);
 }
