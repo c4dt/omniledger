@@ -6,7 +6,6 @@ import { schnorr } from "@dedis/kyber/sign";
 import crypto from "crypto-browserify";
 import { Private, Public } from "../KeyPair";
 import { ENCODING } from "./groupContract";
-import { ConsoleReporter } from "jasmine";
 
 // variables of a GroupDefinition
 export interface IGroupDefinition {
