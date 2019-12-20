@@ -28,17 +28,17 @@ $case-padding: 10;
   vertical-align: center;
 }
 
-#addOrg {
+#addPublicKey #addPredecessor {
   horizontal-align: right;
   vertical-align: center;
   font-size: 40pt;
   padding-right: 20px;
 }
 
-#org-list-header {
+#pk-list-header #predecessor-list-header {
   vertical-align: center;
 }
 
-#org-list-header * {
+#pk-list-header #predecessor-list-header * {
   padding-bottom: 0;
 }

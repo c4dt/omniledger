@@ -39,10 +39,6 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                     if (choice) {
                         gcCollection.purpose = groupContract.groupDefinition.purpose;
                         gcCollection.append(groupContract);
-                        // do not sign if it is the genesis group contract c0
-                        // if (groupContract.groupDefinition.predecessor.length) {
-                        //     gcCollection.sign(groupContract, kp._private);
-                        // }
                     }
                 });
             } else {

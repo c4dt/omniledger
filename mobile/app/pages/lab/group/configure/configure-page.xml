@@ -7,120 +7,148 @@
         <Label class="action-bar-title" text="{{ L('configure_group.title') }}"/>
     </ActionBar>
 
-    <GridLayout class="page-content" rows="auto, auto, auto, auto, auto, auto" columns="*,auto,*">
-    <Label class="label-title" text="{{dataForm.purpose}}" row="0" col="0" colSpan="3"/>
+    <GridLayout rows="*">
+        <ScrollView row="0">
+            <GridLayout class="page-content" rows="auto, auto, auto, auto, *, auto, *, auto" columns="*,auto,*">
 
-     <GridLayout id="org-list-header" rows="auto" columns="auto, *" row="1" colSpan="3">
-            <Label class="label-title" text="{{ L('group.organizers') }}" row="0" col="0" colSpan="2"/>
-            <Label class="label-title" id="addPublicKey" text="+" tap="addPublicKey" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
-        </GridLayout>
+                <!-- Title label -->
+                <Label class="label-title" text="{{dataForm.purpose}}" row="0" col="0" colSpan="3"/>
 
-        <nsListView:RadListView items="{{ publicKeyList }}" id="list-view-orgs" itemTap="{{ readOnly ? '' : 'orgTapped' }}" row="3" col="0" colSpan="3" height="500px">
-            <nsListView:RadListView.listViewLayout>
-                <nsListView:ListViewGridLayout scrollDirection="Vertical" ios.itemHeight="50px" spanCount="3"/>
-            </nsListView:RadListView.listViewLayout>
-
-            <nsListView:RadListView.itemTemplate>
-                <StackLayout class="grid-list">
-                    <Label class="grid-list-text" text="{{ alias }}" textWrap="false"/>
-                </StackLayout>
-            </nsListView:RadListView.itemTemplate>
-        </nsListView:RadListView>
-
-        <df:RadDataForm id="group-contract-form" source="{{ dataForm }}" row="2" colSpan="3" isReadOnly="{{ isReadOnly }}">
-            <df:RadDataForm.properties>
-                <df:EntityProperty name="publicKeys" displayName="Public Keys" index="0">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                            <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                <!-- Fields to modify dataForm -->
+                <df:RadDataForm id="group-contract-form" source="{{ dataForm }}" row="1" colSpan="3" isReadOnly="{{ isReadOnly }}">
+                    <df:RadDataForm.properties>
+                        <df:EntityProperty name="publicKeys" displayName="Public Keys" index="0">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                </df:EntityProperty>
-                <df:EntityProperty name="suite" displayName="Suite" index="1">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                            <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                        <df:EntityProperty name="suite" displayName="Suite" index="1">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                </df:EntityProperty>
-                <df:EntityProperty name="purpose" displayName="Purpose" index="2">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                            <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                        <df:EntityProperty name="purpose" displayName="Purpose" index="2">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                </df:EntityProperty>
-                <df:EntityProperty name="voteThreshold" displayName="Vote Threshold" index="3">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                            <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                        <df:EntityProperty name="voteThreshold" displayName="Vote Threshold" index="3">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                </df:EntityProperty>
-                <df:EntityProperty name="predecessor" displayName="Predecessor(s)" index="4">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                                                    <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelHidden="true" labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                        <df:EntityProperty name="predecessor" displayName="Predecessor(s)" index="4">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelHidden="true" labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                    </df:EntityProperty>
 
-                <df:RadDataForm.groups>
-                    <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
-                        <df:PropertyGroup.properties>
-                            <df:EntityProperty name="_observers"/>
-                            <df:EntityProperty name="_map"/>
-                            <df:EntityProperty name="calypso"/>
-                        </df:PropertyGroup.properties>
-                    </df:PropertyGroup>
-                </df:RadDataForm.groups>
-            </df:RadDataForm.properties>
-        </df:RadDataForm>
+                        <df:RadDataForm.groups>
+                            <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
+                                <df:PropertyGroup.properties>
+                                    <df:EntityProperty name="_observers"/>
+                                    <df:EntityProperty name="_map"/>
+                                    <df:EntityProperty name="calypso"/>
+                                </df:PropertyGroup.properties>
+                            </df:PropertyGroup>
+                        </df:RadDataForm.groups>
+                    </df:RadDataForm.properties>
+                </df:RadDataForm>
 
-        <df:RadDataForm id="group-contract-form-2" source="{{ dataFormDetails }}" row="3" colSpan="3" isReadOnly="{{ isReadOnly }}" visibility="{{isReadOnly ? 'visible' : 'collapse'}}">
-            <df:RadDataForm.properties>
-                <df:EntityProperty name="id" displayName="id" index="0">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                            <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                <!-- Fields to show the id and signoffs of the group contract (only used in details) -->
+                <df:RadDataForm id="group-contract-form-2" source="{{ dataFormDetails }}" row="2" colSpan="3" isReadOnly="{{ isReadOnly }}" visibility="{{isReadOnly ? 'visible' : 'collapse'}}">
+                    <df:RadDataForm.properties>
+                        <df:EntityProperty name="id" displayName="id" index="0">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                </df:EntityProperty>
-                <df:EntityProperty name="signoffs" displayName="signoffs" index="1">
-                    <df:EntityProperty.editor>
-                        <df:EntityProperty type="Text">
-                            <df:PropertyEditor.propertyEditorStyle>
-                                <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                            </df:PropertyEditor.propertyEditorStyle>
+                        <df:EntityProperty name="signoffs" displayName="signoffs" index="1">
+                            <df:EntityProperty.editor>
+                                <df:EntityProperty type="Text">
+                                    <df:PropertyEditor.propertyEditorStyle>
+                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
+                                    </df:PropertyEditor.propertyEditorStyle>
+                                </df:EntityProperty>
+                            </df:EntityProperty.editor>
                         </df:EntityProperty>
-                    </df:EntityProperty.editor>
-                </df:EntityProperty>
 
-                <df:RadDataForm.groups>
-                    <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
-                        <df:PropertyGroup.properties>
-                            <df:EntityProperty name="_observers"/>
-                            <df:EntityProperty name="_map"/>
-                            <df:EntityProperty name="calypso"/>
-                        </df:PropertyGroup.properties>
-                    </df:PropertyGroup>
-                </df:RadDataForm.groups>
-            </df:RadDataForm.properties>
-        </df:RadDataForm>
+                        <df:RadDataForm.groups>
+                            <df:PropertyGroup collapsible="true" name="Hidden" hidden="true">
+                                <df:PropertyGroup.properties>
+                                    <df:EntityProperty name="_observers"/>
+                                    <df:EntityProperty name="_map"/>
+                                    <df:EntityProperty name="calypso"/>
+                                </df:PropertyGroup.properties>
+                            </df:PropertyGroup>
+                        </df:RadDataForm.groups>
+                    </df:RadDataForm.properties>
+                </df:RadDataForm>
 
-        <Button text="Propose" style="{{ isReadOnly ? 'visibility: hidden' : '' }}" tap="propose" class="btn btn-primary" row="4" colSpan="3" />
+                 <!-- Field to add public key -->
+                <GridLayout id="pk-list-header" rows="auto" columns="auto, *" row="3" colSpan="3">
+                    <Label class="label-title" text="{{ L('group.publickeys') }}" row="0" col="0" colSpan="2"/>
+                    <Label class="label-title" id="addPublicKey" text="+" tap="addPublicKey" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
+                </GridLayout>
 
+                <nsListView:RadListView items="{{ publicKeyList }}" id="list-view-pk" itemTap="{{ readOnly ? '' : 'orgTapped' }}" row="4" col="0" colSpan="3" height="500px">
+                    <nsListView:RadListView.listViewLayout>
+                        <nsListView:ListViewGridLayout scrollDirection="Vertical" ios.itemHeight="50px" spanCount="3"/>
+                    </nsListView:RadListView.listViewLayout>
+
+                    <nsListView:RadListView.itemTemplate>
+                        <StackLayout class="grid-list">
+                            <Label class="grid-list-text" text="{{ alias }}" textWrap="false"/>
+                        </StackLayout>
+                    </nsListView:RadListView.itemTemplate>
+                </nsListView:RadListView>
+
+                <!-- Field to add predecessor -->
+                 <GridLayout id="predecessor-list-header" rows="auto" columns="auto, *" row="5" colSpan="3">
+                    <Label class="label-title" text="{{ L('group.predecessor') }}" row="0" col="0" colSpan="2"/>
+                    <Label class="label-title" id="addPredecessor" text="+" tap="addPredecessor" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
+                </GridLayout>
+
+                <nsListView:RadListView items="{{ predecessorList }}" id="list-view-predecessor" itemTap="{{ readOnly ? '' : 'orgTapped' }}" row="6" col="0" colSpan="3" height="500px">
+                    <nsListView:RadListView.listViewLayout>
+                        <nsListView:ListViewGridLayout scrollDirection="Vertical" ios.itemHeight="50px" spanCount="3"/>
+                    </nsListView:RadListView.listViewLayout>
+
+                    <nsListView:RadListView.itemTemplate>
+                        <StackLayout class="grid-list">
+                            <Label class="grid-list-text" text="{{ id }}" textWrap="false"/>
+                        </StackLayout>
+                    </nsListView:RadListView.itemTemplate>
+                </nsListView:RadListView>
+
+                <!-- Button to propose the new group contract -->
+                <Button text="Propose" style="{{ isReadOnly ? 'visibility: hidden' : '' }}" tap="propose" class="btn btn-primary" row="7" colSpan="3" />
+
+            </GridLayout>
+        </ScrollView>
     </GridLayout>
 </Page>

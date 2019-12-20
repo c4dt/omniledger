@@ -132,6 +132,10 @@ export class GroupContract {
         return this._groupDefinition.predecessor;
     }
 
+    get purpose(): string {
+        return this._groupDefinition.purpose;
+    }
+
     get suite(): Group {
         return this._groupDefinition.suiteGroup;
     }
