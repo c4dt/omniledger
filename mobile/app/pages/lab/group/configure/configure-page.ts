@@ -13,7 +13,7 @@ import { msgFailed } from "~/lib/messages";
 
 let page: Page;
 let gcCollection: GroupContractCollection;
-const publicKeyList = new ObservableArray<Contact>();
+const publicKeyList = new ObservableArray<PublicKeyListItem>();
 const predecessorList = new ObservableArray();
 
 // tslint:disable: object-literal-sort-keys
@@ -62,7 +62,7 @@ export async function navigatingTo(args: EventData) {
         }
     }
 
-    publicKeyList.push(uData.contact);
+    publicKeyList.push(new PublicKeyListItem(uData.contact.alias, (await uData.contact.getDevices()).map((d) => d.pubKey.toHex())[0]));
     page.bindingContext = viewModel;
 
     // if (page.get("navigationContext")) {
@@ -150,11 +150,17 @@ export async function propose() {
 
 export async function addPublicKey(args: any) {
     try {
-        const result = await dialogs.action({
+        const cancelText = "Cancel";
+        let result = await dialogs.action({
             title: "Choose an organizer",
-            cancelButtonText: "Cancel",
+            cancelButtonText: cancelText,
             actions: uData.contacts.map((c) => c.alias),
         });
+
+        if (result === cancelText) {
+            return;
+        }
+
         Log.print("3");
         Log.print("length", uData.contacts.length);
         // Log.print("gris", await uData.contacts[0].getDevices());
@@ -172,10 +178,28 @@ export async function addPublicKey(args: any) {
         if (contact !== null) {
             const devices = await contact.getDevices();
             Log.print("devices:", devices);
-            const publicKeys = devices.map((d) => d.pubKey);
+            const pubKeys = devices.map((d) => d.pubKey.toHex());
             // TODO if there is multiple public key need to choose!
-            publicKeyList.push(contact as Contact);
-            Log.print("publicKeyList", publicKeyList);
+            let selectedPubKey: string;
+            if (pubKeys.length > 1) {
+                result = await dialogs.action({
+                    title: "Which public key do you want to use?",
+                    cancelButtonText: cancelText,
+                    actions: pubKeys,
+                });
+
+                if (result === cancelText) {
+                    return;
+                }
+
+                selectedPubKey = pubKeys.find((pk) => result === pk);
+            } else {
+                selectedPubKey = pubKeys[0];
+            }
+
+            publicKeyList.push(new PublicKeyListItem(contact.alias, selectedPubKey));
+            // publicKeyList.push(contact);
+            // Log.print("publicKeyList", publicKeyList);
         }
     } catch (e) {
         Log.catch("error");
@@ -209,11 +233,6 @@ export async function addPredecessor(args: any) {
         });
         if (selectedId !== null) {
             predecessorList.push(new PredecessorListItem(selectedId));
-            // predecessorList.push({
-            //     alias: selectedId.slice(0, 5),
-            //     id: selectedId,
-            // });
-            // viewModel.set("predecessorList", predecessorList);
         }
     } catch (e) {
         msgFailed(e.toString(), "Error");
@@ -228,7 +247,6 @@ function setDataForm(groupContract?: GroupContract) {
         dataForm.set("voteThreshold", groupContract.voteThreshold);
 
         if (page.navigationContext.isPredecessor) {
-            console.log("new group contract");
             dataForm.set("predecessor", groupContract.id);
             predecessorList.push(new PredecessorListItem(groupContract.id));
         } else {
@@ -237,14 +255,6 @@ function setDataForm(groupContract?: GroupContract) {
                 predecessorList.push(new PredecessorListItem(groupContract.predecessor[0]));
             }
         }
-        // dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
-        // if (groupContract.predecessor.length !== 0) {
-        //     predecessorList.push(new PredecessorListItem(groupContract.predecessor[0]));
-            // predecessorList.push({
-            //     alias: groupContract.predecessor.slice(0, 5),
-            //     id: groupContract.predecessor,
-            // });
-        // }
     } else {
         dataForm.set("publicKeys", uData.keyIdentity._public.toHex() + ",e7c717a6f052fc4f6e665f7e3e38d153643313eb321ea042f1340daaf6d270e5,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc");
         dataForm.set("suite", "edwards25519");
@@ -252,6 +262,16 @@ function setDataForm(groupContract?: GroupContract) {
         dataForm.set("voteThreshold", ">1/2");
         dataForm.set("predecessor", "");
         dataForm.set("description", uData.contact.alias);
+    }
+}
+
+class PublicKeyListItem {
+    alias: string;
+    publicKey: string;
+
+    constructor(alias: string, publicKey: string) {
+        this.alias = alias;
+        this.publicKey = publicKey;
     }
 }
 
