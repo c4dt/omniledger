@@ -81,7 +81,9 @@ export class GroupContractView extends Observable {
                         context: {
                             isReadOnly: true,
                             id: this._groupContract.id,
+                            isPredecessor: false,
                             groupContract: this._groupContract,
+                            gcCollection: undefined,
                         },
                     });
                     break;
@@ -111,7 +113,7 @@ export class GroupContractView extends Observable {
     }
 
     get id(): string {
-        let alias = "id: " + this._groupContract.id.slice(0, 15) + "...";
+        let alias = this._groupContract.id.slice(0, 15) + "...";
         if (this.isGenesis) {
             alias = "Genesis ".concat(alias);
         }

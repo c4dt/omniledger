@@ -63,7 +63,8 @@ export class GroupView extends Observable {
                         moduleName: "pages/lab/group/configure/configure-page",
                         context: {
                             isReadOnly: false,
-                            predecessor: this._group.getCurrentGroupContract().id,
+                            groupContract: this._group.getCurrentGroupContract(),
+                            isPredecessor: true,
                             gcCollection: this._group,
                         },
                     });

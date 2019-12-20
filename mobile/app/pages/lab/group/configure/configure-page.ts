@@ -13,8 +13,8 @@ import { msgFailed } from "~/lib/messages";
 
 let page: Page;
 let gcCollection: GroupContractCollection;
-let publicKeyList = new ObservableArray<Contact>();
-let selectedPublicKeys = [];
+const publicKeyList = new ObservableArray<Contact>();
+const predecessorList = new ObservableArray();
 
 // tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
@@ -35,8 +35,8 @@ const viewModel = fromObjectRecursive({
     dataFormDetails,
     isAdmin,
     isReadOnly: false,
-    networkStatus: "",
     publicKeyList,
+    predecessorList,
 });
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
@@ -44,37 +44,58 @@ export async function navigatingTo(args: EventData) {
     Log.lvl1("new groupContract");
     page = args.object as Page;
 
-    // set the dataForm variables correctly
-    resetDataForm();
+    publicKeyList.splice(0);
+    predecessorList.splice(0);
+
     if (page.get("navigationContext")) {
         if ("isReadOnly" in page.navigationContext) {
             viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
         }
-        if ("groupContract" in page.navigationContext) {
-            // dataForm.set("publicKe") TODO
-            const groupContract = page.navigationContext.groupContract;
-            dataForm.set("publicKeys", groupContract.publicKeys.join(","));
-            dataForm.set("suite", groupContract.groupDefinition.suite);
-            dataForm.set("purpose", groupContract.purpose);
-            dataForm.set("voteThreshold", groupContract.voteThreshold);
-            dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
-            // dataForm.set("description", groupContract.purpose);
-        }
-        if ("predecessor" in page.navigationContext) {
-            dataForm.set("predecessor", page.navigationContext.predecessor);
-            gcCollection = page.navigationContext.gcCollection;
-        } else {
-            gcCollection = undefined;
-        }
         if ("id" in page.navigationContext) {
             dataFormDetails.set("id", page.navigationContext.id);
         }
+        if ("groupContract" in page.navigationContext) {
+            gcCollection = page.navigationContext.gcCollection;
+            setDataForm(page.navigationContext.groupContract);
+        } else {
+            setDataForm();
+        }
     }
-    publicKeyList.splice(0);
+
     publicKeyList.push(uData.contact);
-    selectedPublicKeys = [uData.keyIdentity._public];
-    viewModel.set("publicKeyList", publicKeyList);
     page.bindingContext = viewModel;
+
+    // if (page.get("navigationContext")) {
+    //     if ("isReadOnly" in page.navigationContext) {
+    //         viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
+    //     }
+    //     if ("groupContract" in page.navigationContext) {
+    //         gcCollection = page.navigationContext.gcCollection;
+    //         const groupContract = page.navigationContext.groupContract;
+    //         dataForm.set("publicKeys", groupContract.publicKeys.join(","));
+    //         dataForm.set("suite", groupContract.groupDefinition.suite);
+    //         dataForm.set("purpose", groupContract.purpose);
+    //         dataForm.set("voteThreshold", groupContract.voteThreshold);
+    //         dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
+    //         dataForm.set("description", groupContract.purpose);
+    //     }
+    //     if ("predecessor" in page.navigationContext) {
+    //         dataForm.set("predecessor", page.navigationContext.predecessor);
+    //         gcCollection = page.navigationContext.gcCollection;
+    //         // console.log("pred", page.navigationContext.predecessor);
+    //         predecessorList.push({
+    //             alias: page.navigationContext.predecessor.slice(0, 5),
+    //             id: page.navigationContext.predecessor,
+    //         });
+    //     } else {
+    //         gcCollection = undefined;
+    //     }
+    //     if ("id" in page.navigationContext) {
+    //         dataFormDetails.set("id", page.navigationContext.id);
+    //     }
+    // }
+    // publicKeyList.push(uData.contact);
+    // page.bindingContext = viewModel;
 }
 
 export function goBack() {
@@ -148,7 +169,7 @@ export async function addPublicKey(args: any) {
             return c.alias === result;
         });
         Log.print("5", contact !== null);
-        if (contact != null) {
+        if (contact !== null) {
             const devices = await contact.getDevices();
             Log.print("devices:", devices);
             const publicKeys = devices.map((d) => d.pubKey);
@@ -162,11 +183,82 @@ export async function addPublicKey(args: any) {
     }
 }
 
-function resetDataForm() {
-    dataForm.set("publicKeys", uData.keyIdentity._public.toHex() + ",e7c717a6f052fc4f6e665f7e3e38d153643313eb321ea042f1340daaf6d270e5,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc");
-    dataForm.set("suite", "edwards25519");
-    dataForm.set("purpose", "Testing");
-    dataForm.set("voteThreshold", ">1/2");
-    dataForm.set("predecessor", "");
-    dataForm.set("description", uData.contact.alias);
+export async function addPredecessor(args: any) {
+    try {
+        if (gcCollection === undefined || gcCollection.collection.size === 0) {
+            await dialogs.alert("There is no possible predecessor available.");
+            return;
+        }
+
+        const gcIds = Array.from(gcCollection.collection.keys()).filter((id) => {
+            return !(id in predecessorList.map((p: PredecessorListItem) => p.id));
+        });
+        const cancelText = "Cancel";
+        const result = await dialogs.action({
+            title: "Choose a predecessor",
+            cancelButtonText: cancelText,
+            actions: gcIds,
+        });
+
+        if (result === cancelText) {
+            return;
+        }
+
+        const selectedId = gcIds.find((id: string) => {
+            return id === result;
+        });
+        if (selectedId !== null) {
+            predecessorList.push(new PredecessorListItem(selectedId));
+            // predecessorList.push({
+            //     alias: selectedId.slice(0, 5),
+            //     id: selectedId,
+            // });
+            // viewModel.set("predecessorList", predecessorList);
+        }
+    } catch (e) {
+        msgFailed(e.toString(), "Error");
+    }
+}
+
+function setDataForm(groupContract?: GroupContract) {
+    if (groupContract) {
+        dataForm.set("publicKeys", groupContract.publicKeys.join(","));
+        dataForm.set("suite", groupContract.groupDefinition.suite);
+        dataForm.set("purpose", groupContract.purpose);
+        dataForm.set("voteThreshold", groupContract.voteThreshold);
+
+        if (page.navigationContext.isPredecessor) {
+            console.log("new group contract");
+            dataForm.set("predecessor", groupContract.id);
+            predecessorList.push(new PredecessorListItem(groupContract.id));
+        } else {
+            dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
+            if (groupContract.predecessor.length !== 0) {
+                predecessorList.push(new PredecessorListItem(groupContract.predecessor[0]));
+            }
+        }
+        // dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
+        // if (groupContract.predecessor.length !== 0) {
+        //     predecessorList.push(new PredecessorListItem(groupContract.predecessor[0]));
+            // predecessorList.push({
+            //     alias: groupContract.predecessor.slice(0, 5),
+            //     id: groupContract.predecessor,
+            // });
+        // }
+    } else {
+        dataForm.set("publicKeys", uData.keyIdentity._public.toHex() + ",e7c717a6f052fc4f6e665f7e3e38d153643313eb321ea042f1340daaf6d270e5,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc");
+        dataForm.set("suite", "edwards25519");
+        dataForm.set("purpose", "Testing");
+        dataForm.set("voteThreshold", ">1/2");
+        dataForm.set("predecessor", "");
+        dataForm.set("description", uData.contact.alias);
+    }
+}
+
+class PredecessorListItem {
+    id: string;
+
+    constructor(id: string) {
+        this.id = id;
+    }
 }
