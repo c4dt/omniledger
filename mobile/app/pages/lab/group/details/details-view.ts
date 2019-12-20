@@ -125,7 +125,7 @@ export class GroupContractView extends Observable {
     }
 
     get id(): string {
-        let alias = this._groupContract.id.slice(0, 15) + "...";
+        let alias = "id: " + this._groupContract.id.slice(0, 15) + "...";
         if (this.isGenesis) {
             alias = "Genesis ".concat(alias);
         }
