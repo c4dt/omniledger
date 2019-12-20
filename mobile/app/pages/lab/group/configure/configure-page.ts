@@ -45,6 +45,8 @@ export async function navigatingTo(args: EventData) {
     publicKeyList.splice(0);
     predecessorList.splice(0);
 
+    // set the dataForm variables correctly
+    resetDataForm();
     if (page.get("navigationContext")) {
         if ("isReadOnly" in page.navigationContext) {
             viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
@@ -63,7 +65,6 @@ export async function navigatingTo(args: EventData) {
             dataFormDetails.set("id", page.navigationContext.id);
         }
     }
-
     page.bindingContext = viewModel;
 }
 

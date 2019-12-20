@@ -92,7 +92,7 @@ export class GroupContract {
         if (this._id !== this.groupDefinition.getId()) {
             throw new TypeError("The group contract id is not valid.");
         }
-
+        console.log("verifycontract1");
         const arg = parent[0] ? parent.map((p) => p.groupDefinition) : [undefined];
         return this._groupDefinition.verify(this._signoffs, ...arg);
     }

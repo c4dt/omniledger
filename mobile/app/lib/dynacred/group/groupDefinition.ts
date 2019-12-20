@@ -6,6 +6,7 @@ import { schnorr } from "@dedis/kyber/sign";
 import crypto from "crypto-browserify";
 import { Private, Public } from "../KeyPair";
 import { ENCODING } from "./groupContract";
+import { ConsoleReporter } from "jasmine";
 
 // variables of a GroupDefinition
 export interface IGroupDefinition {
@@ -100,14 +101,14 @@ export class GroupDefinition {
         if (!parent.map((p) => this.verifyId(p)).reduce((bool1: boolean, bool2: boolean) => bool1 && bool2)) {
             return false;
         }
-
+        console.log("verifydefinition1");
         // verify signatures
         // if the number of signatures is larger than the number of public keys
         // then an organizer have signed at least twice.
         if (this.variables.orgPubKeys.length < signoffs.length) {
             return false;
         }
-
+        console.log("verifydefinition2");
         const publicKeys = parent[0]
             ? [].concat(...parent.map((p) => p.publicKeys)).filter((val, idx, self) => {
                 return self.indexOf(val) === idx;
