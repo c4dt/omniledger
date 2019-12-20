@@ -1,0 +1,27 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+    navigatingTo="navigatingTo" class="page">
+    <ActionBar class="action-bar">
+        <NavigationButton text="Go Back" android:icon="res://ic_arrow_back" tap="goBack"/>
+        <Label class="action-bar-title" text="{{ L('group.details.title') }}"/>
+    </ActionBar>
+
+    <GridLayout rows="*">
+        <ListView items="{{ groupContracts }}" class="list-group" row="0">
+            <ListView.itemTemplate>
+                <FlexboxLayout orientation="horizontal" flexDirection="row" class="basic-list-decorated" alignItems="center" tap="{{ selectGroupContract }}" style="{{ isAccepted ? '' : 'opacity: 0.6' }}">
+                    <GridLayout rows="auto" columns="auto, *">
+                        <GridLayout rows="auto, auto" row="0" col="0">
+                            <!-- <Label text="&#xf255" row="0" class="fas" style="{{ 'font-size: 25%; text-align: right;' + (isCurrentGroupContract ? '' : 'visibility: hidden;') }}"/> -->
+                            <Label text="{{ 'id: ' + id }}" row="0" class="h3" textTransform="uppercase" height="100%" flexGrow="1"/>
+                            <Label text="{{ 'pred: ' + predecessor }}" row="1" class="h3" textTransform="uppercase" height="100%" flexGrow="1" style="{{ hasPredecessor ? '' : 'visibility: hidden' }}"/>
+                        </GridLayout>
+                        <GridLayout rows="auto, auto" col="1">
+                            <Label text="{{ isAccepted ? 'ACCEPTED' : 'NOT ACCEPTED' }}" row="0" col="1" class="h3" color="{{ isAccepted ? '#07ed50' : '#ed0b07' }}" horizontalAlignment="right" height="100%" flexGrow="1" tap="{{ selectGroupContract }}"/>
+                            <Label text="{{ isSigned ? '' : 'NOT SIGNED' }}" row="1" class="h3" horizontalAlignment="right" flexGrow="1" style="{{ isSigned || isGenesis ? 'visibility: hidden' : '' }}" />
+                        </GridLayout>
+                    </GridLayout>
+                </FlexboxLayout>
+            </ListView.itemTemplate>
+        </ListView>
+    </GridLayout>
+</Page>
