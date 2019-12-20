@@ -830,7 +830,7 @@ class Recover {
 
     get trustees(): InstanceID[] {
         const ts: InstanceID[] = [];
-        if (this.trustees === undefined) {
+        if (this.trusteesBuf === undefined) {
             return [];
         }
         for (let t = 0; t < this.trusteesBuf.length; t += iidLen) {
