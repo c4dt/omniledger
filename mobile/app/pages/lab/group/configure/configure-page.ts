@@ -67,6 +67,38 @@ export async function navigatingTo(args: EventData) {
         }
     }
     page.bindingContext = viewModel;
+
+    // if (page.get("navigationContext")) {
+    //     if ("isReadOnly" in page.navigationContext) {
+    //         viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
+    //     }
+    //     if ("groupContract" in page.navigationContext) {
+    //         gcCollection = page.navigationContext.gcCollection;
+    //         const groupContract = page.navigationContext.groupContract;
+    //         dataForm.set("publicKeys", groupContract.publicKeys.join(","));
+    //         dataForm.set("suite", groupContract.groupDefinition.suite);
+    //         dataForm.set("purpose", groupContract.purpose);
+    //         dataForm.set("voteThreshold", groupContract.voteThreshold);
+    //         dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
+    //         dataForm.set("description", groupContract.purpose);
+    //     }
+    //     if ("predecessor" in page.navigationContext) {
+    //         dataForm.set("predecessor", page.navigationContext.predecessor);
+    //         gcCollection = page.navigationContext.gcCollection;
+    //         // console.log("pred", page.navigationContext.predecessor);
+    //         predecessorList.push({
+    //             alias: page.navigationContext.predecessor.slice(0, 5),
+    //             id: page.navigationContext.predecessor,
+    //         });
+    //     } else {
+    //         gcCollection = undefined;
+    //     }
+    //     if ("id" in page.navigationContext) {
+    //         dataFormDetails.set("id", page.navigationContext.id);
+    //     }
+    // }
+    // publicKeyList.push(uData.contact);
+    // page.bindingContext = viewModel;
 }
 
 export function goBack() {
@@ -167,7 +199,6 @@ export async function addPublicKey(args: any) {
         const contact = contacts.find((c) => {
             return c.alias === result;
         });
-
         if (contact !== null) {
             const devices = await contact.getDevices();
             const pubKeys = devices.map((d) => d.pubKey.toHex());
