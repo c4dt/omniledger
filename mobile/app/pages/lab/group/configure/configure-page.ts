@@ -13,7 +13,7 @@ import { msgFailed } from "~/lib/messages";
 
 let page: Page;
 let gcCollection: GroupContractCollection;
-const publicKeyList = new ObservableArray<PublicKeyListItem>();
+let publicKeyList = new ObservableArray<PublicKeyListItem>();
 const predecessorList = new ObservableArray<PredecessorListItem>();
 
 // tslint:disable: object-literal-sort-keys
@@ -194,6 +194,13 @@ export async function addPublicKey(args: any) {
         Log.catch("error");
         return msgFailed(e.toString(), "Error");
     }
+}
+
+export function removePublicKey(args: any) {
+    // TODO j'en étais ici
+    console.log(args.object);
+    // const idxToRemove = publicKeyList.indexOf()
+    // publicKeyList.splice(0, 2);
 }
 
 export async function addPredecessor(args: any) {
