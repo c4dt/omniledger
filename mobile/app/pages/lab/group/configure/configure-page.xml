@@ -109,7 +109,7 @@
                     </df:RadDataForm.properties>
                 </df:RadDataForm>
 
-                 <!-- Field to add public key -->
+                <!-- Field to add public key -->
                 <GridLayout id="pk-list-header" rows="auto" columns="auto, *" row="3" colSpan="3">
                     <Label class="label-title" text="{{ L('group.publickeys') }}" row="0" col="0" colSpan="2"/>
                     <Label class="label-title" id="addPublicKey" text="+" tap="addPublicKey" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
@@ -121,14 +121,15 @@
                     </nsListView:RadListView.listViewLayout>
 
                     <nsListView:RadListView.itemTemplate>
-                        <StackLayout class="grid-list">
+                        <StackLayout class="grid-list" orientation="horizontal">
                             <Label class="grid-list-text" text="{{ alias }}" textWrap="false"/>
+                            <Label text="&#xf00d;" class="fas" tap="removePublicKey" verticalAlignment="center" style="font-size: 15%;"/>
                         </StackLayout>
                     </nsListView:RadListView.itemTemplate>
                 </nsListView:RadListView>
 
                 <!-- Field to add predecessor -->
-                 <GridLayout id="predecessor-list-header" rows="auto" columns="auto, *" row="5" colSpan="3">
+                <GridLayout id="predecessor-list-header" rows="auto" columns="auto, *" row="5" colSpan="3">
                     <Label class="label-title" text="{{ L('group.predecessor') }}" row="0" col="0" colSpan="2"/>
                     <Label class="label-title" id="addPredecessor" text="+" tap="addPredecessor" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
                 </GridLayout>
