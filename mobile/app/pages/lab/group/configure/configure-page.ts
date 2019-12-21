@@ -14,7 +14,7 @@ import { msgFailed } from "~/lib/messages";
 
 let page: Page;
 let gcCollection: GroupContractCollection;
-const publicKeyList = new ObservableArray<PublicKeyListItem>();
+let publicKeyList = new ObservableArray<PublicKeyListItem>();
 const predecessorList = new ObservableArray<PredecessorListItem>();
 
 // tslint:disable: object-literal-sort-keys
