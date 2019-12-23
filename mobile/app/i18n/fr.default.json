@@ -281,7 +281,7 @@
     "show_proposed_contract": "Afficher le QR code du contrat de groupe proposé",
     "show_current_contract": "Afficher le QR code du groupe de contrat actuel",
     "select_action": "Sélctionner l'action",
-    "delete_group": "Voulez-vous supprimer ce groupe?",
+    "delete_group": "Voulez-vous supprimer ce groupe?"
   },
   "group_configure": {
     "title": "Définition de groupe",
