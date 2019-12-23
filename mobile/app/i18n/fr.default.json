@@ -100,7 +100,8 @@
     "title": "Labo des génies",
     "personhood": "Individualité",
     "ropasci": "Feuille-caillou-ciseaux",
-    "poll": "Sondages anonymes"
+    "poll": "Sondages anonymes",
+    "group": "Gestion de groupe"
   },
   "settings": {
     "title": "Préférences",
@@ -269,6 +270,34 @@
     "prop_description": "Description",
     "prop_choices": "Options"
   },
+  "group": {
+    "title": "Gestion de Groupe",
+    "publickeys": "Clefs Publiques",
+    "predecessor": "Prédécesseur",
+    "not_contain_your_pk": "Ce contrat de group ne contient pas votre clef publique.",
+    "accept_group_contract": "Voulez-vous accepter ce contrat de groupe?",
+    "how_handle_group_contract": "Comment voulez gérer ce nouveau contrat de groupe?",
+    "propose_contract": "Proposer un nouveau contrat de groupe",
+    "show_proposed_contract": "Afficher le QR code du contrat de groupe proposé",
+    "show_current_contract": "Afficher le QR code du groupe de contrat actuel",
+    "select_action": "Sélctionner l'action",
+    "delete_group": "Voulez-vous supprimer ce groupe?",
+  },
+  "group_configure": {
+    "title": "Définition de groupe",
+    "alert_not_enough_predecessor": "Un nouveau contrat de groupe doit avoit au moins un prédécesseur.",
+    "alert_different_predecessor": "Un contrat de groupe proposé doit être différent de(s) prédécesseur(s).",
+    "alert_no_predecessor": "Il n'y a pas de prédécesseurs disponibles",
+    "warning": "Attention",
+    "choose_organizer": "Choisissez un organisateur",
+    "choose_predecessor": "Choisissez un prédécesseur",
+    "which_public_key": "Quelle clef publique voulez-vous utiliser?"
+  },
+  "group_details": {
+    "title": "Détails",
+    "show_definition": "Afficher la définition de groupe",
+    "show_qr": "Afficher le QR code"
+  },
   "loading": {
     "connecting": "Connection en cours"
   },
@@ -288,6 +317,14 @@
     "data_saved": "Données enregistrées",
     "error": "Un problème est survenu: %s",
     "yes": "Oui",
+    "no": "Non",
+    "update": "Mise à jour",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "accept": "Accepter",
+    "keep": "Garder",
+    "dismiss": "Rejeter",
+    "ok": "Ok",
     "ok_value1": "Trop cool",
     "ok_value2": "Super",
     "ok_value3": "Top",
