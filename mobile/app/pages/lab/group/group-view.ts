@@ -1,10 +1,9 @@
+import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";
-import { screen } from "tns-core-modules/platform";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { uData } from "~/lib/byzcoin-def";
-import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
 import { scanNewGroupContract, showQR } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
@@ -38,19 +37,19 @@ export class GroupView extends Observable {
     }
 
     async selectGroup(arg: ItemEventData) {
-        const propNewContract = "Propose New Group Contract";
-        const propContract = "Show Proposed Group Contract QR Code";
-        const currContract = "Show Current Group Contract QR Code";
-        const details = "Details";
-        const update = "Update";
-        const _delete = "Delete";
+        const propNewContract = localize("group.propose_contract");
+        const propContract = localize("group.show_proposed_contract");
+        const currContract = localize("group.show_current_contract");
+        const details = localize("group_details.title");
+        const update = localize("dialog.update");
+        const _delete = localize("dialog.delete");
         const actions = [propNewContract, propContract, currContract, details, update, _delete];
-        const cancel = "Cancel";
+        const cancel = localize("dialog.cancel");
 
         try {
             // tslint:disable: object-literal-sort-keys
             const action = await dialogs.action({
-                message: "Select action",
+                message: localize("group.select_action"),
                 cancelButtonText: cancel,
                 actions,
             });
@@ -101,9 +100,9 @@ export class GroupView extends Observable {
                     break;
                 case _delete:
                     const options = {
-                        title: "Do you want to delete this group?",
-                        okButtonText: "Yes",
-                        cancelButtonText: "No",
+                        title: localize("group.delete_group"),
+                        okButtonText: localize("dialog.yes"),
+                        cancelButtonText: localize("dialog.no"),
                     };
                     dialogs.confirm(options).then(async (choice: boolean) => {
                         if (choice) {

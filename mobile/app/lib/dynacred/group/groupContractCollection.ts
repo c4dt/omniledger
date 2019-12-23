@@ -40,76 +40,90 @@ export class GroupContractCollection {
     }
 
     createGroupContract(parent: GroupContract, groupDefinition: GroupDefinition): GroupContract {
-        let newGroupContract: GroupContract;
-        if (parent) {
-            newGroupContract = parent.proposeGroupContract(groupDefinition);
-        } else {
-            newGroupContract = new GroupContract(groupDefinition);
-        }
-        this.append(newGroupContract);
+        try {
+            let newGroupContract: GroupContract;
+            if (parent) {
+                newGroupContract = parent.proposeGroupContract(groupDefinition);
+            } else {
+                newGroupContract = new GroupContract(groupDefinition);
+            }
+            this.append(newGroupContract);
 
-        return newGroupContract;
+            return newGroupContract;
+        } catch (e) {
+            throw e;
+        }
     }
 
     sign(groupContract: GroupContract, privateKey: Private): boolean {
-        // create signoff
-        const signoff: string = groupContract.groupDefinition.sign(privateKey);
-        // append signoff to groupContract
-        const parents: GroupContract[] = this.getParent(groupContract);
-        let isAppended = false;
-        for (let i = 0; i < parents.length && !isAppended; i++) {
-            isAppended = groupContract.appendSignoff(signoff, parents[i]);
-        }
+        try {
+            // create signoff
+            const signoff: string = groupContract.groupDefinition.sign(privateKey);
+            // append signoff to groupContract
+            const parents: GroupContract[] = this.getParent(groupContract);
+            let isAppended = false;
+            for (let i = 0; i < parents.length && !isAppended; i++) {
+                isAppended = groupContract.appendSignoff(signoff, parents[i]);
+            }
 
-        // if groupContract is accepted; therefore, it becomes the current group contract
-        if (isAppended && this.isAccepted(groupContract)) {
-            this.currentGroupContract = groupContract;
-        }
+            // if groupContract is accepted; therefore, it becomes the current group contract
+            if (isAppended && this.isAccepted(groupContract)) {
+                this.currentGroupContract = groupContract;
+            }
 
-        return isAppended;
+            return isAppended;
+        } catch (e) {
+            console.log("error sign");
+            throw e;
+        }
     }
 
     append(groupContract: GroupContract) {
-        // only proceed if the the groupContract is sound
-        console.log("append1");
-        const parents = this.getParent(groupContract);
-        console.log("append2");
-        if (parents.length) {
-            if (!groupContract.verify(...this.getParent(groupContract))) {
-                Log.print("The group contract 1");
-                throw new TypeError("The group contract verification failed.");
+        try {
+            // only proceed if the the groupContract is sound
+            console.log("append1");
+            const parents = this.getParent(groupContract);
+            console.log("append2");
+            if (parents.length) {
+                if (!groupContract.verify(...this.getParent(groupContract))) {
+                    Log.print("The group contract 1");
+                    throw new TypeError("The group contract verification failed.");
+                }
+            } else {
+                if (!groupContract.verify(undefined)) {
+                    Log.print("The group contract 2");
+                    throw new TypeError("The group contract verification failed.");
+                }
             }
-        } else {
-            if (!groupContract.verify(undefined)) {
-                Log.print("The group contract 2");
-                throw new TypeError("The group contract verification failed.");
-            }
-        }
-        console.log("append2");
-        // check if the id is not already there
-        const existing: GroupContract[] = [];
-        this._collection.forEach((gd: GroupContract) => {
-            if (gd.id === groupContract.id) {
-                existing.push(gd);
-            }
-        });
-        console.log("append3");
-        if (existing.length) {
-            groupContract.mergeSignoffs(existing[0]);
-            this._collection.set(groupContract.id, groupContract);
-        } else {
-            // there is a new proposed group contract; therefore, erase the current proposed group contract
-            this.removeProposedGroupContract();
+            console.log("append2");
+            // check if the id is not already there
+            const existing: GroupContract[] = [];
+            this._collection.forEach((gd: GroupContract) => {
+                if (gd.id === groupContract.id) {
+                    existing.push(gd);
+                }
+            });
+            console.log("append3");
+            if (existing.length) {
+                groupContract.mergeSignoffs(existing[0]);
+                this._collection.set(groupContract.id, groupContract);
+            } else {
+                // there is a new proposed group contract; therefore, erase the current proposed group contract
+                this.removeProposedGroupContract();
 
-            this._collection.set(groupContract.id, groupContract);
+                this._collection.set(groupContract.id, groupContract);
+            }
+            console.log("append4");
+            // if groupContract is accepted; therefore, it becomes the current group contract
+            const numbPredecessor = groupContract.groupDefinition.predecessor.length;
+            if (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract))) {
+                this.currentGroupContract = groupContract;
+            }
+            console.log("append5");
+        } catch (e) {
+            console.log("error append");
+            throw e;
         }
-        console.log("append4");
-        // if groupContract is accepted; therefore, it becomes the current group contract
-        const numbPredecessor = groupContract.groupDefinition.predecessor.length;
-        if (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract))) {
-            this.currentGroupContract = groupContract;
-        }
-        console.log("append5");
     }
 
     has(groupContract: GroupContract): boolean {
@@ -121,38 +135,22 @@ export class GroupContractCollection {
     }
 
     getCurrentGroupContract(): GroupContract {
-        // TODO this method is wrong!!!!!!!!!!!
-        // const eligibleContracts = Array.from(this.collection.values()).filter((c) => c.successor.length === 0);
-
-        // // check the presence of the publicKey and a corresponding signature
-        // for (const contract of eligibleContracts) {
-        //     if (contract.publicKeys.indexOf(publicKey) > -1) {
-        //         if (contract.signoffs.length) {
-        //             const message: Buffer = Buffer.from(contract.id, ENCODING);
-        //             const suite: Group = contract.suite;
-        //             for (const sig of contract.signoffs) {
-        //                 // TODO try to move all the crypto to groupDefinition
-        //                 if (contract.groupDefinition.verifySignoffWithPublicKey(sig, publicKey, message)) {
-        //                     // if (schnorr.verify(suite, publicKey.point, message, Buffer.from(sig, ENCODING))) {
-        //                     return contract;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // return undefined;
         return this.currentGroupContract;
     }
 
     getProposedGroupContract(): GroupContract {
-        for (const gc of Array.from(this._collection.values())) {
-            // avoid returning the genesis group contract
-            if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
-                return gc;
+        try {
+            for (const gc of Array.from(this._collection.values())) {
+                // avoid returning the genesis group contract
+                if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
+                    return gc;
+                }
             }
-        }
 
-        return undefined;
+            return undefined;
+        } catch (e) {
+            throw e;
+        }
     }
 
     // returns [gd] if there is no child to gd
@@ -186,9 +184,10 @@ export class GroupContractCollection {
 
     // delegation of trust
     isAccepted(groupContract: GroupContract): boolean {
-        if (!groupContract.predecessor.length) {
-            throw new TypeError("The groupContract has to have at least one predecessor");
-        }
+        try {
+            if (!groupContract.predecessor.length) {
+                throw new TypeError("The groupContract has to have at least one predecessor");
+            }
 
         // if groupDefinition is not included into the collection, append it
         if (!this.has(groupContract)) {
@@ -208,11 +207,24 @@ export class GroupContractCollection {
                     numbSignoffsByParent++;
                 }
             }
+            const verifiedParent = parent.map((p: GroupContract) => {
+                // we count the number of signoffs for a specific parent because
+                // when there is multiple parent each parent vote threshold need to be reached
+                // by the organizers in the parent (not all the organizers of the current group)
+                let numbSignoffsByParent = 0;
+                for (const s of groupContract.signoffs) {
+                    if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition)) {
+                        numbSignoffsByParent++;
+                    }
+                }
 
-            return this.meetVoteThreshold(p.voteThreshold, numbSignoffsByParent / p.publicKeys.length);
-        });
+                return this.meetVoteThreshold(p.voteThreshold, numbSignoffsByParent / p.publicKeys.length);
+            });
 
-        return verifiedParent.reduce((bool1, bool2) => bool1 && bool2);
+            return verifiedParent.reduce((bool1, bool2) => bool1 && bool2);
+        } catch (e) {
+            throw e;
+        }
     }
 
     toObject(): object {
@@ -272,13 +284,17 @@ export class GroupContractCollection {
     }
 
     private removeProposedGroupContract() {
-        if (this._collection.size !== 0) {
-            for (const gc of Array.from(this._collection.values())) {
-                // avoid to erase the genesis group contract
-                if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
-                    this._collection.delete(gc.id);
+        try {
+            if (this._collection.size !== 0) {
+                for (const gc of Array.from(this._collection.values())) {
+                    // avoid to erase the genesis group contract
+                    if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
+                        this._collection.delete(gc.id);
+                    }
                 }
             }
+        } catch (e) {
+            throw e;
         }
     }
 }

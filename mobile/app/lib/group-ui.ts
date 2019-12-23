@@ -1,4 +1,5 @@
 import Log from "@dedis/cothority/log";
+import { localize } from "nativescript-localize";
 import { fromNativeSource } from "tns-core-modules/image-source/image-source";
 import { screen } from "tns-core-modules/platform";
 import * as dialogs from "tns-core-modules/ui/dialogs";
@@ -18,7 +19,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
         console.log("scan2");
         // cannot accept a group contract where the user public key is not included
         if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
-            throw new Error("This group contract does not contain your public key.");
+            throw new Error(localize("group.not_contain_your_pk"));
         }
         console.log("scan3");
         if (gcCollection.get(groupContract.id)) {
@@ -30,10 +31,10 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
             if (!groupContract.groupDefinition.predecessor.length) {
                 // a user can only accept or not the genesis group contract
                 const options = {
-                    title: "Do you want to accept this new group contract?",
+                    title: localize("group.accept_group_contract"),
                     message: groupContract.groupDefinition.toString(),
-                    okButtonText: "Yes",
-                    cancelButtonText: "No",
+                    okButtonText: localize("dialog.yes"),
+                    cancelButtonText: localize("dialog.no"),
                 };
                 await dialogs.confirm(options).then((choice: boolean) => {
                     if (choice) {
@@ -42,11 +43,11 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                     }
                 });
             } else {
-                const accept = "Accept";
-                const keep = "Keep";
-                const dismiss = "Dismiss";
+                const accept = localize("dialog.accept");
+                const keep = localize("dialog.keep");
+                const dismiss = localize("dialog.dismiss");
                 const action = {
-                    title: "How do you want to handle this new group contract?",
+                    title: localize("group.how_handle_group_contract"),
                     message: groupContract.groupDefinition.toString(),
                     actions: [accept, keep],
                     cancelButtonText: dismiss,
@@ -65,7 +66,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                             gcCollection.append(groupContract);
                             break;
                     }
-                })
+                });
             }
         }
         console.log("scan4");
