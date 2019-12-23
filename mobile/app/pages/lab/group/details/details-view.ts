@@ -1,11 +1,12 @@
+import { localize } from "nativescript-localize";
+import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { Observable } from "tns-core-modules/ui/page/page";
-import { GroupContract, GroupContractCollection, ENCODING } from "~/lib/dynacred/group";
-import { msgFailed } from "~/lib/messages";
-import * as dialogs from "tns-core-modules/ui/dialogs";
-import { showQR } from "~/lib/group-ui";
 import { uData } from "~/lib/byzcoin-def";
+import { ENCODING, GroupContract, GroupContractCollection } from "~/lib/dynacred/group";
+import { showQR } from "~/lib/group-ui";
+import { msgFailed } from "~/lib/messages";
 
 export class GroupContractListView extends Observable {
 
@@ -59,10 +60,10 @@ export class GroupContractView extends Observable {
     }
 
     async selectGroupContract(arg: ItemEventData) {
-        const showDefinition = "Show Group Definition";
-        const showQr = "Show QR Code";
+        const showDefinition = localize("group_details.show_definition");
+        const showQr = localize("group_details.show_qr");
         const actions = [showDefinition, showQr];
-        const cancel = "Cancel";
+        const cancel = localize("dialog.cancel");
 
         try {
             // tslint:disable: object-literal-sort-keys

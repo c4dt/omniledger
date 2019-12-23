@@ -4,7 +4,7 @@
 
     <ActionBar class="action-bar">
         <NavigationButton text="Go Back" android:icon="res://ic_arrow_back" tap="goBack"/>
-        <Label class="action-bar-title" text="{{ L('configure_group.title') }}"/>
+        <Label class="action-bar-title" text="{{ L('group_configure.title') }}"/>
     </ActionBar>
 
     <GridLayout rows="*">
@@ -12,12 +12,12 @@
             <GridLayout class="page-content" rows="auto, auto, auto, auto, *, auto, *, auto" columns="*,auto,*">
 
                 <!-- Title label -->
-                <Label class="label-title" text="{{dataForm.purpose}}" row="0" col="0" colSpan="3"/>
+                <Label class="label-title" text="{{ dataForm.purpose }}" row="0" col="0" colSpan="3"/>
 
                 <!-- Fields to modify dataForm -->
                 <df:RadDataForm id="group-contract-form" source="{{ dataForm }}" row="1" colSpan="3" isReadOnly="{{ isReadOnly }}">
                     <df:RadDataForm.properties>
-                        <df:EntityProperty name="publicKeys" displayName="Public Keys" index="0">
+                        <df:EntityProperty name="suite" displayName="Suite" index="0">
                             <df:EntityProperty.editor>
                                 <df:EntityProperty type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -26,7 +26,7 @@
                                 </df:EntityProperty>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="suite" displayName="Suite" index="1">
+                        <df:EntityProperty name="purpose" displayName="Purpose" index="1">
                             <df:EntityProperty.editor>
                                 <df:EntityProperty type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
@@ -35,29 +35,11 @@
                                 </df:EntityProperty>
                             </df:EntityProperty.editor>
                         </df:EntityProperty>
-                        <df:EntityProperty name="purpose" displayName="Purpose" index="2">
+                        <df:EntityProperty name="voteThreshold" displayName="Vote Threshold" index="2">
                             <df:EntityProperty.editor>
                                 <df:EntityProperty type="Text">
                                     <df:PropertyEditor.propertyEditorStyle>
                                         <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                                    </df:PropertyEditor.propertyEditorStyle>
-                                </df:EntityProperty>
-                            </df:EntityProperty.editor>
-                        </df:EntityProperty>
-                        <df:EntityProperty name="voteThreshold" displayName="Vote Threshold" index="3">
-                            <df:EntityProperty.editor>
-                                <df:EntityProperty type="Text">
-                                    <df:PropertyEditor.propertyEditorStyle>
-                                        <df:propertyEditorStyle labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
-                                    </df:PropertyEditor.propertyEditorStyle>
-                                </df:EntityProperty>
-                            </df:EntityProperty.editor>
-                        </df:EntityProperty>
-                        <df:EntityProperty name="predecessor" displayName="Predecessor(s)" index="4">
-                            <df:EntityProperty.editor>
-                                <df:EntityProperty type="Text">
-                                    <df:PropertyEditor.propertyEditorStyle>
-                                        <df:propertyEditorStyle labelHidden="true" labelPosition="Left" labelWidth="120" labelFontStyle="Italic" labelTextColor="00695c"/>
                                     </df:PropertyEditor.propertyEditorStyle>
                                 </df:EntityProperty>
                             </df:EntityProperty.editor>
@@ -110,12 +92,12 @@
                 </df:RadDataForm>
 
                 <!-- Field to add public key -->
-                <GridLayout id="pk-list-header" rows="auto" columns="auto, *" row="3" colSpan="3">
+                <GridLayout id="pk-list-header" rows="auto" columns="*, *" row="3" colSpan="3">
                     <Label class="label-title" text="{{ L('group.publickeys') }}" row="0" col="0" colSpan="2"/>
-                    <Label class="label-title" id="addPublicKey" text="+" tap="addPublicKey" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
+                    <Label class="label-title" id="addPublicKey" text="+" tap="addPublicKey" row="0" col="1" visibility="{{ isReadOnly ? 'collapse' : 'visible' }}"/>
                 </GridLayout>
 
-                <nsListView:RadListView items="{{ publicKeyList }}" id="list-view-pk" itemTap="{{ readOnly ? '' : 'orgTapped' }}" row="4" col="0" colSpan="3" height="500px">
+                <nsListView:RadListView items="{{ publicKeyList }}" id="list-view-pk" row="4" col="0" colSpan="3" height="500px">
                     <nsListView:RadListView.listViewLayout>
                         <nsListView:ListViewGridLayout scrollDirection="Vertical" ios.itemHeight="50px" spanCount="3"/>
                     </nsListView:RadListView.listViewLayout>
@@ -123,25 +105,26 @@
                     <nsListView:RadListView.itemTemplate>
                         <StackLayout class="grid-list" orientation="horizontal">
                             <Label class="grid-list-text" text="{{ alias }}" textWrap="false"/>
-                            <Label text="&#xf00d;" class="fas" tap="removePublicKey" verticalAlignment="center" style="font-size: 15%;"/>
+                            <Label text="&#xf00d;" class="fas" tap="removePublicKey" verticalAlignment="center" style="{{ 'font-size: 15%;' + (isReadOnly ? 'visibility: hidden' : '') }}"/>
                         </StackLayout>
                     </nsListView:RadListView.itemTemplate>
                 </nsListView:RadListView>
 
                 <!-- Field to add predecessor -->
-                <GridLayout id="predecessor-list-header" rows="auto" columns="auto, *" row="5" colSpan="3">
+                <GridLayout id="predecessor-list-header" rows="auto" columns="*, *" row="5" colSpan="3">
                     <Label class="label-title" text="{{ L('group.predecessor') }}" row="0" col="0" colSpan="2"/>
-                    <Label class="label-title" id="addPredecessor" text="+" tap="addPredecessor" row="0" col="1" visibility="{{ readOnly ? 'collapse' : 'visible' }}"/>
+                    <Label class="label-title" id="addPredecessor" text="+" tap="addPredecessor" row="0" col="1" visibility="{{ isReadOnly ? 'collapse' : 'visible' }}"/>
                 </GridLayout>
 
-                <nsListView:RadListView items="{{ predecessorList }}" id="list-view-predecessor" itemTap="{{ readOnly ? '' : 'orgTapped' }}" row="6" col="0" colSpan="3" height="500px">
+                <nsListView:RadListView items="{{ predecessorList }}" id="list-view-predecessor" row="6" col="0" colSpan="3" height="500px">
                     <nsListView:RadListView.listViewLayout>
                         <nsListView:ListViewGridLayout scrollDirection="Vertical" ios.itemHeight="50px" spanCount="3"/>
                     </nsListView:RadListView.listViewLayout>
 
                     <nsListView:RadListView.itemTemplate>
-                        <StackLayout class="grid-list">
-                            <Label class="grid-list-text" text="{{ id }}" textWrap="false"/>
+                        <StackLayout class="grid-list" orientation="horizontal">
+                            <Label class="grid-list-text" text="{{ id.slice(0, 5) }}" textWrap="false"/>
+                            <Label text="&#xf00d;" class="fas" tap="removePredecessor" verticalAlignment="center" horizontalAlignment="right" style="{{ 'font-size: 15%;' + (isReadOnly ? 'visibility: hidden' : '') }}"/>
                         </StackLayout>
                     </nsListView:RadListView.itemTemplate>
                 </nsListView:RadListView>

@@ -1,11 +1,11 @@
 import Log from "@dedis/cothority/log";
+import { localize } from "nativescript-localize";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { fromObject, fromObjectRecursive } from "tns-core-modules/data/observable/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { isAdmin, uData } from "~/lib/byzcoin-def";
-import { Contact } from "~/lib/dynacred";
 import { GroupContract } from "~/lib/dynacred/group/groupContract";
 import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
 import { GroupDefinition, IGroupDefinition } from "~/lib/dynacred/group/groupDefinition";
@@ -13,16 +13,14 @@ import { msgFailed } from "~/lib/messages";
 
 let page: Page;
 let gcCollection: GroupContractCollection;
-let publicKeyList = new ObservableArray<PublicKeyListItem>();
+const publicKeyList = new ObservableArray<PublicKeyListItem>();
 const predecessorList = new ObservableArray<PredecessorListItem>();
 
 // tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
-    publicKeys: uData.keyIdentity._public.toHex() + ",17898659d4e9744ff23a49daecdff2d6f68dba985adaef19e84744d94198356b,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc",
     suite: "edwards25519",
     purpose: "Testing",
     voteThreshold: ">1/2",
-    predecessor: "",
 });
 
 const dataFormDetails = fromObject({
@@ -41,7 +39,7 @@ const viewModel = fromObjectRecursive({
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
-    Log.lvl1("new groupContract");
+    Log.lvl1("Displaying configuration page");
     page = args.object as Page;
 
     publicKeyList.splice(0);
@@ -63,38 +61,6 @@ export async function navigatingTo(args: EventData) {
     }
 
     page.bindingContext = viewModel;
-
-    // if (page.get("navigationContext")) {
-    //     if ("isReadOnly" in page.navigationContext) {
-    //         viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
-    //     }
-    //     if ("groupContract" in page.navigationContext) {
-    //         gcCollection = page.navigationContext.gcCollection;
-    //         const groupContract = page.navigationContext.groupContract;
-    //         dataForm.set("publicKeys", groupContract.publicKeys.join(","));
-    //         dataForm.set("suite", groupContract.groupDefinition.suite);
-    //         dataForm.set("purpose", groupContract.purpose);
-    //         dataForm.set("voteThreshold", groupContract.voteThreshold);
-    //         dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
-    //         dataForm.set("description", groupContract.purpose);
-    //     }
-    //     if ("predecessor" in page.navigationContext) {
-    //         dataForm.set("predecessor", page.navigationContext.predecessor);
-    //         gcCollection = page.navigationContext.gcCollection;
-    //         // console.log("pred", page.navigationContext.predecessor);
-    //         predecessorList.push({
-    //             alias: page.navigationContext.predecessor.slice(0, 5),
-    //             id: page.navigationContext.predecessor,
-    //         });
-    //     } else {
-    //         gcCollection = undefined;
-    //     }
-    //     if ("id" in page.navigationContext) {
-    //         dataFormDetails.set("id", page.navigationContext.id);
-    //     }
-    // }
-    // publicKeyList.push(uData.contact);
-    // page.bindingContext = viewModel;
 }
 
 export function goBack() {
@@ -102,59 +68,79 @@ export function goBack() {
 }
 
 export async function propose() {
-    Log.llvl1("propose new group contract");
-    // TODO check the fields
-    // tslint:disable: object-literal-sort-keys
-    const variables: IGroupDefinition = {
-        orgPubKeys: publicKeyList.map((p) => p.publicKey),
-        suite: dataForm.get("suite"),
-        voteThreshold: dataForm.get("voteThreshold"),
-        purpose: dataForm.get("purpose"),
-        predecessor:  predecessorList.map((p) => p.id),
-    };
+    try {
+        Log.llvl1("propose new group contract");
+        // TODO check the fields
+        // tslint:disable: object-literal-sort-keys
+        const variables: IGroupDefinition = {
+            orgPubKeys: publicKeyList.map((p) => p.publicKey),
+            suite: dataForm.get("suite"),
+            voteThreshold: dataForm.get("voteThreshold"),
+            purpose: dataForm.get("purpose"),
+            predecessor: predecessorList.map((p) => p.id),
+        };
 
-    let groupDefinition = new GroupDefinition(variables);
-    let contract: GroupContract;
-    if (!gcCollection) {
-        Log.print("new", groupDefinition.purpose);
-        gcCollection = new GroupContractCollection(variables.purpose);
-        // genesis group contract: c0
-        contract = gcCollection.createGroupContract(undefined, groupDefinition);
-        // group contract: c1
-        groupDefinition = new GroupDefinition(groupDefinition.allVariables);
-        contract = gcCollection.createGroupContract(contract, groupDefinition);
-        gcCollection.sign(contract, uData.keyIdentity._private);
-    } else {
-        Log.print("gcCollection", gcCollection);
-        if (groupDefinition.isSimilarTo(gcCollection.getCurrentGroupContract().groupDefinition)) {
-            dialogs.alert({
-                title: "Warning",
-                message: "A proposed contract needs to be different from its predecessor(s).",
-                okButtonText: "Ok",
-            });
-            return;
+        // check variables
+        // suite has to be edwards25519
+        if (variables.suite !== "edwards25519") {
+            dialogs.alert("Unfortunately, for the time being, we only allow edwards25519 as suite value.")
         }
-        contract = gcCollection.createGroupContract(gcCollection.getCurrentGroupContract(), groupDefinition);
-        gcCollection.sign(contract, uData.keyIdentity._private);
+        // Test if voteThreshold is well-formed
+        const regex = new RegExp("^(>|>=)\\d+/\\d+$");
+        if (!regex.test(variables.voteThreshold.replace(/\s/g, ""))) {
+            throw new TypeError("The voteThreshold field is not well-formed");
+        }
+
+        let groupDefinition = new GroupDefinition(variables);
+        let contract: GroupContract;
+        if (!gcCollection) {
+            gcCollection = new GroupContractCollection(variables.purpose);
+            // genesis group contract: c0
+            contract = gcCollection.createGroupContract(undefined, groupDefinition);
+            // group contract: c1
+            groupDefinition = new GroupDefinition(groupDefinition.allVariables);
+            contract = gcCollection.createGroupContract(contract, groupDefinition);
+            gcCollection.sign(contract, uData.keyIdentity._private);
+        } else {
+            // Check the variables
+            if (variables.predecessor.length === 0) {
+                dialogs.alert(localize("group_configure.alert_not_enough_predecessor"));
+                return;
+            }
+            // The new group contract has to different from its predecessor
+            if (groupDefinition.isSimilarTo(gcCollection.getCurrentGroupContract().groupDefinition)) {
+                dialogs.alert({
+                    title: localize("group_configure.warning"),
+                    message: localize("group_configure.alert_different_predecessor"),
+                    okButtonText: localize("group_configure.ok"),
+                });
+                return;
+            }
+            contract = gcCollection.createGroupContract(gcCollection.getCurrentGroupContract(), groupDefinition);
+            gcCollection.sign(contract, uData.keyIdentity._private);
+        }
+
+        // save the new groupContractCollection
+        uData.addGroup(gcCollection);
+        await uData.save();
+
+        return topmost().navigate({
+            moduleName: "pages/lab/group/group-page",
+        });
+    } catch (e) {
+        msgFailed(e.toString(), "Error");
     }
-
-    // save the new groupContractCollection
-    uData.addGroup(gcCollection);
-    await uData.save();
-
-    return topmost().navigate({
-        moduleName: "pages/lab/group/group-page",
-    });
 }
 
 export async function addPublicKey(args: any) {
     try {
-        const contactAliases = uData.contacts.map((c) => c.alias).filter((a) => {
+        const contacts = uData.contacts.concat(uData.contact);
+        const contactAliases = contacts.map((c) => c.alias).filter((a) => {
             return publicKeyList.map((p: PublicKeyListItem) => p.alias).indexOf(a) === -1;
         });
-        const cancelText = "Cancel";
+        const cancelText = localize("dialog.cancel");
         let result = await dialogs.action({
-            title: "Choose an organizer",
+            title: localize("group_configure.choose_organizer"),
             cancelButtonText: cancelText,
             actions: contactAliases,
         });
@@ -163,7 +149,7 @@ export async function addPublicKey(args: any) {
             return;
         }
 
-        const contact = uData.contacts.find((c) => {
+        const contact = contacts.find((c) => {
             return c.alias === result;
         });
 
@@ -174,7 +160,7 @@ export async function addPublicKey(args: any) {
             let selectedPubKey: string;
             if (pubKeys.length > 1) {
                 result = await dialogs.action({
-                    title: "Which public key do you want to use?",
+                    title: localize("group_configure.which_public_key"),
                     cancelButtonText: cancelText,
                     actions: pubKeys,
                 });
@@ -197,16 +183,30 @@ export async function addPublicKey(args: any) {
 }
 
 export function removePublicKey(args: any) {
-    // TODO j'en étais ici
-    console.log(args.object);
-    // const idxToRemove = publicKeyList.indexOf()
-    // publicKeyList.splice(0, 2);
+    const context = args.view.bindingContext;
+    if (!context) {
+        return;
+    }
+    const aliasToRemove = context.alias;
+    const pubKeyToRemove = context.publicKey;
+    let idxToRemove = -1;
+    for (let i = 0; i < publicKeyList.length; i++) {
+        const item = publicKeyList.getItem(i);
+        if (item.alias === aliasToRemove && item.publicKey === pubKeyToRemove) {
+            idxToRemove = i;
+            break;
+        }
+    }
+
+    if (idxToRemove > -1) {
+        publicKeyList.splice(idxToRemove, 1);
+    }
 }
 
 export async function addPredecessor(args: any) {
     try {
         if (gcCollection === undefined || gcCollection.collection.size === 0) {
-            await dialogs.alert("There is no possible predecessor available.");
+            await dialogs.alert(localize("group_configure.alert_no_predecessor"));
             return;
         }
 
@@ -214,9 +214,9 @@ export async function addPredecessor(args: any) {
 
             return predecessorList.map((p: PredecessorListItem) => p.id).indexOf(id) === -1;
         });
-        const cancelText = "Cancel";
+        const cancelText = localize("dialog.cancel");
         const result = await dialogs.action({
-            title: "Choose a predecessor",
+            title: localize("choose_predecessor"),
             cancelButtonText: cancelText,
             actions: gcIds,
         });
@@ -233,6 +233,26 @@ export async function addPredecessor(args: any) {
         }
     } catch (e) {
         msgFailed(e.toString(), "Error");
+    }
+}
+
+export function removePredecessor(args: any) {
+    const context = args.view.bindingContext;
+    if (!context) {
+        return;
+    }
+    const idToRemove = context.id;
+    let idxToRemove = -1;
+    for (let i = 0; i < predecessorList.length; i++) {
+        const item = predecessorList.getItem(i);
+        if (item.id === idToRemove) {
+            idxToRemove = i;
+            break;
+        }
+    }
+
+    if (idxToRemove > -1) {
+        predecessorList.splice(idxToRemove, 1);
     }
 }
 
@@ -267,13 +287,12 @@ async function setDataForm(groupContract?: GroupContract) {
             }
         }
     } else {
-        dataForm.set("publicKeys", uData.keyIdentity._public.toHex() + ",e7c717a6f052fc4f6e665f7e3e38d153643313eb321ea042f1340daaf6d270e5,d2b034bb987fb01a35d25d3c89f674ba01b512b1a2f4f3a673f78194ec798edc");
         dataForm.set("suite", "edwards25519");
         dataForm.set("purpose", "Testing");
         dataForm.set("voteThreshold", ">1/2");
-        dataForm.set("predecessor", "");
         dataForm.set("description", uData.contact.alias);
-        publicKeyList.push(new PublicKeyListItem(uData.contact.alias, (await uData.contact.getDevices()).map((d) => d.pubKey.toHex())[0]));
+        const pubKey = (await (uData.contact.getDevices())).map((d) => d.pubKey.toHex())[0];
+        publicKeyList.push(new PublicKeyListItem(uData.contact.alias, pubKey));
     }
 }
 
