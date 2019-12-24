@@ -275,7 +275,7 @@
     "title": "Group Managment",
     "publickeys": "Public Keys",
     "predecessor": "Predecessor",
-    "not_contain_your_pk": "This group contract does not contain your public key.",
+    "not_contain_your_pk": "This group contract does not contain your public key. Do you still want to keep it?",
     "accept_group_contract": "Do you want to accept this new group contract?",
     "how_handle_group_contract": "How do you want to handle this new group contract?",
     "propose_contract": "Propose New Group Contract",

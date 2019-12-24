@@ -19,7 +19,19 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
         console.log("scan2");
         // cannot accept a group contract where the user public key is not included
         if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
-            throw new Error(localize("group.not_contain_your_pk"));
+            const options = {
+                title: localize("group.not_contain_your_pk"),
+                message: groupContract.groupDefinition.toString(),
+                okButtonText: localize("dialog.yes"),
+                cancelButtonText: localize("dialog.no"),
+            };
+            await dialogs.confirm(options).then((choice: boolean) => {
+                if (choice) {
+                    gcCollection.purpose = groupContract.groupDefinition.purpose;
+                    gcCollection.append(groupContract);
+                }
+                return;
+            });
         }
         console.log("scan3");
         if (gcCollection.get(groupContract.id)) {

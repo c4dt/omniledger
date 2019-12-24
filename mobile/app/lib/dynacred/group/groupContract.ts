@@ -16,6 +16,13 @@ export interface IGroupContract {
 // GroupContract est un container qui gère tous les éléments
 export class GroupContract {
     static createFromJSON(json: any): GroupContract {
+        // check the JSON soundness
+        if (!json.hasOwnProperty("groupDefinition")) {
+            throw new Error("Property groupDefinition is missing from the JSON");
+        } else if (!json.hasOwnProperty("signoffs")) {
+            throw new Error("Property signoffs is missing from the JSON");
+        }
+
         const groupDefinition = GroupDefinition.createFromJSON(json.groupDefinition);
         return new GroupContract(groupDefinition, json.signoffs);
     }

@@ -89,13 +89,11 @@ export class GroupView extends Observable {
                     });
                     break;
                 case update:
-                    try {
-                        const groupContractionCollection = await scanNewGroupContract(this._group, uData.keyIdentity);
+                    const groupContractionCollection = await scanNewGroupContract(this._group, uData.keyIdentity);
+                    if (groupContractionCollection) {
                         uData.addGroup(groupContractionCollection);
                         await uData.save();
                         groupList.updateGroupList();
-                    } catch (e) {
-                        await msgFailed(e.toString(), "Error");
                     }
                     break;
                 case _delete:

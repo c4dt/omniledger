@@ -56,6 +56,7 @@ export async function navigatingTo(args: EventData) {
             gcCollection = page.navigationContext.gcCollection;
             setDataForm(page.navigationContext.groupContract);
         } else {
+            gcCollection = undefined;
             setDataForm();
         }
     }
@@ -258,21 +259,26 @@ export function removePredecessor(args: any) {
 
 async function setDataForm(groupContract?: GroupContract) {
     if (groupContract) {
+        Log.print("setDataForm there is a group contract");
         dataForm.set("publicKeys", groupContract.publicKeys.join(","));
         dataForm.set("suite", groupContract.groupDefinition.suite);
         dataForm.set("purpose", groupContract.purpose);
         dataForm.set("voteThreshold", groupContract.voteThreshold);
 
         // set publicKeyList
-        // TODO first add the user's public key
         const userContact = await uData.contact.getDevices();
-        if (groupContract.publicKeys.indexOf(userContact[0].pubKey.toHex()) > -1) {
-            publicKeyList.push(new PublicKeyListItem(uData.contact.alias, userContact[0].pubKey.toHex()));
-        }
         groupContract.publicKeys.forEach(async (pubKey) => {
-            const alias = await getAliasFromPublicKey(pubKey);
-            if (alias) {
-                publicKeyList.push(new PublicKeyListItem(alias, pubKey));
+            if (pubKey === userContact[0].pubKey.toHex()) {
+                publicKeyList.push(new PublicKeyListItem(uData.contact.alias, userContact[0].pubKey.toHex()));
+            } else {
+                const alias = await getAliasFromPublicKey(pubKey);
+                Log.print("setDataForm alias", pubKey);
+                if (alias) {
+                    publicKeyList.push(new PublicKeyListItem(alias, pubKey));
+                } else {
+                    Log.print("setDataForm correct");
+                    publicKeyList.push(new PublicKeyListItem(pubKey.slice(0, 5), pubKey));
+                }
             }
         });
 
@@ -287,6 +293,7 @@ async function setDataForm(groupContract?: GroupContract) {
             }
         }
     } else {
+        Log.print("setDataForm there is no group contract");
         dataForm.set("suite", "edwards25519");
         dataForm.set("purpose", "Testing");
         dataForm.set("voteThreshold", ">1/2");
@@ -307,6 +314,7 @@ async function getAliasFromPublicKey(publicKey: string): Promise<string> {
                 }
             }
         }
+        return undefined;
     } catch (e) {
         msgFailed(e.toString(), "Error");
     }
@@ -327,5 +335,9 @@ class PredecessorListItem {
 
     constructor(id: string) {
         this.id = id;
+    }
+
+    get displayId(): string {
+        return this.id.slice(0, 5) + "...";
     }
 }
