@@ -274,7 +274,7 @@
     "title": "Gestion de Groupe",
     "publickeys": "Clefs Publiques",
     "predecessor": "Prédécesseur",
-    "not_contain_your_pk": "Ce contrat de group ne contient pas votre clef publique.",
+    "not_contain_your_pk": "Ce contrat de group ne contient pas votre clef publique. Voulez-vous tout de même le garder?",
     "accept_group_contract": "Voulez-vous accepter ce contrat de groupe?",
     "how_handle_group_contract": "Comment voulez gérer ce nouveau contrat de groupe?",
     "propose_contract": "Proposer un nouveau contrat de groupe",

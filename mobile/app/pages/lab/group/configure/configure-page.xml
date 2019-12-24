@@ -123,7 +123,7 @@
 
                     <nsListView:RadListView.itemTemplate>
                         <StackLayout class="grid-list" orientation="horizontal">
-                            <Label class="grid-list-text" text="{{ id.slice(0, 5) }}" textWrap="false"/>
+                            <Label class="grid-list-text" text="{{ displayId }}" textWrap="false"/>
                             <Label text="&#xf00d;" class="fas" tap="removePredecessor" verticalAlignment="center" horizontalAlignment="right" style="{{ 'font-size: 15%;' + (isReadOnly ? 'visibility: hidden' : '') }}"/>
                         </StackLayout>
                     </nsListView:RadListView.itemTemplate>

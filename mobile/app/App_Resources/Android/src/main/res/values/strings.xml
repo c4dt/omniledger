@@ -58,7 +58,7 @@
   <string name="_group_propose_contract_EM5J4">"Proposer un nouveau contrat de groupe"</string>
   <string name="_group_how_handle_group_contract_C1dsv">"Comment voulez gérer ce nouveau contrat de groupe?"</string>
   <string name="_group_accept_group_contract_Z2o3f4G">"Voulez-vous accepter ce contrat de groupe?"</string>
-  <string name="_group_not_contain_your_pk_1Kxt0s">"Ce contrat de group ne contient pas votre clef publique."</string>
+  <string name="_group_not_contain_your_pk_1Kxt0s">"Ce contrat de group ne contient pas votre clef publique. Voulez-vous tout de même le garder?"</string>
   <string name="_group_predecessor_1TGo6e">"Prédécesseur"</string>
   <string name="_group_publickeys_1oNlOb">"Clefs Publiques"</string>
   <string name="_group_title_ZlFGdO">"Gestion de Groupe"</string>
