@@ -130,6 +130,7 @@ export class GroupContractView extends Observable {
     }
 
     get predecessor(): string {
+        console.log("predecessor: ", this._groupContract.predecessor);
         return this._groupContract.predecessor.join(",").slice(0, 15) + "...";
     }
 
