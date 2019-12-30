@@ -113,7 +113,7 @@ export async function propose() {
                 dialogs.alert({
                     title: localize("group_configure.warning"),
                     message: localize("group_configure.alert_different_predecessor"),
-                    okButtonText: localize("group_configure.ok"),
+                    okButtonText: localize("dialog.ok"),
                 });
                 return;
             }

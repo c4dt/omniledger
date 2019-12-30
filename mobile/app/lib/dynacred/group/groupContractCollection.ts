@@ -78,7 +78,7 @@ export class GroupContractCollection {
         }
     }
 
-    append(groupContract: GroupContract) {
+    append(groupContract: GroupContract, keepOnly: boolean = false) {
         try {
             // only proceed if the the groupContract is sound
             console.log("append1");
@@ -116,7 +116,7 @@ export class GroupContractCollection {
             console.log("append4");
             // if groupContract is accepted; therefore, it becomes the current group contract
             const numbPredecessor = groupContract.groupDefinition.predecessor.length;
-            if (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract))) {
+            if (!keepOnly && (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract)))) {
                 this.currentGroupContract = groupContract;
             }
             console.log("append5");

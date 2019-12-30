@@ -28,7 +28,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
             await dialogs.confirm(options).then((choice: boolean) => {
                 if (choice) {
                     gcCollection.purpose = groupContract.groupDefinition.purpose;
-                    gcCollection.append(groupContract);
+                    gcCollection.append(groupContract, true);
                 }
                 return;
             });
@@ -75,7 +75,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                             break;
                         case keep:
                             gcCollection.purpose = groupContract.groupDefinition.purpose;
-                            gcCollection.append(groupContract);
+                            gcCollection.append(groupContract, true);
                             break;
                     }
                 });
