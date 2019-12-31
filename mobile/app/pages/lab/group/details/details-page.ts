@@ -7,17 +7,31 @@ logic, and to set up your page’s data binding.
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { GroupContractListView } from "./details-view";
+import { scanNewGroupContract } from "~/lib/group-ui";
+import { uData } from "~/lib/byzcoin-def";
+import { GroupContractCollection } from "~/lib/dynacred/group";
 
 export let detailsList: GroupContractListView;
 let page: Page;
+let groupContractCollection: GroupContractCollection;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
     page = args.object as Page;
+    groupContractCollection = page.navigationContext.gcCollection as GroupContractCollection;
     detailsList = new GroupContractListView(page.navigationContext.gcCollection);
     page.bindingContext = detailsList;
 }
 
 export function goBack() {
     return topmost().goBack();
+}
+
+export async function updateGroup() {
+    const updatedGroupContractCollection = await scanNewGroupContract(groupContractCollection, uData.keyIdentity);
+    if (updatedGroupContractCollection) {
+        uData.addGroup(updatedGroupContractCollection);
+        await uData.save();
+        detailsList.updateGroupContractList(updatedGroupContractCollection);
+    }
 }

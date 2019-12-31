@@ -28,10 +28,13 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
             await dialogs.confirm(options).then((choice: boolean) => {
                 if (choice) {
                     gcCollection.purpose = groupContract.groupDefinition.purpose;
+                    console.log("bponour1");
                     gcCollection.append(groupContract, true);
+                    console.log("bponour2");
                 }
-                return;
             });
+
+            return gcCollection;
         }
         console.log("scan3");
         if (gcCollection.get(groupContract.id)) {

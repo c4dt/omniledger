@@ -130,12 +130,11 @@ export class GroupContractView extends Observable {
     }
 
     get predecessor(): string {
-        console.log("predecessor: ", this._groupContract.predecessor);
-        return this._groupContract.predecessor.join(",").slice(0, 15) + "...";
+        const length = this._groupContract.predecessor.length !== 0 ? this._groupContract.predecessor.length : 1;
+        return this._groupContract.predecessor.map((p: string) => p.slice(0, 15 / length) + "...").join(", ");
     }
 
     set groupContract(groupContract: GroupContract) {
-        console.log("groupContract1");
         this._groupContract = groupContract;
     }
 }
