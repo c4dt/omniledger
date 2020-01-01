@@ -86,7 +86,7 @@ export async function propose() {
         // check variables
         // suite has to be edwards25519
         if (variables.suite !== "edwards25519") {
-            dialogs.alert("Unfortunately, for the time being, we only allow edwards25519 as suite value.")
+            dialogs.alert("Unfortunately, for the time being, we only allow edwards25519 as suite value.");
         }
         // Test if voteThreshold is well-formed
         const regex = new RegExp("^(>|>=)\\d+/\\d+$");
