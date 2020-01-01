@@ -10,9 +10,6 @@ import { uData } from "~/lib/byzcoin-def";
 import { GroupContractCollection } from "~/lib/dynacred/group";
 import { scanNewGroupContract } from "~/lib/group-ui";
 import { GroupContractListView } from "./details-view";
-import { scanNewGroupContract } from "~/lib/group-ui";
-import { uData } from "~/lib/byzcoin-def";
-import { GroupContractCollection } from "~/lib/dynacred/group";
 
 export let detailsList: GroupContractListView;
 let page: Page;

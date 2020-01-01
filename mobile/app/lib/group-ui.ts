@@ -24,19 +24,43 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
 
         // cannot accept a group contract where the user public key is not included
         if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
-            // check if the organizer was removed
-            let isRemoved = false;
-            const parents = gcCollection.getParent(groupContract);
-            if (parents) {
-                for (const parent of parents) {
-                    if (parent.publicKeys.indexOf(kp._public.toHex()) > -1) {
-                        isRemoved = true;
-                        break;
-                    }
+            // tslint:disable: object-literal-sort-keys
+            const options = {
+                title: localize("group.not_contain_your_pk"),
+                message: groupContract.groupDefinition.toString(),
+                okButtonText: localize("dialog.yes"),
+                cancelButtonText: localize("dialog.no"),
+            };
+            await dialogs.confirm(options).then((choice: boolean) => {
+                if (choice) {
+                    gcCollection.purpose = groupContract.groupDefinition.purpose;
+                    gcCollection.append(groupContract, true);
                 }
             }
 
-            if (isRemoved) {
+            return gcCollection;
+        }
+
+        if (gcCollection.get(groupContract.id)) {
+            // already existing group contract
+            gcCollection.append(groupContract);
+        } else {
+            // not yet aware of this group contract
+            if (!groupContract.groupDefinition.predecessor.length) {
+                // a user can only accept or not the genesis group contract
+                const options = {
+                    title: localize("group.accept_group_contract"),
+                    message: groupContract.groupDefinition.toString(),
+                    okButtonText: localize("dialog.yes"),
+                    cancelButtonText: localize("dialog.no"),
+                };
+                await dialogs.confirm(options).then((choice: boolean) => {
+                    if (choice) {
+                        gcCollection.purpose = groupContract.groupDefinition.purpose;
+                        gcCollection.append(groupContract);
+                    }
+                });
+            } else {
                 const accept = localize("dialog.accept");
                 const keep = localize("dialog.keep");
                 const dismiss = localize("dialog.dismiss");
