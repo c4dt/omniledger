@@ -9,16 +9,22 @@ import { KeyPair } from "./dynacred";
 import { GroupContract, GroupContractCollection } from "./dynacred/group";
 import { msgFailed } from "./messages";
 
+/**
+ * scan a QR code representing a group contract
+ * and add it to a group contract collection
+ *
+ * @param gcCollection the collection in which add the scanned group contract
+ * @param kp pair of public and private keys
+ */
 // tslint:disable-next-line: max-line-length
 export async function scanNewGroupContract(gcCollection: GroupContractCollection, kp: KeyPair): Promise<GroupContractCollection> {
     try {
         const result = await scan("{{ L('group.camera_text') }}");
-        console.log("scan1");
         const groupContract = GroupContract.createFromJSON(JSON.parse(result.text));
 
-        console.log("scan2");
         // cannot accept a group contract where the user public key is not included
         if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
+            // tslint:disable: object-literal-sort-keys
             const options = {
                 title: localize("group.not_contain_your_pk"),
                 message: groupContract.groupDefinition.toString(),
@@ -28,20 +34,17 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
             await dialogs.confirm(options).then((choice: boolean) => {
                 if (choice) {
                     gcCollection.purpose = groupContract.groupDefinition.purpose;
-                    console.log("bponour1");
                     gcCollection.append(groupContract, true);
-                    console.log("bponour2");
                 }
             });
 
             return gcCollection;
         }
-        console.log("scan3");
+
         if (gcCollection.get(groupContract.id)) {
             // already existing group contract
             gcCollection.append(groupContract);
         } else {
-            // tslint:disable: object-literal-sort-keys
             // not yet aware of this group contract
             if (!groupContract.groupDefinition.predecessor.length) {
                 // a user can only accept or not the genesis group contract
@@ -84,7 +87,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                 });
             }
         }
-        console.log("scan4");
+
         return gcCollection;
 
     } catch (e) {
@@ -92,6 +95,11 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
     }
 }
 
+/**
+ * Display a QR code representing a group contract
+ *
+ * @param groupContract
+ */
 export function showQR(groupContract: GroupContract) {
     // QR code utilies
     // tslint:disable: variable-name

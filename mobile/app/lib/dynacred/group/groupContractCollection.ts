@@ -1,11 +1,13 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@dedis/cothority/log";
-import { KeyPair, Private } from "../KeyPair";
+import { Private } from "../KeyPair";
 import { GroupContract } from "./groupContract";
 import { GroupDefinition } from "./groupDefinition";
 
+/**
+ * Class collecting group contracts from the same group
+ */
 export class GroupContractCollection {
 
     static fromObject(obj: any) {
@@ -39,6 +41,13 @@ export class GroupContractCollection {
         this._purpose = purpose ? purpose : undefined;
     }
 
+    /**
+     * Create new group contract
+     *
+     * @param parent new group contract's predecessor
+     * @param groupDefinition new group contract's group definition
+     * @returns {GroupContract} new group contract
+     */
     createGroupContract(parent: GroupContract, groupDefinition: GroupDefinition): GroupContract {
         try {
             let newGroupContract: GroupContract;
@@ -55,6 +64,14 @@ export class GroupContractCollection {
         }
     }
 
+    /**
+     * Sign a specific group contract with a specific private key
+     * And append the signoff to the specific group contract
+     *
+     * @param groupContract
+     * @param privateKey
+     * @returns {boolean} true if signature successful, otherwise false
+     */
     sign(groupContract: GroupContract, privateKey: Private): boolean {
         try {
             // create signoff
@@ -73,29 +90,30 @@ export class GroupContractCollection {
 
             return isAppended;
         } catch (e) {
-            console.log("error sign");
             throw e;
         }
     }
 
+    /**
+     * Append a group contract to this collection
+     *
+     * @param groupContract
+     * @param keepOnly if true do not make the group contract the current one
+     */
     append(groupContract: GroupContract, keepOnly: boolean = false) {
         try {
             // only proceed if the the groupContract is sound
-            console.log("append1");
             const parents = this.getParent(groupContract);
-            console.log("append2");
             if (parents.length) {
                 if (!groupContract.verify(...this.getParent(groupContract))) {
-                    Log.print("The group contract 1");
                     throw new TypeError("The group contract verification failed.");
                 }
             } else {
                 if (!groupContract.verify(undefined)) {
-                    Log.print("The group contract 2");
                     throw new TypeError("The group contract verification failed.");
                 }
             }
-            console.log("append2");
+
             // check if the id is not already there
             const existing: GroupContract[] = [];
             this._collection.forEach((gd: GroupContract) => {
@@ -103,7 +121,7 @@ export class GroupContractCollection {
                     existing.push(gd);
                 }
             });
-            console.log("append3");
+
             if (existing.length) {
                 groupContract.mergeSignoffs(existing[0]);
                 this._collection.set(groupContract.id, groupContract);
@@ -113,23 +131,32 @@ export class GroupContractCollection {
 
                 this._collection.set(groupContract.id, groupContract);
             }
-            console.log("append4");
+
             // if groupContract is accepted; therefore, it becomes the current group contract
             const numbPredecessor = groupContract.groupDefinition.predecessor.length;
             if (!keepOnly && (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract)))) {
                 this.currentGroupContract = groupContract;
             }
-            console.log("append5");
         } catch (e) {
-            console.log("error append");
             throw e;
         }
     }
 
+    /**
+     *
+     * @param groupContract
+     * @returns {boolean} true if the collection has the group contract, otherwise false
+     */
     has(groupContract: GroupContract): boolean {
         return this._collection.has(groupContract.id);
     }
 
+    /**
+     * Returns group contract by id
+     *
+     * @param id
+     * @returns {GroupContract}
+     */
     get(id: string): GroupContract {
         return this._collection.get(id);
     }
@@ -153,8 +180,13 @@ export class GroupContractCollection {
         }
     }
 
-    // returns [gd] if there is no child to gd
-    // returns [[gd,gd2], [gd,gd3]] if there is two children to gd
+    /**
+     * Get worldview from a specific group contract
+     *
+     * @param groupContract
+     * @returns returns [gd] if there is no child to groupContract,
+     * returns [[gd,gd2], [gd,gd3]] if there is two children to groupContract
+     */
     getWorldView(groupContract: GroupContract) {
         const children = this.getChildren(groupContract);
         if (!children.length) {
@@ -182,8 +214,14 @@ export class GroupContractCollection {
         return groupContract.successor.map((id: string) => this._collection.get(id));
     }
 
-    // delegation of trust
+    /**
+     * Test if a specific group contract has been accepted
+     *
+     * @param groupContract
+     * @returns {boolean} true if accepted, otherwise false
+     */
     isAccepted(groupContract: GroupContract): boolean {
+        // based upon delegation of trust
         try {
             if (!groupContract.predecessor.length) {
                 throw new TypeError("The groupContract has to have at least one predecessor");

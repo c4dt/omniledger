@@ -16,6 +16,9 @@ export interface IGroupDefinition {
     predecessor?: string[];
 }
 
+/**
+ * Class representing a group definition
+ */
 export class GroupDefinition {
 
     static createFromJSON(json: IGroupDefinition): GroupDefinition {
@@ -52,6 +55,11 @@ export class GroupDefinition {
         return new GroupDefinition(variables);
     }
 
+    /**
+     * Utility method which returns the Group corresponding to a suite string description
+     *
+     * @param suite
+     */
     private static getGroup(suite: string): Group {
         switch (suite) {
             case "edwards25519":
@@ -69,24 +77,36 @@ export class GroupDefinition {
         }
     }
 
+    /**
+     * Sign the group definition id
+     *
+     * @param privateKey
+     * @returns {string} signature
+     */
     sign(privateKey: Private): string {
         const message: Buffer = Buffer.from(this.getId(), ENCODING);
         return schnorr.sign(this.suiteGroup, privateKey.scalar, message).toString(ENCODING);
     }
 
-    // verify the soundess of the group definition; not if the threshold has been reached
+    /**
+     * Verify the soundness of the group definition
+     * Beware: do not verify if the threshold has been reached
+     *
+     * @param signoffs
+     * @param parent
+     */
     verify(signoffs: string[], ...parent: GroupDefinition[]): boolean {
         if (!parent.map((p) => this.verifyId(p)).reduce((bool1: boolean, bool2: boolean) => bool1 && bool2)) {
             return false;
         }
-        console.log("verifydefinition1");
+
         // verify signatures
         // if the number of signatures is larger than the number of public keys
         // then an organizer have signed at least twice.
         if (this.variables.orgPubKeys.length < signoffs.length) {
             return false;
         }
-        console.log("verifydefinition2");
+
         const publicKeys = parent[0]
             ? [].concat(...parent.map((p) => p.publicKeys)).filter((val, idx, self) => {
                 return self.indexOf(val) === idx;
@@ -103,10 +123,10 @@ export class GroupDefinition {
                         return true;
                     }
                 }
-                console.log("verifydefinition3");
+
                 return false;
             });
-            console.log("verifydefinition4");
+
             // false if there is some wrong signature (duplicate or from an unknown public key)
             return verifiedSignoffs.reduce((bool1, bool2) => bool1 && bool2);
         }
@@ -114,6 +134,13 @@ export class GroupDefinition {
         return true;
     }
 
+    /**
+     * Verify soundness of a specific signoff
+     *
+     * @param signoff
+     * @param parent
+     * @returns {boolean}
+     */
     verifySignoff(signoff: string, parent: GroupDefinition): boolean {
         if (!this.verifyId(parent)) {
             return false;
@@ -130,11 +157,25 @@ export class GroupDefinition {
         return false;
     }
 
+    /**
+     * Verify soundness of a specifc signoff with a specific public key
+     *
+     * @param signoff
+     * @param publicKey
+     * @param message source of the signature
+     * @returns {boolean}
+     */
     verifySignoffWithPublicKey(signoff: string, publicKey: string, message: Buffer): boolean {
         const point: Point = Public.fromHex(publicKey).point;
         return schnorr.verify(this.suiteGroup, point, message, Buffer.from(signoff, ENCODING));
     }
 
+    /**
+     * Test the similarity between two group definitions
+     *
+     * @param groupDefinition
+     * @returns {boolean} true if similar, otherwise false
+     */
     isSimilarTo(groupDefinition: GroupDefinition): boolean {
         let similarPublicKeys = true;
         if (this.variables.orgPubKeys.length !== groupDefinition.publicKeys.length) {
@@ -180,10 +221,11 @@ export class GroupDefinition {
             + (this.predecessor.length > 0 ? "predecessor: " + this.variables.predecessor : "");
     }
 
+    /**
+     *
+     * @returns {string} id string representation
+     */
     getId(): string {
-        // const toH: Buffer = Buffer.from(JSON.stringify(this.toJSON()));
-        // TODO
-        // createHash("sha256").update() il faut updater avec binaries
         const hashContext = crypto.createHash("sha256");
         this.publicKeys.forEach((pk: string) => hashContext.update(Buffer.from(pk, "hex")));
         hashContext.update(Buffer.from(this.suite));
@@ -192,7 +234,6 @@ export class GroupDefinition {
             this.predecessor.forEach((p: string) => hashContext.update(Buffer.from(p, "hex")));
         }
         return hashContext.digest().toString(ENCODING);
-        // return schnorr.hashSchnorr(this.suiteGroup, toH).marshalBinary().toString(ENCODING);
     }
 
     get publicKeys(): string[] {

@@ -6,10 +6,10 @@ logic, and to set up your page’s data binding.
 
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
-import { GroupContractListView } from "./details-view";
-import { scanNewGroupContract } from "~/lib/group-ui";
 import { uData } from "~/lib/byzcoin-def";
 import { GroupContractCollection } from "~/lib/dynacred/group";
+import { scanNewGroupContract } from "~/lib/group-ui";
+import { GroupContractListView } from "./details-view";
 
 export let detailsList: GroupContractListView;
 let page: Page;
@@ -27,6 +27,10 @@ export function goBack() {
     return topmost().goBack();
 }
 
+/**
+ * Triggered when clicking the add button in the ActionBar
+ *
+ */
 export async function updateGroup() {
     const updatedGroupContractCollection = await scanNewGroupContract(groupContractCollection, uData.keyIdentity);
     if (updatedGroupContractCollection) {

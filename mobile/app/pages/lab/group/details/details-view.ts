@@ -8,6 +8,9 @@ import { ENCODING, GroupContract, GroupContractCollection } from "~/lib/dynacred
 import { showQR } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 
+/**
+ * Class representing the whole list
+ */
 export class GroupContractListView extends Observable {
 
     private _groupContracts: GroupContractView[];
@@ -25,19 +28,20 @@ export class GroupContractListView extends Observable {
     }
 }
 
+/**
+ * Class representing an item (a group contract) of the list
+ */
 export class GroupContractView extends Observable {
 
     private _isAccepted: boolean;
     private _isSigned: boolean;
     private _isCurrentGroupContract: boolean;
-    private _gcCollection: GroupContractCollection;
     private _groupContract: GroupContract;
 
     constructor(group: GroupContract, gcCollection: GroupContractCollection) {
         super();
 
         this._groupContract = group;
-        this._gcCollection = gcCollection;
 
         if (group.groupDefinition.predecessor.length) {
             this._isAccepted = gcCollection.isAccepted(group);
@@ -54,11 +58,14 @@ export class GroupContractView extends Observable {
                 break;
             }
         }
-        console.log("isSigned", this._isSigned);
 
         this._isCurrentGroupContract = this._isAccepted && (group.id === gcCollection.getCurrentGroupContract().id);
     }
 
+    /**
+     * Triggered when selecting a list item
+     *
+     */
     async selectGroupContract(arg: ItemEventData) {
         const showDefinition = localize("group_details.show_definition");
         const showQr = localize("group_details.show_qr");
