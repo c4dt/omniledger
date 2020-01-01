@@ -21,12 +21,15 @@ let page: Page;
 
 // Event handler for Page "navigatingTo" event attached in identity.xml
 export async function navigatingTo(args: EventData) {
-    Log.print(uData.keyIdentity._public.toHex());
     page = args.object as Page;
     groupList = new GroupListView();
     page.bindingContext = groupList;
 }
 
+/**
+ * Display an action dialog which ask how to create a group
+ *
+ */
 export async function createGroup(args: GestureEventData) {
     const propose = "Design a Group Definition";
     const scanQr = "Scan a Group Contract";

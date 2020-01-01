@@ -68,10 +68,12 @@ export function goBack() {
     return topmost().goBack();
 }
 
+/**
+ * Triggered when proposing a new group contract
+ */
 export async function propose() {
     try {
         Log.llvl1("propose new group contract");
-        // TODO check the fields
         // tslint:disable: object-literal-sort-keys
         const variables: IGroupDefinition = {
             orgPubKeys: publicKeyList.map((p) => p.publicKey),
@@ -109,7 +111,8 @@ export async function propose() {
                 return;
             }
             // The new group contract has to different from its predecessor
-            if (groupDefinition.isSimilarTo(gcCollection.getCurrentGroupContract().groupDefinition)) {
+            // tslint:disable-next-line: max-line-length
+            if (groupDefinition.predecessor.length === 1 && groupDefinition.isSimilarTo(gcCollection.getCurrentGroupContract().groupDefinition)) {
                 dialogs.alert({
                     title: localize("group_configure.warning"),
                     message: localize("group_configure.alert_different_predecessor"),
@@ -133,6 +136,10 @@ export async function propose() {
     }
 }
 
+/**
+ * Triggered when adding a public key to the list of public keys
+ *
+ */
 export async function addPublicKey(args: any) {
     try {
         const contacts = uData.contacts.concat(uData.contact);
@@ -183,6 +190,10 @@ export async function addPublicKey(args: any) {
     }
 }
 
+/**
+ * Triggered when removing a specific public key
+ *
+ */
 export function removePublicKey(args: any) {
     const context = args.view.bindingContext;
     if (!context) {
@@ -204,6 +215,10 @@ export function removePublicKey(args: any) {
     }
 }
 
+/**
+ * Triggered when adding a predecessor to the predecessor list
+ *
+ */
 export async function addPredecessor(args: any) {
     try {
         if (gcCollection === undefined || gcCollection.collection.size === 0) {
@@ -237,6 +252,10 @@ export async function addPredecessor(args: any) {
     }
 }
 
+/**
+ * Triggered when removing a specific predecessor
+ *
+ */
 export function removePredecessor(args: any) {
     const context = args.view.bindingContext;
     if (!context) {
@@ -257,6 +276,13 @@ export function removePredecessor(args: any) {
     }
 }
 
+/**
+ * Set the dataForm variable
+ * If groupContract exists then set the dataForm according to groupContract,
+ * otherwise set to a default value
+ *
+ * @param groupContract
+ */
 async function setDataForm(groupContract?: GroupContract) {
     if (groupContract) {
         Log.print("setDataForm there is a group contract");
@@ -304,6 +330,11 @@ async function setDataForm(groupContract?: GroupContract) {
 }
 
 // TODO is there a better way?
+/**
+ * Find an alias for a specific publicKey
+ *
+ * @param publicKey
+ */
 async function getAliasFromPublicKey(publicKey: string): Promise<string> {
     try {
         for (const contact of uData.contacts) {
@@ -320,6 +351,9 @@ async function getAliasFromPublicKey(publicKey: string): Promise<string> {
     }
 }
 
+/**
+ * Utility class representing a public key in publicKeyList array
+ */
 class PublicKeyListItem {
     alias: string;
     publicKey: string;
@@ -330,6 +364,9 @@ class PublicKeyListItem {
     }
 }
 
+/**
+ * Utility class representing a predecessor in predecessorList array
+ */
 class PredecessorListItem {
     id: string;
 

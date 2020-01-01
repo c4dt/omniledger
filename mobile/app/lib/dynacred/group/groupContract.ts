@@ -13,7 +13,9 @@ export interface IGroupContract {
     successor: string[];
 }
 
-// GroupContract est un container qui gère tous les éléments
+/**
+ * Class container representing a group contract
+ */
 export class GroupContract {
     static createFromJSON(json: any): GroupContract {
         // check the JSON soundness
@@ -49,6 +51,12 @@ export class GroupContract {
         this._successor = [];
     }
 
+    /**
+     * Returns new group contract having as predecessor this
+     *
+     * @param newGroupDefinition group definition of the new proposed group contract
+     * @returns {GroupContract} new proposed group contract
+     */
     proposeGroupContract(newGroupDefinition: GroupDefinition): GroupContract {
         if (!newGroupDefinition.predecessor.includes(this._id)) {
             newGroupDefinition.predecessor.push(this._id);
@@ -59,9 +67,15 @@ export class GroupContract {
         return newGroupContract;
     }
 
-    appendSignoff(signoff: string, p: GroupContract): boolean {
+    /**
+     * Append signoff to the group contract
+     *
+     * @param signoff to append
+     * @param predecessor used to verify the signoff
+     */
+    appendSignoff(signoff: string, predecessor: GroupContract): boolean {
         // check the signoff
-        if (!this._groupDefinition.verifySignoff(signoff, p.groupDefinition)) {
+        if (!this._groupDefinition.verifySignoff(signoff, predecessor.groupDefinition)) {
             return false;
         }
 
@@ -69,15 +83,25 @@ export class GroupContract {
         return true;
     }
 
+    /**
+     * Verify group contract
+     *
+     * @param parent used to verify the group contract
+     */
     verify(...parent: GroupContract[]): boolean {
         if (this._id !== this.groupDefinition.getId()) {
             throw new TypeError("The group contract id is not valid.");
         }
-        console.log("verifycontract1");
+
         const arg = parent[0] ? parent.map((p) => p.groupDefinition) : [undefined];
         return this._groupDefinition.verify(this._signoffs, ...arg);
     }
 
+    /**
+     * Merge signoffs between two group contracts into this group contract
+     *
+     * @param groupContract
+     */
     mergeSignoffs(groupContract: GroupContract) {
         if (this._id === groupContract._id) {
             const newSignoffs: string[] = groupContract._signoffs.filter((sig: string, idx: number) => {
@@ -98,7 +122,6 @@ export class GroupContract {
     }
 
     toObject(): object {
-        // tslint:disable: object-literal-sort-keys
         return {
             id: this._id,
             groupDefinition: this._groupDefinition.toObject(),

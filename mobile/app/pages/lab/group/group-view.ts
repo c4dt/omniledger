@@ -35,7 +35,11 @@ export class GroupView extends Observable {
 
         this._group = group;
     }
-
+    /**
+     * Triggered when tapping a group
+     * Display an action dialog
+     *
+     */
     async selectGroup(arg: ItemEventData) {
         const propNewContract = localize("group.propose_contract");
         const propContract = localize("group.show_proposed_contract");
