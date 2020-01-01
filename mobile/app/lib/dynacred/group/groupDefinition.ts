@@ -94,20 +94,19 @@ export class GroupDefinition {
      *
      * @param signoffs
      * @param parent
-     * @returns {boolean} if verification process true, otherwise false
      */
     verify(signoffs: string[], ...parent: GroupDefinition[]): boolean {
         if (!parent.map((p) => this.verifyId(p)).reduce((bool1: boolean, bool2: boolean) => bool1 && bool2)) {
             return false;
         }
-        console.log("verifydefinition1");
+
         // verify signatures
         // if the number of signatures is larger than the number of public keys
         // then an organizer have signed at least twice.
         if (this.variables.orgPubKeys.length < signoffs.length) {
             return false;
         }
-        console.log("verifydefinition2");
+
         const publicKeys = parent[0]
             ? [].concat(...parent.map((p) => p.publicKeys)).filter((val, idx, self) => {
                 return self.indexOf(val) === idx;
@@ -140,7 +139,6 @@ export class GroupDefinition {
      *
      * @param signoff
      * @param parent
-     * @param parentSignoffs optional variable provided when counting the signoffs of a merge
      * @returns {boolean}
      */
     verifySignoff(signoff: string, parent: GroupDefinition): boolean {
