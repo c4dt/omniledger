@@ -9,7 +9,7 @@
     <GridLayout rows="*">
         <ListView items="{{ groupContracts }}" class="list-group" row="0">
             <ListView.itemTemplate>
-                <FlexboxLayout orientation="horizontal" flexDirection="row" class="basic-list-decorated" alignItems="center" tap="{{ selectGroupContract }}" style="{{ (isAccepted ? '' : 'opacity: 0.6') + (isCurrentGroupContract ? 'border-left-color: #f0e10e' : '') }}">
+                <FlexboxLayout orientation="horizontal" flexDirection="row" class="basic-list-decorated" alignItems="center" tap="{{ selectGroupContract }}" style="{{ (isAccepted ? '' : 'opacity: 0.6') + (isCurrentGroupContract ? 'border-left-color: #f0e10e' : 'border-left-color: #208080') }}">
                     <GridLayout rows="auto" columns="auto, *">
                         <GridLayout rows="auto, auto" row="0" col="0">
                             <Label text="{{ id }}" row="0" class="h3" textTransform="uppercase" height="100%" flexGrow="1"/>
