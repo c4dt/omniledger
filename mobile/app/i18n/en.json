@@ -102,7 +102,7 @@
     "personhood": "Personhood",
     "ropasci": "Rock-Paper-Scissors",
     "poll": "Troll-resistant polls",
-    "group": "Group Managment"
+    "group": "Group Management"
   },
   "settings": {
     "title": "Settings",
@@ -272,7 +272,7 @@
     "prop_choices": "Choices"
   },
   "group": {
-    "title": "Group Managment",
+    "title": "Group Management",
     "publickeys": "Public Keys",
     "predecessor": "Predecessor",
     "not_contain_your_pk": "This group contract does not contain your public key. Do you still want to keep it?",
