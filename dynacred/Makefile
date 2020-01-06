@@ -1,5 +1,5 @@
 deps:
-    npm ci
+	npm ci
 
 none:
 	@echo "Not breaking if you don't tell me what to do"
