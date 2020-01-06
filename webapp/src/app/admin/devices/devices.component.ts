@@ -6,13 +6,14 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { InstanceID } from "@dedis/cothority/byzcoin";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { Darc } from "@dedis/cothority/darc";
-import Log from "@dedis/cothority/log";
 
 import { Device, TProgress } from "@c4dt/dynacred";
 
 import { Attribute, Credential } from "@dedis/cothority/personhood/credentials-instance";
 import { showDialogInfo, showDialogOKC, showSnack, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
+
+type RenameType = "devices" | "recovery";
 
 @Component({
     selector: "app-devices",
@@ -55,9 +56,10 @@ export class DevicesComponent implements OnInit {
             return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                 "reasons.", "Understood");
         }
-        if (await showDialogOKC(this.dialog, `Deleting device`,
+        const confirm = await showDialogOKC(this.dialog, `Deleting device`,
             `Do you really want to delete the device ${device.name}?`,
-            {OKButton: `Delete`, CancelButton: `Keep`})) {
+            {OKButton: `Delete`, CancelButton: `Keep`});
+        if (confirm) {
             await showTransactions(this.dialog, "Deleting device " + device.name,
                 async (progress: TProgress) => {
                     progress(30, "Deleting Device");
@@ -74,7 +76,7 @@ export class DevicesComponent implements OnInit {
     async addDevice() {
         const ac = this.dialog.open(DeviceAddComponent);
         ac.afterClosed().subscribe(async (result) => {
-            if (result) {
+            if (result !== undefined && result !== "") {
                 if (this.devices.find((d) => d.name === result)) {
                     await showDialogInfo(this.dialog, "Duplicate name", `The device-name ${result} already exists`,
                         "Change");
@@ -100,7 +102,7 @@ export class DevicesComponent implements OnInit {
         });
     }
 
-    async renameDevice(dev: Device, typeStr: string) {
+    async rename(dev: Device, typeStr: RenameType) {
         const ac = this.dialog.open(RenameComponent, {data: {name: dev.name, typeStr}});
         ac.afterClosed().subscribe(async (result) => {
             if (result === undefined || result === "") {
@@ -109,7 +111,7 @@ export class DevicesComponent implements OnInit {
             if (this.devices.concat(this.recovery).find((d) => d.name === result)) {
                 await showDialogInfo(this.dialog, "Duplicate name", `The ${typeStr}-name ${result} already exists`,
                     "Change");
-                return this.addDevice();
+                return this.rename(dev, typeStr);
             }
 
             dev.name = result;
@@ -230,6 +232,7 @@ interface IDeviceType {
 })
 export class RenameComponent {
     origName: string;
+
     constructor(
         public dialogRef: MatDialogRef<RenameComponent>,
         @Inject(MAT_DIALOG_DATA) public data: IDeviceType) {
