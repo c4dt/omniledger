@@ -94,6 +94,7 @@ export class GroupDefinition {
      *
      * @param signoffs
      * @param parent
+     * @returns {boolean} if verification process true, otherwise false
      */
     verify(signoffs: string[], ...parent: GroupDefinition[]): boolean {
         if (!parent.map((p) => this.verifyId(p)).reduce((bool1: boolean, bool2: boolean) => bool1 && bool2)) {

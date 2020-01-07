@@ -268,7 +268,7 @@ export class GroupContractCollection {
     toObject(): object {
         const obj = {
             collection: {} as any,
-            currentGroupContract: this.currentGroupContract.toObject(),
+            currentGroupContract: this.currentGroupContract ? this.currentGroupContract.toObject() : undefined,
             purpose: this._purpose,
         };
         this._collection.forEach((gc: GroupContract, id: string) => obj.collection[id] = gc.toObject());

@@ -56,7 +56,7 @@ export async function createGroup(args: GestureEventData) {
                 });
             case scanQr:
                 const gcCollection = await scanNewGroupContract(new GroupContractCollection(), uData.keyIdentity);
-                // only save if the group contact was accepted
+                // only save if the group contact was accepted or kept
                 if (gcCollection.collection.size !== 0) {
                     uData.addGroup(gcCollection);
                     await uData.save();
