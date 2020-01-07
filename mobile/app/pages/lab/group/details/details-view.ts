@@ -59,7 +59,11 @@ export class GroupContractView extends Observable {
             }
         }
 
-        this._isCurrentGroupContract = this._isAccepted && (group.id === gcCollection.getCurrentGroupContract().id);
+        if (gcCollection.getCurrentGroupContract() !== undefined) {
+            this._isCurrentGroupContract = this._isAccepted && (group.id === gcCollection.getCurrentGroupContract().id);
+        } else {
+            this._isCurrentGroupContract = false;
+        }
     }
 
     /**
