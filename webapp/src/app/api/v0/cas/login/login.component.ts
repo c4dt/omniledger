@@ -7,7 +7,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 
 import { TProgress } from "@c4dt/dynacred";
-import { Argument, ClientTransaction, InstanceID, Instruction, Proof } from "@dedis/cothority/byzcoin";
+import { Argument, ClientTransaction, InstanceID, Instruction } from "@dedis/cothority/byzcoin";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
@@ -26,7 +26,8 @@ class Action {
     constructor(
         readonly darc: InstanceID,
         readonly coin: InstanceID,
-    ) {}
+    ) {
+    }
 }
 
 @Component({
@@ -38,34 +39,34 @@ export class LoginComponent implements OnInit {
     private static readonly serviceToDarcAndCoin: Map<string, Action> = (() => {
         const tr = (raw: string) => Buffer.from(raw, "hex");
         return new Map([
-        ["www.c4dt.org", new Action(
-            tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
-            tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
-        )], ["c4dt.paperboy.ch", new Action(
-            tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
-            tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
-        )], ["matrix.c4dt.org", new Action(
-            tr("ff85d61d63d83b61beee6115a8c0553946c060538f1af7a6d8a6b242dc774327"),
-            tr("90b03f42b85540981f71a5e52f18e1df94a6ae68cd34ced132282a6219c2ad3d"),
-        )]]);
+            ["www.c4dt.org", new Action(
+                tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
+                tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
+            )], ["c4dt.paperboy.ch", new Action(
+                tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
+                tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
+            )], ["matrix.c4dt.org", new Action(
+                tr("ff85d61d63d83b61beee6115a8c0553946c060538f1af7a6d8a6b242dc774327"),
+                tr("90b03f42b85540981f71a5e52f18e1df94a6ae68cd34ced132282a6219c2ad3d"),
+            )]]);
     })();
     private static readonly coinCost = 1;
     private static readonly challengeSize = 20;
     private static readonly txArgName = "challenge";
+
     private static readonly challengeHasher = (val) => {
         const hash = crypto.createHash("sha256");
         hash.update(val);
         return hash.digest();
     }
+
     private static readonly ticketEncoder = (buf: Buffer) =>
         buf.toString("base64")
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
-
     state: StateT;
     readonly service: string;
     readonly StateT = StateT;
-
     private readonly redirect: URL;
     private readonly action: Action;
 
@@ -92,15 +93,10 @@ export class LoginComponent implements OnInit {
     }
 
     async ngOnInit() {
-        const isAuthorized = await showTransactions(
-            this.dialog, "Checking access",
-            async (progress: TProgress) => {
-                progress(50, "Getting available actions");
-                const availables = await this.uData.bc.checkAuthorization(
-                    this.uData.bc.genesisID, this.action.darc,
-                    IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
-                return availables.indexOf(Darc.ruleSign) !== -1;
-            });
+        const availables = await this.uData.bc.checkAuthorization(
+            this.uData.bc.genesisID, this.action.darc,
+            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+        const isAuthorized = availables.indexOf(Darc.ruleSign) !== -1;
 
         this.state = isAuthorized ?
             StateT.ASKING_IF_LOGIN : StateT.NO_ACCESS_WITH_CHECKAUTH;
@@ -145,7 +141,7 @@ export class LoginComponent implements OnInit {
      * it, the transaction proves that he was the one generating it.
      *
      * @param   challenge data to tag the transaction with
-     * @return	success if we managed to put the challenge
+     * @return    success if we managed to put the challenge
      */
     private async putChallenge(challenge: Buffer): Promise<boolean> {
         const challengeHashed = LoginComponent.challengeHasher(challenge);
