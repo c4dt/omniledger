@@ -36,11 +36,8 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                     gcCollection.purpose = groupContract.groupDefinition.purpose;
                     gcCollection.append(groupContract, true);
                 }
-            }
-
-            return gcCollection;
-        }
-
+            });
+        } else {
         if (gcCollection.get(groupContract.id)) {
             // already existing group contract
             gcCollection.append(groupContract);
@@ -64,11 +61,15 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                 const accept = localize("dialog.accept");
                 const keep = localize("dialog.keep");
                 const dismiss = localize("dialog.dismiss");
-                // tslint:disable: object-literal-sort-keys
+                const parents = gcCollection.getParent(groupContract);
+                let canVote = false;
+                parents.forEach((p: GroupContract) => {
+                    canVote = p.publicKeys.indexOf(kp._public.toHex()) > -1;
+                });
                 const action = {
                     title: localize("group.removed_organizer"),
                     message: groupContract.groupDefinition.toString(),
-                    actions: [accept, keep],
+                    actions: canVote ? [accept, keep] : [keep],
                     cancelButtonText: dismiss,
                 };
                 await dialogs.action(action).then((r: string) => {
@@ -81,8 +82,13 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                             gcCollection.sign(groupContract, kp._private);
                             break;
                         case keep:
+                            let keepOnly = true;
+                            if (!canVote && !gcCollection.getCurrentGroupContract()) {
+                                keepOnly = false;
+                            }
+
                             gcCollection.purpose = groupContract.groupDefinition.purpose;
-                            gcCollection.append(groupContract, true);
+                            gcCollection.append(groupContract, keepOnly);
                             break;
                     }
                 });
@@ -161,7 +167,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                     });
                 }
             }
-        }
+        }}
 
         return gcCollection;
 
