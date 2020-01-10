@@ -228,11 +228,11 @@ export class GroupDefinition {
      */
     getId(): string {
         const hashContext = crypto.createHash("sha256");
-        this.publicKeys.forEach((pk: string) => hashContext.update(Buffer.from(pk, "hex")));
+        this.publicKeys.forEach((pk: string) => hashContext.update(Buffer.from(pk, ENCODING)));
         hashContext.update(Buffer.from(this.suite));
         hashContext.update(Buffer.from(this.voteThreshold));
         if (this.predecessor) {
-            this.predecessor.forEach((p: string) => hashContext.update(Buffer.from(p, "hex")));
+            this.predecessor.forEach((p: string) => hashContext.update(Buffer.from(p, ENCODING)));
         }
         return hashContext.digest().toString(ENCODING);
     }
