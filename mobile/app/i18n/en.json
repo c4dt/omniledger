@@ -279,8 +279,6 @@
     "accept_group_contract": "Do you want to accept this new group contract?",
     "how_handle_group_contract": "How do you want to handle this new group contract?",
     "removed_organizer": "You have been removed from the group. How do you want do handle it?",
-    "follower_cannot_add_proposed": "You cannot keep this group contract as a group follower.",
-    "cannot_propose": "You cannot propose a new group contract.",
     "propose_contract": "Propose New Group Contract",
     "show_proposed_contract": "Show Proposed Group Contract QR Code",
     "show_current_contract": "Show Current Group Contract QR Code",
