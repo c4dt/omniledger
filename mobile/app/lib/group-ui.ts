@@ -24,7 +24,45 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
 
         // cannot accept a group contract where the user public key is not included
         if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
-            // tslint:disable: object-literal-sort-keys
+            // check if the organizer was removed
+            let isRemoved = false;
+            const parents = gcCollection.getParent(groupContract);
+            if (parents) {
+                for (const parent of parents) {
+                    if (parent.publicKeys.indexOf(kp._public.toHex()) > -1) {
+                        isRemoved = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isRemoved) {
+                const accept = localize("dialog.accept");
+                const keep = localize("dialog.keep");
+                const dismiss = localize("dialog.dismiss");
+                // tslint:disable: object-literal-sort-keys
+                const action = {
+                    title: localize("group.removed_organizer"),
+                    message: groupContract.groupDefinition.toString(),
+                    actions: [accept, keep],
+                    cancelButtonText: dismiss,
+                };
+                await dialogs.action(action).then((r: string) => {
+                    switch (r) {
+                        case dismiss:
+                            break;
+                        case accept:
+                            gcCollection.purpose = groupContract.groupDefinition.purpose;
+                            gcCollection.append(groupContract);
+                            gcCollection.sign(groupContract, kp._private);
+                            break;
+                        case keep:
+                            gcCollection.purpose = groupContract.groupDefinition.purpose;
+                            gcCollection.append(groupContract, true);
+                            break;
+                    }
+                });
+            } else {
             const options = {
                 title: localize("group.not_contain_your_pk"),
                 message: groupContract.groupDefinition.toString(),
@@ -37,6 +75,7 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                     gcCollection.append(groupContract, true);
                 }
             });
+            }
         } else {
         if (gcCollection.get(groupContract.id)) {
             // already existing group contract
