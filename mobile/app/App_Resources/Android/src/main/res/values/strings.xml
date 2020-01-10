@@ -56,6 +56,7 @@
   <string name="_group_show_current_contract_ZjnEB6">"Afficher le QR code du groupe de contrat actuel"</string>
   <string name="_group_show_proposed_contract_XQdTp">"Afficher le QR code du contrat de groupe proposé"</string>
   <string name="_group_propose_contract_EM5J4">"Proposer un nouveau contrat de groupe"</string>
+  <string name="_group_removed_organizer_Z179zEb">"Vous avez été retiré du groupe. Comment voulez le gérer?"</string>
   <string name="_group_how_handle_group_contract_C1dsv">"Comment voulez gérer ce nouveau contrat de groupe?"</string>
   <string name="_group_accept_group_contract_Z2o3f4G">"Voulez-vous accepter ce contrat de groupe?"</string>
   <string name="_group_not_contain_your_pk_1Kxt0s">"Ce contrat de group ne contient pas votre clef publique. Voulez-vous tout de même le garder?"</string>
