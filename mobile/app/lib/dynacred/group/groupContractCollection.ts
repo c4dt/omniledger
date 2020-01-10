@@ -184,8 +184,7 @@ export class GroupContractCollection {
      * Get worldview from a specific group contract
      *
      * @param groupContract
-     * @returns returns [gd] if there is no child to groupContract,
-     * returns [[gd,gd2], [gd,gd3]] if there is two children to groupContract
+     * @returns an array of direct successor(s)
      */
     getWorldView(groupContract: GroupContract) {
         return this.getChildren(groupContract);
