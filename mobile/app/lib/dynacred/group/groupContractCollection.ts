@@ -184,19 +184,29 @@ export class GroupContractCollection {
      * Get worldview from a specific group contract
      *
      * @param groupContract
+     * @returns an array of direct successor(s)
+     */
+    getWorldView(groupContract: GroupContract) {
+        return this.getChildren(groupContract);
+    }
+
+    /**
+     * Get worldview from a specific group contract
+     *
+     * @param groupContract
      * @returns returns [gd] if there is no child to groupContract,
      * returns [[gd,gd2], [gd,gd3]] if there is two children to groupContract
      */
-    getWorldView(groupContract: GroupContract) {
-        const children = this.getChildren(groupContract);
-        if (!children.length) {
-            return [groupContract];
-        } else {
-            return children.map((c: GroupContract) => {
-                return [].concat(...[groupContract].concat(this.getWorldView(c)));
-            });
-        }
-    }
+    // getWorldView(groupContract: GroupContract) {
+    //     const children = this.getChildren(groupContract);
+    //     if (!children.length) {
+    //         return [groupContract];
+    //     } else {
+    //         return children.map((c: GroupContract) => {
+    //             return [].concat(...[groupContract].concat(this.getWorldView(c)));
+    //         });
+    //     }
+    // }
 
     getParent(groupContract: GroupContract): GroupContract[] {
         if (!groupContract.predecessor.length) {
