@@ -261,7 +261,8 @@ export class GroupContractCollection {
                 // by the organizers in the parent (not all the organizers of the current group)
                 let numbSignoffsByParent = 0;
                 for (const s of groupContract.signoffs) {
-                    if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition)) {
+                    // tslint:disable-next-line: max-line-length
+                    if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition, (parent.length > 1) ? p.signoffs : undefined)) {
                         numbSignoffsByParent++;
                     }
                 }
