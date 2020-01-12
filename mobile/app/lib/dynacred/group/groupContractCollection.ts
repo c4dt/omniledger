@@ -298,6 +298,25 @@ export class GroupContractCollection {
         return this._collection;
     }
 
+    /**
+     * Remove the proposed group contract if it exists
+     *
+     */
+    removeProposedGroupContract() {
+        try {
+            if (this._collection.size !== 0) {
+                for (const gc of Array.from(this._collection.values())) {
+                    // avoid to erase the genesis group contract
+                    if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
+                        this._collection.delete(gc.id);
+                    }
+                }
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
     private meetVoteThreshold(voteThreshold: string, ratio: number): boolean {
         // Test if voteThreshold is well-formed
         voteThreshold = voteThreshold.replace(/\s/g, ""); // remove whitespaces
@@ -329,21 +348,6 @@ export class GroupContractCollection {
             return ratio >= numericalVoteThreshold;
         } else {
             return ratio > numericalVoteThreshold;
-        }
-    }
-
-    private removeProposedGroupContract() {
-        try {
-            if (this._collection.size !== 0) {
-                for (const gc of Array.from(this._collection.values())) {
-                    // avoid to erase the genesis group contract
-                    if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
-                        this._collection.delete(gc.id);
-                    }
-                }
-            }
-        } catch (e) {
-            throw e;
         }
     }
 }
