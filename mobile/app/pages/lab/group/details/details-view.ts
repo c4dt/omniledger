@@ -145,6 +145,14 @@ export class GroupContractView extends Observable {
         return this._groupContract.predecessor.map((p: string) => p.slice(0, 15 / length) + "...").join(", ");
     }
 
+    get listItemStyle(): string {
+        // if the group contract is not accepted, the list item is opaque
+        let style: string = (this.isAccepted ? "opacity: 1.0" : "opacity: 0.6") + ";";
+        // if the group contract is the current one, the border left strip is yellow; otherwise, it is green
+        style += (this.isCurrentGroupContract ? "border-left-color: #f0e10e" : "border-left-color: #208080") + ";";
+        return style;
+    }
+
     set groupContract(groupContract: GroupContract) {
         this._groupContract = groupContract;
     }
