@@ -62,6 +62,10 @@ export class GroupView extends Observable {
                 case cancel:
                     break;
                 case propNewContract:
+                    if (!this._group.getCurrentGroupContract()) {
+                        dialogs.alert(localize("group.cannot_propose"));
+                        break;
+                    }
                     topmost().navigate({
                         moduleName: "pages/lab/group/configure/configure-page",
                         context: {
