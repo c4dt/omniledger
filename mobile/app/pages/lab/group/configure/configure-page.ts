@@ -79,7 +79,6 @@ export async function propose() {
     try {
         Log.llvl1("propose new group contract");
         // tslint:disable: object-literal-sort-keys
-        predecessorList.forEach((p) => console.log(p.id));
         const variables: IGroupDefinition = {
             orgPubKeys: publicKeyList.map((p) => p.publicKey),
             suite: dataForm.get("suite"),
