@@ -140,17 +140,32 @@ export class GroupDefinition {
      *
      * @param signoff
      * @param parent
+     * @param parentSignoffs optional variable provided when counting the signoffs of a merge
      * @returns {boolean}
      */
-    verifySignoff(signoff: string, parent: GroupDefinition): boolean {
+    verifySignoff(signoff: string, parent: GroupDefinition, parentSignoffs?: string[]): boolean {
         if (!this.verifyId(parent)) {
             return false;
         }
 
         // check the signoff
         const message: Buffer = Buffer.from(this.getId(), ENCODING);
+        let hasSignedParent: boolean = true;
         for (const publicKey of parent.publicKeys) {
-            if (this.verifySignoffWithPublicKey(signoff, publicKey, message)) {
+            if (parentSignoffs) {
+                // check that the organizer has signed the parent group contract
+                // it is done when there is a merge, this way vote from an organizer is
+                // only counted for the vote threshold of the group contract he has accepted
+                hasSignedParent = false;
+                const parentMessage: Buffer = Buffer.from(parent.getId(), ENCODING);
+                for (const parentSignoff of parentSignoffs) {
+                    if (this.verifySignoffWithPublicKey(parentSignoff, publicKey, parentMessage)) {
+                        hasSignedParent = true;
+                        break;
+                    }
+                }
+            }
+            if (hasSignedParent && this.verifySignoffWithPublicKey(signoff, publicKey, message)) {
                 return true;
             }
         }

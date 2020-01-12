@@ -10,11 +10,11 @@ export const bdTest: IByzcoinDef = {
     testingMode: true,
     roster: testRoster,
     // Paste here vvv
-    byzCoinID: Buffer.from("e1eea532e3082a6d2918e2d44c18ee1d0a61128d6bbd5dcf7eab2624dbfe7e36", "hex"),
-    spawnerID: Buffer.from("3fb0bedd4122e00802eb80b0a86f4fb604b56ec347cc33eceafdef5e33c737c1", "hex"),
-    adminDarc: Buffer.from("6e8aec906998a78835ad601fc24ad1628d7ddeadefbca7cb80e741d62e5e09e8", "hex"),
-    ltsID: Buffer.from("bc75d9a0b98c2658d718652ec7bb0467d696f16c4f96f3f4a7cd0627d1ec59a9", "hex"),
-    ltsX: Public.fromHex("5593d5577a30cdf5a814e35a8ed25896bad4bd2b27e635aeba7ea12b0bf1af52").point,
+    byzCoinID: Buffer.from("01d3fd5f5e65acbf5bcebfac8903bf462c667b25ef21ffcd14b68d5f38509848", "hex"),
+    spawnerID: Buffer.from("f548f4b9b765ed0ae18b955e5462f9680032221c22f3882df39003004e175c56", "hex"),
+    adminDarc: Buffer.from("fe71293cb98be453807665a4c13c2e30cb651d2070bc158160d734e61b7776b0", "hex"),
+    ltsID: Buffer.from("a1f42931a6b2ed596156f3153789375d144db0c9bcad8cb5c7e1ff5c30225db2", "hex"),
+    ltsX: Public.fromHex("738c59328e037e888e7f552e3ff3fb8442d1db5ae06417b9d7101054bb6bbcd3").point,
     // Paste here ^^^
     calypsoRoster: testRoster,
     gameNode: testRoster.list[0],
