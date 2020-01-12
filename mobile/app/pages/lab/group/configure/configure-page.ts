@@ -121,7 +121,9 @@ export async function propose() {
                 });
                 return;
             }
-            contract = gcCollection.createGroupContract(gcCollection.getCurrentGroupContract(), groupDefinition);
+
+            const parent = gcCollection.get(predecessorList.getItem(0).id);
+            contract = gcCollection.createGroupContract(parent, groupDefinition);
             gcCollection.sign(contract, uData.keyIdentity._private);
         }
 
