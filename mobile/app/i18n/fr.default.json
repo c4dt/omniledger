@@ -277,6 +277,8 @@
     "not_contain_your_pk": "Ce contrat de group ne contient pas votre clef publique. Voulez-vous tout de même le garder?",
     "accept_group_contract": "Voulez-vous accepter ce contrat de groupe?",
     "how_handle_group_contract": "Comment voulez gérer ce nouveau contrat de groupe?",
+    "follower_cannot_add_proposed": "Vous ne pouvez pas garder ce contrat de groupe en tant que suiveur du groupe.",
+    "cannot_propose": "Vous ne pouvez pas proposer un nouveau contrat de groupe.",
     "removed_organizer": "Vous avez été retiré du groupe. Comment voulez le gérer?",
     "propose_contract": "Proposer un nouveau contrat de groupe",
     "show_proposed_contract": "Afficher le QR code du contrat de groupe proposé",
