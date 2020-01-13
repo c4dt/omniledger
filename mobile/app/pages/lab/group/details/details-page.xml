@@ -2,7 +2,7 @@
     navigatingTo="navigatingTo" class="page">
     <ActionBar class="action-bar">
         <NavigationButton text="Go Back" android:icon="res://ic_arrow_back" tap="goBack"/>
-        <Label class="action-bar-title" text="{{ L('group.details.title') }}"/>
+        <Label class="action-bar-title" text="{{ L('group_details.title') }}"/>
         <ActionItem tap="updateGroup" ios.position="right" ios.systemIcon="4" icon="res://ic_add_white" android.position="actionBar" />
     </ActionBar>
 
