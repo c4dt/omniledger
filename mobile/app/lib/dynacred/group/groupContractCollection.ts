@@ -262,7 +262,7 @@ export class GroupContractCollection {
                 let numbSignoffsByParent = 0;
                 for (const s of groupContract.signoffs) {
                     // tslint:disable-next-line: max-line-length
-                    if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition, (parent.length > 1) ? p.signoffs : undefined)) {
+                    if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition)) {
                         numbSignoffsByParent++;
                     }
                 }
