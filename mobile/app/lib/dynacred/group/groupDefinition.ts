@@ -101,13 +101,7 @@ export class GroupDefinition {
             return false;
         }
 
-        // verify signatures
-        // if the number of signatures is larger than the number of public keys
-        // then an organizer have signed at least twice.
-        if (this.variables.orgPubKeys.length < signoffs.length) {
-            return false;
-        }
-
+        // Verify signoffs
         const publicKeys = parent[0]
             ? [].concat(...parent.map((p) => p.publicKeys)).filter((val, idx, self) => {
                 return self.indexOf(val) === idx;
