@@ -237,23 +237,14 @@ export class GroupContractCollection {
                 throw new TypeError("The groupContract has to have at least one predecessor");
             }
 
-        // if groupDefinition is not included into the collection, append it
-        if (!this.has(groupContract)) {
-            this.append(groupContract);
-        }
-        const parent = this.getParent(groupContract);
-        if (!groupContract.verify(...parent)) {
-            return false;
-        }
-        const verifiedParent = parent.map((p: GroupContract) => {
-            // we count the number of signoffs for a specific parent because
-            // when there is multiple parent each parent vote threshold need to be reached
-            // by the organizers in the parent (not all the organizers of the current group)
-            let numbSignoffsByParent = 0;
-            for (const s of groupContract.signoffs) {
-                if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition)) {
-                    numbSignoffsByParent++;
-                }
+            // if groupDefinition is not included into the collection, append it
+            if (!this.has(groupContract)) {
+                this.append(groupContract, true);
+            }
+
+            const parent = this.getParent(groupContract);
+            if (!groupContract.verify(...parent)) {
+                return false;
             }
             const verifiedParent = parent.map((p: GroupContract) => {
                 // we count the number of signoffs for a specific parent because
