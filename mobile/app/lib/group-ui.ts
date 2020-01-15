@@ -22,8 +22,11 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
         const result = await scan("{{ L('group.camera_text') }}");
         const groupContract = GroupContract.createFromJSON(JSON.parse(result.text));
 
-        // cannot accept a group contract where the user public key is not included
-        if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
+        if (gcCollection.get(groupContract.id)) {
+            // already existing group contract
+            gcCollection.append(groupContract);
+        } else if (groupContract.groupDefinition.publicKeys.indexOf(kp._public.toHex()) === -1) {
+            // cannot accept a group contract where the user public key is not included
             // check if the organizer was removed
             let isRemoved = false;
             const parents = gcCollection.getParent(groupContract);
@@ -81,61 +84,56 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                 });
             }
         } else {
-            if (gcCollection.get(groupContract.id)) {
-                // already existing group contract
-                gcCollection.append(groupContract);
+            // not yet aware of this group contract
+            if (!groupContract.groupDefinition.predecessor.length) {
+                // a user can only accept or not the genesis group contract
+                const options = {
+                    title: localize("group.accept_group_contract"),
+                    message: groupContract.groupDefinition.toString(),
+                    okButtonText: localize("dialog.yes"),
+                    cancelButtonText: localize("dialog.no"),
+                };
+                await dialogs.confirm(options).then((choice: boolean) => {
+                    if (choice) {
+                        gcCollection.purpose = groupContract.groupDefinition.purpose;
+                        gcCollection.append(groupContract);
+                    }
+                });
             } else {
-                // not yet aware of this group contract
-                if (!groupContract.groupDefinition.predecessor.length) {
-                    // a user can only accept or not the genesis group contract
-                    const options = {
-                        title: localize("group.accept_group_contract"),
-                        message: groupContract.groupDefinition.toString(),
-                        okButtonText: localize("dialog.yes"),
-                        cancelButtonText: localize("dialog.no"),
-                    };
-                    await dialogs.confirm(options).then((choice: boolean) => {
-                        if (choice) {
+                const accept = localize("dialog.accept");
+                const keep = localize("dialog.keep");
+                const dismiss = localize("dialog.dismiss");
+                const parents = gcCollection.getParent(groupContract);
+                let canVote = false;
+                parents.forEach((p: GroupContract) => {
+                    canVote = p.publicKeys.indexOf(kp._public.toHex()) > -1;
+                });
+                const action = {
+                    title: localize("group.how_handle_group_contract"),
+                    message: groupContract.groupDefinition.toString(),
+                    actions: canVote ? [accept, keep] : [keep],
+                    cancelButtonText: dismiss,
+                };
+                await dialogs.action(action).then((r: string) => {
+                    switch (r) {
+                        case dismiss:
+                            break;
+                        case accept:
                             gcCollection.purpose = groupContract.groupDefinition.purpose;
                             gcCollection.append(groupContract);
-                        }
-                    });
-                } else {
-                    const accept = localize("dialog.accept");
-                    const keep = localize("dialog.keep");
-                    const dismiss = localize("dialog.dismiss");
-                    const parents = gcCollection.getParent(groupContract);
-                    let canVote = false;
-                    parents.forEach((p: GroupContract) => {
-                        canVote = p.publicKeys.indexOf(kp._public.toHex()) > -1;
-                    });
-                    const action = {
-                        title: localize("group.how_handle_group_contract"),
-                        message: groupContract.groupDefinition.toString(),
-                        actions: canVote ? [accept, keep] : [keep],
-                        cancelButtonText: dismiss,
-                    };
-                    await dialogs.action(action).then((r: string) => {
-                        switch (r) {
-                            case dismiss:
-                                break;
-                            case accept:
-                                gcCollection.purpose = groupContract.groupDefinition.purpose;
-                                gcCollection.append(groupContract);
-                                gcCollection.sign(groupContract, kp._private);
-                                break;
-                            case keep:
-                                let keepOnly = true;
-                                if (!canVote && !gcCollection.getCurrentGroupContract()) {
-                                    keepOnly = false;
-                                }
+                            gcCollection.sign(groupContract, kp._private);
+                            break;
+                        case keep:
+                            let keepOnly = true;
+                            if (!canVote && !gcCollection.getCurrentGroupContract()) {
+                                keepOnly = false;
+                            }
 
-                                gcCollection.purpose = groupContract.groupDefinition.purpose;
-                                gcCollection.append(groupContract, keepOnly);
-                                break;
-                        }
-                    });
-                }
+                            gcCollection.purpose = groupContract.groupDefinition.purpose;
+                            gcCollection.append(groupContract, keepOnly);
+                            break;
+                    }
+                });
             }
         }
 
