@@ -15,6 +15,13 @@ export interface IGroupDefinition {
 
 /**
  * Class representing a group definition
+ * A group definition defines the structure of a group of organizers
+ * It is one variable of the GroupContract class
+ *
+ * An instance of GroupDefinition can be initialized:
+ * - using the constructor having as arguments an object of type IGroupDefinition
+ * - using the static method createFromJSON(json), given as argument an object having
+ *   the structure of a JSON, creates an instance of GroupDefinition
  */
 export class GroupDefinition {
 

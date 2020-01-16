@@ -19,7 +19,6 @@
     "outDir": "./build"
   },
   "include": [
-    "src",
-    "src/group"
+    "src"
   ]
 }
