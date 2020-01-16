@@ -20,7 +20,8 @@
   "dependencies": {
     "@dedis/cothority": "^3.4.2",
     "@dedis/kyber": "^3.4.1",
-    "crypto-browserify": "^3.12.0"
+    "crypto-browserify": "^3.12.0",
+    "rxjs": "^6.5.4"
   },
   "devDependencies": {
     "@types/jasmine": "^3.5.0",

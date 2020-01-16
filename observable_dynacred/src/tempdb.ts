@@ -1,4 +1,4 @@
-import {InstanceID, Proof} from "@dedis/cothority/byzcoin";
+import {Log} from "@dedis/cothority";
 
 export interface IDataBase {
     get(key: string): Promise<Buffer|undefined>;
@@ -13,7 +13,10 @@ export class TempDB implements IDataBase {
     }
 
     public async get(key: string): Promise<Buffer|undefined> {
-        return this.kv.get(key);
+        this.kv.forEach((v, k) => {
+            Log.print("db:", k, v);
+        });
+        return this.kv.has(key) ? this.kv.get(key) : undefined;
     }
 
     public async set(key: string, value: Buffer): Promise<void> {

@@ -31,7 +31,7 @@ export class ExplorerComponent implements OnInit {
 
                 case CredentialsInstance.contractID:
                     this.contact = await Contact.fromByzcoin(this.uData.bc, id);
-                    this.kind = "credential";
+                    this.kind = "credentialObservable.ts";
                     break;
 
                 case CoinInstance.contractID:

@@ -1,3 +1,4 @@
+import {Log} from "@dedis/cothority";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import CoinInstance, {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import {LongTermSecret} from "@dedis/cothority/calypso";
@@ -6,7 +7,8 @@ import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/
 import {SPAWNER_COIN, SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
 import {Point} from "@dedis/kyber";
 import Long = require("long");
-import {Instances} from "./instances";
+import {BehaviorSubject, ReplaySubject} from "rxjs";
+import {IInstance, printInstance} from "./instances";
 import {KeyPair} from "./keypair";
 
 export interface IGenesisUser {
@@ -36,7 +38,7 @@ export interface IUser {
 /**
  * Credential holds static methods that allow to setup instances for credentials.
  */
-export class Credential {
+export class CredentialObservable {
     public static readonly structVersionLatest = 2;
     public static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     public static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
@@ -87,7 +89,7 @@ export class Credential {
         cred.setAttribute("1-public", "seedPub", pub.marshalBinary());
         cred.setAttribute("1-config", "spawner", spawner);
         const svBuf = Buffer.alloc(4);
-        svBuf.writeInt32LE(Credential.structVersionLatest, 0);
+        svBuf.writeInt32LE(CredentialObservable.structVersionLatest, 0);
         cred.setAttribute("1-config", "structVersion", svBuf);
         cred.setAttribute("1-devices", "initial", deviceDarcID);
         if (lts) {
@@ -108,7 +110,7 @@ export class Credential {
         const darcCred = Darc.createBasic([], [darcSignId], Buffer.from(CredentialInstance.argumentCredential),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch,
-            CoinInstance.commandStore].map((inv) => `invoke:#{CoinInstance.contractID}.#{inv}`);
+            CoinInstance.commandStore].map((inv) => `invoke:${CoinInstance.contractID}.#{inv}`);
         const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
         const coin = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(0)});
 
@@ -116,5 +118,27 @@ export class Credential {
         return {keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin};
     }
 
-    constructor(private inst: Instances, private id: InstanceID) {}
+    public readonly alias: BehaviorSubject<string>;
+
+    private cred: ReplaySubject<CredentialStruct>;
+
+    constructor(bsInst: BehaviorSubject<IInstance>) {
+        this.cred = new ReplaySubject(1);
+        bsInst.subscribe( {next: (inst) => {
+            Log.print("Got new IInstance", printInstance(inst));
+            this.cred.next(CredentialStruct.decode(inst.value));
+        }});
+        Log.print("making alias");
+        this.alias = new BehaviorSubject<string>("undefined");
+        this.cred.subscribe({next: async (cred) => {
+            Log.print("Got new cred", cred);
+            const aliasBuf = cred.getAttribute("1-public", "alias");
+            Log.print("buf is", aliasBuf);
+            const alias = aliasBuf === undefined ? "unknown" : aliasBuf.toString();
+            Log.print("alias is:", alias, this.alias.getValue());
+            if (alias !== await this.alias.getValue()) {
+                    this.alias.next(alias);
+                }
+            }});
+    }
 }
