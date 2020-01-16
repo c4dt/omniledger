@@ -20,8 +20,8 @@ import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";
 
 // Which byzcoinDefinition to use.
-// export const bcDef = bdDEDIS;
-export const bcDef = bdTest;
+export const bcDef = bdDEDIS;
+// export const bcDef = bdTest;
 
 // Version of the app - this is automatically copied from package.json
 export let appVersion = "0.5.8";

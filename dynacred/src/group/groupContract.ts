@@ -12,6 +12,14 @@ export interface IGroupContract {
 
 /**
  * Class container representing a group contract
+ * A group contract represents the fundamental aspects of the group for a user
+ * GroupContract class is used by the GroupContractCollection class
+ *
+ * An instance of GroupContract can be initialized:
+ * - using the constructor having as arguments an instance of GroupDefinition and
+ *   an optional array of signoffs
+ * - using the static method createFromJSON(json), given as argument an object having
+ *   the structure of a JSON, creates an instance of GroupContract
  */
 export class GroupContract {
     static createFromJSON(json: any): GroupContract {

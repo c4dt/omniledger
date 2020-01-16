@@ -290,13 +290,3 @@ describe("Group Management", () => {
         Log.print("Test merge passed!");
     });
 });
-
-// // helping method
-function sleep(milliseconds) {
-    const start = new Date().getTime();
-    for (let i = 0; i < 1e7; i++) {
-        if ((new Date().getTime() - start) > milliseconds) {
-            break;
-        }
-    }
-}
