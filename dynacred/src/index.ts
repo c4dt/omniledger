@@ -3,7 +3,6 @@ import { Config } from "./Config";
 import { Contact } from "./Contact";
 import { Data, TProgress } from "./Data";
 import { Device } from "./Device";
-import * as group from "./group";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { PartyItem } from "./PartyItem";
 import {
@@ -44,5 +43,4 @@ export {
     SocialNode,
     StorageDB,
     TProgress,
-    group,
 };

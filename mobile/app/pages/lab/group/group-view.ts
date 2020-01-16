@@ -4,7 +4,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { uData } from "~/lib/byzcoin-def";
-import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
+import { GroupContractCollection } from "@c4dt/dynacred/group/groupContractCollection";
 import { scanNewGroupContract, showQR } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 import { groupList } from "./group-page";

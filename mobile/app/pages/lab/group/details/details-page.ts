@@ -7,7 +7,7 @@ logic, and to set up your page’s data binding.
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { uData } from "~/lib/byzcoin-def";
-import { GroupContractCollection } from "~/lib/dynacred/group";
+import { GroupContractCollection } from "@c4dt/dynacred/group";
 import { scanNewGroupContract } from "~/lib/group-ui";
 import { GroupContractListView } from "./details-view";
 

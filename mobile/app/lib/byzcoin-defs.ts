@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Public } from "~/lib/dynacred";
+import { Public } from "@c4dt/dynacred";
 import { IByzcoinDef } from "./byzcoin-def";
 import { c4dtCalypsoRoster, dedisRoster, testRoster } from "./byzcoin-rosters";
 
@@ -10,11 +10,11 @@ export const bdTest: IByzcoinDef = {
     testingMode: true,
     roster: testRoster,
     // Paste here vvv
-    byzCoinID: Buffer.from("a000506c90c4811dbf6a8103a2561ac71f4e73dc1cd36b216c9f2a9d4c391e09", "hex"),
-    spawnerID: Buffer.from("2b885002d850decf64be97f047ada1274a7dd76c3f2e11c27a7fc52a310be27b", "hex"),
-    adminDarc: Buffer.from("765603ee65741eeb72143fa9c4757027161755b3adcea1a5153d8cf854fc340a", "hex"),
-    ltsID: Buffer.from("8bbbaf0ccb09e6d03f69d782757ec57e41780fc5bda1e8741bb37a161447244c", "hex"),
-    ltsX: Public.fromHex("89f90476b08d56526e6a60d710eacbd0320ddadf4c5ae0af573b0bbc8511196f").point,
+    byzCoinID: Buffer.from("7e07c329c5fe8b4d11e213d56d2e44fb732cba55a952ff315a48e1a19e13b9df", "hex"),
+    spawnerID: Buffer.from("ec46865b6fe53fc2778109870eda9cc39bc6eef7e4efa26ce5b9890810d32f4a", "hex"),
+    adminDarc: Buffer.from("b3dafa3b94d7d07016d76cbe29cc9f9195e0c2cb36086d8eb0892e418a0bc481", "hex"),
+    ltsID: Buffer.from("4c99ce919edfa063626d6080f5229b7ea707d5c7f8c0b43939be968416660a93", "hex"),
+    ltsX: Public.fromHex("5d8007e677d236045cc269633fa4ad7a20b2fb99c3f30b51a67aa10cb8212075").point,
     // Paste here ^^^
     calypsoRoster: testRoster,
     gameNode: testRoster.list[0],

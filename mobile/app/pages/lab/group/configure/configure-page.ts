@@ -6,9 +6,9 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { isAdmin, uData } from "~/lib/byzcoin-def";
-import { GroupContract } from "~/lib/dynacred/group/groupContract";
-import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
-import { GroupDefinition, IGroupDefinition } from "~/lib/dynacred/group/groupDefinition";
+import { GroupContract } from "@c4dt/dynacred/group/groupContract";
+import { GroupContractCollection } from "@c4dt/dynacred/group/groupContractCollection";
+import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred/group/groupDefinition";
 import { msgFailed } from "~/lib/messages";
 
 let page: Page;
