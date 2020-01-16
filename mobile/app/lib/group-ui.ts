@@ -6,7 +6,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { scan } from "~/lib/scan";
 import { KeyPair } from "@c4dt/dynacred";
-import { GroupContract, GroupContractCollection } from "@c4dt/dynacred/group";
+import { GroupContract, GroupContractCollection } from "@c4dt/dynacred";
 import { msgFailed } from "./messages";
 
 /**
