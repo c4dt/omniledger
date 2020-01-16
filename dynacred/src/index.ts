@@ -3,7 +3,14 @@ import { Config } from "./Config";
 import { Contact } from "./Contact";
 import { Data, TProgress } from "./Data";
 import { Device } from "./Device";
-import { ENCODING, GroupContract, GroupContractCollection, GroupDefinition, IGroupContract, IGroupDefinition } from "./group";
+import {
+    ENCODING,
+    GroupContract,
+    GroupContractCollection,
+    GroupDefinition,
+    IGroupContract,
+    IGroupDefinition,
+} from "./group";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { PartyItem } from "./PartyItem";
 import {
