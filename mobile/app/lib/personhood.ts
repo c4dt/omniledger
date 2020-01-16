@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Data } from "~/lib/dynacred";
+import { Data } from "@c4dt/dynacred";
 
 export function getMax(): IScore {
     return {

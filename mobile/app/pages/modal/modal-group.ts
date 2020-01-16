@@ -2,7 +2,7 @@
 require("nativescript-nodeify");
 import { fromObject } from "tns-core-modules/data/observable";
 import { Page } from "tns-core-modules/ui/page";
-import { Contact } from "~/lib/dynacred";
+import { Contact } from "@c4dt/dynacred";
 
 let closeCallback: () => null;
 

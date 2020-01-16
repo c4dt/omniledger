@@ -11,8 +11,7 @@
   },
   "scripts": {
     "lint": "tslint 'app/{,**/}*.ts'",
-    "lint:fix": "tslint --fix 'app/{,**/}*.ts'",
-    "test": "ts-node --project tsconfig.spec.json node_modules/.bin/jasmine"
+    "lint:fix": "tslint --fix 'app/{,**/}*.ts'"
   },
   "main": "app.js",
   "description": "Sybil-resistant identity management",
@@ -66,8 +65,7 @@
     "ws": "^7.1.0"
   },
   "devDependencies": {
-    "@types/jasmine": "^3.5.0",
-    "jasmine": "^3.5.0",
+    "@types/jasmine": "^3.3.9",
     "karma": "3.1.1",
     "karma-jasmine": "2.0.1",
     "karma-jasmine-html-reporter": "^1.4.0",
@@ -77,8 +75,7 @@
     "nativescript-dev-webpack": "^0.18.0",
     "tslint": "^5.18.0",
     "typescript": "^3.7",
-    "webpack": "^4.29.6",
-    "xhr": "^2.5.0"
+    "webpack": "^4.29.6"
   },
   "readme": "NativeScript Application"
 }

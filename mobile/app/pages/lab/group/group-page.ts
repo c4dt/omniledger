@@ -11,7 +11,7 @@ import { topmost } from "tns-core-modules/ui/frame/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures/gestures";
 import { Page } from "tns-core-modules/ui/page";
 import { uData } from "~/lib/byzcoin-def";
-import { GroupContractCollection } from "~/lib/dynacred/group/groupContractCollection";
+import { GroupContractCollection } from "@c4dt/dynacred/group/groupContractCollection";
 import { scanNewGroupContract } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 import { GroupListView } from "~/pages/lab/group/group-view";

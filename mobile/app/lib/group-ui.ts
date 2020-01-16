@@ -5,8 +5,8 @@ import { screen } from "tns-core-modules/platform";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { scan } from "~/lib/scan";
-import { KeyPair } from "./dynacred";
-import { GroupContract, GroupContractCollection } from "./dynacred/group";
+import { KeyPair } from "@c4dt/dynacred";
+import { GroupContract, GroupContractCollection } from "@c4dt/dynacred/group";
 import { msgFailed } from "./messages";
 
 /**

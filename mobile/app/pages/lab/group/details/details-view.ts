@@ -4,7 +4,7 @@ import { topmost } from "tns-core-modules/ui/frame/frame";
 import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { Observable } from "tns-core-modules/ui/page/page";
 import { uData } from "~/lib/byzcoin-def";
-import { ENCODING, GroupContract, GroupContractCollection } from "~/lib/dynacred/group";
+import { ENCODING, GroupContract, GroupContractCollection } from "@c4dt/dynacred/group";
 import { showQR } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 
