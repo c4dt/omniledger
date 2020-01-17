@@ -46,3 +46,5 @@ testem.log
 Thumbs.db
 
 cothority/
+src/lib/cothority
+src/lib/kyber
