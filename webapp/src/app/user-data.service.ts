@@ -41,7 +41,7 @@ export class UserData extends Data {
         for (let i = 0; i < 3; i++) {
             await this.conn.send(new StatusRequest(), StatusResponse);
             const url = this.conn.getURL();
-            logger(`Fastest node at ${i}/5: ${url}`, 20 + i * 20);
+            logger(`Fastest node at ${i}/3: ${url}`, 20 + i * 20);
         }
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
