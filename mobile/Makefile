@@ -18,7 +18,10 @@ gradle-prod:
 clean: gradle-simul
 	rm -rf node_modules platforms hooks
 
-npm-install: clean
+../dynacred/build/index.js:
+	make -C ../dynacred
+
+npm-install: clean ../dynacred/build/index.js
 	# if dynacred is installed from the parent's directory with `npm i ../dynacred`,
 	# npm will install all dependencies, including @dedis/cothority, and this will conflict with
 	# the @dedis/cothority in mobile, which will lead to structures form the different cothorities not

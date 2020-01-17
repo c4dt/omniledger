@@ -1,6 +1,9 @@
 .DEFAULT_GOAL := build_serve
 
-deps:
+../dynacred/build/index.js:
+	make -C ../dynacred
+
+deps: ../dynacred/build/index.js
 	npm ci
 
 src:
