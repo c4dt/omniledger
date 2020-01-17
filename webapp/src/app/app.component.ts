@@ -20,6 +20,7 @@ export class AppComponent implements OnInit {
     log: string = "";
     text: string;
     percentage: number;
+    bcviewer = false;
 
     constructor(
         private router: Router,
@@ -72,7 +73,11 @@ export class AppComponent implements OnInit {
                 }
                 this.logAppend("Done", 100);
                 this.loading = false;
-                this.bcs.updateBlocks();
+                if (!window.location.pathname.match(/\/cas\//)) {
+                    Log.lvl2("Starting to update blocks for viewer");
+                    this.bcviewer = true;
+                    this.bcs.updateBlocks();
+                }
             } catch (e) {
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {

@@ -38,10 +38,10 @@ export class UserData extends Data {
         logger("Pinging nodes", 10);
         this.conn = new RosterWSConnection(this.config.roster, StatusRPC.serviceName);
         this.conn.setParallel(this.config.roster.length);
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 3; i++) {
             await this.conn.send(new StatusRequest(), StatusResponse);
             const url = this.conn.getURL();
-            logger(`Fastest node at ${i}/5: ${url}`, 20 + i * 15);
+            logger(`Fastest node at ${i}/5: ${url}`, 20 + i * 20);
         }
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);

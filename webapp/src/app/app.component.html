@@ -23,7 +23,7 @@
                 <router-outlet></router-outlet>
             </div>
         </div>
-        <div fxFlex="0 0 9em" fxLayoutAlign="center end">
+        <div *ngIf="bcviewer" fxFlex="0 0 9em" fxLayoutAlign="center end">
             <app-bcviewer></app-bcviewer>
         </div>
     </div>
