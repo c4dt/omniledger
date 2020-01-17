@@ -1,4 +1,4 @@
-COT := dedis
+COT := c4dt
 
 help:
 	@echo "run with cothority_dedis or cothority_c4dt"
@@ -15,7 +15,7 @@ swap:
 		npm i --save @${to}/$$p; \
 	  done && \
 	  npm audit fix && \
-	  npm run lint:fix && \
+	  npm run lint:fix; \
 	  cd ..; \
 	done && \
 	perl -pi -e "s/^COT := .*/COT := ${to}/" ./Makefile
