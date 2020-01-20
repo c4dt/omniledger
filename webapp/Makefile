@@ -6,13 +6,23 @@
 deps: ../dynacred/build/index.js
 	npm ci
 
-src:
-	make -C ../dynacred use_src
+dynacred-src:
+	make -C ../dynacred src
+
+.PHONY: src
+src: dynacred-src src/lib/cothority src/lib/kyber
+
+src/lib:
+	mkdir -p src/lib
+
+src/lib/cothority: src/lib
 	ln -s $$(pwd)/../cothority/external/js/cothority/src src/lib/cothority
+
+src/lib/kyber: src/lib
 	ln -s $$(pwd)/../cothority/external/js/kyber/src src/lib/kyber
 
 npm:
-	make -C ../dynacred use_npm
+	make -C ../dynacred npm
 	rm -f src/lib/{cothority,kyber}
 
 serve:
