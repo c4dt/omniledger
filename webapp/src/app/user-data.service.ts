@@ -23,7 +23,7 @@ export class UserData extends Data {
     bc: ByzCoinRPC;
     config: Config;
     conn: IConnection;
-    private readonly dbLatest = "latest_skipblock";
+    private readonly storageKeyLatest = "latest_skipblock";
     // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
     // this will be updated.
     private readonly id0x6000 = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
@@ -51,7 +51,7 @@ export class UserData extends Data {
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
         let latest: SkipBlock;
-        const latestBuf = await this.storage.get(this.dbLatest);
+        const latestBuf = await this.storage.get(this.storageKeyLatest);
         if (latestBuf !== undefined) {
             latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
             Log.lvl2("Loaded latest block from db:", latest.index);
@@ -66,7 +66,7 @@ export class UserData extends Data {
         }
         this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
-        this.storage.set(this.dbLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()).toString("hex"));
+        this.storage.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()).toString("hex"));
         logger("Done connecting", 100);
     }
 
