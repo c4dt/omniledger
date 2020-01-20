@@ -26,7 +26,7 @@ export class UserData extends Data {
     private readonly dbLatest = "latest_skipblock";
     // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
     // this will be updated.
-    private readonly id0x6000 = "3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48";
+    private readonly id0x6000 = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
 
     constructor() {
         super(undefined); // poison
@@ -58,7 +58,7 @@ export class UserData extends Data {
         } else {
             const sc = new SkipchainRPC(this.conn);
             try {
-                latest = await sc.getSkipBlock(Buffer.from(this.id0x6000, "hex"));
+                latest = await sc.getSkipBlock(this.id0x6000);
                 Log.lvl2("Got skipblock 0x6000");
             } catch (e) {
                 Log.lvl2("couldn't get block 0x6000", e);
