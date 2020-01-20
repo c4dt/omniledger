@@ -6,6 +6,7 @@ import { IdentityWrapper } from "@c4dt/cothority/darc";
 import Log from "@c4dt/cothority/log";
 
 import { showDialogOKC } from "src/lib/Ui";
+import { version } from "../../package.json";
 import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
 
@@ -21,6 +22,7 @@ export class AppComponent implements OnInit {
     text: string;
     percentage: number;
     bcviewer = false;
+    version = version;
 
     constructor(
         private router: Router,
