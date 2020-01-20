@@ -68,16 +68,15 @@ export class AppComponent implements OnInit {
                     this.uData.setValues({});
                     await this.uData.save();
                     await showDialogOKC(this.dialog, "Device revoked", "Sorry, but this device has been revoked." +
-                    " If you want to use it again, you'll have to re-activate it.");
+                        " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();
                 }
                 this.logAppend("Done", 100);
                 this.loading = false;
-                if (!window.location.pathname.match(/\/cas\//)) {
-                    Log.lvl2("Starting to update blocks for viewer");
-                    this.bcviewer = true;
-                    this.bcs.updateBlocks();
-                }
+                Log.lvl2("Starting to update blocks for viewer");
+                this.bcs.updateBlocks();
+                this.bcviewer = true;
+
             } catch (e) {
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {

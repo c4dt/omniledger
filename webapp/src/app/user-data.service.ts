@@ -6,6 +6,7 @@ import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
 import Log from "@c4dt/cothority/log";
 
 import { IConnection, RosterWSConnection } from "@c4dt/cothority/network/connection";
+import { SkipBlock, SkipchainRPC } from "@c4dt/cothority/skipchain";
 import { StatusRequest, StatusResponse } from "@c4dt/cothority/status/proto";
 import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Config, Data, StorageDB } from "@c4dt/dynacred";
@@ -22,6 +23,10 @@ export class UserData extends Data {
     bc: ByzCoinRPC;
     config: Config;
     conn: IConnection;
+    private readonly storageKeyLatest = "latest_skipblock";
+    // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
+    // this will be updated.
+    private readonly id0x6000 = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
 
     constructor() {
         super(undefined); // poison
@@ -45,7 +50,23 @@ export class UserData extends Data {
         }
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
-        this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID);
+        let latest: SkipBlock;
+        const latestBuf = await this.storage.get(this.storageKeyLatest);
+        if (latestBuf !== undefined) {
+            latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
+            Log.lvl2("Loaded latest block from db:", latest.index);
+        } else {
+            const sc = new SkipchainRPC(this.conn);
+            try {
+                latest = await sc.getSkipBlock(this.id0x6000);
+                Log.lvl2("Got skipblock 0x6000");
+            } catch (e) {
+                Log.lvl2("couldn't get block 0x6000", e);
+            }
+        }
+        this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
+        Log.lvl2("storing latest block in db:", this.bc.latest.index);
+        this.storage.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()).toString("hex"));
         logger("Done connecting", 100);
     }
 
