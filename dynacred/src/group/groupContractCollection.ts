@@ -24,8 +24,8 @@ export class GroupContractCollection {
             gcCollection.currentGroupContract = GroupContract.fromObject(obj.currentGroupContract);
         }
 
-        if (obj._purpose !== undefined) {
-            gcCollection.purpose = obj._purpose;
+        if (obj.purpose !== undefined) {
+            gcCollection.purpose = obj.purpose;
         }
 
         return gcCollection;
@@ -49,12 +49,19 @@ export class GroupContractCollection {
      */
     createGroupContract(parent: GroupContract | undefined, groupDefinition: GroupDefinition): GroupContract {
         let newGroupContract: GroupContract;
+        console.log("createGroup1");
         if (parent !== undefined) {
+            console.log("createGroup11");
             newGroupContract = parent.proposeGroupContract(groupDefinition);
+            console.log("createGroup12");
         } else {
+            console.log("gc1");
             newGroupContract = new GroupContract(groupDefinition);
+            console.log("gc2");
         }
+        console.log("createGroup1");
         this.append(newGroupContract);
+        console.log("createGroup2");
 
         return newGroupContract;
     }
@@ -94,6 +101,7 @@ export class GroupContractCollection {
      */
     append(groupContract: GroupContract, keepOnly: boolean = false) {
         // only proceed if the the groupContract is sound
+        console.log("append1");
         const parents = this.getParent(groupContract);
         if (parents.length > 0) {
             if (!groupContract.verify(...this.getParent(groupContract))) {
@@ -104,25 +112,26 @@ export class GroupContractCollection {
                 throw new Error("The group contract verification failed.");
             }
         }
-
+        console.log("append2");
         // check if the id is not already there
         const existing: GroupContract | undefined = this._collection.get(groupContract.id);
         // TODO to test
-
+        console.log("append3");
         if (existing !== undefined) {
             groupContract.mergeSignoffs(existing);
         } else {
             // there is a new proposed group contract; therefore, erase the current proposed group contract
             this.removeProposedGroupContract();
         }
-
+        console.log("append4");
         this._collection.set(groupContract.id, groupContract);
-
+        console.log("append5");
         // if groupContract is accepted; therefore, it becomes the current group contract
         const numbPredecessor = groupContract.groupDefinition.predecessor.length;
         if (!keepOnly && (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract)))) {
             this.currentGroupContract = groupContract;
         }
+        console.log("append6");
     }
 
     /**

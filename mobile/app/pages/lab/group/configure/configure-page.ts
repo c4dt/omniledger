@@ -16,10 +16,9 @@ let gcCollection: GroupContractCollection;
 const publicKeyList = new ObservableArray<PublicKeyListItem>();
 const predecessorList = new ObservableArray<PredecessorListItem>();
 
-// tslint:disable: object-literal-sort-keys
 const dataForm = fromObject({
-    suite: "edwards25519",
     purpose: "Testing",
+    suite: "edwards25519",
     voteThreshold: ">1/2",
 });
 
@@ -86,7 +85,7 @@ export async function propose() {
             purpose: dataForm.get("purpose"),
             predecessor: predecessorList.map((p) => p.id),
         };
-
+        console.log("bonjour");
         // check variables
         // suite has to be edwards25519
         if (variables.suite !== "edwards25519") {
@@ -103,11 +102,16 @@ export async function propose() {
         if (!gcCollection) {
             gcCollection = new GroupContractCollection(variables.purpose);
             // genesis group contract: c0
+            console.log("1");
             contract = gcCollection.createGroupContract(undefined, groupDefinition);
+            console.log("2");
             // group contract: c1
             groupDefinition = new GroupDefinition(groupDefinition.allVariables);
+            console.log("3");
             contract = gcCollection.createGroupContract(contract, groupDefinition);
+            console.log("4");
             gcCollection.sign(contract, uData.keyIdentity._private);
+            console.log("5");
         } else {
             // Check the variables
             if (variables.predecessor.length === 0) {
@@ -169,7 +173,7 @@ export async function addPublicKey(args: any) {
         if (contact !== null) {
             const devices = await contact.getDevices();
             const pubKeys = devices.map((d) => d.pubKey.toHex());
-            // TODO if there is multiple public key need to choose!
+            // choose invariably the first public key
             let selectedPubKey: string;
             if (pubKeys.length > 1) {
                 result = await dialogs.action({
@@ -190,7 +194,6 @@ export async function addPublicKey(args: any) {
             publicKeyList.push(new PublicKeyListItem(contact.alias, selectedPubKey));
         }
     } catch (e) {
-        Log.catch("error");
         return msgFailed(e.toString(), "Error");
     }
 }
@@ -334,7 +337,6 @@ async function setDataForm(groupContract?: GroupContract) {
     }
 }
 
-// TODO is there a better way?
 /**
  * Find an alias for a specific publicKey
  *
@@ -342,14 +344,30 @@ async function setDataForm(groupContract?: GroupContract) {
  */
 async function getAliasFromPublicKey(publicKey: string): Promise<string> {
     try {
+        const promises = [];
         for (const contact of uData.contacts) {
-            const devices = await contact.getDevices();
-            for (const device of devices) {
-                if (publicKey === device.pubKey.toHex()) {
-                    return contact.alias;
+            promises.push(new Promise((resolve) => {
+                resolve([contact.getDevices(), contact]);
+            }));
+            // promises.push(async (resolve) => {
+            //     const devices = await contact.getDevices();
+            //     for (const device of devices) {
+            //         if (publicKey === device.pubKey.toHex()) {
+            //             return contact.alias;
+            //         }
+            //     }
+            // });
+        }
+        // TODO to test
+        Promise.all(promises).then((results) => {
+            for (const result of results) {
+                for (const device of result[0]) {
+                    if (publicKey === device.pubKey.toHex()) {
+                        return result[1].alias;
+                    }
                 }
             }
-        }
+        });
         return undefined;
     } catch (e) {
         msgFailed(e.toString(), "Error");
