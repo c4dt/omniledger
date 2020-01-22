@@ -92,7 +92,7 @@ export class Data {
     }
 
     get groups(): GroupContractCollection[] {
-        return this._groups;
+        return [...this._groups];
     }
 
     static readonly urlNewDevice = "/register/device";
@@ -302,13 +302,13 @@ export class Data {
     badges: Badge[] = [];
     ropascis: RoPaSciInstance[] = [];
     polls: PollStruct[] = [];
-    _groups: GroupContractCollection[] = [];
     meetups: SocialNode[] = [];
     // Non-stored fields
     recoverySignatures: RecoverySignature[] = [];
     storage: IStorage = StorageDB;
     references: string[] = [];
     phrpc: PersonhoodRPC;
+    private _groups: GroupContractCollection[] = [];
 
     /**
      * Constructs a new Data, optionally initialized with an object containing

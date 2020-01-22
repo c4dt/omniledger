@@ -1,10 +1,10 @@
+import { ENCODING, GroupContract, GroupContractCollection } from "@c4dt/dynacred";
 import { localize } from "nativescript-localize";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { ItemEventData } from "tns-core-modules/ui/list-view/list-view";
 import { Observable } from "tns-core-modules/ui/page/page";
 import { uData } from "~/lib/byzcoin-def";
-import { ENCODING, GroupContract, GroupContractCollection } from "@c4dt/dynacred";
 import { showQR } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 

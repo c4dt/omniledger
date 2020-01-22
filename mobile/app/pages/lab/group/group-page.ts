@@ -4,14 +4,13 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import Log from "@dedis/cothority/log";
+import { GroupContractCollection } from "@c4dt/dynacred";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures/gestures";
 import { Page } from "tns-core-modules/ui/page";
 import { uData } from "~/lib/byzcoin-def";
-import { GroupContractCollection } from "@c4dt/dynacred";
 import { scanNewGroupContract } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 import { GroupListView } from "~/pages/lab/group/group-view";
