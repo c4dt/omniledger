@@ -34,25 +34,25 @@ export class GroupContract {
         return new GroupContract(groupDefinition, json.signoffs);
     }
 
-    static fromObject(gc: any) {
+    static fromObject(gc: any): GroupContract {
         const groupDefinition = GroupDefinition.fromObject(gc.groupDefinition);
-        const groupContract = new GroupContract(groupDefinition, gc.signoffs ? gc.signoffs : []);
-        if (gc.successor) {
+        const groupContract = new GroupContract(groupDefinition, gc.signoffs !== undefined ? gc.signoffs : []);
+        if (gc.successor !== undefined) {
             groupContract.successor = gc.successor;
         }
 
         return groupContract;
     }
 
-    private _id: string;
-    private _groupDefinition: GroupDefinition;
+    readonly id: string;
+    readonly groupDefinition: GroupDefinition;
     private _signoffs: string[];
     private _successor: string[];
 
     constructor(groupDefinition: GroupDefinition, signoffs = []) {
-        this._groupDefinition = groupDefinition;
-        this._id =  groupDefinition.getId();
-        this._signoffs = signoffs;
+        this.groupDefinition = groupDefinition;
+        this.id =  groupDefinition.getId();
+        this._signoffs = [...signoffs];
         this._successor = [];
     }
 
@@ -63,12 +63,12 @@ export class GroupContract {
      * @returns {GroupContract} new proposed group contract
      */
     proposeGroupContract(newGroupDefinition: GroupDefinition): GroupContract {
-        if (!newGroupDefinition.predecessor.includes(this._id)) {
-            newGroupDefinition.predecessor.push(this._id);
+        if (!newGroupDefinition.predecessor.includes(this.id)) {
+            newGroupDefinition.predecessor.push(this.id);
         }
 
         const newGroupContract = new GroupContract(newGroupDefinition);
-        this._successor.push(newGroupContract._id);
+        this._successor.push(newGroupContract.id);
         return newGroupContract;
     }
 
@@ -80,7 +80,7 @@ export class GroupContract {
      */
     appendSignoff(signoff: string, predecessor: GroupContract): boolean {
         // check the signoff
-        if (!this._groupDefinition.verifySignoff(signoff, predecessor.groupDefinition)) {
+        if (!this.groupDefinition.verifySignoff(signoff, predecessor.groupDefinition)) {
             return false;
         }
 
@@ -94,12 +94,12 @@ export class GroupContract {
      * @param parent used to verify the group contract
      */
     verify(...parent: GroupContract[]): boolean {
-        if (this._id !== this.groupDefinition.getId()) {
+        if (this.id !== this.groupDefinition.getId()) {
             throw new TypeError("The group contract id is not valid.");
         }
 
         const arg = parent[0] ? parent.map((p) => p.groupDefinition) : [undefined];
-        return this._groupDefinition.verify(this._signoffs, ...arg);
+        return this.groupDefinition.verify(this._signoffs, ...arg);
     }
 
     /**
@@ -108,19 +108,22 @@ export class GroupContract {
      * @param groupContract
      */
     mergeSignoffs(groupContract: GroupContract) {
-        if (this._id === groupContract._id) {
-            const newSignoffs: string[] = groupContract._signoffs.filter((sig: string, idx: number) => {
-                return this._signoffs.indexOf(sig) !== idx;
+        if (this.id === groupContract.id) {
+            groupContract.signoffs.forEach((s: string) => {
+                if (this._signoffs.indexOf(s) === -1) {
+                    this._signoffs.push(s);
+                }
             });
-            newSignoffs.forEach((sig: string) => this._signoffs.push(sig));
+        } else {
+            throw new TypeError("The groupContract id is not valid.");
         }
     }
 
     toJSON(): IGroupContract {
         // tslint:disable: object-literal-sort-keys
         return {
-            id: this._id,
-            groupDefinition: this._groupDefinition.toJSON(),
+            id: this.id,
+            groupDefinition: this.groupDefinition.toJSON(),
             signoffs: this._signoffs,
             successor: this._successor,
         };
@@ -128,19 +131,11 @@ export class GroupContract {
 
     toObject(): object {
         return {
-            id: this._id,
-            groupDefinition: this._groupDefinition.toObject(),
+            id: this.id,
+            groupDefinition: this.groupDefinition.toObject(),
             signoff: this._signoffs,
             successor: this._successor,
         };
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
-    get groupDefinition(): GroupDefinition {
-        return this._groupDefinition;
     }
 
     get signoffs(): string[] {
@@ -156,22 +151,22 @@ export class GroupContract {
     }
 
     get publicKeys(): string[] {
-        return this._groupDefinition.publicKeys;
+        return this.groupDefinition.publicKeys;
     }
 
     get voteThreshold(): string {
-        return this._groupDefinition.voteThreshold;
+        return this.groupDefinition.voteThreshold;
     }
 
     get predecessor(): string[] {
-        return this._groupDefinition.predecessor;
+        return this.groupDefinition.predecessor;
     }
 
     get purpose(): string {
-        return this._groupDefinition.purpose;
+        return this.groupDefinition.purpose;
     }
 
     get suite(): Group {
-        return this._groupDefinition.suiteGroup;
+        return this.groupDefinition.suiteGroup;
     }
 }

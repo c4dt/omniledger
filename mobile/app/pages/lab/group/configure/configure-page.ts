@@ -1,3 +1,6 @@
+import { GroupContract } from "@c4dt/dynacred";
+import { GroupContractCollection } from "@c4dt/dynacred";
+import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
@@ -6,9 +9,6 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { isAdmin, uData } from "~/lib/byzcoin-def";
-import { GroupContract } from "@c4dt/dynacred";
-import { GroupContractCollection } from "@c4dt/dynacred";
-import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred";
 import { msgFailed } from "~/lib/messages";
 
 let page: Page;

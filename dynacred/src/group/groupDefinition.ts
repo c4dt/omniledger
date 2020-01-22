@@ -51,7 +51,7 @@ export class GroupDefinition {
     static fromObject(gd: any): GroupDefinition {
         const variables: IGroupDefinition = {
             orgPubKeys: gd.orgPubKeys,
-            predecessor: gd.predecessor ? gd.predecessor : [],
+            predecessor: gd.predecessor !== undefined ? gd.predecessor : [],
             purpose: gd.purpose,
             suite: gd.suite,
             voteThreshold: gd.voteThreshold,
@@ -68,14 +68,13 @@ export class GroupDefinition {
         switch (suite) {
             case "edwards25519":
                 return curve.newCurve("edwards25519");
+            default:
+                throw new Error("For the time being, only the edwards25519 is supported.");
         }
     }
 
-    private variables: IGroupDefinition;
-
-    constructor(variables: IGroupDefinition) {
-        this.variables = variables;
-
+    constructor(private variables: IGroupDefinition) {
+        // TODO to test
         if (!this.variables.predecessor) {
             this.variables.predecessor = [];
         }
@@ -101,7 +100,7 @@ export class GroupDefinition {
      * @returns {boolean} if verification process true, otherwise false
      */
     verify(signoffs: string[], ...parent: GroupDefinition[]): boolean {
-        if (!parent.map((p) => this.verifyId(p)).reduce((bool1: boolean, bool2: boolean) => bool1 && bool2)) {
+        if (!parent.map((p) => this.verifyId(p)).every((_) => _)) {
             return false;
         }
 
@@ -115,19 +114,30 @@ export class GroupDefinition {
         // verify that every signoff correspond to one and only one parent public key
         if (signoffs.length) {
             const message: Buffer = Buffer.from(id, ENCODING);
-            const verifiedSignoffs: boolean[] = signoffs.map((s: string) => {
+            // const verifiedSignoffs: boolean[] = signoffs.map((s: string) => {
+            //     for (const publicKey of publicKeys) {
+            //         if (this.verifySignoffWithPublicKey(s, publicKey, message)) {
+            //             publicKeys.splice(publicKeys.indexOf(publicKey), 1);
+            //             return true;
+            //         }
+            //     }
+
+            //     return false;
+            // });
+
+            // // false if there is some wrong signature (duplicate or from an unknown public key)
+            // return verifiedSignoffs.reduce((bool1, bool2) => bool1 && bool2);
+            // TODO to test
+            // false if there is some wrong signature (duplicate or from an unknown public key)
+            return signoffs.every((s: string) => {
                 for (const publicKey of publicKeys) {
                     if (this.verifySignoffWithPublicKey(s, publicKey, message)) {
                         publicKeys.splice(publicKeys.indexOf(publicKey), 1);
                         return true;
                     }
                 }
-
                 return false;
             });
-
-            // false if there is some wrong signature (duplicate or from an unknown public key)
-            return verifiedSignoffs.reduce((bool1, bool2) => bool1 && bool2);
         }
 
         return true;
@@ -177,15 +187,18 @@ export class GroupDefinition {
      * @returns {boolean} true if similar, otherwise false
      */
     isSimilarTo(groupDefinition: GroupDefinition): boolean {
-        let similarPublicKeys = true;
-        if (this.variables.orgPubKeys.length !== groupDefinition.publicKeys.length) {
-            similarPublicKeys = false;
-        }
-        this.variables.orgPubKeys.forEach((pk) => {
-            if (!groupDefinition.publicKeys.includes(pk)) {
-                similarPublicKeys = false;
-            }
-        });
+        let similarPublicKeys = this.variables.orgPubKeys.length === groupDefinition.publicKeys.length;
+        // TODO to test
+        // if (this.variables.orgPubKeys.length !== groupDefinition.publicKeys.length) {
+        //     similarPublicKeys = false;
+        // }
+        similarPublicKeys = this.variables.orgPubKeys.every((pk) => groupDefinition.publicKeys.includes(pk));
+        // TODO to test
+        // this.variables.orgPubKeys.forEach((pk) => {
+        //     if (!groupDefinition.publicKeys.includes(pk)) {
+        //         similarPublicKeys = false;
+        //     }
+        // });
 
         return similarPublicKeys
             && (this.variables.purpose === groupDefinition.purpose)
@@ -196,7 +209,7 @@ export class GroupDefinition {
     toJSON(): IGroupDefinition {
         return {
             orgPubKeys: this.variables.orgPubKeys,
-            predecessor: this.variables.predecessor ? this.variables.predecessor : undefined,
+            predecessor: this.variables.predecessor,
             purpose: this.variables.purpose,
             suite: this.variables.suite,
             voteThreshold: this.variables.voteThreshold,
@@ -275,13 +288,15 @@ export class GroupDefinition {
         };
     }
 
-    private verifyId(parent: GroupDefinition): boolean {
+    private verifyId(parent?: GroupDefinition): boolean {
         if (parent === undefined) {
             return true;
         }
 
-        const parentId = parent.getId();
-        const parentIdx = this.predecessor.indexOf(parentId);
-        return parentIdx > -1;
+        return this.predecessor.find((p) => p === parent.getId()) !== undefined;
+        // TODO to test
+        // const parentId = parent.getId();
+        // const parentIdx = this.predecessor.indexOf(parentId);
+        // return parentIdx > -1;
     }
 }
