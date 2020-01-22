@@ -57,10 +57,10 @@ docker_wait:
 	done
 
 docker_stop:
-	docker stop $(CONTAINER)
+	docker stop $(IMAGE_NAME)
 
 docker_start:
-	docker start $(CONTAINER)
+	docker start $(IMAGE_NAME)
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
