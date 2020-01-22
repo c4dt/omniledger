@@ -1,10 +1,10 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
+import { Contact } from "@c4dt/dynacred";
 import { fromObject } from "tns-core-modules/data/observable";
 import { Page } from "tns-core-modules/ui/page";
-import { Contact } from "@c4dt/dynacred";
 
-let closeCallback: () => null;
+let closeCallback: () => undefined;
 
 export function onShownModally(args) {
     const qrcode = args.context as Contact;

@@ -44,8 +44,6 @@ export async function createGroup(args: GestureEventData) {
         });
 
         switch (action) {
-            case cancel:
-                break;
             case propose:
                 return topmost().navigate({
                     moduleName: "pages/lab/group/configure/configure-page",

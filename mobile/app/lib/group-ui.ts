@@ -1,3 +1,5 @@
+import { KeyPair } from "@c4dt/dynacred";
+import { GroupContract, GroupContractCollection } from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { fromNativeSource } from "tns-core-modules/image-source/image-source";
@@ -5,8 +7,6 @@ import { screen } from "tns-core-modules/platform";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { scan } from "~/lib/scan";
-import { KeyPair } from "@c4dt/dynacred";
-import { GroupContract, GroupContractCollection } from "@c4dt/dynacred";
 import { msgFailed } from "./messages";
 
 /**
@@ -16,8 +16,9 @@ import { msgFailed } from "./messages";
  * @param gcCollection the collection in which add the scanned group contract
  * @param kp pair of public and private keys
  */
-// tslint:disable-next-line: max-line-length
-export async function scanNewGroupContract(gcCollection: GroupContractCollection, kp: KeyPair): Promise<GroupContractCollection> {
+export async function scanNewGroupContract(
+    gcCollection: GroupContractCollection,
+    kp: KeyPair): Promise<GroupContractCollection> {
     try {
         const result = await scan("{{ L('group.camera_text') }}");
         const groupContract = GroupContract.createFromJSON(JSON.parse(result.text));
@@ -52,8 +53,6 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                 };
                 await dialogs.action(action).then((r: string) => {
                     switch (r) {
-                        case dismiss:
-                            break;
                         case accept:
                             gcCollection.purpose = groupContract.groupDefinition.purpose;
                             gcCollection.append(groupContract);
@@ -116,8 +115,6 @@ export async function scanNewGroupContract(gcCollection: GroupContractCollection
                 };
                 await dialogs.action(action).then((r: string) => {
                     switch (r) {
-                        case dismiss:
-                            break;
                         case accept:
                             gcCollection.purpose = groupContract.groupDefinition.purpose;
                             gcCollection.append(groupContract);
@@ -168,5 +165,5 @@ export function showQR(groupContract: GroupContract) {
     });
 
     topmost().showModal("pages/modal/modal-group", fromNativeSource(qrCode),
-        () => { Log.print("ok"); }, false, false, false);
+        () => { Log.print("QR code scanned"); }, false, false, false);
 }
