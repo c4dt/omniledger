@@ -62,7 +62,7 @@ export class Credentials {
 
     public static async fromScratch(inst: Instances, id: InstanceID): Promise<Credentials> {
         const cred = new ReplaySubject<CredentialStruct>(1);
-        inst.instanceObservable(id)
+        (await inst.instanceObservable(id))
             .pipe(map((ii) => CredentialStruct.decode(ii.value)))
             .subscribe({next: (inst) => cred.next(inst)});
         return new Credentials(inst, id, cred);

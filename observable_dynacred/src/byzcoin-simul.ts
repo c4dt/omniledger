@@ -15,6 +15,7 @@ import {ITest} from "./simulation";
 import {IDataBase} from "./tempdb";
 import {CredentialFactory} from "./credentialFactory";
 import {User} from "./user";
+import {ReplaySubject} from "rxjs";
 
 export interface IByzCoinProof {
     getProof(inst: InstanceID): Promise<IProof>;
@@ -66,6 +67,8 @@ class SimulProof {
 export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
     public static configInstanceID: InstanceID = Buffer.alloc(32);
 
+    public getProofObserver = new ReplaySubject<IInstance>(1);
+
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
@@ -73,6 +76,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
         if (tx.spawn !== undefined || tx.delete !== undefined || tx.update === undefined){
             throw new Error("can only update")
         }
+        Log.lvl3("addTransaction", tx.update.instID);
         const inst = this.globalState.getInstance(tx.update.instID);
         if (inst === undefined){
             throw new Error("cannot update unknown instance");
@@ -83,12 +87,17 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
     }
 
     public async getProof(id: InstanceID): Promise<IProof> {
+        Log.lvl3("Getting proof for", id);
+        // Have some delay to mimick network setup.
+        await new Promise(resolve => setTimeout(resolve, 5));
         let inst = this.globalState.getInstance(id);
         if (inst === undefined) {
             inst = newIInstance(Buffer.alloc(32, 255), Buffer.alloc(0));
         }
         inst.block = this.blocks.getLatestBlock().index;
-        return new SimulProof(inst);
+        const ip = new SimulProof(inst);
+        this.getProofObserver.next(inst);
+        return ip;
     }
 
     public async newTest(alias: string, db: IDataBase, inst: Instances): Promise<ITest> {
@@ -134,13 +143,10 @@ class GlobalState {
         this.addOrUpdateInstance(newIInstance(d.getBaseID(), d.toBytes(), "Darc"));
     }
     public getInstance(id: InstanceID): IInstance | undefined {
-        Log.lvl3("Asking for instance", id);
         return this.instances.get(id);
-        return undefined;
     }
 
     public addOrUpdateInstance(inst: IInstance) {
-        Log.lvl3("Adding new instance", inst.key);
         const old = this.getInstance(inst.key);
         if (old !== undefined) {
             inst.version = old.version.add(1);

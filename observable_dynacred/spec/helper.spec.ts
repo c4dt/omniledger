@@ -1,11 +1,11 @@
-import {ByzCoinSimul} from "../src/byzcoin-simul";
-import {IByzCoinProof, Instances} from "../src/instances";
+import {ByzCoinSimul, IByzCoinProof} from "../src/byzcoin-simul";
+import {Instances} from "../src/instances";
 import {IDataBase, TempDB} from "../src/tempdb";
 import {User} from "../src/user";
 
 export interface ITestUser {
     db: IDataBase;
-    bc: IByzCoinProof;
+    bc: ByzCoinSimul;
     inst: Instances;
     user: User;
 }
