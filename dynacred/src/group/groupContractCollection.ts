@@ -14,8 +14,6 @@ export class GroupContractCollection {
             Object.keys(obj.collection).forEach((id) => {
                 gcCollection._collection.set(id,
                     GroupContract.fromObject(obj.collection[id]),
-                    // TODO to test
-                    // obj.collection[id].map((gc: any) => GroupContract.fromObject(gc)),
                 );
             });
         }
@@ -32,8 +30,6 @@ export class GroupContractCollection {
     }
 
     private _collection: Map<string, GroupContract>; // key: contractID, value: GroupContract
-    // private _purpose: string | undefined;
-    // TODO to test
     private currentGroupContract: GroupContract | undefined;
 
     constructor(public purpose?: string | undefined) {
@@ -49,19 +45,12 @@ export class GroupContractCollection {
      */
     createGroupContract(parent: GroupContract | undefined, groupDefinition: GroupDefinition): GroupContract {
         let newGroupContract: GroupContract;
-        console.log("createGroup1");
         if (parent !== undefined) {
-            console.log("createGroup11");
             newGroupContract = parent.proposeGroupContract(groupDefinition);
-            console.log("createGroup12");
         } else {
-            console.log("gc1");
             newGroupContract = new GroupContract(groupDefinition);
-            console.log("gc2");
         }
-        console.log("createGroup1");
         this.append(newGroupContract);
-        console.log("createGroup2");
 
         return newGroupContract;
     }
@@ -101,7 +90,6 @@ export class GroupContractCollection {
      */
     append(groupContract: GroupContract, keepOnly: boolean = false) {
         // only proceed if the the groupContract is sound
-        console.log("append1");
         const parents = this.getParent(groupContract);
         if (parents.length > 0) {
             if (!groupContract.verify(...this.getParent(groupContract))) {
@@ -112,26 +100,24 @@ export class GroupContractCollection {
                 throw new Error("The group contract verification failed.");
             }
         }
-        console.log("append2");
+
         // check if the id is not already there
         const existing: GroupContract | undefined = this._collection.get(groupContract.id);
-        // TODO to test
-        console.log("append3");
+
         if (existing !== undefined) {
             groupContract.mergeSignoffs(existing);
         } else {
             // there is a new proposed group contract; therefore, erase the current proposed group contract
             this.removeProposedGroupContract();
         }
-        console.log("append4");
+
         this._collection.set(groupContract.id, groupContract);
-        console.log("append5");
+
         // if groupContract is accepted; therefore, it becomes the current group contract
         const numbPredecessor = groupContract.groupDefinition.predecessor.length;
         if (!keepOnly && (numbPredecessor === 0 || (numbPredecessor > 0 && this.isAccepted(groupContract)))) {
             this.currentGroupContract = groupContract;
         }
-        console.log("append6");
     }
 
     /**
@@ -161,15 +147,6 @@ export class GroupContractCollection {
         return Array.from(this._collection.values())
             .filter((gc: GroupContract) => gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc))
             .reduce((_, cur) => cur, undefined);
-        // TODO to test
-        // for (const gc of Array.from(this._collection.values())) {
-        //     // avoid returning the genesis group contract
-        //     if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
-        //         return gc;
-        //     }
-        // }
-
-        // return undefined;
     }
 
     /**
@@ -236,13 +213,6 @@ export class GroupContractCollection {
             const numbSignoffsByParent = groupContract.signoffs
                 .filter((s: string) => groupContract.groupDefinition.verifySignoff(s, p.groupDefinition))
                 .length;
-            // TODO to test
-            // let numbSignoffsByParent = 0;
-            // for (const s of groupContract.signoffs) {
-            //     if (groupContract.groupDefinition.verifySignoff(s, p.groupDefinition)) {
-            //         numbSignoffsByParent++;
-            //     }
-            // }
 
             return this.meetVoteThreshold(p.voteThreshold, numbSignoffsByParent / p.publicKeys.length);
         })
@@ -252,20 +222,16 @@ export class GroupContractCollection {
 
     toObject(): any {
         const obj = {
-            // collection: {} as any,
-            // TODO to test
             collection: Array.from(this._collection).reduce((acc, entry) => acc[entry[0]] = entry[1].toObject(), {}),
             currentGroupContract: this.currentGroupContract ? this.currentGroupContract.toObject() : undefined,
             purpose: this.purpose,
         };
-        // this._collection.forEach((gc: GroupContract, id: string) => obj.collection[id] = gc.toObject());
+
         return obj;
     }
 
     get collection(): Map<string, GroupContract> {
         return new Map(this._collection);
-        // return this._collection;
-        // TODO to test
     }
 
     /**
@@ -273,20 +239,15 @@ export class GroupContractCollection {
      *
      */
     removeProposedGroupContract() {
-        // return Array.from(this._collection.values())
-        // .filter(gc => gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc))
-        // .reduce((_, cur) => cur, undefined);
         if (this._collection.size !== 0) {
-            this._collection = Array.from(this._collection)
-                .filter(([_, gc]) => gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc))
-                .reduce((acc: Map<string, GroupContract>, item) => acc.set(item[0], item[1]), new Map());
-            // TODO to test
-            // for (const gc of Array.from(this._collection.values())) {
-            //     // avoid to erase the genesis group contract
-            //     if (gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc)) {
-            //         this._collection.delete(gc.id);
-            //     }
-            // }
+            const toDelete: string | undefined = Array.from(this._collection.values())
+                .filter((gc: GroupContract) => gc.groupDefinition.predecessor.length > 0 && !this.isAccepted(gc))
+                .map((_) => _.id)
+                .reduce((_, id) => id, undefined);
+
+            if (toDelete !== undefined) {
+                this._collection.delete(toDelete);
+            }
         }
     }
 
