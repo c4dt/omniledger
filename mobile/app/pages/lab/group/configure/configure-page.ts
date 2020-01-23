@@ -85,7 +85,7 @@ export async function propose() {
             purpose: dataForm.get("purpose"),
             predecessor: predecessorList.map((p) => p.id),
         };
-        console.log("bonjour");
+
         // check variables
         // suite has to be edwards25519
         if (variables.suite !== "edwards25519") {
@@ -102,16 +102,11 @@ export async function propose() {
         if (!gcCollection) {
             gcCollection = new GroupContractCollection(variables.purpose);
             // genesis group contract: c0
-            console.log("1");
             contract = gcCollection.createGroupContract(undefined, groupDefinition);
-            console.log("2");
             // group contract: c1
             groupDefinition = new GroupDefinition(groupDefinition.allVariables);
-            console.log("3");
             contract = gcCollection.createGroupContract(contract, groupDefinition);
-            console.log("4");
             gcCollection.sign(contract, uData.keyIdentity._private);
-            console.log("5");
         } else {
             // Check the variables
             if (variables.predecessor.length === 0) {
@@ -346,28 +341,19 @@ async function getAliasFromPublicKey(publicKey: string): Promise<string> {
     try {
         const promises = [];
         for (const contact of uData.contacts) {
-            promises.push(new Promise((resolve) => {
-                resolve([contact.getDevices(), contact]);
-            }));
-            // promises.push(async (resolve) => {
-            //     const devices = await contact.getDevices();
-            //     for (const device of devices) {
-            //         if (publicKey === device.pubKey.toHex()) {
-            //             return contact.alias;
-            //         }
-            //     }
-            // });
+            promises.push(contact.getDevices());
         }
-        // TODO to test
-        Promise.all(promises).then((results) => {
-            for (const result of results) {
-                for (const device of result[0]) {
-                    if (publicKey === device.pubKey.toHex()) {
-                        return result[1].alias;
-                    }
+
+        const devicesPerContacts = await Promise.all(promises);
+
+        for (let i = 0; i < devicesPerContacts.length; i++) {
+            for (const device of devicesPerContacts[i]) {
+                if (publicKey === device.pubKey.toHex()) {
+                    return uData.contacts[i].alias;
                 }
             }
-        });
+        }
+
         return undefined;
     } catch (e) {
         msgFailed(e.toString(), "Error");

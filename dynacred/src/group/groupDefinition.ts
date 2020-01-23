@@ -74,7 +74,6 @@ export class GroupDefinition {
     }
 
     constructor(private variables: IGroupDefinition) {
-        // TODO to test
         if (!this.variables.predecessor) {
             this.variables.predecessor = [];
         }
@@ -114,20 +113,7 @@ export class GroupDefinition {
         // verify that every signoff correspond to one and only one parent public key
         if (signoffs.length) {
             const message: Buffer = Buffer.from(id, ENCODING);
-            // const verifiedSignoffs: boolean[] = signoffs.map((s: string) => {
-            //     for (const publicKey of publicKeys) {
-            //         if (this.verifySignoffWithPublicKey(s, publicKey, message)) {
-            //             publicKeys.splice(publicKeys.indexOf(publicKey), 1);
-            //             return true;
-            //         }
-            //     }
 
-            //     return false;
-            // });
-
-            // // false if there is some wrong signature (duplicate or from an unknown public key)
-            // return verifiedSignoffs.reduce((bool1, bool2) => bool1 && bool2);
-            // TODO to test
             // false if there is some wrong signature (duplicate or from an unknown public key)
             return signoffs.every((s: string) => {
                 for (const publicKey of publicKeys) {
@@ -188,17 +174,12 @@ export class GroupDefinition {
      */
     isSimilarTo(groupDefinition: GroupDefinition): boolean {
         let similarPublicKeys = this.variables.orgPubKeys.length === groupDefinition.publicKeys.length;
-        // TODO to test
-        // if (this.variables.orgPubKeys.length !== groupDefinition.publicKeys.length) {
-        //     similarPublicKeys = false;
-        // }
-        similarPublicKeys = this.variables.orgPubKeys.every((pk) => groupDefinition.publicKeys.includes(pk));
-        // TODO to test
-        // this.variables.orgPubKeys.forEach((pk) => {
-        //     if (!groupDefinition.publicKeys.includes(pk)) {
-        //         similarPublicKeys = false;
-        //     }
-        // });
+
+        // if the two arrays have the same size, then compare if they have the same values
+        if (similarPublicKeys) {
+            similarPublicKeys = this.variables.orgPubKeys.every((pk) => groupDefinition.publicKeys.includes(pk)) &&
+                groupDefinition.publicKeys.every((pk) => this.variables.orgPubKeys.includes(pk));
+        }
 
         return similarPublicKeys
             && (this.variables.purpose === groupDefinition.purpose)
@@ -294,9 +275,5 @@ export class GroupDefinition {
         }
 
         return this.predecessor.find((p) => p === parent.getId()) !== undefined;
-        // TODO to test
-        // const parentId = parent.getId();
-        // const parentIdx = this.predecessor.indexOf(parentId);
-        // return parentIdx > -1;
     }
 }
