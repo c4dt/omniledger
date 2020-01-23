@@ -14,7 +14,7 @@ export class TempDB implements IDataBase {
 
     public async get(key: string): Promise<Buffer|undefined> {
         this.kv.forEach((v, k) => {
-            Log.print("db:", k, v);
+            Log.lvl3("db-dump:", k, v);
         });
         return this.kv.has(key) ? this.kv.get(key) : undefined;
     }

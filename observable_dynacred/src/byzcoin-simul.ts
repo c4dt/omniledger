@@ -10,10 +10,39 @@ import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
 import {SkipBlock} from "@dedis/cothority/skipchain";
 import {randomBytes} from "crypto-browserify";
 import Long = require("long");
-import {CredentialObservable} from "./credentialObservable";
-import {IByzCoinProof, IInstance, Instances, IProof, newIInstance} from "./instances";
+import {IInstance, Instances, IProof, newIInstance} from "./instances";
 import {ITest} from "./simulation";
 import {IDataBase} from "./tempdb";
+import {CredentialFactory} from "./credentialFactory";
+import {User} from "./user";
+
+export interface IByzCoinProof {
+    getProof(inst: InstanceID): Promise<IProof>;
+}
+
+export interface IByzCoinAddTransaction {
+    addTransaction(tx: ITransaction): Promise<void>;
+}
+
+export interface ITransaction{
+    spawn?: ISpawnTransaction;
+    update?: IUpdateTransaction;
+    delete?: IDeleteTransaction;
+}
+
+export interface IUpdateTransaction{
+    instID: InstanceID;
+    value: Buffer;
+}
+
+export interface ISpawnTransaction{
+    instID: InstanceID;
+    value: Buffer;
+}
+
+export interface IDeleteTransaction{
+    instID: InstanceID;
+}
 
 class SimulProof {
     public skipblock: SkipBlock;
@@ -34,33 +63,52 @@ class SimulProof {
     }
 }
 
-export class ByzCoinSimul implements IByzCoinProof {
+export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
+    public static configInstanceID: InstanceID = Buffer.alloc(32);
+
     private globalState = new GlobalState();
+    private blocks = new Blocks();
+
+    public async addTransaction(tx: ITransaction): Promise<void>{
+        if (tx.spawn !== undefined || tx.delete !== undefined || tx.update === undefined){
+            throw new Error("can only update")
+        }
+        const inst = this.globalState.getInstance(tx.update.instID);
+        if (inst === undefined){
+            throw new Error("cannot update unknown instance");
+        }
+        inst.value = tx.update.value;
+        this.globalState.addOrUpdateInstance(inst);
+        this.blocks.addBlock();
+    }
 
     public async getProof(id: InstanceID): Promise<IProof> {
-        const inst = this.globalState.getInstance(id);
+        let inst = this.globalState.getInstance(id);
         if (inst === undefined) {
-            return new SimulProof(newIInstance(Buffer.alloc(32), Buffer.alloc(0)));
+            inst = newIInstance(Buffer.alloc(32, 255), Buffer.alloc(0));
         }
+        inst.block = this.blocks.getLatestBlock().index;
         return new SimulProof(inst);
     }
 
     public async newTest(alias: string, db: IDataBase, inst: Instances): Promise<ITest> {
         // Create all parts of the test-user
-        const genesisUser = CredentialObservable.genesisUser();
-        const spawner = CredentialObservable.spawner(genesisUser);
+        const genesisUser = CredentialFactory.genesisUser();
+        const spawner = CredentialFactory.spawner(genesisUser);
         spawner.coinID = Buffer.from(randomBytes(32));
         spawner.spawnerID = Buffer.from(randomBytes(32));
-        const user = CredentialObservable.newUser(alias, spawner.spawnerID);
-        user.coinID = CredentialObservable.coinID(user.keyPair.pub);
+        const user = CredentialFactory.newUser(alias, spawner.spawnerID);
+        user.coinID = CredentialFactory.coinID(user.keyPair.pub);
         user.credID = CredentialsInstance.credentialIID(user.keyPair.pub.marshalBinary());
-        Log.print("user-credID is:", user.credID);
+        await db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
+        await db.set(User.keyCredID, user.credID);
 
         // Register all of this
         this.globalState.addInstances(
             newIInstance(spawner.spawnerID,
-                Buffer.from(SpawnerStruct.encode(spawner.spawner).finish())),
-            newIInstance(user.credID, user.cred.toBytes()));
+                Buffer.from(SpawnerStruct.encode(spawner.spawner).finish()), "Spawner"),
+            newIInstance(user.credID, user.cred.toBytes(), "Credential"),
+            newIInstance(ByzCoinSimul.configInstanceID, Buffer.alloc(0), "Configuration"));
         this.globalState.addDarc(genesisUser.darc);
         this.globalState.addDarc(user.darcDevice);
         this.globalState.addDarc(user.darcSign);
@@ -74,63 +122,61 @@ export class ByzCoinSimul implements IByzCoinProof {
 }
 
 class GlobalState {
-    public blocks: Block[] = [new Block()];
-
-    public getInstance(id: InstanceID): IInstance | undefined {
-        return this.getLatest().getInstance(id);
-    }
-
-    public getLatest(): Block {
-        return this.blocks[this.blocks.length - 1];
-    }
-
-    public addBlock() {
-        this.blocks.push(new Block());
-    }
+    public instances = new Map<InstanceID, IInstance>();
 
     public addCoin(c: Coin, id: InstanceID, darcID: InstanceID) {
-        const inst = newIInstance(id, c.toBytes());
+        const inst = newIInstance(id, c.toBytes(), "Coin");
         inst.darcID = darcID;
-        this.addInstance(inst);
+        this.addOrUpdateInstance(inst);
     }
 
     public addDarc(d: Darc) {
-        this.addInstance(newIInstance(d.getBaseID(), d.toBytes()));
+        this.addOrUpdateInstance(newIInstance(d.getBaseID(), d.toBytes(), "Darc"));
+    }
+    public getInstance(id: InstanceID): IInstance | undefined {
+        Log.lvl3("Asking for instance", id);
+        return this.instances.get(id);
+        return undefined;
     }
 
-    public addInstance(inst: IInstance) {
-        this.getLatest().addInstance(inst);
+    public addOrUpdateInstance(inst: IInstance) {
+        Log.lvl3("Adding new instance", inst.key);
+        const old = this.getInstance(inst.key);
+        if (old !== undefined) {
+            inst.version = old.version.add(1);
+        } else {
+            inst.version = Long.fromNumber(0);
+        }
+        this.instances.set(inst.key, inst);
     }
 
     public addInstances(...insts: IInstance[]) {
-        insts.forEach((inst) => this.addInstance(inst));
+        insts.forEach((inst) => this.addOrUpdateInstance(inst));
     }
 }
 
 class Block {
     public previous: Block | undefined;
-    public instances = new Map<InstanceID, IInstance>();
+    public index: Long;
 
-    public getInstance(id: InstanceID): IInstance | undefined {
-        Log.lvl2("Asking for instance", id);
-        const inst = this.instances.get(id);
-        if (inst !== undefined) {
-            return inst;
+    constructor(b?: Block){
+        if (b !== undefined){
+            this.index = b.index.add(1);
+            this.previous = b;
+        } else {
+            this.index = Long.fromNumber(0);
         }
-        if (this.previous !== undefined) {
-            return this.previous.getInstance(id);
-        }
-        return undefined;
+    }
+}
+
+class Blocks{
+    private blocks: Block[] = [new Block()];
+
+    public getLatestBlock(): Block {
+        return this.blocks[this.blocks.length - 1];
     }
 
-    public addInstance(inst: IInstance) {
-        Log.lvl2("Adding new instance", inst.key);
-        const old = this.getInstance(inst.key);
-        if (old !== undefined) {
-            inst.version = old.version;
-        } else {
-            inst.version = Long.fromNumber(0);
-        }
-        this.instances.set(inst.key, inst);
+    public addBlock() {
+        this.blocks.push(new Block(this.getLatestBlock()));
     }
 }

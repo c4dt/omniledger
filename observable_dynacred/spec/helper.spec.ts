@@ -13,13 +13,13 @@ export interface ITestUser {
 export async function createUser(): Promise<ITestUser> {
     const db = new TempDB();
     const bc = new ByzCoinSimul();
-    const inst = Instances.fromScratch(db, bc);
+    const inst = await Instances.fromScratch(db, bc);
     const test = await bc.newTest("alias", db, inst);
     if (test.user.credID === undefined) {
         throw new Error("user.credID shouldn't be undefined");
     }
     return {
         bc, db, inst,
-        user: new User(db, inst, test.user.keyPair, test.user.credID),
+        user: await User.load(db, inst),
     };
 }

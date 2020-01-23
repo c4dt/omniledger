@@ -1,10 +1,12 @@
-import {Log} from "@dedis/cothority";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {StateChangeBody} from "@dedis/cothority/byzcoin/proof";
 import {SkipBlock} from "@dedis/cothority/skipchain";
-import Long = require("long");
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, ReplaySubject} from "rxjs";
 import {IDataBase} from "./tempdb";
+import {ByzCoinSimul, IByzCoinProof} from "./byzcoin-simul";
+import {distinctUntilChanged} from "rxjs/operators";
+import {mergeMap} from "rxjs/internal/operators/mergeMap";
+import Long = require("long");
 
 export interface IInstance {
     key: InstanceID;
@@ -15,10 +17,10 @@ export interface IInstance {
     darcID: InstanceID;
 }
 
-export function newIInstance(key: InstanceID, value: Buffer): IInstance {
+export function newIInstance(key: InstanceID, value: Buffer, contractID?: string): IInstance {
     return {
         block: Long.fromNumber(-1),
-        contractID: "",
+        contractID: contractID || "unknown",
         darcID: Buffer.alloc(32),
         key, value,
         version: Long.fromNumber(0),
@@ -43,57 +45,42 @@ export interface IProof {
     exists(key: Buffer): boolean;
 }
 
-export interface IByzCoinProof {
-    getProof(inst: InstanceID): Promise<IProof>;
-}
-
 export class Instances {
+    private cache = new Map<InstanceID, ReplaySubject<IInstance>>();
 
-    public static fromScratch(db: IDataBase, bc: IByzCoinProof): Instances {
-        return new Instances(db, bc);
+    constructor(private db: IDataBase, private bc: IByzCoinProof, private newBlock: BehaviorSubject<Long>) {
     }
 
-    private cache = new Map<InstanceID, BehaviorSubject<IInstance>>();
-    private newBlock: BehaviorSubject<Long> = new BehaviorSubject(Long.fromNumber(-1));
-
-    constructor(private db: IDataBase, private bc: IByzCoinProof) {
+    public static async fromScratch(db: IDataBase, bc: IByzCoinProof): Promise<Instances> {
+        const p = await bc.getProof(ByzCoinSimul.configInstanceID);
+        const newBlock = new BehaviorSubject(Long.fromNumber(p.skipblock.index));
+        return new Instances(db, bc, newBlock);
     }
 
-    public async init(): Promise<void> {
-        const p = await this.bc.getProof(Buffer.alloc(32));
-        this.newBlock.next(Long.fromNumber(p.skipblock.index));
-    }
-
-    public async getInstance(id: InstanceID): Promise<BehaviorSubject<IInstance>> {
-        const o = this.cache.get(id);
-        if (o !== undefined) {
-            return o;
+    public instanceObservable(id: InstanceID): ReplaySubject<IInstance> {
+        const bs = this.cache.get(id);
+        if (bs !== undefined) {
+            return bs;
         }
-        const ii = await this.gi(id);
-        const bs = new BehaviorSubject(ii);
-        this.newBlock.subscribe({next: async (v) => {
-                const gi = await this.gi(id);
-                if (!gi.version.equals(bs.getValue().version)) {
-                    bs.next(gi);
-                }
-            }});
-        this.cache.set(id, bs);
-        return this.getInstance(id);
+
+        const bsNew = new ReplaySubject<IInstance>(1);
+        this.newBlock
+            .pipe(
+                mergeMap((v) => this.getInstanceFromChain(id)),
+                distinctUntilChanged((a, b) => a.version.equals(b.version)))
+            .subscribe({next: (inst) => bsNew.next(inst)});
+        this.cache.set(id, bsNew);
+        return bsNew;
     }
 
     public async reload(): Promise<void> {
-        await this.gi(Buffer.alloc(32));
+        await this.getInstanceFromChain(ByzCoinSimul.configInstanceID);
     }
 
-    private async gi(id: InstanceID): Promise<IInstance> {
-        // const known = this.db.get(id.toString("hex"));
-        // if (known !== undefined) {
-        //     Log.print("known id", id);
-        //     return newIInstance(Buffer.alloc(32), Buffer.from("0"));
-        // }
+    private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
         const p = await this.bc.getProof(id);
         if (!p.exists(id)) {
-            throw new Error("didn't found instance in cache or on chain");
+            throw new Error("didn't find instance in cache or on chain");
         }
         const inst = {
             block: Long.fromNumber(p.skipblock.index),
@@ -104,7 +91,6 @@ export class Instances {
             version: p.stateChangeBody.version,
         };
         if (!inst.block.equals(this.newBlock.getValue())) {
-            Log.print("got new block", inst.block, this.newBlock.getValue());
             this.newBlock.next(inst.block);
         }
         return inst;

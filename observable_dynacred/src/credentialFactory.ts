@@ -1,47 +1,23 @@
-import {Log} from "@dedis/cothority";
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import CoinInstance, {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import {LongTermSecret} from "@dedis/cothority/calypso";
-import {Darc, IdentityDarc} from "@dedis/cothority/darc";
-import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
-import {SPAWNER_COIN, SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
-import {Point} from "@dedis/kyber";
 import Long = require("long");
-import {BehaviorSubject, ReplaySubject} from "rxjs";
-import {IInstance, printInstance} from "./instances";
-import {KeyPair} from "./keypair";
+import {KeyPair} from "../src/keypair";
+import {Darc, IdentityDarc} from "@dedis/cothority/darc";
+import CoinInstance, {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import {
+    SPAWNER_COIN,
+    SpawnerStruct
+} from "@dedis/cothority/personhood/spawner-instance";
+import {Point} from "@dedis/kyber";
+import {InstanceID} from "@dedis/cothority/byzcoin";
+import {LongTermSecret} from "@dedis/cothority/calypso";
+import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
+import {
+    Credentials,
+    IGenesisUser,
+    ISpawner,
+    IUser
+} from "./credentials";
 
-export interface IGenesisUser {
-    keyPair: KeyPair;
-    darc: Darc;
-}
-
-export interface ISpawner {
-    coin: Coin;
-    coinID?: InstanceID;
-    spawner: SpawnerStruct;
-    spawnerID?: InstanceID;
-}
-
-export interface IUser {
-    keyPair: KeyPair;
-    cred: CredentialStruct;
-    credID?: InstanceID;
-    coin: Coin;
-    coinID?: InstanceID;
-    darcDevice: Darc;
-    darcSign: Darc;
-    darcCred: Darc;
-    darcCoin: Darc;
-}
-
-/**
- * Credential holds static methods that allow to setup instances for credentials.
- */
-export class CredentialObservable {
-    public static readonly structVersionLatest = 2;
-    public static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
-    public static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
+export class CredentialFactory {
 
     public static genesisUser(): IGenesisUser {
         const keyPair = KeyPair.rand();
@@ -55,10 +31,22 @@ export class CredentialObservable {
     }
 
     public static spawner(gu: IGenesisUser): ISpawner {
-        const coin = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(1e9)});
-        const coin10 = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(10)});
-        const coin100 = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(100)});
-        const coin1000 = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(1000)});
+        const coin = new Coin({
+            name: SPAWNER_COIN,
+            value: Long.fromNumber(1e9)
+        });
+        const coin10 = new Coin({
+            name: SPAWNER_COIN,
+            value: Long.fromNumber(10)
+        });
+        const coin100 = new Coin({
+            name: SPAWNER_COIN,
+            value: Long.fromNumber(100)
+        });
+        const coin1000 = new Coin({
+            name: SPAWNER_COIN,
+            value: Long.fromNumber(1000)
+        });
         const spawner = new SpawnerStruct({
             costCRead: coin100,
             costCWrite: coin1000,
@@ -89,7 +77,7 @@ export class CredentialObservable {
         cred.setAttribute("1-public", "seedPub", pub.marshalBinary());
         cred.setAttribute("1-config", "spawner", spawner);
         const svBuf = Buffer.alloc(4);
-        svBuf.writeInt32LE(CredentialObservable.structVersionLatest, 0);
+        svBuf.writeInt32LE(Credentials.structVersionLatest, 0);
         cred.setAttribute("1-config", "structVersion", svBuf);
         cred.setAttribute("1-devices", "initial", deviceDarcID);
         if (lts) {
@@ -116,29 +104,5 @@ export class CredentialObservable {
 
         const cred = this.prepareInitialCred(alias, keyPair.pub, spawnerID, darcDevice.getBaseID());
         return {keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin};
-    }
-
-    public readonly alias: BehaviorSubject<string>;
-
-    private cred: ReplaySubject<CredentialStruct>;
-
-    constructor(bsInst: BehaviorSubject<IInstance>) {
-        this.cred = new ReplaySubject(1);
-        bsInst.subscribe( {next: (inst) => {
-            Log.print("Got new IInstance", printInstance(inst));
-            this.cred.next(CredentialStruct.decode(inst.value));
-        }});
-        Log.print("making alias");
-        this.alias = new BehaviorSubject<string>("undefined");
-        this.cred.subscribe({next: async (cred) => {
-            Log.print("Got new cred", cred);
-            const aliasBuf = cred.getAttribute("1-public", "alias");
-            Log.print("buf is", aliasBuf);
-            const alias = aliasBuf === undefined ? "unknown" : aliasBuf.toString();
-            Log.print("alias is:", alias, this.alias.getValue());
-            if (alias !== await this.alias.getValue()) {
-                    this.alias.next(alias);
-                }
-            }});
     }
 }

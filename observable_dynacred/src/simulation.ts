@@ -1,4 +1,4 @@
-import {IGenesisUser, ISpawner, IUser} from "./credentialObservable";
+import {IGenesisUser, ISpawner, IUser} from "./credentials";
 
 export interface ITest {
     genesisUser: IGenesisUser;
