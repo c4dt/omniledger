@@ -14,7 +14,6 @@ import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Data, PersonhoodRPC } from "@c4dt/dynacred";
 import { Point } from "@c4dt/kyber";
 import { bdDEDIS, bdTest } from "~/lib/byzcoin-defs";
-import { Data, PersonhoodRPC } from "@c4dt/dynacred";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";
 import { setNodeList } from "~/pages/settings/settings-page";

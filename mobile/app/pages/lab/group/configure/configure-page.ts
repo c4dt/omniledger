@@ -1,7 +1,7 @@
-import { GroupContract, Device } from "@c4dt/dynacred";
+import Log from "@c4dt/cothority/log";
+import { GroupContract } from "@c4dt/dynacred";
 import { GroupContractCollection } from "@c4dt/dynacred";
 import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred";
-import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { fromObject, fromObjectRecursive } from "tns-core-modules/data/observable/observable";
@@ -44,8 +44,6 @@ export async function navigatingTo(args: EventData) {
     publicKeyList.splice(0);
     predecessorList.splice(0);
 
-    // set the dataForm variables correctly
-    resetDataForm();
     if (page.get("navigationContext")) {
         if ("isReadOnly" in page.navigationContext) {
             viewModel.set("isReadOnly", page.navigationContext.isReadOnly);
@@ -60,10 +58,8 @@ export async function navigatingTo(args: EventData) {
             gcCollection = undefined;
             setDataForm();
         }
-        if ("id" in page.navigationContext) {
-            dataFormDetails.set("id", page.navigationContext.id);
-        }
     }
+
     page.bindingContext = viewModel;
 }
 
@@ -165,6 +161,7 @@ export async function addPublicKey(args: any) {
         const contact = contacts.find((c) => {
             return c.alias === result;
         });
+
         if (contact !== null) {
             const devices = await contact.getDevices();
             const pubKeys = devices.map((d) => d.pubKey.toHex());

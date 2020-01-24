@@ -1,4 +1,4 @@
-import { Group } from "@dedis/kyber";
+import { Group } from "@c4dt/kyber";
 import { GroupDefinition, IGroupDefinition } from "./groupDefinition";
 
 export const ENCODING: BufferEncoding = "hex";
