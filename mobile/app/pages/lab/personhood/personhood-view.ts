@@ -16,7 +16,6 @@ import { topmost } from "tns-core-modules/ui/frame";
 import { GestureEventData } from "tns-core-modules/ui/gestures";
 import { appRootMain } from "~/app-root";
 import { bcDef, finishData, isAdmin, uData } from "~/lib/byzcoin-def";
-import { Badge, PartyItem, TProgress } from "@c4dt/dynacred";
 import { msgFailed, msgOK } from "~/lib/messages";
 import { partyQrcode } from "~/lib/qrcode";
 import { elements } from "~/pages/lab/personhood/personhood-page";
