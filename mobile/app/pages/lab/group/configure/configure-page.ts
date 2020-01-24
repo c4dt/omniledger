@@ -1,4 +1,4 @@
-import { GroupContract } from "@c4dt/dynacred";
+import { GroupContract, Device } from "@c4dt/dynacred";
 import { GroupContractCollection } from "@c4dt/dynacred";
 import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
@@ -287,48 +287,60 @@ export function removePredecessor(args: any) {
  * @param groupContract
  */
 async function setDataForm(groupContract?: GroupContract) {
-    if (groupContract) {
-        Log.print("setDataForm there is a group contract");
-        dataForm.set("publicKeys", groupContract.publicKeys.join(","));
-        dataForm.set("suite", groupContract.groupDefinition.suite);
-        dataForm.set("purpose", groupContract.purpose);
-        dataForm.set("voteThreshold", groupContract.voteThreshold);
+    try {
+        if (groupContract) {
+            Log.print("setDataForm there is a group contract");
+            dataForm.set("publicKeys", groupContract.publicKeys.join(","));
+            dataForm.set("suite", groupContract.groupDefinition.suite);
+            dataForm.set("purpose", groupContract.purpose);
+            dataForm.set("voteThreshold", groupContract.voteThreshold);
 
-        // set publicKeyList
-        const userContact = await uData.contact.getDevices();
-        groupContract.publicKeys.forEach(async (pubKey) => {
-            if (pubKey === userContact[0].pubKey.toHex()) {
-                publicKeyList.push(new PublicKeyListItem(uData.contact.alias, userContact[0].pubKey.toHex()));
-            } else {
-                const alias = await getAliasFromPublicKey(pubKey);
-                Log.print("setDataForm alias", pubKey);
-                if (alias) {
-                    publicKeyList.push(new PublicKeyListItem(alias, pubKey));
+            // set publicKeyList
+            const userContact = await uData.contact.getDevices();
+            const promises = [];
+            for (const contact of uData.contacts) {
+                promises.push(contact.getDevices());
+            }
+            const devicesPerContacts = await Promise.all(promises);
+
+            groupContract.publicKeys.forEach(async (pubKey) => {
+                if (pubKey === userContact[0].pubKey.toHex()) {
+                    // user's public key
+                    publicKeyList.push(new PublicKeyListItem(uData.contact.alias, userContact[0].pubKey.toHex()));
                 } else {
-                    Log.print("setDataForm correct");
-                    publicKeyList.push(new PublicKeyListItem(pubKey.slice(0, 5), pubKey));
+                    // contact's public key
+                    const alias = getAliasFromPublicKey(pubKey, devicesPerContacts);
+                    Log.print("setDataForm alias", pubKey);
+                    if (alias) {
+                        publicKeyList.push(new PublicKeyListItem(alias, pubKey));
+                    } else {
+                        Log.print("setDataForm correct");
+                        publicKeyList.push(new PublicKeyListItem(pubKey.slice(0, 5), pubKey));
+                    }
+                }
+            });
+
+            // set predecessorList
+            if (page.navigationContext.isPredecessor) {
+                dataForm.set("predecessor", groupContract.id);
+                predecessorList.push(new PredecessorListItem(groupContract.id));
+            } else {
+                dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
+                if (groupContract.predecessor.length !== 0) {
+                    predecessorList.push(new PredecessorListItem(groupContract.predecessor[0]));
                 }
             }
-        });
-
-        // set predecessorList
-        if (page.navigationContext.isPredecessor) {
-            dataForm.set("predecessor", groupContract.id);
-            predecessorList.push(new PredecessorListItem(groupContract.id));
         } else {
-            dataForm.set("predecessor", groupContract.predecessor ? groupContract.predecessor.join(",") : "");
-            if (groupContract.predecessor.length !== 0) {
-                predecessorList.push(new PredecessorListItem(groupContract.predecessor[0]));
-            }
+            Log.print("setDataForm there is no group contract");
+            dataForm.set("suite", "edwards25519");
+            dataForm.set("purpose", "Testing");
+            dataForm.set("voteThreshold", ">1/2");
+            dataForm.set("description", uData.contact.alias);
+            const pubKey = (await (uData.contact.getDevices())).map((d) => d.pubKey.toHex())[0];
+            publicKeyList.push(new PublicKeyListItem(uData.contact.alias, pubKey));
         }
-    } else {
-        Log.print("setDataForm there is no group contract");
-        dataForm.set("suite", "edwards25519");
-        dataForm.set("purpose", "Testing");
-        dataForm.set("voteThreshold", ">1/2");
-        dataForm.set("description", uData.contact.alias);
-        const pubKey = (await (uData.contact.getDevices())).map((d) => d.pubKey.toHex())[0];
-        publicKeyList.push(new PublicKeyListItem(uData.contact.alias, pubKey));
+    } catch (e) {
+        msgFailed(e.toString(), "Error");
     }
 }
 
@@ -337,15 +349,8 @@ async function setDataForm(groupContract?: GroupContract) {
  *
  * @param publicKey
  */
-async function getAliasFromPublicKey(publicKey: string): Promise<string> {
+function getAliasFromPublicKey(publicKey: string, devicesPerContacts: any[][]): string | undefined {
     try {
-        const promises = [];
-        for (const contact of uData.contacts) {
-            promises.push(contact.getDevices());
-        }
-
-        const devicesPerContacts = await Promise.all(promises);
-
         for (let i = 0; i < devicesPerContacts.length; i++) {
             for (const device of devicesPerContacts[i]) {
                 if (publicKey === device.pubKey.toHex()) {
