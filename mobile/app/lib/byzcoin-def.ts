@@ -136,14 +136,11 @@ export async function attachDevice(url: string) {
 
 // Creates a new byzcoin on the test-roster.
 export async function newByzCoin(): Promise<Data> {
-    Log.print("Bonjour1");
     uData = await TestData.init("admin", bcDef.roster);
-    Log.print("Bonjour2");
+
     // tslint:disable
     console.log("// To be pasted into byzcoin-defs.ts :: bdTest - line 13\n");
-    Log.print("Bonjour3");
     const ad = (await uData.contact.getDarcSignIdentity()).id;
-    Log.print("Bonjour4");
     console.log(`byzCoinID: Buffer.from("${uData.bc.genesisID.toString("hex")}", "hex"),\n`);
     console.log(`spawnerID: Buffer.from("${uData.spawnerInstance.id.toString("hex")}", "hex"),\n`);
     console.log(`adminDarc: Buffer.from("${ad.toString("hex")}", "hex"),\n`);
