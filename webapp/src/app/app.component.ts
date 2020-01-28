@@ -43,14 +43,18 @@ export class AppComponent implements OnInit {
             this.logAppend(msg, perc * 0.8);
         });
 
-        if (window.location.pathname.match(/\/register(\/device)?/)) {
-            Log.lvl2("allowing registering with unknown Data");
+        if (window.location.pathname.match(/\/explorer\//)) {
+            Log.lvl2("using explorer - don't load user");
             this.loading = false;
             return;
         }
 
-        if (window.location.pathname.match(/\/explorer\//)) {
-            Log.lvl2("using explorer - don't load user");
+        Log.lvl2("Starting to update blocks for viewer");
+        this.bcs.updateBlocks();
+        this.bcviewer = true;
+
+        if (window.location.pathname.match(/\/register(\/device)?/)) {
+            Log.lvl2("allowing registering with unknown Data");
             this.loading = false;
             return;
         }
@@ -75,10 +79,6 @@ export class AppComponent implements OnInit {
                 }
                 this.logAppend("Done", 100);
                 this.loading = false;
-                Log.lvl2("Starting to update blocks for viewer");
-                this.bcs.updateBlocks();
-                this.bcviewer = true;
-
             } catch (e) {
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {
