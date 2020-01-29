@@ -224,6 +224,7 @@ export class GroupDefinition {
         this.publicKeys.forEach((pk: string) => hashContext.update(Buffer.from(pk, ENCODING)));
         hashContext.update(Buffer.from(this.suite));
         hashContext.update(Buffer.from(this.voteThreshold));
+        hashContext.update(Buffer.from(this.purpose));
         if (this.predecessor) {
             this.predecessor.forEach((p: string) => hashContext.update(Buffer.from(p, ENCODING)));
         }
