@@ -8,7 +8,7 @@ To execute it simple run `patch -p0 < nodeify_temporary_patch.patch` from the ro
      if (main && browser) {
        var mainReplacement = typeof browser === "object" ? browser[main] : browser;
 -      if (mainReplacement) {
-+      if (mainReplacement && !file.name.startsWith('@dedis')) {
++      if (mainReplacement && !file.name.startsWith('@dedis') && !file.name.startsWith('@c4dt')) {
          log("\n" + fileName + "'s main ('" + main + "') was replaced by its browser version ('" + mainReplacement + "')");
          file.main = mainReplacement;
          patched = true;
