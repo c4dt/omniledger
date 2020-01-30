@@ -4,13 +4,15 @@ import {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
 import {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
-import {Observable, ReplaySubject} from "rxjs";
+import {Observable, ReplaySubject, Subject} from "rxjs";
 import {Instances} from "../src/instances";
-import {Log} from "@dedis/cothority";
 import {Scalar} from "@dedis/kyber";
 import {IByzCoinAddTransaction} from "../src/byzcoin-simul";
 import {distinctUntilChanged, map} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
+import {mergeMap} from "rxjs/internal/operators/mergeMap";
+import {filter} from "rxjs/internal/operators/filter";
+import {Log} from "@dedis/cothority";
 
 export interface IGenesisUser {
     keyPair: KeyPair;
@@ -39,7 +41,8 @@ export interface IUser {
 export enum EAttributes {
     alias = "1-public:alias",
     email = "1-public:email",
-    coinID = "1-public:coinID"
+    coinID = "1-public:coinID",
+    contacts = "1-public:contactsBuf"
 }
 
 export interface IUpdateCredential {
@@ -57,7 +60,7 @@ export class Credentials {
     private attributeCache = new Map<string, ReplaySubject<Buffer>>();
 
     constructor(private inst: Instances, private id: InstanceID,
-                private cred: ReplaySubject<CredentialStruct>) {
+                private cred: Subject<CredentialStruct>) {
     }
 
     public static async fromScratch(inst: Instances, id: InstanceID): Promise<Credentials> {
@@ -75,10 +78,12 @@ export class Credentials {
         }
 
         const newBS = new ReplaySubject<Buffer>(1);
-        this.cred.pipe(map((cred) => {
-            const fields = name.split(":");
-            return cred.getAttribute(fields[0], fields[1]) || Buffer.alloc(0);
-        }), distinctUntilChanged((a, b) => a.equals(b)))
+        this.cred.pipe(
+            map((cred) => {
+                const fields = name.split(":");
+                return cred.getAttribute(fields[0], fields[1]) || Buffer.alloc(0);
+            }),
+            distinctUntilChanged((a, b) => a.equals(b)))
             .subscribe({next: (buf) => newBS.next(buf)});
         this.attributeCache.set(name, newBS);
         return newBS;
@@ -94,6 +99,23 @@ export class Credentials {
 
     public coinIDObservable(): Observable<InstanceID> {
         return this.attributeObservable(EAttributes.coinID).pipe(map((buf) => <InstanceID>buf));
+    }
+
+    public contactsObservable(): Observable<Credentials[]> {
+        return this.attributeObservable(EAttributes.contacts)
+            .pipe(
+                map((buf) => {
+                    const contactsBuf: Buffer[] = [];
+                    for (let c = 0; c < buf.length; c += 32) {
+                        contactsBuf.push(buf.slice(c, c + 32));
+                    }
+                    return contactsBuf;
+                }),
+                mergeMap((ids) => {
+                    return Promise.all(ids.map((id) =>
+                        Credentials.fromScratch(this.inst, id)))
+                })
+            )
     }
 
     public async updateCredentials(bc: IByzCoinAddTransaction, priv: Scalar, ...cred: IUpdateCredential[]): Promise<void> {

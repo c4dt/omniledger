@@ -67,6 +67,8 @@ class SimulProof {
 export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
     public static configInstanceID: InstanceID = Buffer.alloc(32);
 
+    // getProofObserver is used by the tests to check whether a proof is
+    // requested at the right moment.
     public getProofObserver = new ReplaySubject<IInstance>(1);
 
     private globalState = new GlobalState();
@@ -100,6 +102,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
         return ip;
     }
 
+    // TODO: should probably be in a test-specific class
     public async newTest(alias: string, db: IDataBase, inst: Instances): Promise<ITest> {
         // Create all parts of the test-user
         const genesisUser = CredentialFactory.genesisUser();

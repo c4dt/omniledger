@@ -6,11 +6,14 @@ import {KeyPair} from "./keypair";
 import {IDataBase} from "./tempdb";
 import {Log} from "@dedis/cothority";
 
+// The user class is to be used only once for a given DB. It is unique for
+// one URL-domain and represents the logged in user.
 export class User {
     public static readonly keyPriv = "private";
     public static readonly keyCredID = "credID";
 
-    constructor(private db: IDataBase, public readonly credential: Credentials, public kp: KeyPair, public id: InstanceID) {
+    constructor(private db: IDataBase, public readonly credential: Credentials,
+                public kp: KeyPair, public id: InstanceID) {
     }
 
     public static async load(db: IDataBase, inst: Instances): Promise<User> {
