@@ -12,11 +12,11 @@ import {LongTermSecret} from "@dedis/cothority/calypso";
 import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
 import {Credentials} from "./credentials";
 import {randomBytes} from "crypto";
-import {IGenesisUser, ISpawner, IUser} from "./basics";
+import {IGenesisDarc, ISpawner, IUser} from "./basics";
 
 export class CredentialFactory {
 
-    public static genesisUser(): IGenesisUser {
+    public static genesisDarc(): IGenesisDarc {
         const keyPair = KeyPair.rand();
         const signer = [keyPair.signer()];
         const darc = Darc.createBasic(signer, signer,
@@ -27,7 +27,7 @@ export class CredentialFactory {
         return {keyPair, darc};
     }
 
-    public static spawner(gu: IGenesisUser): ISpawner {
+    public static spawner(gu: IGenesisDarc): ISpawner {
         const coin = new Coin({
             name: SPAWNER_COIN,
             value: Long.fromNumber(1e9)
