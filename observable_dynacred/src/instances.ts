@@ -2,13 +2,12 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 import {StateChangeBody} from "@dedis/cothority/byzcoin/proof";
 import {SkipBlock} from "@dedis/cothority/skipchain";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
-import {IDataBase} from "./tempdb";
-import {ByzCoinSimul, IByzCoinProof} from "./byzcoin-simul";
 import {distinctUntilChanged} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long = require("long");
 import {Log} from "@dedis/cothority";
+import {configInstanceID, IByzCoinProof, IDataBase} from "./basics";
 
 export interface IInstance {
     key: InstanceID;
@@ -41,7 +40,7 @@ export function printInstance(i: IInstance): string {
 }
 
 export interface IProof {
-    skipblock: SkipBlock;
+    latest: SkipBlock;
     stateChangeBody: StateChangeBody;
 
     exists(key: Buffer): boolean;
@@ -60,8 +59,8 @@ export class Instances {
         if (blockIndexBuf !== undefined) {
             blockIndex = Long.fromBytes(Array.from(blockIndexBuf));
         } else {
-            const p = await bc.getProof(ByzCoinSimul.configInstanceID);
-            blockIndex = Long.fromNumber(p.skipblock.index);
+            const p = await bc.getProof(configInstanceID);
+            blockIndex = Long.fromNumber(p.latest.index);
         }
         const newBlock = new BehaviorSubject(blockIndex);
         return new Instances(db, bc, newBlock);
@@ -98,7 +97,7 @@ export class Instances {
     }
 
     public async reload(): Promise<void> {
-        await this.getInstanceFromChain(ByzCoinSimul.configInstanceID);
+        await this.getInstanceFromChain(configInstanceID);
     }
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
@@ -108,7 +107,7 @@ export class Instances {
             throw new Error("didn't find instance in cache or on chain");
         }
         const inst = {
-            block: Long.fromNumber(p.skipblock.index),
+            block: Long.fromNumber(p.latest.index),
             contractID: p.stateChangeBody.contractID,
             darcID: p.stateChangeBody.darcID,
             key: id,

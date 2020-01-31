@@ -1,41 +1,13 @@
-import {KeyPair} from "../src/keypair";
-import {Darc} from "@dedis/cothority/darc";
-import {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import {InstanceID} from "@dedis/cothority/byzcoin";
-import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
 import {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
 import {BehaviorSubject, Observable, ReplaySubject, Subject} from "rxjs";
-import {Instances} from "../src/instances";
+import {Instances} from "./instances";
 import {Scalar} from "@dedis/kyber";
-import {IByzCoinAddTransaction} from "../src/byzcoin-simul";
 import {distinctUntilChanged, map, pairwise, startWith} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {Log} from "@dedis/cothority";
-
-export interface IGenesisUser {
-    keyPair: KeyPair;
-    darc: Darc;
-}
-
-export interface ISpawner {
-    coin: Coin;
-    coinID: InstanceID;
-    spawner: SpawnerStruct;
-    spawnerID: InstanceID;
-}
-
-export interface IUser {
-    keyPair: KeyPair;
-    cred: CredentialStruct;
-    credID: InstanceID;
-    coin: Coin;
-    coinID: InstanceID;
-    darcDevice: Darc;
-    darcSign: Darc;
-    darcCred: Darc;
-    darcCoin: Darc;
-}
+import {IByzCoinAddTransaction} from "./basics";
 
 export enum EAttributes {
     alias = "1-public:alias",

@@ -4,7 +4,8 @@
   "description": "New dynacred library based on observables, as everything can change",
   "main": "build/index.js",
   "scripts": {
-    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json"
+    "test2": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json",
+    "test": "ts-node node_modules/jasmine/bin/jasmine"
   },
   "keywords": [
     "dynacred",
@@ -24,8 +25,10 @@
     "rxjs": "^6.5.4"
   },
   "devDependencies": {
+    "@types/dockerode": "^2.5.21",
     "@types/jasmine": "^3.5.0",
     "@types/long": "^4.0.0",
+    "dockerode": "^3.0.2",
     "jasmine": "^3.5.0",
     "nyc": "^15.0.0",
     "ts-node": "^7.0.1",

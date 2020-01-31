@@ -1,12 +1,13 @@
 import {User} from "../src/user";
-import {createUser, History} from "./helper.spec";
 import {EAttributes} from "../src/credentials";
 import {Log} from "@dedis/cothority";
 import {Instances} from "../src/instances";
+import {createSimulUser} from "./support/itest";
+import {History} from "./support/history";
 
 describe("pony-world example", () => {
     it("setting up of a new user in testing", async () => {
-        const {db, inst, user} = await createUser();
+        const {db, inst, user} = await createSimulUser();
         await user.save();
         const user2 = await User.load(db, inst);
         expect(user2.kp).toEqual(user.kp);
@@ -14,7 +15,7 @@ describe("pony-world example", () => {
     });
 
     it("reading, writing, updating values of new user", async () => {
-        const {bc, user} = await createUser();
+        const {bc, user} = await createSimulUser();
         const co = user.credential;
         const history = new History();
         const obs1 = co.aliasObservable().subscribe((alias) => history.push("alias:" + alias));
@@ -49,7 +50,7 @@ describe("pony-world example", () => {
     });
 
     it("should not ask new proofs when not necessary", async () => {
-        const {bc, db, inst, user} = await createUser();
+        const {bc, db, inst, user} = await createSimulUser();
         const history = new History();
         // Wait for all proofs to be made
         await new Promise(resolve => user.credential.aliasObservable()
