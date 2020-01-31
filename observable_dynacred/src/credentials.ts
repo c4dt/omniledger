@@ -4,14 +4,13 @@ import {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
 import {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
-import {Observable, ReplaySubject, Subject} from "rxjs";
+import {BehaviorSubject, Observable, ReplaySubject, Subject} from "rxjs";
 import {Instances} from "../src/instances";
 import {Scalar} from "@dedis/kyber";
 import {IByzCoinAddTransaction} from "../src/byzcoin-simul";
-import {distinctUntilChanged, map} from "rxjs/operators";
+import {distinctUntilChanged, map, pairwise, startWith} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
-import {filter} from "rxjs/internal/operators/filter";
 import {Log} from "@dedis/cothority";
 
 export interface IGenesisUser {
@@ -21,17 +20,17 @@ export interface IGenesisUser {
 
 export interface ISpawner {
     coin: Coin;
-    coinID?: InstanceID;
+    coinID: InstanceID;
     spawner: SpawnerStruct;
-    spawnerID?: InstanceID;
+    spawnerID: InstanceID;
 }
 
 export interface IUser {
     keyPair: KeyPair;
     cred: CredentialStruct;
-    credID?: InstanceID;
+    credID: InstanceID;
     coin: Coin;
-    coinID?: InstanceID;
+    coinID: InstanceID;
     darcDevice: Darc;
     darcSign: Darc;
     darcCred: Darc;
@@ -58,8 +57,9 @@ export class Credentials {
     public static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     public static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
     private attributeCache = new Map<string, ReplaySubject<Buffer>>();
+    private contactsCache = new Map<string, Subject<Credentials>>();
 
-    constructor(private inst: Instances, private id: InstanceID,
+    constructor(private inst: Instances, public readonly id: InstanceID,
                 private cred: Subject<CredentialStruct>) {
     }
 
@@ -67,11 +67,11 @@ export class Credentials {
         const cred = new ReplaySubject<CredentialStruct>(1);
         (await inst.instanceObservable(id))
             .pipe(map((ii) => CredentialStruct.decode(ii.value)))
-            .subscribe({next: (inst) => cred.next(inst)});
+            .subscribe(cred);
         return new Credentials(inst, id, cred);
     }
 
-    public attributeObservable(name: EAttributes): Observable<Buffer> {
+    public attributeObservable(name: EAttributes): ReplaySubject<Buffer> {
         let bs = this.attributeCache.get(name);
         if (bs !== undefined) {
             return bs;
@@ -84,7 +84,7 @@ export class Credentials {
                 return cred.getAttribute(fields[0], fields[1]) || Buffer.alloc(0);
             }),
             distinctUntilChanged((a, b) => a.equals(b)))
-            .subscribe({next: (buf) => newBS.next(buf)});
+            .subscribe(newBS);
         this.attributeCache.set(name, newBS);
         return newBS;
     }
@@ -101,19 +101,52 @@ export class Credentials {
         return this.attributeObservable(EAttributes.coinID).pipe(map((buf) => <InstanceID>buf));
     }
 
-    public contactsObservable(): Observable<Credentials[]> {
+    // contactsObservable returns an observable that emits a list new contacts
+    // whenever one or more new contacts are available.
+    // When first calling this method, all available contacts will be sent
+    // together.
+    // Once a contact disappears, the `complete` method is invoked.
+    public contactsObservable(): Observable<BehaviorSubject<Credentials>[]> {
         return this.attributeObservable(EAttributes.contacts)
             .pipe(
-                map((buf) => {
-                    const contactsBuf: Buffer[] = [];
-                    for (let c = 0; c < buf.length; c += 32) {
-                        contactsBuf.push(buf.slice(c, c + 32));
-                    }
-                    return contactsBuf;
-                }),
+                startWith(Buffer.alloc(0)),
+                map((buf): ContactList => new ContactList(buf)),
+                pairwise(),
+                map((pair): InstanceID[] => {
+                    // First check which contacts have been removed
+                    const [previous, current] = pair;
+                    Log.lvl3("Got new pair:", current.set);
+                    const newCreds: InstanceID[] = [];
+                    previous.set.forEach((id) => {
+                        if (!current.has(id)) {
+                            // End this contact
+                            const co = this.contactsCache.get(id);
+                            if (co !== undefined) {
+                                Log.lvl2("Removing contact", id);
+                                co.complete();
+                                this.contactsCache.delete(id);
+                            }
+                        }
+                    });
+                    current.set.forEach((id) => {
+                        if (!previous.has(id)) {
+                            Log.lvl2("Adding contact", id);
+                            newCreds.push(Buffer.from(id, "hex"));
+                        }
+                    });
+                    return newCreds;
+                }))
+            .pipe(
                 mergeMap((ids) => {
                     return Promise.all(ids.map((id) =>
                         Credentials.fromScratch(this.inst, id)))
+                }),
+                map((creds) => {
+                    return creds.map((cred) => {
+                        const co = new BehaviorSubject(cred);
+                        this.contactsCache.set(cred.id.toString("hex"), co);
+                        return co;
+                    });
                 })
             )
     }
@@ -133,5 +166,69 @@ export class Credentials {
             });
             await this.inst.reload();
         });
+    }
+}
+
+/**
+ * ContactList wraps a list of credentialIDs in a set to be able to do add,
+ * rm, has and convert it back to a long buffer again.
+ * As the existing sets will store happily Buffer.from("1") and
+ * Buffer.from("1") twice, this class converts all buffer to hex-codes, and
+ * then back again.
+ */
+export class ContactList {
+    public readonly set: Set<string>;
+
+    constructor(contacts: Buffer | Set<string>) {
+        if (contacts instanceof Buffer) {
+            const list = [];
+            for (let i = 0; i < contacts.length; i += 32) {
+                list.push(contacts.slice(i, i + 32).toString("hex"));
+            }
+            this.set = new Set(list);
+        } else {
+            this.set = contacts;
+        }
+    }
+
+    static async fromCredentials(cred: Credentials): Promise<ContactList> {
+        return new ContactList(await new Promise((r) => {
+            cred.attributeObservable(EAttributes.contacts)
+                .subscribe((buf) => r(buf));
+        }));
+    }
+
+    toBuffer(): Buffer {
+        const ret = Buffer.alloc(this.set.size * 32);
+        let i = 0;
+        this.set.forEach((c) => {
+            Buffer.from(c, "hex").copy(ret, i * 32);
+            i++;
+        });
+        return ret;
+    }
+
+    add(contact: InstanceID | string) {
+        if (contact instanceof Buffer) {
+            this.set.add(contact.toString("hex"));
+        } else {
+            this.set.add(contact);
+        }
+    }
+
+    rm(contact: InstanceID | string) {
+        if (contact instanceof Buffer) {
+            this.set.delete(contact.toString("hex"));
+        } else {
+            this.set.delete(contact);
+        }
+    }
+
+    has(contact: InstanceID | string): boolean {
+        if (contact instanceof Buffer) {
+            return this.set.has(contact.toString("hex"));
+        } else {
+            return this.set.has(contact);
+        }
     }
 }

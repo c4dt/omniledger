@@ -5,17 +5,16 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 import {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import {StateChangeBody} from "@dedis/cothority/byzcoin/proof";
 import {Darc} from "@dedis/cothority/darc";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
 import {SkipBlock} from "@dedis/cothority/skipchain";
-import {randomBytes} from "crypto-browserify";
-import Long = require("long");
 import {IInstance, Instances, IProof, newIInstance} from "./instances";
 import {ITest} from "./simulation";
 import {IDataBase} from "./tempdb";
 import {CredentialFactory} from "./credentialFactory";
 import {User} from "./user";
-import {ReplaySubject} from "rxjs";
+import {Subject} from "rxjs";
+import {IUser} from "src/credentials";
+import Long = require("long");
 
 export interface IByzCoinProof {
     getProof(inst: InstanceID): Promise<IProof>;
@@ -25,23 +24,23 @@ export interface IByzCoinAddTransaction {
     addTransaction(tx: ITransaction): Promise<void>;
 }
 
-export interface ITransaction{
+export interface ITransaction {
     spawn?: ISpawnTransaction;
     update?: IUpdateTransaction;
     delete?: IDeleteTransaction;
 }
 
-export interface IUpdateTransaction{
+export interface IUpdateTransaction {
     instID: InstanceID;
     value: Buffer;
 }
 
-export interface ISpawnTransaction{
+export interface ISpawnTransaction {
     instID: InstanceID;
     value: Buffer;
 }
 
-export interface IDeleteTransaction{
+export interface IDeleteTransaction {
     instID: InstanceID;
 }
 
@@ -69,18 +68,18 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
 
     // getProofObserver is used by the tests to check whether a proof is
     // requested at the right moment.
-    public getProofObserver = new ReplaySubject<IInstance>(1);
+    public readonly getProofObserver = new Subject<IInstance>();
 
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
-    public async addTransaction(tx: ITransaction): Promise<void>{
-        if (tx.spawn !== undefined || tx.delete !== undefined || tx.update === undefined){
+    public async addTransaction(tx: ITransaction): Promise<void> {
+        if (tx.spawn !== undefined || tx.delete !== undefined || tx.update === undefined) {
             throw new Error("can only update")
         }
         Log.lvl3("addTransaction", tx.update.instID);
         const inst = this.globalState.getInstance(tx.update.instID);
-        if (inst === undefined){
+        if (inst === undefined) {
             throw new Error("cannot update unknown instance");
         }
         inst.value = tx.update.value;
@@ -90,7 +89,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
 
     public async getProof(id: InstanceID): Promise<IProof> {
         Log.lvl3("Getting proof for", id);
-        // Have some delay to mimick network setup.
+        // Have some delay to mimic network setup.
         await new Promise(resolve => setTimeout(resolve, 5));
         let inst = this.globalState.getInstance(id);
         if (inst === undefined) {
@@ -107,34 +106,37 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
         // Create all parts of the test-user
         const genesisUser = CredentialFactory.genesisUser();
         const spawner = CredentialFactory.spawner(genesisUser);
-        spawner.coinID = Buffer.from(randomBytes(32));
-        spawner.spawnerID = Buffer.from(randomBytes(32));
         const user = CredentialFactory.newUser(alias, spawner.spawnerID);
-        user.coinID = CredentialFactory.coinID(user.keyPair.pub);
-        user.credID = CredentialsInstance.credentialIID(user.keyPair.pub.marshalBinary());
-        await db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
-        await db.set(User.keyCredID, user.credID);
 
         // Register all of this
         this.globalState.addInstances(
             newIInstance(spawner.spawnerID,
                 Buffer.from(SpawnerStruct.encode(spawner.spawner).finish()), "Spawner"),
-            newIInstance(user.credID, user.cred.toBytes(), "Credential"),
             newIInstance(ByzCoinSimul.configInstanceID, Buffer.alloc(0), "Configuration"));
         this.globalState.addDarc(genesisUser.darc);
+        this.globalState.addCoin(spawner.coin, spawner.coinID, genesisUser.darc.baseID);
+
+        await this.storeUser(user);
+        await db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
+        await db.set(User.keyCredID, user.credID || Buffer.alloc(32));
+        return {genesisUser, spawner, user};
+    }
+
+    public storeUser(user: IUser) {
         this.globalState.addDarc(user.darcDevice);
         this.globalState.addDarc(user.darcSign);
         this.globalState.addDarc(user.darcCoin);
         this.globalState.addDarc(user.darcCred);
-        this.globalState.addCoin(spawner.coin, spawner.coinID, genesisUser.darc.baseID);
         this.globalState.addCoin(user.coin, user.coinID, user.darcSign.baseID);
-
-        return {genesisUser, spawner, user};
+        this.globalState.addInstances(
+            newIInstance(user.credID, user.cred.toBytes(), "Credential")
+        );
+        this.blocks.addBlock();
     }
 }
 
 class GlobalState {
-    public instances = new Map<InstanceID, IInstance>();
+    public instances = new Map<string, IInstance>();
 
     public addCoin(c: Coin, id: InstanceID, darcID: InstanceID) {
         const inst = newIInstance(id, c.toBytes(), "Coin");
@@ -145,8 +147,9 @@ class GlobalState {
     public addDarc(d: Darc) {
         this.addOrUpdateInstance(newIInstance(d.getBaseID(), d.toBytes(), "Darc"));
     }
+
     public getInstance(id: InstanceID): IInstance | undefined {
-        return this.instances.get(id);
+        return this.instances.get(id.toString("hex"));
     }
 
     public addOrUpdateInstance(inst: IInstance) {
@@ -156,7 +159,7 @@ class GlobalState {
         } else {
             inst.version = Long.fromNumber(0);
         }
-        this.instances.set(inst.key, inst);
+        this.instances.set(inst.key.toString("hex"), inst);
     }
 
     public addInstances(...insts: IInstance[]) {
@@ -168,8 +171,8 @@ class Block {
     public previous: Block | undefined;
     public index: Long;
 
-    constructor(b?: Block){
-        if (b !== undefined){
+    constructor(b?: Block) {
+        if (b !== undefined) {
             this.index = b.index.add(1);
             this.previous = b;
         } else {
@@ -178,7 +181,7 @@ class Block {
     }
 }
 
-class Blocks{
+class Blocks {
     private blocks: Block[] = [new Block()];
 
     public getLatestBlock(): Block {

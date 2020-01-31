@@ -10,12 +10,8 @@ import {Point} from "@dedis/kyber";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {LongTermSecret} from "@dedis/cothority/calypso";
 import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
-import {
-    Credentials,
-    IGenesisUser,
-    ISpawner,
-    IUser
-} from "./credentials";
+import {Credentials, IGenesisUser, ISpawner, IUser} from "./credentials";
+import {randomBytes} from "crypto";
 
 export class CredentialFactory {
 
@@ -57,7 +53,11 @@ export class CredentialFactory {
             costRoPaSci: coin10,
             costValue: coin10,
         });
-        return {coin, spawner};
+        return {
+            coin, spawner,
+            coinID: Buffer.from(randomBytes(32)),
+            spawnerID: Buffer.from(randomBytes(32))
+        };
     }
 
     public static lts() {
@@ -101,8 +101,11 @@ export class CredentialFactory {
             CoinInstance.commandStore].map((inv) => `invoke:${CoinInstance.contractID}.#{inv}`);
         const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
         const coin = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(0)});
-
         const cred = this.prepareInitialCred(alias, keyPair.pub, spawnerID, darcDevice.getBaseID());
-        return {keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin};
+
+        return {
+            keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin,
+            credID: randomBytes(32), coinID: randomBytes(32)
+        };
     }
 }

@@ -1,10 +1,10 @@
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {ed25519} from "@dedis/cothority/personhood/ring-sig";
-import {Credentials} from "./credentials";
+import {ContactList, Credentials, EAttributes} from "./credentials";
 import {Instances} from "./instances";
 import {KeyPair} from "./keypair";
 import {IDataBase} from "./tempdb";
-import {Log} from "@dedis/cothority";
+import {IByzCoinAddTransaction} from "src/byzcoin-simul";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
@@ -36,5 +36,27 @@ export class User {
     public async save(): Promise<void> {
         await this.db.set(User.keyPriv, this.kp.priv.marshalBinary());
         await this.db.set(User.keyCredID, this.id);
+    }
+
+    public async addContact(bc: IByzCoinAddTransaction, id: InstanceID): Promise<void> {
+        const creds = await ContactList.fromCredentials(this.credential);
+        if (creds.has(id)) {
+            return;
+        }
+        creds.add(id);
+        return this.credential.updateCredentials(bc,
+            this.kp.priv,
+            {name: EAttributes.contacts, value: creds.toBuffer()});
+    }
+
+    public async rmContact(bc: IByzCoinAddTransaction, id: InstanceID): Promise<void> {
+        const creds = await ContactList.fromCredentials(this.credential);
+        if (!creds.has(id)) {
+            return;
+        }
+        creds.rm(id);
+        return this.credential.updateCredentials(bc,
+            this.kp.priv,
+            {name: EAttributes.contacts, value: creds.toBuffer()});
     }
 }

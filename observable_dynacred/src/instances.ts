@@ -8,6 +8,7 @@ import {distinctUntilChanged} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long = require("long");
+import {Log} from "@dedis/cothority";
 
 export interface IInstance {
     key: InstanceID;
@@ -101,6 +102,7 @@ export class Instances {
     }
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
+        Log.lvl3("get instance", id);
         const p = await this.bc.getProof(id);
         if (!p.exists(id)) {
             throw new Error("didn't find instance in cache or on chain");
@@ -115,6 +117,7 @@ export class Instances {
         };
         await this.db.setObject(inst.key.toString("hex"), inst);
         if (!inst.block.equals(this.newBlock.getValue())) {
+            Log.lvl3("got new block:", inst.block);
             await this.db.set(Instances.dbKeyBlockIndex,
                 Buffer.from(inst.block.toBytes()));
             this.newBlock.next(inst.block);
