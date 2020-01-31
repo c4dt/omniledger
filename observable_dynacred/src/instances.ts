@@ -7,7 +7,8 @@ import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long = require("long");
 import {Log} from "@dedis/cothority";
-import {configInstanceID, IByzCoinProof, IDataBase} from "./basics";
+
+import {configInstanceID, IByzCoinProof, IDataBase} from "src/basics";
 
 export interface IInstance {
     key: InstanceID;

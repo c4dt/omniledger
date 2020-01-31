@@ -1,5 +1,3 @@
-import Long = require("long");
-import {KeyPair} from "./keypair";
 import {Darc, IdentityDarc} from "@dedis/cothority/darc";
 import CoinInstance, {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import {
@@ -10,9 +8,12 @@ import {Point} from "@dedis/kyber";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {LongTermSecret} from "@dedis/cothority/calypso";
 import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
-import {Credentials} from "./credentials";
+import Long = require("long");
 import {randomBytes} from "crypto";
-import {IGenesisDarc, ISpawner, IUser} from "./basics";
+
+import {IGenesisDarc, ISpawner, IUser} from "src/basics";
+import {Credentials} from "src/credentials";
+import {KeyPair} from "src/keypair";
 
 export class CredentialFactory {
 

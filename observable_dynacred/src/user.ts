@@ -1,10 +1,10 @@
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {ed25519} from "@dedis/cothority/personhood/ring-sig";
-import {ContactList, Credentials, EAttributes} from "./credentials";
-import {Instances} from "./instances";
-import {KeyPair} from "./keypair";
-import {IDataBase} from "./tempdb";
-import {IByzCoinAddTransaction} from "src/byzcoin-simul";
+
+import {KeyPair} from "src/keypair";
+import {IByzCoinAddTransaction, IDataBase} from "src/basics";
+import {ContactList, Credentials, EAttributes} from "src/credentials";
+import {Instances} from "src/instances";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
