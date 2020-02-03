@@ -188,7 +188,7 @@ class LinkBlock {
     index: number;
     height: number;
     maxHeight: number;
-    sign: string;
+    sign: string = "";
     id: Buffer;
 
     constructor(sbRPC: SkipchainRPC, link: (ForwardLink | Buffer), sbNow?: SkipBlock) {
@@ -198,7 +198,6 @@ class LinkBlock {
             const l = (link as ForwardLink);
             this.id = l.to;
             if (sbNow !== undefined) {
-                this.sign = "";
                 // TODO: extend to more than 32 nodes
                 const maskBuf = Buffer.alloc(4);
                 l.signature.getMask().copy(maskBuf);
