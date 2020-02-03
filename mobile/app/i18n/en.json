@@ -101,7 +101,8 @@
     "title": "Lab of great ideas",
     "personhood": "Personhood",
     "ropasci": "Rock-Paper-Scissors",
-    "poll": "Troll-resistant polls"
+    "poll": "Troll-resistant polls",
+    "group": "Group Management"
   },
   "settings": {
     "title": "Settings",
@@ -270,6 +271,37 @@
     "prop_description": "Description",
     "prop_choices": "Choices"
   },
+  "group": {
+    "title": "Group Management",
+    "publickeys": "Public Keys",
+    "predecessor": "Predecessor",
+    "not_contain_your_pk": "This group contract does not contain your public key. Do you still want to keep it?",
+    "accept_group_contract": "Do you want to accept this new group contract?",
+    "how_handle_group_contract": "How do you want to handle this new group contract?",
+    "removed_organizer": "You have been removed from the group. How do you want do handle it?",
+    "follower_cannot_add_proposed": "You cannot keep this group contract as a group follower.",
+    "cannot_propose": "You cannot propose a new group contract.",
+    "propose_contract": "Propose New Group Contract",
+    "show_proposed_contract": "Show Proposed Group Contract QR Code",
+    "show_current_contract": "Show Current Group Contract QR Code",
+    "select_action": "Select Action",
+    "delete_group": "Do you want to delete this group?"
+  },
+  "group_configure": {
+    "title": "Group Definition",
+    "alert_not_enough_predecessor": "A new group contract has to have at least one predecessor.",
+    "alert_different_predecessor": "A proposed group contract needs to be different from its predecessor(s).",
+    "alert_no_predecessor": "There is no possible predecessor available",
+    "warning": "Warning",
+    "choose_organizer": "Choose an organizer",
+    "choose_predecessor": "Choose a predecessor",
+    "which_public_key": "Which public key do you want to use?"
+  },
+  "group_details": {
+    "title": "Details",
+    "show_definition": "Show Group Definition",
+    "show_qr": "Show QR Code"
+  },
   "loading": {
     "connecting": "Connecting"
   },
@@ -289,6 +321,14 @@
     "data_saved": "Saved your data",
     "error": "Something went wrong: %s",
     "yes": "Yes",
+    "no": "No",
+    "update": "Update",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "accept": "Accept",
+    "keep": "Keep",
+    "dismiss": "Dismiss",
+    "ok": "Ok",
     "ok_value1": "Cool",
     "ok_value2": "Nice",
     "ok_value3": "This rocks",

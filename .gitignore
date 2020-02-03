@@ -1,2 +1,4 @@
 /.idea/
 /cothority/
+/.vscode/
+**/*.spec.js

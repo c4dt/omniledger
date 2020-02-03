@@ -34,6 +34,7 @@ import { curve, Point, Scalar, sign } from "@c4dt/kyber";
 
 import { Badge } from "./Badge";
 import { Contact } from "./Contact";
+import { GroupContractCollection } from "./group";
 import { KeyPair, Private, Public } from "./KeyPair";
 import { PartyItem } from "./PartyItem";
 import { PersonhoodRPC, PollStruct, RoPaSci } from "./personhood-rpc";
@@ -88,6 +89,10 @@ export class Data {
         const unique = meetups.filter((meetup, i) =>
             meetups.findIndex((m) => m.join() === meetup.join()) === i);
         return unique.length;
+    }
+
+    get groups(): GroupContractCollection[] {
+        return [...this._groups];
     }
 
     static readonly urlNewDevice = "/register/device";
@@ -303,6 +308,7 @@ export class Data {
     storage: IStorage = StorageDB;
     references: string[] = [];
     phrpc: PersonhoodRPC;
+    private _groups: GroupContractCollection[] = [];
 
     /**
      * Constructs a new Data, optionally initialized with an object containing
@@ -348,6 +354,8 @@ export class Data {
 
         this.polls = obj.polls ? obj.polls.map((rps: any) => PollStruct.fromObject(rps)) : [];
 
+        this._groups = obj.groups ? obj.groups.map((g: any) => GroupContractCollection.fromObject(g)) : [];
+
         if (obj.contact !== undefined) {
             this.contact = Contact.fromObject(obj.contact);
             this.contact.data = this;
@@ -377,6 +385,7 @@ export class Data {
             continuousScan: this.continuousScan,
             credentialInstance: undefined as any,
             darcInstance: undefined as any,
+            groups: this._groups.map((g) => g.toObject()),
             keyIdentity: this.keyIdentity._private.toHex(),
             keyPersonhood: this.keyPersonhood._private.toHex(),
             meetups: this.meetups.map((m) => m.toObject()),
@@ -623,6 +632,18 @@ export class Data {
 
     rmContact(nu: Contact) {
         this.contacts = this.contacts.filter((u) => !u.equals(nu));
+    }
+
+    addGroup(gc: GroupContractCollection) {
+        this.rmGroup(gc);
+        this._groups.push(gc);
+    }
+
+    rmGroup(gc: GroupContractCollection) {
+        const idx = this._groups.indexOf(gc);
+        if (idx > -1) {
+            this._groups.splice(idx, 1);
+        }
     }
 
     async updateParties(): Promise<PartyItem[]> {
