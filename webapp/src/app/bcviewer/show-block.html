@@ -17,8 +17,12 @@
                         <div fxFlex="1 1 20em">Creation: {{data.timeStr}}</div>
                     </div>
                     <div fxLayout="row">
-                        <div fxFlex="1 1 10em">Leader: {{data.sb.roster.list[0].description}}</div>
-                        <div fxFlex="1 1 20em">Roster: {{roster}}</div>
+                        <div fxFlex="1 1 10em">Leader:</div>
+                        <div fxFlex="1 1 20em">{{data.sb.roster.list[0].description}}</div>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="1 1 10em">Roster:</div>
+                        <div fxFlex="1 1 20em">{{roster.join(", ")}}</div>
                     </div>
                     <div fxLayout="row">
                         <div fxFlex="1 1 20em">BackwardLinks:
@@ -27,7 +31,7 @@
                         </div>
                         <div fxFlex="1 1 20em">ForwardLinks:
                             <span *ngFor="let forward of data.forwardLinks" (click)="goBlock(forward)" class="link">
-                                {{forward.index}}</span>
+                                {{forward.index}}/{{forward.sign}}</span>
                         </div>
                     </div>
                 </div>

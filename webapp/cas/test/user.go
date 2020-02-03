@@ -9,7 +9,7 @@ import (
 	"go.dedis.ch/cothority/v3/byzcoin/contracts"
 	"go.dedis.ch/cothority/v3/darc"
 	"go.dedis.ch/cothority/v3/darc/expression"
-	"go.dedis.ch/cothority/v3/personhood"
+	personhood "go.dedis.ch/cothority/v3/personhood/contracts"
 	"go.dedis.ch/onet/v3/log"
 	"go.dedis.ch/protobuf"
 

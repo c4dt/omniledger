@@ -103,7 +103,7 @@ export class BCBlock {
     }
 
     async updateLinks() {
-        this.forwardLinks = this.sb.forwardLinks.map((fl) => new LinkBlock(this.scRPC, fl));
+        this.forwardLinks = this.sb.forwardLinks.map((fl) => new LinkBlock(this.scRPC, fl, this.sb));
         if (this.sb.index > 0) {
             this.backwardLinks = this.sb.backlinks.map((fl) => new LinkBlock(this.scRPC, fl));
         }
@@ -188,13 +188,26 @@ class LinkBlock {
     index: number;
     height: number;
     maxHeight: number;
+    sign: string = "";
     id: Buffer;
 
-    constructor(sbRPC: SkipchainRPC, link: (ForwardLink | Buffer)) {
+    constructor(sbRPC: SkipchainRPC, link: (ForwardLink | Buffer), sbNow?: SkipBlock) {
         if (Buffer.isBuffer(link)) {
             this.id = link as Buffer;
         } else {
-            this.id = (link as ForwardLink).to;
+            const l = (link as ForwardLink);
+            this.id = l.to;
+            if (sbNow !== undefined) {
+                // TODO: extend to more than 32 nodes
+                const maskBuf = Buffer.alloc(4);
+                l.signature.getMask().copy(maskBuf);
+                const mask = Buffer.from(maskBuf.reverse()).readInt32BE(0);
+                const roster = l.newRoster || sbNow.roster;
+                roster.list.forEach((_, i) => {
+                    // tslint:disable-next-line:no-bitwise
+                    this.sign += (mask & (1 << i)) !== 0 ? "x" : "-";
+                });
+            }
         }
         sbRPC.getSkipBlock(this.id).then((sb) => {
             this.index = sb.index;
