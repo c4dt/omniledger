@@ -10,7 +10,7 @@ import (
 
 	"go.dedis.ch/cothority/v3/byzcoin"
 	"go.dedis.ch/cothority/v3/byzcoin/contracts"
-	"go.dedis.ch/cothority/v3/personhood"
+	personhood "go.dedis.ch/cothority/v3/personhood/contracts"
 	"go.dedis.ch/cothority/v3/skipchain"
 	"go.dedis.ch/onet/v3/log"
 	"go.dedis.ch/protobuf"
