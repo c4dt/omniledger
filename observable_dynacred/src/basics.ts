@@ -9,6 +9,7 @@ type SpawnerStruct = byzcoin.contracts.SpawnerStruct;
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type SpawnerInstance = byzcoin.contracts.SpawnerInstance;
 type CoinInstance = byzcoin.contracts.CoinInstance;
+type ClientTransaction = byzcoin.ClientTransaction;
 
 export interface IGenesisDarc {
     keyPair: KeyPair;
@@ -41,27 +42,7 @@ export interface IByzCoinProof {
 }
 
 export interface IByzCoinAddTransaction {
-    addTransaction(tx: ITransaction): Promise<void>;
-}
-
-export interface ITransaction {
-    spawn?: ISpawnTransaction;
-    update?: IUpdateTransaction;
-    delete?: IDeleteTransaction;
-}
-
-export interface IUpdateTransaction {
-    instID: InstanceID;
-    value: Buffer;
-}
-
-export interface ISpawnTransaction {
-    instID: InstanceID;
-    value: Buffer;
-}
-
-export interface IDeleteTransaction {
-    instID: InstanceID;
+    addTransaction(tx: ClientTransaction): Promise<void>;
 }
 
 export interface IDataBase {
