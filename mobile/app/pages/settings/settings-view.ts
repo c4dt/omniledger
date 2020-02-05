@@ -1,12 +1,12 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
-import { Roster, ServerIdentity } from "@c4dt/cothority/network";
-import { WebSocketConnection } from "@c4dt/cothority/network/connection";
-import { StatusRPC } from "@c4dt/cothority/status";
-import { StatusRequest, StatusResponse } from "@c4dt/cothority/status/proto";
 import { Data } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
+import { Roster, ServerIdentity } from "@dedis/cothority/network";
+import { WebSocketConnection } from "@dedis/cothority/network/connection";
+import { StatusRPC } from "@dedis/cothority/status";
+import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
 import { Observable } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { appVersion, bcDef, isAdmin } from "~/lib/byzcoin-def";

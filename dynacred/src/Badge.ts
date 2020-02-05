@@ -1,7 +1,7 @@
-import { InstanceID } from "@c4dt/cothority/byzcoin";
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import SpawnerInstance from "@c4dt/cothority/personhood/spawner-instance";
+import { InstanceID } from "@dedis/cothority/byzcoin";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import SpawnerInstance from "@dedis/cothority/personhood/spawner-instance";
 import { Contact } from "./Contact";
 import { Data } from "./Data";
 import { KeyPair } from "./KeyPair";

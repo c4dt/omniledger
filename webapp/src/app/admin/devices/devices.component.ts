@@ -3,13 +3,13 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { InstanceID } from "@c4dt/cothority/byzcoin";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { Darc } from "@c4dt/cothority/darc";
+import { InstanceID } from "@dedis/cothority/byzcoin";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { Darc } from "@dedis/cothority/darc";
 
 import { Device, TProgress } from "@c4dt/dynacred";
 
-import { Attribute, Credential } from "@c4dt/cothority/personhood/credentials-instance";
+import { Attribute, Credential } from "@dedis/cothority/personhood/credentials-instance";
 import { showDialogInfo, showDialogOKC, showSnack, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
 

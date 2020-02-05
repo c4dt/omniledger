@@ -4,8 +4,8 @@ require("nativescript-nodeify");
 // tslint:disable-next-line
 const WS = require("nativescript-websockets");
 
-import Log from "@c4dt/cothority/log";
-import { WebSocketAdapter } from "@c4dt/cothority/network";
+import Log from "@dedis/cothority/log";
+import { WebSocketAdapter } from "@dedis/cothority/network";
 
 /**
  * This adapter basically binds the browser websocket interface. Note that

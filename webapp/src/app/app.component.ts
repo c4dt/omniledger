@@ -2,8 +2,8 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
-import { IdentityWrapper } from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
+import { IdentityWrapper } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
 
 import { showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";

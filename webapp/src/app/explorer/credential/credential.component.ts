@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from "@angular/core";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc } from "@c4dt/cothority/darc";
 import { Contact } from "@c4dt/dynacred";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { IdentityDarc } from "@dedis/cothority/darc";
 
 @Component({
     selector: "app-credential",

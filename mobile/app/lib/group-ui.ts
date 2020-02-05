@@ -1,6 +1,6 @@
-import Log from "@c4dt/cothority/log";
 import { KeyPair } from "@c4dt/dynacred";
 import { GroupContract, GroupContractCollection } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { fromNativeSource } from "tns-core-modules/image-source/image-source";
 import { screen } from "tns-core-modules/platform";

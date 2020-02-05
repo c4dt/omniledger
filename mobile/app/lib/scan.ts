@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { BarcodeScanner, ScanResult } from "nativescript-barcodescanner";
 import { fromNativeSource, ImageSource } from "tns-core-modules/image-source";
 import { screen } from "tns-core-modules/platform";
