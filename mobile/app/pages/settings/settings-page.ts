@@ -1,8 +1,8 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
-import { WebSocketConnection } from "@c4dt/cothority/network/connection";
+import Log from "@dedis/cothority/log";
+import { WebSocketConnection } from "@dedis/cothority/network/connection";
 import { localize } from "nativescript-localize";
 import { ShareFile } from "nativescript-share-file";
 import { EventData } from "tns-core-modules/data/observable";

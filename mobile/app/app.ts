@@ -1,7 +1,7 @@
 ﻿// tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import * as application from "tns-core-modules/application";
 import { isIOS } from "tns-core-modules/platform";

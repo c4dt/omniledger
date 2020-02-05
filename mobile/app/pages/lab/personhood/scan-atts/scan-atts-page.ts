@@ -6,8 +6,8 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { ModalProgress } from "~/pages/modal/modal-progress";
 
-import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
 import { PartyItem, TProgress } from "@c4dt/dynacred";
+import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import { Page } from "tns-core-modules/ui/page";
 import URL from "url-parse";
 import { uData } from "~/lib/byzcoin-def";

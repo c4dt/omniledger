@@ -1,10 +1,10 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
-import { WebSocketAdapter } from "@c4dt/cothority/network";
-import { setFactory } from "@c4dt/cothority/network/connection";
 import { Data } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
+import { WebSocketAdapter } from "@dedis/cothority/network";
+import { setFactory } from "@dedis/cothority/network/connection";
 import * as application from "tns-core-modules/application";
 import { EventData } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";

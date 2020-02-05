@@ -7,15 +7,15 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 
-import { Argument, Instruction } from "@c4dt/cothority/byzcoin";
-import ClientTransaction from "@c4dt/cothority/byzcoin/client-transaction";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc, IdentityWrapper, Rule } from "@c4dt/cothority/darc";
-import Darc from "@c4dt/cothority/darc/darc";
-import ISigner from "@c4dt/cothority/darc/signer";
-import Log from "@c4dt/cothority/log";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
+import { Argument, Instruction } from "@dedis/cothority/byzcoin";
+import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import { IdentityDarc, IdentityWrapper, Rule } from "@dedis/cothority/darc";
+import Darc from "@dedis/cothority/darc/darc";
+import ISigner from "@dedis/cothority/darc/signer";
+import Log from "@dedis/cothority/log";
+import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 
 import { Contact, Data, FileBlob, Private, TProgress } from "@c4dt/dynacred";
 

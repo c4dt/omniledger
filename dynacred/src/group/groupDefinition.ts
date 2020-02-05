@@ -1,5 +1,5 @@
-import { curve, Group, Point } from "@c4dt/kyber";
-import { schnorr } from "@c4dt/kyber/sign";
+import { curve, Group, Point } from "@dedis/kyber";
+import { schnorr } from "@dedis/kyber/sign";
 import crypto from "crypto-browserify";
 import { Private, Public } from "../KeyPair";
 import { ENCODING } from "./groupContract";
