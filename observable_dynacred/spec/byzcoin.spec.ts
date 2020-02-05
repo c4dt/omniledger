@@ -5,20 +5,22 @@ import {CredentialFactory} from "src/credentialFactory";
 import {createBCUser, IBCUser} from "spec/support/itest";
 
 describe("using real byzcoin, it should", () => {
-    let user: IBCUser;
+    let bcUser: IBCUser;
 
     beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
-            user = await createBCUser();
+            bcUser = await createBCUser();
         } catch (e) {
+            Log.error(e);
             return Log.rcatch(e);
         }
         Log.lvl2("Done creating instance");
     });
 
     it("set up an admin user", async () => {
-        Log.print(user, user.test.genesisUser.darc);
-        const u2 = CredentialFactory.newUser("alias2", user.test.spawner.spawnerID);
+        const u2 = CredentialFactory.newUser("alias2", bcUser.test.spawner.spawnerID);
+        await bcUser.bc.storeUser(u2);
+        // bcUser.user.addContact()
     });
 });

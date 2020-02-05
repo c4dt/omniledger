@@ -1,15 +1,16 @@
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
 import {BehaviorSubject, Observable, ReplaySubject, Subject} from "rxjs";
 import {Scalar} from "@dedis/kyber";
 import {distinctUntilChanged, map, pairwise, startWith} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
-import {Log} from "@dedis/cothority";
+import {byzcoin, Log, personhood, protobuf} from "@dedis/cothority";
 
 import {Instances} from "src/instances";
 import {IByzCoinAddTransaction} from "src/basics";
 
+type CredentialStruct = byzcoin.contracts.CredentialStruct;
+type InstanceID = byzcoin.InstanceID;
+const {CredentialStruct} = byzcoin.contracts;
 
 export enum EAttributes {
     alias = "1-public:alias",

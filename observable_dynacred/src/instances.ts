@@ -1,12 +1,13 @@
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import {StateChangeBody} from "@dedis/cothority/byzcoin/proof";
-import {SkipBlock} from "@dedis/cothority/skipchain";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {distinctUntilChanged} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long = require("long");
-import {Log} from "@dedis/cothority";
+import {byzcoin, Log, skipchain} from "@dedis/cothority";
+
+type InstanceID = byzcoin.InstanceID;
+type SkipBlock = skipchain.SkipBlock;
+type StateChangeBody = byzcoin.StateChangeBody;
 
 import {configInstanceID, IByzCoinProof, IDataBase} from "src/basics";
 
@@ -102,7 +103,7 @@ export class Instances {
     }
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
-        Log.lvl3("get instance", id);
+        Log.llvl3("get instance", id);
         const p = await this.bc.getProof(id);
         if (!p.exists(id)) {
             throw new Error("didn't find instance in cache or on chain");

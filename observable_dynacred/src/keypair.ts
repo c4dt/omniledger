@@ -1,6 +1,7 @@
-import {SignerEd25519} from "@dedis/cothority/darc";
-import {ed25519} from "@dedis/cothority/personhood/ring-sig";
+import {personhood} from "@dedis/cothority";
 import {Point, Scalar} from "@dedis/kyber";
+import {darc} from "@dedis/cothority";
+const {ed25519} = personhood;
 
 export class KeyPair {
 
@@ -26,7 +27,7 @@ export class KeyPair {
         return this.priv.marshalBinary().toString("hex");
     }
 
-    public signer(): SignerEd25519 {
-        return new SignerEd25519(this.pub, this.priv);
+    public signer(): darc.SignerEd25519 {
+        return new darc.SignerEd25519(this.pub, this.priv);
     }
 }

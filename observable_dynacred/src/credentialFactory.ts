@@ -1,13 +1,5 @@
-import {Darc, IdentityDarc} from "@dedis/cothority/darc";
-import CoinInstance, {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import {
-    SPAWNER_COIN,
-    SpawnerStruct
-} from "@dedis/cothority/personhood/spawner-instance";
 import {Point} from "@dedis/kyber";
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import {LongTermSecret} from "@dedis/cothority/calypso";
-import CredentialInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
+import {byzcoin, calypso, darc, personhood} from "@dedis/cothority";
 import Long = require("long");
 import {randomBytes} from "crypto";
 
@@ -15,17 +7,22 @@ import {IGenesisDarc, ISpawner, IUser} from "src/basics";
 import {Credentials} from "src/credentials";
 import {KeyPair} from "src/keypair";
 
+const {Darc} = darc;
+const {Coin, CoinInstance, CredentialsInstance, CredentialStruct, SpawnerStruct, SPAWNER_COIN} = byzcoin.contracts;
+type CredentialStruct = byzcoin.contracts.CredentialStruct;
+type LongTermSecret = calypso.LongTermSecret;
+
 export class CredentialFactory {
 
     public static genesisDarc(): IGenesisDarc {
         const keyPair = KeyPair.rand();
         const signer = [keyPair.signer()];
-        const darc = Darc.createBasic(signer, signer,
+        const adminDarc = Darc.createBasic(signer, signer,
             Buffer.from("AdminDarc"),
             ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
                 "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
                 "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"]);
-        return {keyPair, darc};
+        return {keyPair, darc: adminDarc};
     }
 
     public static spawner(gu: IGenesisDarc): ISpawner {
@@ -66,11 +63,11 @@ export class CredentialFactory {
         //        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner]);
     }
 
-    public static coinID(pub: Point): InstanceID {
+    public static coinID(pub: Point): byzcoin.InstanceID {
         return CoinInstance.coinIID(pub.marshalBinary());
     }
 
-    public static prepareInitialCred(alias: string, pub: Point, spawner?: InstanceID, deviceDarcID?: InstanceID,
+    public static prepareInitialCred(alias: string, pub: Point, spawner?: byzcoin.InstanceID, deviceDarcID?: byzcoin.InstanceID,
                                      lts?: LongTermSecret): CredentialStruct {
         const cred = new CredentialStruct();
         cred.setAttribute("1-public", "alias", Buffer.from(alias));
@@ -89,25 +86,26 @@ export class CredentialFactory {
         return cred;
     }
 
-    public static newUser(alias: string, spawnerID: InstanceID): IUser {
+    public static newUser(alias: string, spawnerID: byzcoin.InstanceID): IUser {
         const keyPair = KeyPair.rand();
         const signer = [keyPair.signer()];
 
         const darcDevice = Darc.createBasic(signer, signer, Buffer.from("device"));
-        const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
+        const darcDeviceId = new darc.IdentityDarc({id: darcDevice.getBaseID()});
         const darcSign = Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
-        const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from(CredentialInstance.argumentCredential),
-            ["invoke:" + CredentialInstance.contractID + ".update"]);
-        const rules = [CoinInstance.commandMint, CoinInstance.commandTransfer, CoinInstance.commandFetch,
-            CoinInstance.commandStore].map((inv) => `invoke:${CoinInstance.contractID}.#{inv}`);
+        const darcSignId = new darc.IdentityDarc({id: darcSign.getBaseID()});
+        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from(CredentialsInstance.argumentCredential),
+            ["invoke:" + CredentialsInstance.contractID + ".update"]);
+        const rules = [CoinInstance.commandTransfer,
+            CoinInstance.commandFetch,
+            CoinInstance.commandStore].map((inv) => `invoke:${CoinInstance.contractID}.${inv}`);
         const darcCoin = Darc.createBasic([], [darcSignId], Buffer.from("coin"), rules);
         const coin = new Coin({name: SPAWNER_COIN, value: Long.fromNumber(0)});
         const cred = this.prepareInitialCred(alias, keyPair.pub, spawnerID, darcDevice.getBaseID());
 
         return {
             keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin,
-            credID: randomBytes(32), coinID: randomBytes(32)
+            credID: randomBytes(32), coinID: this.coinID(keyPair.pub)
         };
     }
 }

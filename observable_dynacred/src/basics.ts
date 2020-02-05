@@ -1,10 +1,14 @@
 import {KeyPair} from "src/keypair";
-import {Darc} from "@dedis/cothority/darc";
-import {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
-import {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
 import {IProof} from "src/instances";
+import {byzcoin, darc} from "@dedis/cothority";
+
+type Darc = darc.Darc;
+type Coin = byzcoin.contracts.Coin;
+type InstanceID = byzcoin.InstanceID;
+type SpawnerStruct = byzcoin.contracts.SpawnerStruct;
+type CredentialStruct = byzcoin.contracts.CredentialStruct;
+type SpawnerInstance = byzcoin.contracts.SpawnerInstance;
+type CoinInstance = byzcoin.contracts.CoinInstance;
 
 export interface IGenesisDarc {
     keyPair: KeyPair;
@@ -16,6 +20,8 @@ export interface ISpawner {
     coinID: InstanceID;
     spawner: SpawnerStruct;
     spawnerID: InstanceID;
+    spawnerInstance?: SpawnerInstance;
+    coinInstance?: CoinInstance;
 }
 
 export interface IUser {

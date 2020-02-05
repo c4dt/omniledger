@@ -1,9 +1,10 @@
 /* tslint:disable no-console */
-import { SignerEd25519 } from "@dedis/cothority/darc";
-import { Roster } from "@dedis/cothority/network";
+import { darc, network } from "@dedis/cothority";
 import Docker from "dockerode";
 import fs = require("fs");
 import Long = require("long");
+const {Roster} = network;
+const {SignerEd25519} = darc;
 
 const docker = new Docker();
 const data = fs.readFileSync(process.cwd() + "/spec/support/public.toml");

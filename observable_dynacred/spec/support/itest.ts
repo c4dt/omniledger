@@ -1,6 +1,4 @@
 import {Log} from "@dedis/cothority";
-import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import Long = require("long");
 
 import {IDataBase, IGenesisDarc, ISpawner, IUser} from "src/basics";
 import {Instances} from "src/instances";
@@ -12,7 +10,7 @@ import {TempDB} from "spec/support/tempdb";
 import {ByzCoinReal} from "spec/support/byzcoinReal";
 import {ROSTER} from "spec/support/conondes";
 
-Log.lvl = 1;
+Log.lvl = 2;
 
 export interface ITest {
     genesisUser: IGenesisDarc;
@@ -22,7 +20,7 @@ export interface ITest {
 
 export interface IBCUser {
     db: IDataBase;
-    bc: ByzCoinRPC;
+    bc: ByzCoinReal;
     inst: Instances;
     user: User;
     test: ITest;
@@ -53,8 +51,8 @@ export async function createBCUser(): Promise<IBCUser> {
     const test = await newTest("alias", db);
     // await startConodes();
     const roster = ROSTER.slice(0, 4);
-    const bc = await ByzCoinRPC.newByzCoinRPC(roster, test.genesisUser.darc, Long.fromNumber(1000));
-    const inst = await Instances.fromScratch(db, new ByzCoinReal(bc));
+    const bc = await ByzCoinReal.fromScratch(roster, test, db);
+    const inst = await Instances.fromScratch(db, bc);
     return {
         bc, db, inst, test,
         user: await User.load(db, inst),

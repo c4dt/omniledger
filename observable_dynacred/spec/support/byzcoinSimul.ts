@@ -1,14 +1,14 @@
 // tslint:disable:max-classes-per-file
 
-import {Log} from "@dedis/cothority";
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import {Coin} from "@dedis/cothority/byzcoin/contracts/coin-instance";
-import {StateChangeBody} from "@dedis/cothority/byzcoin/proof";
-import {Darc} from "@dedis/cothority/darc";
-import {SpawnerStruct} from "@dedis/cothority/personhood/spawner-instance";
-import {SkipBlock} from "@dedis/cothority/skipchain";
 import {Subject} from "rxjs";
 import Long = require("long");
+import {byzcoin, darc, Log, personhood, skipchain} from "@dedis/cothority";
+const {SkipBlock} = skipchain;
+const {StateChangeBody} = byzcoin;
+const {SpawnerStruct} = personhood;
+type InstanceID = byzcoin.InstanceID;
+type Darc = darc.Darc;
+type Coin = byzcoin.contracts.Coin;
 
 import {IInstance, IProof, newIInstance} from "src/instances";
 import {
@@ -20,8 +20,8 @@ import {ITest} from "spec/support/itest";
 
 
 class SimulProof {
-    public latest: SkipBlock;
-    public stateChangeBody: StateChangeBody;
+    public latest: skipchain.SkipBlock;
+    public stateChangeBody: byzcoin.StateChangeBody;
 
     constructor(private inst: IInstance) {
         this.latest = new SkipBlock({index: inst.block.toNumber()});

@@ -1,10 +1,11 @@
-import {InstanceID} from "@dedis/cothority/byzcoin";
-import {ed25519} from "@dedis/cothority/personhood/ring-sig";
 
 import {KeyPair} from "src/keypair";
 import {IByzCoinAddTransaction, IDataBase} from "src/basics";
 import {ContactList, Credentials, EAttributes} from "src/credentials";
 import {Instances} from "src/instances";
+import {byzcoin, personhood} from "@dedis/cothority";
+type InstanceID = byzcoin.InstanceID;
+const {ed25519} = personhood;
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.

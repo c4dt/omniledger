@@ -18,9 +18,10 @@
   "author": "Linus Gasser",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@dedis/cothority": "^3.4.2",
-    "@dedis/kyber": "^3.4.1",
+    "@dedis/cothority": "file:../cothority/external/js/cothority",
+    "@dedis/kyber": "file:../cothority/external/js/kyber",
     "crypto-browserify": "^3.12.0",
+    "long": "^4.0.0",
     "rxjs": "^6.5.4"
   },
   "devDependencies": {
