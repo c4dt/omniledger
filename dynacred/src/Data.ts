@@ -105,7 +105,10 @@ export class Data {
      * Returns a promise with the loaded Data in it, when available. If the file
      * is not found, it returns an empty data.
      */
-    static async load(bc: ByzCoinRPC, storage: IStorage, name: string = Data.defaultStorage): Promise<Data> {
+    static async load(
+      bc: ByzCoinRPC, storage: IStorage,
+      name: string = Data.defaultStorage, getContacts?: boolean,
+    ): Promise<Data> {
         Log.lvl1("Loading data from", name);
         const values = await storage.getObject(name);
         if (!values || values === {}) {
@@ -113,7 +116,7 @@ export class Data {
         }
         const d = new Data(bc, values);
         if (d.contact && await d.contact.isRegisteredByzCoin(bc)) {
-            await d.connectByzcoin();
+            await d.connectByzcoin(getContacts);
         }
         d.storage = storage;
         return d;
@@ -366,10 +369,10 @@ export class Data {
         this.references = ("references" in obj) ? obj.references : [];
     }
 
-    async connectByzcoin(): Promise<ByzCoinRPC> {
+    async connectByzcoin(getContacts: boolean = true): Promise<ByzCoinRPC> {
         Log.lvl2("Getting contact informations");
         this.contact.data = this;
-        await this.contact.updateOrConnect(this.bc, true);
+        await this.contact.updateOrConnect(this.bc, getContacts);
         this.lts = new LongTermSecret(this.bc, this.contact.ltsID, this.contact.ltsX);
         this.ropascis = this.ropascis.map((rps) => RoPaSciInstance.fromObject(this.bc, rps.toObject()));
         return this.bc;
