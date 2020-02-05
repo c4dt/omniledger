@@ -1,8 +1,10 @@
 import {KeyPair} from "src/keypair";
 import {IProof} from "src/instances";
 import {byzcoin, darc} from "@dedis/cothority";
+import Long from "long";
 
 type Darc = darc.Darc;
+type IIdentity = darc.IIdentity;
 type Coin = byzcoin.contracts.Coin;
 type InstanceID = byzcoin.InstanceID;
 type SpawnerStruct = byzcoin.contracts.SpawnerStruct;
@@ -43,6 +45,9 @@ export interface IByzCoinProof {
 
 export interface IByzCoinAddTransaction {
     addTransaction(tx: ClientTransaction): Promise<void>;
+    getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>;
+    updateCachedCounters(signers: IIdentity[]): Promise<Long[]>;
+    getNextCounter(signer: IIdentity): Long;
 }
 
 export interface IDataBase {

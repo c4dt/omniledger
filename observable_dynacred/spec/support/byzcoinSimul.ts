@@ -4,20 +4,21 @@ import {Subject} from "rxjs";
 import Long = require("long");
 import {byzcoin, darc, Log, personhood, skipchain} from "@dedis/cothority";
 const {SkipBlock} = skipchain;
-const {StateChangeBody} = byzcoin;
-const {SpawnerStruct} = personhood;
+const {StateChangeBody, Instruction} = byzcoin;
+const {SpawnerStruct, CredentialsInstance} = personhood;
 type InstanceID = byzcoin.InstanceID;
 type Darc = darc.Darc;
+type IIdentity = darc.IIdentity;
 type Coin = byzcoin.contracts.Coin;
+type ClientTransaction = byzcoin.ClientTransaction;
 
 import {IInstance, IProof, newIInstance} from "src/instances";
 import {
     IByzCoinAddTransaction,
-    IByzCoinProof, ITransaction, IUser
+    IByzCoinProof, IUser
 } from "src/basics";
 
 import {ITest} from "spec/support/itest";
-
 
 class SimulProof {
     public latest: skipchain.SkipBlock;
@@ -48,17 +49,30 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
-    public async addTransaction(tx: ITransaction): Promise<void> {
-        if (tx.spawn !== undefined || tx.delete !== undefined || tx.update === undefined) {
-            throw new Error("can only update")
+    public async addTransaction(tx: ClientTransaction): Promise<void> {
+        for (const instr of tx.instructions) {
+            switch(instr.type){
+                case Instruction.typeInvoke:
+                    const inv = instr.invoke;
+                    Log.lvl3("Invoke contract", instr.instanceID);
+                    if (inv.contractID !== CredentialsInstance.contractID ||
+                        inv.command !== CredentialsInstance.commandUpdate ||
+                        inv.args.length !== 1 ||
+                        inv.args[0].name !== CredentialsInstance.argumentCredential){
+                        throw new Error("know only how to update" +
+                            " credential")
+                    }
+                    const inst = this.globalState.getInstance(instr.instanceID);
+                    if (inst === undefined) {
+                        throw new Error("cannot update unknown instance");
+                    }
+                    inst.value = inv.args[0].value;
+                    this.globalState.addOrUpdateInstance(inst);
+                    break;
+                default:
+                    throw new Error("can only update")
+            }
         }
-        Log.lvl3("addTransaction", tx.update.instID);
-        const inst = this.globalState.getInstance(tx.update.instID);
-        if (inst === undefined) {
-            throw new Error("cannot update unknown instance");
-        }
-        inst.value = tx.update.value;
-        this.globalState.addOrUpdateInstance(inst);
         this.blocks.addBlock();
     }
 
@@ -97,6 +111,17 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
             newIInstance(user.credID, user.cred.toBytes(), "Credential")
         );
         this.blocks.addBlock();
+    }
+
+    // Dummy implementations with always-1 counters
+    public async getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>{
+        return this.updateCachedCounters(signers);
+    }
+    public async updateCachedCounters(signers: IIdentity[]): Promise<Long[]>{
+        return signers.map(() => Long.fromNumber(1));
+    }
+    public getNextCounter(signer: IIdentity): Long{
+        return Long.fromNumber(1);
     }
 }
 

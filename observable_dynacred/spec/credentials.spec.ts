@@ -1,14 +1,14 @@
 import {CredentialFactory} from "../src/credentialFactory";
 import {Log} from "@dedis/cothority";
 import {createSimulUser} from "./support/itest";
-import {History} from "./support/history";
+import {HistoryObs} from "spec/support/historyObs";
 
 describe("Credentials should", () => {
 
     it("do with contacts:", async () => {
         Log.lvl1("checking credentials adding and removing");
         const {bc, db, inst, user, test} = await createSimulUser();
-        const history = new History();
+        const history = new HistoryObs();
         const contacts = ["foo", "bar", "alice"].map((alias) => {
             return CredentialFactory.newUser(alias, test.spawner.spawnerID);
         });

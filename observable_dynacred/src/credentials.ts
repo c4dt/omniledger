@@ -1,16 +1,19 @@
 import {BehaviorSubject, Observable, ReplaySubject, Subject} from "rxjs";
-import {Scalar} from "@dedis/kyber";
+import {curve, Scalar} from "@dedis/kyber";
 import {distinctUntilChanged, map, pairwise, startWith} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
-import {byzcoin, Log, personhood, protobuf} from "@dedis/cothority";
+import {byzcoin, darc, Log} from "@dedis/cothority";
 
 import {Instances} from "src/instances";
 import {IByzCoinAddTransaction} from "src/basics";
 
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type InstanceID = byzcoin.InstanceID;
-const {CredentialStruct} = byzcoin.contracts;
+const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
+const {ClientTransaction, Instruction, Argument} = byzcoin;
+const {SignerEd25519} = darc;
+export const ed25519 = new curve.edwards25519.Curve();
 
 export enum EAttributes {
     alias = "1-public:alias",
@@ -76,8 +79,8 @@ export class Credentials {
         return this.attributeObservable(EAttributes.coinID).pipe(map((buf) => <InstanceID>buf));
     }
 
-    // contactsObservable returns an observable that emits a list new contacts
-    // whenever one or more new contacts are available.
+    // contactsObservable returns an observable that emits a list of new
+    // contacts whenever one or more new contacts are available.
     // When first calling this method, all available contacts will be sent
     // together.
     // Once a contact disappears, the `complete` method is invoked.
@@ -133,12 +136,19 @@ export class Credentials {
                 let value = c.value instanceof Buffer ? c.value : Buffer.from(c.value);
                 orig.setAttribute(fields[0], fields[1], value);
             }
-            await bc.addTransaction({
-                update: {
-                    instID: this.id,
-                    value: orig.toBytes()
-                }
-            });
+            const ctx = ClientTransaction.make(3,
+                Instruction.createInvoke(this.id, CredentialsInstance.contractID,
+                    CredentialsInstance.commandUpdate, [
+                        new Argument({
+                            name: CredentialsInstance.argumentCredential,
+                            value: orig.toBytes()
+                        })
+                    ]
+                )
+            );
+            const signer = [[new SignerEd25519(ed25519.point().mul(priv), priv)]];
+            await ctx.updateCountersAndSign(bc, signer);
+            await bc.addTransaction(ctx);
             await this.inst.reload();
         });
     }

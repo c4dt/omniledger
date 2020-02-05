@@ -1,9 +1,12 @@
 import {User} from "../src/user";
 import {EAttributes} from "../src/credentials";
-import {Log} from "@dedis/cothority";
+import {byzcoin, Log} from "@dedis/cothority";
 import {Instances} from "../src/instances";
 import {createSimulUser} from "./support/itest";
-import {History} from "./support/history";
+import {HistoryObs} from "spec/support/historyObs";
+
+const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
+const {ClientTransaction, Instruction, Argument} = byzcoin;
 
 describe("pony-world example", () => {
     it("setting up of a new user in testing", async () => {
@@ -17,7 +20,7 @@ describe("pony-world example", () => {
     it("reading, writing, updating values of new user", async () => {
         const {bc, user} = await createSimulUser();
         const co = user.credential;
-        const history = new History();
+        const history = new HistoryObs();
         const obs1 = co.aliasObservable().subscribe((alias) => history.push("alias:" + alias));
         await history.resolve(["alias:alias"]);
 
@@ -51,7 +54,7 @@ describe("pony-world example", () => {
 
     it("should not ask new proofs when not necessary", async () => {
         const {bc, db, inst, user} = await createSimulUser();
-        const history = new History();
+        const history = new HistoryObs();
         // Wait for all proofs to be made
         await new Promise(resolve => user.credential.aliasObservable()
             .subscribe(resolve));
@@ -69,12 +72,16 @@ describe("pony-world example", () => {
 
         Log.lvl2("Changing the config-instance, new instances object should" +
             " request proof for new instance");
-        await bc.addTransaction({
-            update: {
-                instID: user.id,
-                value: Buffer.from("123")
-            }
-        });
+        await bc.addTransaction(new ClientTransaction({
+            instructions: [
+                Instruction.createInvoke(user.id, CredentialsInstance.contractID,
+                    CredentialsInstance.commandUpdate, [
+                        new Argument({
+                            name: CredentialsInstance.argumentCredential,
+                            value: Buffer.from("123")
+                        })
+                    ])]
+        }));
         const inst3 = await Instances.fromScratch(db, bc);
         await inst3.reload();
         await history.resolve(["P"]);
