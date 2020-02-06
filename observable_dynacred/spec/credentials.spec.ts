@@ -1,13 +1,13 @@
 import {CredentialFactory} from "../src/credentialFactory";
 import {Log} from "@dedis/cothority";
-import {createSimulUser} from "./support/itest";
 import {HistoryObs} from "spec/support/historyObs";
+import {BCTestEnv} from "spec/support/itest";
 
 describe("Credentials should", () => {
 
     it("do with contacts:", async () => {
         Log.lvl1("checking credentials adding and removing");
-        const {bc, db, inst, user, test} = await createSimulUser();
+        const {bc, db, inst, user, test} = await BCTestEnv.simul();
         const history = new HistoryObs();
         const contacts = ["foo", "bar", "alice"].map((alias) => {
             return CredentialFactory.newUser(alias, test.spawner.spawnerID);

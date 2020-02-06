@@ -27,12 +27,20 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
     constructor(private bc: ByzCoinRPC, private it: ITest) {
     }
 
+    static async fromExisting(roster: Roster, bcID: InstanceID, test: ITest, db: IDataBase): Promise<ByzCoinReal> {
+        Log.lvl2("Starting new ByzCoin");
+        const bcRPC = await ByzCoinRPC.fromByzcoin(roster, bcID);
+        return new ByzCoinReal(bcRPC, test);
+    }
+
     static async fromScratch(roster: Roster, test: ITest, db: IDataBase): Promise<ByzCoinReal> {
         Log.lvl2("Starting new ByzCoin");
         const bcRPC = await ByzCoinRPC.newByzCoinRPC(roster, test.genesisUser.darc, Long.fromNumber(1e8));
         const bc = new ByzCoinReal(bcRPC, test);
+        Log.lvl1("Copy the following to `newTest` to speed up testing:", bcRPC.genesisID);
         Log.lvl2("Storing genesis user and 1st user");
-        await bc.storeTest();
+        await bc.storeSpawner();
+        await bc.storeUser(test.user);
         await db.set(User.keyCredID, test.user.credID || Buffer.alloc(32));
         return bc;
     }
@@ -72,7 +80,9 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
         Log.lvl3("Spawning credential");
         const credInst = await si.spawnCredential(ci,
             signer, user.darcCred.getBaseID(), user.cred);
-        user.credID = credInst.id;
+        if (!user.credID.equals(credInst.id)){
+            throw new Error("resulting credID doesn't match");
+        }
     }
 
     public async getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]> {
@@ -87,7 +97,7 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
         return this.bc.getNextCounter(signer);
     }
 
-    private async storeTest() {
+    async storeSpawner() {
         Log.lvl3("Storing coin and spawner instances");
         const signer = [new SignerEd25519(this.it.genesisUser.keyPair.pub, this.it.genesisUser.keyPair.priv)];
         this.it.spawner.coinInstance = await CoinInstance.spawn(this.bc, this.it.genesisUser.darc.getBaseID(),
@@ -108,6 +118,5 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
         this.it.spawner.spawnerInstance = await SpawnerInstance.spawn(this.bc, this.it.genesisUser.darc.getBaseID(),
             signer, icc, this.it.spawner.coinID);
         this.it.spawner.spawnerID = this.it.spawner.spawnerInstance.id;
-        return this.storeUser(this.it.user);
     }
 }

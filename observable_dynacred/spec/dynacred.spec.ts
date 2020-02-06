@@ -2,15 +2,16 @@ import {User} from "../src/user";
 import {EAttributes} from "../src/credentials";
 import {byzcoin, Log} from "@dedis/cothority";
 import {Instances} from "../src/instances";
-import {createSimulUser} from "./support/itest";
 import {HistoryObs} from "spec/support/historyObs";
+import {BCTestEnv} from "spec/support/itest";
+import {ByzCoinSimul} from "spec/support/byzcoinSimul";
 
 const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
 const {ClientTransaction, Instruction, Argument} = byzcoin;
 
 describe("pony-world example", () => {
     it("setting up of a new user in testing", async () => {
-        const {db, inst, user} = await createSimulUser();
+        const {db, inst, user} = await BCTestEnv.simul();
         await user.save();
         const user2 = await User.load(db, inst);
         expect(user2.kp).toEqual(user.kp);
@@ -18,7 +19,7 @@ describe("pony-world example", () => {
     });
 
     it("reading, writing, updating values of new user", async () => {
-        const {bc, user} = await createSimulUser();
+        const {bc, user} = await BCTestEnv.simul();
         const co = user.credential;
         const history = new HistoryObs();
         const obs1 = co.aliasObservable().subscribe((alias) => history.push("alias:" + alias));
@@ -53,19 +54,18 @@ describe("pony-world example", () => {
     });
 
     it("should not ask new proofs when not necessary", async () => {
-        const {bc, db, inst, user} = await createSimulUser();
+        const {bc, db, inst, user} = await BCTestEnv.simul();
         const history = new HistoryObs();
         // Wait for all proofs to be made
         await new Promise(resolve => user.credential.aliasObservable()
             .subscribe(resolve));
-        bc.getProofObserver.subscribe(() => history.push("P"));
-        await history.resolve(["P"]);
+        (bc as ByzCoinSimul).getProofObserver.subscribe(() => history.push("P"));
 
         Log.lvl2("Creating new instances object - there should be only one" +
             " getProof");
         const inst2 = await Instances.fromScratch(db, bc);
         await inst2.reload();
-        await history.resolve(["P"]);
+        await history.resolve(["P", "P"]);
         const io2 = (await inst2.instanceObservable(user.id)).subscribe(() => history.push("i2"));
         await history.resolve(["i2"]);
         io2.unsubscribe();
@@ -84,7 +84,7 @@ describe("pony-world example", () => {
         }));
         const inst3 = await Instances.fromScratch(db, bc);
         await inst3.reload();
-        await history.resolve(["P"]);
+        await history.resolve(["P", "P"]);
         const io3 = (await inst3.instanceObservable(user.id)).subscribe(
             (ii) => history.push("i3:" + ii.version.toNumber()));
         await history.resolve(["i3:0", "P", "i3:1"]);

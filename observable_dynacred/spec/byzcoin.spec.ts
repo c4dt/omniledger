@@ -1,17 +1,15 @@
 import {Log} from "@dedis/cothority";
 
-import {CredentialFactory} from "src/credentialFactory";
-
-import {createBCUser, IBCUser} from "spec/support/itest";
 import {HistoryObs} from "spec/support/historyObs";
+import {BCTestEnv} from "spec/support/itest";
 
 describe("using real byzcoin, it should", () => {
-    let bcUser: IBCUser;
+    let bcTestEnv: BCTestEnv;
 
     beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
-            bcUser = await createBCUser();
+            bcTestEnv = await BCTestEnv.real();
         } catch (e) {
             Log.error(e);
             return Log.rcatch(e);
@@ -21,16 +19,17 @@ describe("using real byzcoin, it should", () => {
 
     it("set up an admin user", async () => {
         const history = new HistoryObs();
-        bcUser.user.credential.contactsObservable().subscribe((c) => {
-            Log.print("Got contact", c);
+        const user1 = await bcTestEnv.newCred("alias1");
+        const user2 = await bcTestEnv.newCred("alias2");
+
+        await user1.creds.addContact(bcTestEnv.bc, user1.keyPair.priv, user2.credID);
+        user1.creds.contactsObservable().subscribe((c) => {
             if (c.length > 0) {
                 c[0].getValue().aliasObservable().subscribe((alias) =>
                     history.push("newContact:" + alias));
             }
         });
-        const u2 = CredentialFactory.newUser("alias2", bcUser.test.spawner.spawnerID);
-        await bcUser.bc.storeUser(u2);
-        await bcUser.user.addContact(bcUser.bc, u2.credID);
+
         await history.resolve(["newContact:alias2"]);
     });
 });

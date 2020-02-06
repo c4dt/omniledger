@@ -1,4 +1,4 @@
-import {Point} from "@dedis/kyber";
+import {curve, Point, Scalar} from "@dedis/kyber";
 import {byzcoin, calypso, darc, personhood} from "@dedis/cothority";
 import Long = require("long");
 import {randomBytes} from "crypto";
@@ -9,13 +9,16 @@ import {KeyPair} from "src/keypair";
 
 const {Darc} = darc;
 const {Coin, CoinInstance, CredentialsInstance, CredentialStruct, SpawnerStruct, SPAWNER_COIN} = byzcoin.contracts;
+type Darc = darc.Darc;
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type LongTermSecret = calypso.LongTermSecret;
+type InstanceID = byzcoin.InstanceID;
+const ed25519 = curve.newCurve("edwards25519");
 
 export class CredentialFactory {
 
-    public static genesisDarc(): IGenesisDarc {
-        const keyPair = KeyPair.rand();
+    public static genesisDarc(priv?: Scalar): IGenesisDarc {
+        const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
         const signer = [keyPair.signer()];
         const adminDarc = Darc.createBasic(signer, signer,
             Buffer.from("AdminDarc"),
@@ -63,8 +66,12 @@ export class CredentialFactory {
         //        const lts = await LongTermSecret.spawn(bc, adminDarcID, [adminSigner]);
     }
 
-    public static coinID(pub: Point): byzcoin.InstanceID {
+    public static coinID(pub: Point): InstanceID {
         return CoinInstance.coinIID(pub.marshalBinary());
+    }
+
+    public static credID(d: Darc): InstanceID{
+        return CredentialsInstance.credentialIID(d.getBaseID());
     }
 
     public static prepareInitialCred(alias: string, pub: Point, spawner?: byzcoin.InstanceID, deviceDarcID?: byzcoin.InstanceID,
@@ -86,8 +93,9 @@ export class CredentialFactory {
         return cred;
     }
 
-    public static newUser(alias: string, spawnerID: byzcoin.InstanceID): IUser {
-        const keyPair = KeyPair.rand();
+    public static newUser(alias: string, spawnerID: byzcoin.InstanceID,
+                          priv?: Scalar): IUser {
+        const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
         const signer = [keyPair.signer()];
 
         const darcDevice = Darc.createBasic(signer, signer, Buffer.from("device"));
@@ -105,7 +113,7 @@ export class CredentialFactory {
 
         return {
             keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin,
-            credID: randomBytes(32), coinID: this.coinID(keyPair.pub)
+            credID: this.credID(darcCred), coinID: this.coinID(keyPair.pub)
         };
     }
 }

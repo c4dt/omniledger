@@ -152,6 +152,26 @@ export class Credentials {
             await this.inst.reload();
         });
     }
+
+    public async addContact(bc: IByzCoinAddTransaction, priv: Scalar, id: InstanceID): Promise<void> {
+        const creds = await ContactList.fromCredentials(this);
+        if (creds.has(id)) {
+            return;
+        }
+        creds.add(id);
+        return this.updateCredentials(bc, priv,
+            {name: EAttributes.contacts, value: creds.toBuffer()});
+    }
+
+    public async rmContact(bc: IByzCoinAddTransaction, priv: Scalar, id: InstanceID): Promise<void> {
+        const creds = await ContactList.fromCredentials(this);
+        if (!creds.has(id)) {
+            return;
+        }
+        creds.rm(id);
+        return this.updateCredentials(bc, priv,
+            {name: EAttributes.contacts, value: creds.toBuffer()});
+    }
 }
 
 /**

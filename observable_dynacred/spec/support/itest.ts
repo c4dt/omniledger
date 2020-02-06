@@ -1,6 +1,13 @@
 import {Log} from "@dedis/cothority";
 
-import {IDataBase, IGenesisDarc, ISpawner, IUser} from "src/basics";
+import {
+    IByzCoinAddTransaction,
+    IByzCoinProof,
+    IDataBase,
+    IGenesisDarc,
+    ISpawner,
+    IUser
+} from "src/basics";
 import {Instances} from "src/instances";
 import {CredentialFactory} from "src/credentialFactory";
 import {User} from "src/user";
@@ -9,6 +16,10 @@ import {ByzCoinSimul} from "spec/support/byzcoinSimul";
 import {TempDB} from "spec/support/tempdb";
 import {ByzCoinReal} from "spec/support/byzcoinReal";
 import {ROSTER} from "spec/support/conondes";
+import {curve} from "@dedis/kyber";
+import {Credentials} from "src/credentials";
+
+const ed25519 = curve.newCurve("edwards25519");
 
 Log.lvl = 2;
 
@@ -18,54 +29,66 @@ export interface ITest {
     user: IUser;
 }
 
-export interface IBCUser {
-    db: IDataBase;
-    bc: ByzCoinReal;
-    inst: Instances;
-    user: User;
-    test: ITest;
+export interface BCTest extends IByzCoinProof, IByzCoinAddTransaction {
+    storeUser(user: IUser): Promise<void>;
 }
 
-export interface ISimulUser {
-    db: IDataBase;
-    bc: ByzCoinSimul;
-    inst: Instances;
-    user: User;
-    test: ITest;
+export interface TestUser extends IUser {
+    creds: Credentials;
 }
 
-export async function createSimulUser(): Promise<ISimulUser> {
-    const db = new TempDB();
-    const bc = new ByzCoinSimul();
-    const inst = await Instances.fromScratch(db, bc);
-    const test = await newTest("alias", db);
-    await bc.storeTest(test);
-    return {
-        bc, db, inst, test,
-        user: await User.load(db, inst),
-    };
-}
+export class BCTestEnv {
+    constructor(
+        public bc: BCTest,
+        public db: IDataBase,
+        public inst: Instances,
+        public test: ITest,
+        public user: User,
+    ) {
+    }
 
-export async function createBCUser(): Promise<IBCUser> {
-    const db = new TempDB();
-    const test = await newTest("alias", db);
-    // await startConodes();
-    const roster = ROSTER.slice(0, 4);
-    const bc = await ByzCoinReal.fromScratch(roster, test, db);
-    const inst = await Instances.fromScratch(db, bc);
-    return {
-        bc, db, inst, test,
-        user: await User.load(db, inst),
-    };
-}
+    static async fromScratch(createBC: (test: ITest, db: IDataBase) => Promise<BCTest>): Promise<BCTestEnv> {
+        const db = new TempDB();
+        const test = await this.newTest("alias", db);
+        const bc = await createBC(test, db);
+        const inst = await Instances.fromScratch(db, bc);
+        return new BCTestEnv(
+            bc, db, inst, test,
+            await User.load(db, inst));
+    }
 
-export async function newTest(alias: string, db: IDataBase): Promise<ITest> {
-    // Create all parts of the test-user
-    const genesisUser = CredentialFactory.genesisDarc();
-    const spawner = CredentialFactory.spawner(genesisUser);
-    const user = CredentialFactory.newUser(alias, spawner.spawnerID);
+    static async simul(): Promise<BCTestEnv> {
+        return this.fromScratch(async (test) => {
+            return await ByzCoinSimul.fromScratch(test);
+        });
+    }
 
-    await db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
-    await db.set(User.keyCredID, user.credID || Buffer.alloc(32));
-    return {genesisUser, spawner, user};
+    static async real(): Promise<BCTestEnv> {
+        return this.fromScratch(async (test, db) => {
+            // await startConodes();
+            const roster = ROSTER.slice(0, 4);
+            return ByzCoinReal.fromScratch(roster, test, db);
+        });
+    }
+
+    private static async newTest(alias: string, db: IDataBase): Promise<ITest> {
+        // Create all parts of the test-user
+        const genesisUser = CredentialFactory.genesisDarc(ed25519.scalar().one());
+        const spawner = CredentialFactory.spawner(genesisUser);
+        const user = CredentialFactory.newUser(alias, spawner.spawnerID,
+            ed25519.scalar().setBytes(Buffer.from("user")));
+
+        await db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
+        await db.set(User.keyCredID, user.credID || Buffer.alloc(32));
+        return {genesisUser, spawner, user};
+    }
+
+    async newCred(alias: string): Promise<TestUser>{
+        const user = CredentialFactory.newUser(alias, this.test.spawner.spawnerID);
+        await this.bc.storeUser(user);
+        return {
+            creds: await Credentials.fromScratch(this.inst, user.credID),
+            ...user
+        };
+    }
 }

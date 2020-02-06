@@ -4,6 +4,7 @@ import {IByzCoinAddTransaction, IDataBase} from "src/basics";
 import {ContactList, Credentials, EAttributes} from "src/credentials";
 import {Instances} from "src/instances";
 import {byzcoin, personhood} from "@dedis/cothority";
+import {Scalar} from "@dedis/kyber";
 type InstanceID = byzcoin.InstanceID;
 const {ed25519} = personhood;
 
@@ -40,24 +41,9 @@ export class User {
     }
 
     public async addContact(bc: IByzCoinAddTransaction, id: InstanceID): Promise<void> {
-        const creds = await ContactList.fromCredentials(this.credential);
-        if (creds.has(id)) {
-            return;
-        }
-        creds.add(id);
-        return this.credential.updateCredentials(bc,
-            this.kp.priv,
-            {name: EAttributes.contacts, value: creds.toBuffer()});
+        return this.credential.addContact(bc, this.kp.priv, id);
     }
-
     public async rmContact(bc: IByzCoinAddTransaction, id: InstanceID): Promise<void> {
-        const creds = await ContactList.fromCredentials(this.credential);
-        if (!creds.has(id)) {
-            return;
-        }
-        creds.rm(id);
-        return this.credential.updateCredentials(bc,
-            this.kp.priv,
-            {name: EAttributes.contacts, value: creds.toBuffer()});
+        return this.credential.rmContact(bc, this.kp.priv, id);
     }
 }

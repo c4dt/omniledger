@@ -49,6 +49,14 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
+    static async fromScratch(t: ITest): Promise<ByzCoinSimul>{
+        const bc = new ByzCoinSimul(t);
+        await bc.storeTest();
+        return bc;
+    }
+
+    constructor(private test: ITest){}
+
     public async addTransaction(tx: ClientTransaction): Promise<void> {
         for (const instr of tx.instructions) {
             switch(instr.type){
@@ -90,18 +98,18 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
         return ip;
     }
 
-    public async storeTest(it: ITest){
+    public async storeTest(){
         this.globalState.addInstances(
-            newIInstance(it.spawner.spawnerID,
-                Buffer.from(SpawnerStruct.encode(it.spawner.spawner).finish()), "Spawner"),
+            newIInstance(this.test.spawner.spawnerID,
+                Buffer.from(SpawnerStruct.encode(this.test.spawner.spawner).finish()), "Spawner"),
             newIInstance(ByzCoinSimul.configInstanceID, Buffer.alloc(0), "Configuration"));
-        this.globalState.addDarc(it.genesisUser.darc);
-        this.globalState.addCoin(it.spawner.coin, it.spawner.coinID, it.genesisUser.darc.baseID);
+        this.globalState.addDarc(this.test.genesisUser.darc);
+        this.globalState.addCoin(this.test.spawner.coin, this.test.spawner.coinID, this.test.genesisUser.darc.baseID);
 
-        await this.storeUser(it.user);
+        await this.storeUser(this.test.user);
     }
 
-    public storeUser(user: IUser) {
+    public async storeUser(user: IUser) {
         this.globalState.addDarc(user.darcDevice);
         this.globalState.addDarc(user.darcSign);
         this.globalState.addDarc(user.darcCoin);

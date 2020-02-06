@@ -1,7 +1,7 @@
 import {personhood} from "@dedis/cothority";
-import {Point, Scalar} from "@dedis/kyber";
+import {curve, Point, Scalar} from "@dedis/kyber";
 import {darc} from "@dedis/cothority";
-const {ed25519} = personhood;
+const ed25519 = curve.newCurve("edwards25519");
 
 export class KeyPair {
 
