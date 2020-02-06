@@ -1,18 +1,18 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import { LongTermSecret } from "@c4dt/cothority/calypso";
-import { IdentityWrapper } from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
-import { Roster, ServerIdentity } from "@c4dt/cothority/network";
-import { RosterWSConnection } from "@c4dt/cothority/network/connection";
-import { SkipBlock } from "@c4dt/cothority/skipchain";
-import SkipchainRPC from "@c4dt/cothority/skipchain/skipchain-rpc";
-import { StatusRequest, StatusResponse } from "@c4dt/cothority/status/proto";
-import StatusRPC from "@c4dt/cothority/status/status-rpc";
 import { Data, PersonhoodRPC } from "@c4dt/dynacred";
-import { Point } from "@c4dt/kyber";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import { LongTermSecret } from "@dedis/cothority/calypso";
+import { IdentityWrapper } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
+import { Roster, ServerIdentity } from "@dedis/cothority/network";
+import { RosterWSConnection } from "@dedis/cothority/network/connection";
+import { SkipBlock } from "@dedis/cothority/skipchain";
+import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
+import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
+import StatusRPC from "@dedis/cothority/status/status-rpc";
+import { Point } from "@dedis/kyber";
 import { bdDEDIS, bdTest } from "~/lib/byzcoin-defs";
 import { StorageFile } from "~/lib/storage-file";
 import { TestData } from "~/lib/test-data";

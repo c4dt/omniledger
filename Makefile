@@ -1,4 +1,4 @@
-COT := c4dt
+COT := dedis
 
 help:
 	@echo "run with cothority_dedis or cothority_c4dt"

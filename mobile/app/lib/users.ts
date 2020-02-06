@@ -1,8 +1,8 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
 import { Contact, Data } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
 
 import { isAndroid, isIOS } from "tns-core-modules/platform";
 import * as frame from "tns-core-modules/ui/frame";

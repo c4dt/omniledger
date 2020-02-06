@@ -1,7 +1,7 @@
-import Log from "@c4dt/cothority/log";
 import { GroupContract } from "@c4dt/dynacred";
 import { GroupContractCollection } from "@c4dt/dynacred";
 import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { fromObject, fromObjectRecursive } from "tns-core-modules/data/observable/observable";

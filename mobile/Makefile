@@ -23,8 +23,8 @@ clean: gradle-simul
 
 npm-install: clean ../dynacred/build/index.js
 	# if dynacred is installed from the parent's directory with `npm i ../dynacred`,
-	# npm will install all dependencies, including @c4dt/cothority, and this will conflict with
-	# the @c4dt/cothority in mobile, which will lead to structures form the different cothorities not
+	# npm will install all dependencies, including @dedis/cothority, and this will conflict with
+	# the @dedis/cothority in mobile, which will lead to structures form the different cothorities not
 	# being recognized as the same, e.g., `r instanceof Roster` will not work over the two packages...
 	[ -d dynacred ] || ln -s $$(pwd)/../dynacred .
 	rm -rf dynacred/node_modules
@@ -109,11 +109,11 @@ cothority-pull:
 	make -C .. cothority-pull
 
 kyber_src: cothority_src app/lib/kyber
-	npm r @c4dt/kyber
+	npm r @dedis/kyber
 
 app/lib/kyber: ../cothority/external/js/kyber/src
 	@cp -a $< $@
-	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/kyber:~/lib/kyber:"
+	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/kyber:~/lib/kyber:"
 	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
 
 kyber_npm:
@@ -127,15 +127,15 @@ kyber_npm:
 	diff -Naurq ../cothority/external/js/kyber/src/ app/lib/kyber/ || \
 		( echo "Moving changes to kyber"; cp -a app/lib/kyber/ ../cothority/external/js/kyber/src ); \
 	rm -rf app/lib/kyber && \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/kyber:\@c4dt/kyber:" && \
-	npm i -s @c4dt/kyber
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/kyber:\@dedis/kyber:" && \
+	npm i -s @dedis/kyber
 
 cothority_src: dynacred_src cothority-pull app/lib/cothority
-	npm r @c4dt/cothority
+	npm r @dedis/cothority
 
 app/lib/cothority: ../cothority/external/js/cothority/src
 	@cp -a $< $@
-	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/cothority:~/lib/cothority:"
+	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/cothority:~/lib/cothority:"
 	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
 
 cothority_npm: kyber_npm
@@ -149,8 +149,8 @@ cothority_npm: kyber_npm
 	diff -Naurq ../cothority/external/js/cothority/src/ app/lib/cothority/ || \
 		( echo "Moving changes to cothority"; cp -a app/lib/cothority/ ../cothority/external/js/cothority/src ); \
 	rm -rf app/lib/cothority && \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@c4dt/cothority:" && \
-	npm i -s @c4dt/cothority
+	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@dedis/cothority:" && \
+	npm i -s @dedis/cothority
 
 dynacred_src: app/lib/dynacred
 	npm r @c4dt/dynacred

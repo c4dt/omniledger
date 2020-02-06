@@ -1,11 +1,11 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { IdentityWrapper } from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
-import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
-import { PopDesc } from "@c4dt/cothority/personhood/proto";
 import { Badge, PartyItem, TProgress } from "@c4dt/dynacred";
+import { IdentityWrapper } from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
+import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import { PopDesc } from "@dedis/cothority/personhood/proto";
 import { localize } from "nativescript-localize";
 import { sprintf } from "sprintf-js";
 import { Observable } from "tns-core-modules/data/observable";

@@ -1,14 +1,14 @@
-import ByzCoinRPC from "@c4dt/cothority/byzcoin/byzcoin-rpc";
-import { InstanceID } from "@c4dt/cothority/byzcoin/instance";
-import IdentityWrapper from "@c4dt/cothority/darc/identity-wrapper";
-import ISigner from "@c4dt/cothority/darc/signer";
-import { Roster, ServerIdentity } from "@c4dt/cothority/network";
-import { WebSocketConnection } from "@c4dt/cothority/network/connection";
-import { CredentialStruct } from "@c4dt/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@c4dt/cothority/personhood/pop-party-instance";
-import { Sign } from "@c4dt/cothority/personhood/ring-sig";
-import { registerMessage } from "@c4dt/cothority/protobuf";
-import { Scalar } from "@c4dt/kyber";
+import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
+import { InstanceID } from "@dedis/cothority/byzcoin/instance";
+import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
+import ISigner from "@dedis/cothority/darc/signer";
+import { Roster, ServerIdentity } from "@dedis/cothority/network";
+import { WebSocketConnection } from "@dedis/cothority/network/connection";
+import { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
+import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import { Sign } from "@dedis/cothority/personhood/ring-sig";
+import { registerMessage } from "@dedis/cothority/protobuf";
+import { Scalar } from "@dedis/kyber";
 import { createHash, randomBytes } from "crypto-browserify";
 import Long from "long";
 import { Message, Properties } from "protobufjs/light";
@@ -16,7 +16,7 @@ import { Message, Properties } from "protobufjs/light";
 /**
  * PersonhoodRPC interacts with the personhood service and all personhood-related contracts, like personhood-party,
  * rock-paper-scissors, and spawner.
- * Once it's more stable, it should go into c4dt/cothority/external/js/cothority. For this reason it should not
+ * Once it's more stable, it should go into dedis/cothority/external/js/cothority. For this reason it should not
  * depend on anything from dynacred.
  */
 export class PersonhoodRPC {

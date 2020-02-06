@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 import { Page } from "tns-core-modules/ui/page";
 import { SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";

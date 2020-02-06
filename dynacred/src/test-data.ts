@@ -1,8 +1,8 @@
-import { ByzCoinRPC } from "@c4dt/cothority/byzcoin";
-import { Signer, SignerEd25519 } from "@c4dt/cothority/darc";
-import Darc from "@c4dt/cothority/darc/darc";
-import Log from "@c4dt/cothority/log";
-import { Roster } from "@c4dt/cothority/network";
+import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
+import { Signer, SignerEd25519 } from "@dedis/cothority/darc";
+import Darc from "@dedis/cothority/darc/darc";
+import Log from "@dedis/cothority/log";
+import { Roster } from "@dedis/cothority/network";
 import Long from "long";
 import { Data } from "./Data";
 import { Private } from "./KeyPair";

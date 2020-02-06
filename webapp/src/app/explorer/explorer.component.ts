@@ -1,10 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import CoinInstance from "@c4dt/cothority/byzcoin/contracts/coin-instance";
-import DarcInstance from "@c4dt/cothority/byzcoin/contracts/darc-instance";
-import Log from "@c4dt/cothority/log";
-import CredentialsInstance from "@c4dt/cothority/personhood/credentials-instance";
 import { Contact } from "@c4dt/dynacred";
+import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
+import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+import Log from "@dedis/cothority/log";
+import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import { UserData } from "src/app/user-data.service";
 
 @Component({
