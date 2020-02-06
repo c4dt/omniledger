@@ -1,7 +1,7 @@
 import {Log} from "@dedis/cothority";
 
 import {HistoryObs} from "spec/support/historyObs";
-import {BCTestEnv} from "spec/support/itest";
+import {BCTestEnv} from "spec/simul/itest";
 
 describe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;

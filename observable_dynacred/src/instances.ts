@@ -9,7 +9,7 @@ type InstanceID = byzcoin.InstanceID;
 type SkipBlock = skipchain.SkipBlock;
 type StateChangeBody = byzcoin.StateChangeBody;
 
-import {configInstanceID, IByzCoinProof, IDataBase} from "src/basics";
+import {configInstanceID, IByzCoinProof, IDataBase} from "src/interfaces";
 
 export interface IInstance {
     key: InstanceID;

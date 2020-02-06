@@ -6,7 +6,7 @@ import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {byzcoin, darc, Log} from "@dedis/cothority";
 
 import {Instances} from "src/instances";
-import {IByzCoinAddTransaction} from "src/basics";
+import {IByzCoinAddTransaction} from "src/interfaces";
 
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type InstanceID = byzcoin.InstanceID;
@@ -18,8 +18,15 @@ export const ed25519 = new curve.edwards25519.Curve();
 export enum EAttributes {
     alias = "1-public:alias",
     email = "1-public:email",
-    coinID = "1-public:coinID",
-    contacts = "1-public:contactsBuf"
+    coinID = "1-public:coin",
+    contacts = "1-public:contactsBuf",
+    version = "1-public:version",
+    structVersion = "1-public:structVersion",
+    seed = "1-public:seedPub",
+    spawner = "1-public:spawner",
+    ltsID = "1-config:ltsID",
+    ltsX = "1-config:ltsX",
+    devInitial = "1-devices:initial"
 }
 
 export interface IUpdateCredential {

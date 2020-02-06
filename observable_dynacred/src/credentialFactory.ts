@@ -1,11 +1,11 @@
 import {curve, Point, Scalar} from "@dedis/kyber";
-import {byzcoin, calypso, darc, personhood} from "@dedis/cothority";
+import {byzcoin, calypso, darc} from "@dedis/cothority";
 import Long = require("long");
 import {randomBytes} from "crypto";
 
-import {IGenesisDarc, ISpawner, IUser} from "src/basics";
 import {Credentials} from "src/credentials";
 import {KeyPair} from "src/keypair";
+import {IGenesisDarc, ISpawner, IUser} from "spec/simul/itest";
 
 const {Darc} = darc;
 const {Coin, CoinInstance, CredentialsInstance, CredentialStruct, SpawnerStruct, SPAWNER_COIN} = byzcoin.contracts;
@@ -70,8 +70,8 @@ export class CredentialFactory {
         return CoinInstance.coinIID(pub.marshalBinary());
     }
 
-    public static credID(d: Darc): InstanceID{
-        return CredentialsInstance.credentialIID(d.getBaseID());
+    public static credID(pub: Point): InstanceID{
+        return CredentialsInstance.credentialIID(pub.marshalBinary());
     }
 
     public static prepareInitialCred(alias: string, pub: Point, spawner?: byzcoin.InstanceID, deviceDarcID?: byzcoin.InstanceID,
@@ -113,7 +113,7 @@ export class CredentialFactory {
 
         return {
             keyPair, cred, darcDevice, darcSign, darcCred, darcCoin, coin,
-            credID: this.credID(darcCred), coinID: this.coinID(keyPair.pub)
+            credID: this.credID(keyPair.pub), coinID: this.coinID(keyPair.pub)
         };
     }
 }

@@ -3,8 +3,8 @@ import {EAttributes} from "../src/credentials";
 import {byzcoin, Log} from "@dedis/cothority";
 import {Instances} from "../src/instances";
 import {HistoryObs} from "spec/support/historyObs";
-import {BCTestEnv} from "spec/support/itest";
-import {ByzCoinSimul} from "spec/support/byzcoinSimul";
+import {BCTestEnv} from "spec/simul/itest";
+import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 
 const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
 const {ClientTransaction, Instruction, Argument} = byzcoin;

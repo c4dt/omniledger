@@ -822,7 +822,7 @@ export class Data {
         const darcDeviceId = new IdentityDarc({id: darcDevice.getBaseID()});
         const darcSign = Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new IdentityDarc({id: darcSign.getBaseID()});
-        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from("credentialObservable.ts"),
+        const darcCred = Darc.createBasic([], [darcSignId], Buffer.from("credential"),
             ["invoke:" + CredentialInstance.contractID + ".update"]);
         const rules = [CoinInstance.commandTransfer, CoinInstance.commandFetch,
             CoinInstance.commandStore].map((inv) => sprintf("invoke:%s.%s", CoinInstance.contractID, inv));

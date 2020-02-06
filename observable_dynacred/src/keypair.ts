@@ -15,7 +15,15 @@ export class KeyPair {
         return KeyPair.fromPrivate(priv);
     }
 
-    public static fromPrivate(priv: Scalar): KeyPair {
+    public static fromPrivate(priv: Scalar | Buffer): KeyPair {
+        if (priv instanceof Buffer) {
+            if (priv.length !== ed25519.scalarLen()){
+                throw new Error("private key must be of length " + ed25519.scalarLen());
+            }
+            const privBuf = priv;
+            priv = ed25519.scalar();
+            priv.unmarshalBinary(privBuf);
+        }
         const pub = ed25519.point().mul(priv);
         return new KeyPair(priv, pub);
     }

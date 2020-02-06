@@ -316,8 +316,8 @@ export class Contact {
 
     static fromObject(obj: any): Contact {
         const u = new Contact();
-        if (obj.credentialObservable) {
-            u.credential = CredentialStruct.decode(Buffer.from(obj.credentialObservable));
+        if (obj.credential) {
+            u.credential = CredentialStruct.decode(Buffer.from(obj.credential));
         }
         if (obj.calypso) {
             u.calypso = Calypso.fromObject(u, obj.calypso);
