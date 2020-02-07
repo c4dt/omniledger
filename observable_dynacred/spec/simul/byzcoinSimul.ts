@@ -1,6 +1,6 @@
 // tslint:disable:max-classes-per-file
 
-import {Subject} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import Long = require("long");
 import {byzcoin, darc, Log, personhood, skipchain} from "@dedis/cothority";
 const {SkipBlock} = skipchain;
@@ -14,11 +14,12 @@ type ClientTransaction = byzcoin.ClientTransaction;
 
 import {IInstance, IProof, newIInstance} from "src/instances";
 import {
-    IByzCoinAddTransaction,
+    IByzCoinAddTransaction, IByzCoinBlockStreamer,
     IByzCoinProof
 } from "src/interfaces";
 
-import {ITest, IUser} from "spec/simul/itest";
+import {ITest} from "spec/simul/itest";
+import {IUser} from "src/credentialFactory";
 
 class SimulProof {
     public latest: skipchain.SkipBlock;
@@ -39,7 +40,7 @@ class SimulProof {
     }
 }
 
-export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
+export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByzCoinBlockStreamer {
     public static configInstanceID: InstanceID = Buffer.alloc(32);
 
     // getProofObserver is used by the tests to check whether a proof is
@@ -130,6 +131,10 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction {
     }
     public getNextCounter(signer: IIdentity): Long{
         return Long.fromNumber(1);
+    }
+
+    getNewBlocks(): Subject<skipchain.SkipBlock> {
+        throw new Error("not yet implemented");
     }
 }
 

@@ -1,7 +1,7 @@
-import {byzcoin, darc, Log} from "@dedis/cothority";
+import {byzcoin, darc, Log, network} from "@dedis/cothority";
 
 import {
-    IByzCoinAddTransaction,
+    IByzCoinAddTransaction, IByzCoinBlockStreamer,
     IByzCoinProof,
     IDataBase
 } from "src/interfaces";
@@ -29,9 +29,10 @@ export interface ITest {
     genesisUser: IGenesisDarc;
     spawner: ISpawner;
     user: IUser;
+    roster: network.Roster;
 }
 
-export interface BCTest extends IByzCoinProof, IByzCoinAddTransaction {
+export interface BCTest extends IByzCoinProof, IByzCoinAddTransaction, IByzCoinBlockStreamer {
     storeUser(user: IUser): Promise<void>;
 }
 
@@ -45,7 +46,7 @@ export class BCTestEnv {
         public db: IDataBase,
         public inst: Instances,
         public test: ITest,
-        public user: User,
+        public user: User
     ) {
     }
 
@@ -68,8 +69,7 @@ export class BCTestEnv {
     static async real(): Promise<BCTestEnv> {
         return this.fromScratch(async (test, db) => {
             // await startConodes();
-            const roster = ROSTER.slice(0, 4);
-            return ByzCoinReal.fromScratch(roster, test, db);
+            return ByzCoinReal.fromScratch(test.roster, test, db);
         });
     }
 
@@ -82,7 +82,7 @@ export class BCTestEnv {
 
         await db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
         await db.set(User.keyCredID, user.credID || Buffer.alloc(32));
-        return {genesisUser, spawner, user};
+        return {genesisUser, spawner, user, roster: ROSTER.slice(0, 4)};
     }
 
     async newCred(alias: string): Promise<TestUser>{

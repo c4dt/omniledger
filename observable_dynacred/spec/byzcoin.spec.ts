@@ -1,7 +1,9 @@
-import {Log} from "@dedis/cothority";
+import {byzcoin, Log, network} from "@dedis/cothority";
 
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
+import {configInstanceID} from "src/interfaces";
+import {EAttributes} from "src/credentials";
 
 describe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;
@@ -32,4 +34,21 @@ describe("using real byzcoin, it should", () => {
 
         await history.resolve(["newContact:alias2"]);
     });
+
+    fit("should listen for new blocks", async () => {
+        const history = new HistoryObs();
+        bcTestEnv.bc.getNewBlocks().subscribe(
+            {
+                next: (b) => {
+                    history.push("block");
+                }
+            }
+        );
+        await bcTestEnv.user.credential.updateCredentials(bcTestEnv.bc, bcTestEnv.user.kp.priv,
+            {name: EAttributes.email, value: "as@as.as"});
+        await history.resolve(["block"]);
+        await bcTestEnv.user.credential.updateCredentials(bcTestEnv.bc, bcTestEnv.user.kp.priv,
+            {name: EAttributes.email, value: "as@as.as"});
+        await history.resolve(["block"]);
+    })
 });

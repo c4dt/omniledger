@@ -1,14 +1,16 @@
 import {IProof} from "src/instances";
 import {
     IByzCoinAddTransaction,
+    IByzCoinBlockStreamer,
     IByzCoinProof,
     IDataBase
 } from "src/interfaces";
 import {ITest} from "spec/simul/itest";
-import {byzcoin, darc, Log, network} from "@dedis/cothority";
+import {byzcoin, darc, Log, network, skipchain} from "@dedis/cothority";
 import Long from "long";
 import {User} from "src/user";
 import {IUser} from "src/credentialFactory";
+import {Subject} from "rxjs";
 
 
 type IIdentity = darc.IIdentity;
@@ -22,7 +24,7 @@ const {
 } = byzcoin;
 const {SignerEd25519} = darc;
 
-export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
+export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction, IByzCoinBlockStreamer {
 
     constructor(private bc: byzcoin.ByzCoinRPC, private it: ITest) {
     }
@@ -80,7 +82,7 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
         Log.lvl3("Spawning credential");
         const credInst = await si.spawnCredential(ci,
             signer, user.darcCred.getBaseID(), user.cred, user.keyPair.pub.marshalBinary());
-        if (!user.credID.equals(credInst.id)){
+        if (!user.credID.equals(credInst.id)) {
             throw new Error("resulting credID doesn't match");
         }
     }
@@ -95,6 +97,10 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction {
 
     public getNextCounter(signer: IIdentity): Long {
         return this.bc.getNextCounter(signer);
+    }
+
+    getNewBlocks(): Subject<skipchain.SkipBlock> {
+        return this.bc.getNewBlocks();
     }
 
     async storeSpawner() {

@@ -1,6 +1,7 @@
 import {IProof} from "./instances";
-import {byzcoin, darc} from "@dedis/cothority";
+import {byzcoin, darc, skipchain} from "@dedis/cothority";
 import Long from "long";
+import {Subject} from "rxjs";
 
 type IIdentity = darc.IIdentity;
 type InstanceID = byzcoin.InstanceID;
@@ -15,6 +16,10 @@ export interface IByzCoinAddTransaction {
     getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>;
     updateCachedCounters(signers: IIdentity[]): Promise<Long[]>;
     getNextCounter(signer: IIdentity): Long;
+}
+
+export interface IByzCoinBlockStreamer {
+    getNewBlocks(): Subject<skipchain.SkipBlock>;
 }
 
 export interface IDataBase {
