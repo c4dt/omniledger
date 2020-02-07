@@ -5,8 +5,9 @@ import {first} from "rxjs/internal/operators/first";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {byzcoin, darc, Log} from "@dedis/cothority";
 
-import {Instances} from "src/instances";
-import {IByzCoinAddTransaction} from "src/interfaces";
+import {Instances} from "./instances";
+import {IByzCoinAddTransaction} from "./interfaces";
+import {filter} from "rxjs/internal/operators/filter";
 
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type InstanceID = byzcoin.InstanceID;
@@ -45,7 +46,7 @@ export class Credentials {
     private contactsCache = new Map<string, Subject<Credentials>>();
 
     constructor(private inst: Instances, public readonly id: InstanceID,
-                private cred: Subject<CredentialStruct>) {
+                private cred: Subject<byzcoin.contracts.CredentialStruct>) {
     }
 
     public static async fromScratch(inst: Instances, id: InstanceID): Promise<Credentials> {
@@ -68,7 +69,8 @@ export class Credentials {
                 const fields = name.split(":");
                 return cred.getAttribute(fields[0], fields[1]) || Buffer.alloc(0);
             }),
-            distinctUntilChanged((a, b) => a.equals(b)))
+            distinctUntilChanged((a, b) => a.equals(b)),
+            filter((a)=>{Log.print("new", a); return true;}))
             .subscribe(newBS);
         this.attributeCache.set(name, newBS);
         return newBS;
@@ -155,7 +157,7 @@ export class Credentials {
             );
             const signer = [[new SignerEd25519(ed25519.point().mul(priv), priv)]];
             await ctx.updateCountersAndSign(bc, signer);
-            await bc.addTransaction(ctx);
+            await bc.sendTransactionAndWait(ctx);
             await this.inst.reload();
         });
     }

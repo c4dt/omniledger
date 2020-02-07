@@ -2,14 +2,13 @@ import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {distinctUntilChanged} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
-import Long = require("long");
+import Long from "long";
 import {byzcoin, Log, skipchain} from "@dedis/cothority";
+import {configInstanceID, IByzCoinProof, IDataBase} from "./interfaces";
 
 type InstanceID = byzcoin.InstanceID;
 type SkipBlock = skipchain.SkipBlock;
 type StateChangeBody = byzcoin.StateChangeBody;
-
-import {configInstanceID, IByzCoinProof, IDataBase} from "src/interfaces";
 
 export interface IInstance {
     key: InstanceID;
@@ -91,10 +90,10 @@ export class Instances {
             .pipe(
                 filter((v) => !v.equals(lastBlock)),
                 mergeMap((v) => this.getInstanceFromChain(id)))
-            .subscribe({next: (inst) => bsNew.next(inst)});
+            .subscribe(bsNew);
         this.cache.set(id, bsNew);
         return bsNew.pipe(
-            distinctUntilChanged((a, b) => a.version.equals(b.version))
+            distinctUntilChanged((a, b) =>a.version.equals(b.version))
         );
     }
 

@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "New dynacred library based on observables, as everything can change",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "test": "ts-node -r tsconfig-paths/register node_modules/jasmine/bin/jasmine"
   },
   "keywords": [

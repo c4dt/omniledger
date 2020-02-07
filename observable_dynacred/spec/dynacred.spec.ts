@@ -72,7 +72,7 @@ describe("pony-world example", () => {
 
         Log.lvl2("Changing the config-instance, new instances object should" +
             " request proof for new instance");
-        await bc.addTransaction(new ClientTransaction({
+        await bc.sendTransactionAndWait(new ClientTransaction({
             instructions: [
                 Instruction.createInvoke(user.id, CredentialsInstance.contractID,
                     CredentialsInstance.commandUpdate, [
