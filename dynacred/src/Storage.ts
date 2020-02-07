@@ -1,6 +1,7 @@
 import Log from "@dedis/cothority/log";
 import { Buffer } from "buffer";
 import Dexie from "dexie";
+import Long from "long";
 
 export interface IStorage {
     set(key: string, buffer: string);
@@ -40,6 +41,8 @@ export class StorageDB {
             return JSON.parse(d, (key, value) => {
                 if (value && typeof value === "object" && value.type === "Buffer") {
                     return Buffer.from(value);
+                } else if (value.low !== undefined && value.high !== undefined) {
+                    return Long.fromValue(value);
                 }
                 return value;
             });
