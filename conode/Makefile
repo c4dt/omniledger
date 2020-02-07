@@ -44,8 +44,7 @@ $(WEBAPP_ASSET): variables.txt build/conodes/public.toml
 	 echo >> $@
 	 cat $(lastword $^) >> $@
 
-docker_run: docker $(WEBAPP_ASSET)
-	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+docker_run: docker $(WEBAPP_ASSET) docker_start
 
 docker_run_travis: docker
 	docker run --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
@@ -60,7 +59,7 @@ docker_stop:
 	docker stop $(IMAGE_NAME)
 
 docker_start:
-	docker start $(IMAGE_NAME)
+	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
