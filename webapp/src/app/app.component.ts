@@ -65,7 +65,7 @@ export class AppComponent implements OnInit {
             return this.newUser();
         } else {
             try {
-                this.logAppend("Loading data", 90);
+                this.logAppend("Loading data", 80);
                 await this.uData.load();
                 const signerDarc = await this.uData.contact.getDarcSignIdentity();
                 const rules = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, signerDarc.id,
@@ -77,6 +77,8 @@ export class AppComponent implements OnInit {
                         " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();
                 }
+                this.logAppend("Loading Observable User", 90);
+                await this.uData.loadUser();
                 this.logAppend("Done", 100);
                 this.loading = false;
             } catch (e) {

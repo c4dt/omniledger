@@ -1,9 +1,15 @@
-import { Component, Inject } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { Data, TProgress } from "@c4dt/dynacred";
+import {Component, Inject} from "@angular/core";
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogRef
+} from "@angular/material/dialog";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {Data, TProgress} from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
-import { DialogTransactionComponent } from "./dialog-transaction";
+import {DialogTransactionComponent} from "./dialog-transaction";
+import {IUpdateCredential} from "observable_dynacred/build/credentials";
+import {UserData} from "src/app/user-data.service";
 
 /**
  * Shows a simple snack-message at the bottom of the screen. The message is informative
@@ -44,9 +50,18 @@ export async function showSnack(snack: MatSnackBar, text: string, cmd: () => voi
  * @param buttons can override the text of the OKButton ("OK") or the CancelButton ("Cancel")
  */
 export async function showDialogOKC(dialog: MatDialog, title: string, text: string,
-                                    buttons: IDialogOKCButtons = {OKButton: "OK", CancelButton: "Cancel"}):
+                                    buttons: IDialogOKCButtons = {
+                                        OKButton: "OK",
+                                        CancelButton: "Cancel"
+                                    }):
     Promise<boolean> {
-    const tc = dialog.open(DialogOKCancelComponent, {data: {Title: title, Text: text, Buttons: buttons}});
+    const tc = dialog.open(DialogOKCancelComponent, {
+        data: {
+            Title: title,
+            Text: text,
+            Buttons: buttons
+        }
+    });
     return new Promise((resolve) => tc.afterClosed().subscribe((result) => resolve(result)));
 }
 
@@ -81,6 +96,23 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
     return showTransactions(dialog, title, async (progress: TProgress) => {
         progress(50, "Storing Credential");
         await uData.save();
+    });
+}
+
+/**
+ * Convenience method for showTransactions that only shows one progress step: "Storing Credential".
+ *
+ * @param dialog reference to the matDialog
+ * @param title shown in h1 in the dialog
+ * @param store the callback to the actual storing of the credential.
+ */
+export async function storeUserCredential(dialog: MatDialog, title: string, uData: UserData,
+                                          ...cred: IUpdateCredential[]) {
+    Log.print("suc");
+    return showTransactions(dialog, title, async (progress: TProgress) => {
+        progress(50, "Storing Credential");
+        await uData.user.credential.updateCredentials(uData.bc as any, uData.user.kp.priv,
+            ...cred);
     });
 }
 

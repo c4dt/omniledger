@@ -29,6 +29,9 @@
       "@c4dt/kyber/*": [
         "src/lib/kyber/*",
         "node_modules/@c4dt/kyber/*"
+      ],
+      "observable_dynacred": [
+        "../observable_dynacred/src"
       ]
     }
   }

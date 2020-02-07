@@ -6,10 +6,11 @@ import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 import Log from "@dedis/cothority/log";
 
 import { Config, Data, StorageDB } from "@c4dt/dynacred";
-import { IConnection, RosterWSConnection } from "@dedis/cothority/network/connection";
+import { RosterWSConnection } from "@dedis/cothority/network/connection";
 import { SkipBlock, SkipchainRPC } from "@dedis/cothority/skipchain";
 import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
+import {Instances, User} from "observable_dynacred";
 
 @Injectable({
     providedIn: "root",
@@ -22,7 +23,8 @@ import StatusRPC from "@dedis/cothority/status/status-rpc";
 export class UserData extends Data {
     bc: ByzCoinRPC;
     config: Config;
-    conn: IConnection;
+    conn: RosterWSConnection;
+    user: User;
     private readonly storageKeyLatest = "latest_skipblock";
     // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
     // this will be updated.
@@ -64,6 +66,8 @@ export class UserData extends Data {
                 Log.lvl2("couldn't get block 0x6000", e);
             }
         }
+        Log.print("Loading byzcoin", this.config.byzCoinID, latest.genesis);
+        latest = undefined;
         this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
         this.storage.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()).toString("hex"));
@@ -79,7 +83,43 @@ export class UserData extends Data {
         this.setValues(values);
         await this.connectByzcoin();
     }
+
+    async loadUser() {
+        try {
+            Log.print("loading user");
+            const db = new DataBaseDB();
+            const inst = await Instances.fromScratch(db, this.bc as any);
+            this.user = await User.load(db, inst);
+            Log.print("loaded user", this.user);
+        } catch(e) {
+            Log.catch(e);
+        }
+    }
 }
 
 // @ts-ignore
 global.UserData = UserData;
+
+export class DataBaseDB {
+    async get(key: string): Promise<Buffer | undefined> {
+        const val = await StorageDB.get(key);
+        Log.print("val is:", val);
+        if (val === undefined || val === null) {
+            return undefined;
+        }
+        return Buffer.from(val);
+    }
+
+    getObject<T>(key: string): Promise<T | undefined> {
+        return StorageDB.getObject(key);
+    }
+
+    async set(key: string, value: Buffer): Promise<void> {
+        await StorageDB.set(key, value.toString());
+        return;
+    }
+
+    setObject<T>(key: string, obj: T): Promise<void> {
+        return StorageDB.putObject(key, obj);
+    }
+}
