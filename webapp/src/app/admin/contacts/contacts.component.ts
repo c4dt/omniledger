@@ -20,7 +20,6 @@ import CredentialsInstance from "@dedis/cothority/personhood/credentials-instanc
 import { Contact, Data, FileBlob, Private, TProgress } from "@c4dt/dynacred";
 
 import { showDialogInfo, showSnack, showTransactions, storeCredential } from "../../../lib/Ui";
-import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
 import { ShowComponent } from "../devices/devices.component";
 import { ManageDarcComponent } from "../manage-darc";
@@ -40,7 +39,6 @@ export class ContactsComponent implements OnInit {
     constructor(
         protected dialog: MatDialog,
         private snackBar: MatSnackBar,
-        private bcvs: BcviewerService,
         private location: Location,
         public uData: UserData,
     ) {
@@ -273,7 +271,7 @@ export class ContactsComponent implements OnInit {
             async (progress: TProgress) => {
                 await c.updateOrConnect(this.uData.bc);
                 progress(33, "searching new calypso");
-                const sds = await this.uData.contact.calypso.read(c);
+                await this.uData.contact.calypso.read(c);
                 progress(66, "Storing credential");
                 await this.uData.save();
                 progress(90, "Updating Calypso");

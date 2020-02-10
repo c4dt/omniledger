@@ -7,7 +7,6 @@ import Log from "@dedis/cothority/log";
 
 import { showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
-import { BcviewerService } from "./bcviewer/bcviewer.component";
 import { UserData } from "./user-data.service";
 
 @Component({
@@ -27,7 +26,6 @@ export class AppComponent implements OnInit {
     constructor(
         private router: Router,
         private dialog: MatDialog,
-        private bcs: BcviewerService,
         private uData: UserData,
     ) {
     }

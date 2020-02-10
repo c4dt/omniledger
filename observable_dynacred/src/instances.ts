@@ -10,6 +10,7 @@ import {
     IByzCoinProof,
     IDataBase
 } from "./interfaces";
+import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 
 type InstanceID = byzcoin.InstanceID;
 type SkipBlock = skipchain.SkipBlock;
@@ -65,7 +66,7 @@ export class Instances {
         if (blockIndexBuf !== undefined) {
             blockIndex = Long.fromBytes(Array.from(blockIndexBuf));
         } else {
-            const p = await bc.getProof(configInstanceID);
+            const p = await bc.getProofFromLatest(configInstanceID);
             blockIndex = Long.fromNumber(p.latest.index);
         }
         const newBlock = new BehaviorSubject(blockIndex);
@@ -97,8 +98,8 @@ export class Instances {
         this.newBlock
             .pipe(
                 filter((v) => !v.equals(lastBlock)),
-                filter(() => {Log.print("newBlock for", id); return true;}),
-                mergeMap((v) => this.getInstanceFromChain(id)))
+                mergeMap((v) => this.getInstanceFromChain(id))
+            )
             .subscribe(bsNew);
         this.cache.set(id, bsNew);
         return bsNew.pipe(
@@ -112,7 +113,7 @@ export class Instances {
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
         Log.lvl3("get instance", id);
-        const p = await this.bc.getProof(id);
+        const p = await this.bc.getProofFromLatest(id);
         if (!p.exists(id)) {
             throw new Error("didn't find instance in cache or on chain");
         }

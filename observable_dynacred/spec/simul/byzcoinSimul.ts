@@ -88,7 +88,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
         this.blocks.addBlock();
     }
 
-    public async getProof(id: InstanceID): Promise<IProof> {
+    public async getProofFromLatest(id: InstanceID): Promise<IProof> {
         Log.lvl3("Getting proof for", id);
         // Have some delay to mimic network setup.
         await new Promise(resolve => setTimeout(resolve, 5));

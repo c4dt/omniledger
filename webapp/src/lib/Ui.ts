@@ -10,8 +10,7 @@ import Log from "@dedis/cothority/log";
 import {DialogTransactionComponent} from "./dialog-transaction";
 import {IUpdateCredential} from "observable_dynacred";
 import {UserData} from "src/app/user-data.service";
-import {pairs} from "rxjs";
-import {count, pairwise} from "rxjs/operators";
+import {elementAt, pairwise, take} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
 
 /**
@@ -107,20 +106,19 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
  *
  * @param dialog reference to the matDialog
  * @param title shown in h1 in the dialog
- * @param store the callback to the actual storing of the credential.
+ * @param uData reference to the UserData service
+ * @param cred updates to the credential
  */
 export async function storeUserCredential(dialog: MatDialog, title: string, uData: UserData,
                                           ...cred: IUpdateCredential[]) {
     return showTransactions(dialog, title, async (progress: TProgress) => {
-        Log.print("storing creds");
         const obs = await uData.inst.instanceObservable(uData.user.id);
         progress(50, "Storing Credential");
-        Log.print("storing cred");
         await uData.user.credential.updateCredentials(uData.bc as any, uData.user.kp.priv,
             ...cred);
-        Log.print("stored cred");
-        await obs.pipe(pairwise(),first()).toPromise();
-        Log.print("got instance from observer");
+        // Take the second, as the instanceObservable always returns the
+        // currently available instance.
+        await obs.pipe(elementAt(1)).toPromise();
     });
 }
 

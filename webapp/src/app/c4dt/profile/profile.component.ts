@@ -5,7 +5,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {Router} from "@angular/router";
 
 import {storeCredential, storeUserCredential} from "../../../lib/Ui";
-import {BcviewerService} from "../../bcviewer/bcviewer.component";
 import {UserData} from "../../user-data.service";
 import Log from "@dedis/cothority/log";
 import {EAttributes} from "observable_dynacred";
@@ -20,7 +19,6 @@ export class ProfileComponent implements OnInit {
     constructor(private snack: MatSnackBar,
                 private router: Router,
                 private dialog: MatDialog,
-                private bcs: BcviewerService,
                 private uData: UserData) {
         this.contactForm = new FormGroup({
             alias: new FormControl("loading"),

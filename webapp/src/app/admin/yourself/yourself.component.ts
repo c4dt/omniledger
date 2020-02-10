@@ -7,7 +7,6 @@ import { Router } from "@angular/router";
 import { Data } from "@c4dt/dynacred";
 
 import { showSnack, storeCredential } from "../../../lib/Ui";
-import { BcviewerService } from "../../bcviewer/bcviewer.component";
 import { UserData } from "../../user-data.service";
 
 @Component({
@@ -21,7 +20,6 @@ export class YourselfComponent implements OnInit {
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
                 private router: Router,
-                private bcs: BcviewerService,
                 public uData: UserData) {
     }
 

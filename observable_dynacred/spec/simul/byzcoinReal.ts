@@ -47,7 +47,7 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction, IByzC
         return bc;
     }
 
-    async getProof(inst: InstanceID): Promise<IProof> {
+    async getProofFromLatest(inst: InstanceID): Promise<IProof> {
         return this.bc.getProof(inst);
     }
 

@@ -1,9 +1,19 @@
 import Timer = NodeJS.Timer;
-import { Component, ElementRef, Inject, OnInit, Renderer2, ViewChild } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { BcviewerService } from "../app/bcviewer/bcviewer.component";
-import { TWorker } from "./Ui";
+import {
+    AfterViewInit,
+    Component,
+    ElementRef,
+    Inject,
+    OnInit,
+    Renderer2,
+    ViewChild
+} from "@angular/core";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {TWorker} from "./Ui";
 import Log from "@dedis/cothority/log";
+import {UserData} from "src/app/user-data.service";
+import {map, startWith} from "rxjs/operators";
+import {Subscription} from "rxjs";
 
 export interface IDialogTransactionConfig<T> {
     title: string;
@@ -15,71 +25,55 @@ export interface IDialogTransactionConfig<T> {
     styleUrls: ["./dialog-transaction.scss"],
     templateUrl: "dialog-transaction.html",
 })
-export class DialogTransactionComponent<T> implements OnInit {
+export class DialogTransactionComponent<T> implements AfterViewInit {
 
     percentage: number = 0;
-    blockIndex: number;
     text: string;
     error: Error | undefined;
 
     private blocks: Element[] = [];
     private transaction: Element;
+    private ub: Subscription;
     @ViewChild("main", {static: false}) private main?: ElementRef;
-    private ubTimer: Timer;
 
     constructor(
+        private uData: UserData,
         readonly dialogRef: MatDialogRef<DialogTransactionComponent<T>>,
-        private readonly bcv: BcviewerService,
         private readonly renderer: Renderer2,
         @Inject(MAT_DIALOG_DATA) public data: IDialogTransactionConfig<T>) {
     }
 
-    async ngOnInit() {
-        this.updateBlocks();
-        if (!this.bcv.currentBlock) {
-            await new Promise((resolve) => {
-                this.bcv.newStatus.subscribe(() => {
-                    resolve();
-                });
-            });
-        }
-        this.ubTimer = setInterval(() => this.updateBlocks(), 500);
-        setTimeout(() => this.startTransactions(), 200);
+    async ngAfterViewInit() {
+        const last = this.uData.bc.latest.index;
+        this.ub = this.uData.bc.getNewBlocks().pipe(
+            map((block) => block.index),
+            startWith(last - 3, last - 2, last - 1, last),
+        ).subscribe((nb) => this.updateBlocks(nb));
     }
 
-    updateBlocks() {
-        if (this.bcv.currentBlock &&
-            this.blockIndex < this.bcv.currentBlock.index) {
-            this.blockIndex = this.bcv.currentBlock.index;
-            this.addBlock();
+    updateBlocks(index: number) {
+        if (this.blocks.length === 3) {
+            this.startTransactions();
         }
+        this.addBlock(index);
     }
 
     async startTransactions() {
-        this.blockIndex = this.bcv.currentBlock.index;
-        for (let i = -2; i <= 0; i++) {
-            this.addBlock(this.blockIndex + i);
-        }
         const prog = (p: number, t: string) => this.progress(p, t);
         try {
             const result = await this.data.worker(prog);
             prog(-100, "Done");
-            clearTimeout(this.ubTimer);
-            this.blockIndex++;
-            this.addBlock();
+            this.ub.unsubscribe();
             setTimeout(() => {
                 this.dialogRef.close(result);
             }, 1000);
         } catch (e) {
-            clearTimeout(this.ubTimer);
+            this.ub.unsubscribe();
             this.error = e;
         }
     }
 
-    addBlock(index: number = this.blockIndex): Element {
-        if (!this.main) {
-            return undefined;
-        }
+    addBlock(index: number): Element {
         const block = this.renderer.createElement("DIV");
         const txt = this.renderer.createText(index.toString());
         block.appendChild(txt);
@@ -104,10 +98,6 @@ export class DialogTransactionComponent<T> implements OnInit {
     }
 
     addTransaction(text: string) {
-        if (this.transaction) {
-            this.blockIndex++;
-            this.addBlock();
-        }
         this.transaction = this.renderer.createElement("DIV");
         const txt = this.renderer.createText(text);
         this.transaction.appendChild(txt);

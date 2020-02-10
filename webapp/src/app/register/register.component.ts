@@ -8,7 +8,6 @@ import { Data, Private, StorageDB, TProgress } from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 
 import { showDialogOKC, showTransactions } from "../../lib/Ui";
-import { BcviewerService } from "../bcviewer/bcviewer.component";
 import { UserData } from "../user-data.service";
 
 @Component({
@@ -26,7 +25,6 @@ export class RegisterComponent implements OnInit {
                 private dialog: MatDialog,
                 private route: ActivatedRoute,
                 private snack: MatSnackBar,
-                private bcs: BcviewerService,
                 private uData: UserData) {
     }
 

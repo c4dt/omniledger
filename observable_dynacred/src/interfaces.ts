@@ -8,7 +8,7 @@ type InstanceID = byzcoin.InstanceID;
 type ClientTransaction = byzcoin.ClientTransaction;
 
 export interface IByzCoinProof {
-    getProof(inst: InstanceID): Promise<IProof>;
+    getProofFromLatest(inst: InstanceID): Promise<IProof>;
 }
 
 export interface IByzCoinAddTransaction {

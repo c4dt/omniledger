@@ -1,11 +1,4 @@
-import {
-    Component,
-    EventEmitter,
-    Inject,
-    Injectable,
-    OnInit,
-    Output
-} from "@angular/core";
+import {Component, Inject, OnInit} from "@angular/core";
 import {
     MAT_DIALOG_DATA,
     MatDialog,
@@ -24,16 +17,6 @@ import CredentialsInstance, {CredentialStruct} from "@dedis/cothority/personhood
 import {ForwardLink, SkipBlock} from "@dedis/cothority/skipchain";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
 import {UserData} from "../user-data.service";
-import Log from "@dedis/cothority/log";
-
-@Injectable({
-    providedIn: "root",
-})
-export class BcviewerService {
-
-    @Output() newStatus: EventEmitter<void> = new EventEmitter();
-    currentBlock: SkipBlock;
-}
 
 @Component({
     selector: "app-bcviewer",
@@ -44,8 +27,7 @@ export class BcviewerComponent implements OnInit {
     scRPC: SkipchainRPC;
     blocks: BCBlock[] = [];
 
-    constructor(private showBlockService: BcviewerService,
-                private dialog: MatDialog,
+    constructor(private dialog: MatDialog,
                 private uData: UserData) {
     }
 
@@ -54,8 +36,6 @@ export class BcviewerComponent implements OnInit {
         if (this.blocks.length > 4) {
             this.blocks.splice(0, this.blocks.length - 4);
         }
-        this.showBlockService.currentBlock = this.blocks[this.blocks.length - 1].sb;
-        this.showBlockService.newStatus.emit();
     }
 
     async showBlock(block: BCBlock) {

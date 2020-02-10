@@ -157,8 +157,6 @@ export class Credentials {
             const signer = [[new SignerEd25519(ed25519.point().mul(priv), priv)]];
             await ctx.updateCountersAndSign(bc, signer);
             await bc.sendTransactionAndWait(ctx);
-            Log.print("tx sent and got new");
-            // await this.inst.reload();
         });
     }
 
