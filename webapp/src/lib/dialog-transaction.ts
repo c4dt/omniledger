@@ -37,7 +37,6 @@ export class DialogTransactionComponent<T> implements OnInit {
     async ngOnInit() {
         this.updateBlocks();
         if (!this.bcv.currentBlock) {
-            Log.print("waiting for first block");
             await new Promise((resolve) => {
                 this.bcv.newStatus.subscribe(() => {
                     resolve();
@@ -49,7 +48,6 @@ export class DialogTransactionComponent<T> implements OnInit {
     }
 
     updateBlocks() {
-        Log.print("updating blocks", this.bcv.currentBlock);
         if (this.bcv.currentBlock &&
             this.blockIndex < this.bcv.currentBlock.index) {
             this.blockIndex = this.bcv.currentBlock.index;
@@ -79,7 +77,6 @@ export class DialogTransactionComponent<T> implements OnInit {
     }
 
     addBlock(index: number = this.blockIndex): Element {
-        Log.print()
         if (!this.main) {
             return undefined;
         }

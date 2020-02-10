@@ -30,18 +30,14 @@ export class ProfileComponent implements OnInit {
 
     ngOnInit() {
         this.uData.user.credential.aliasObservable().subscribe((alias) => {
-            Log.print("new alias", alias);
             this.contactForm.patchValue({alias: alias});
         });
         this.uData.user.credential.emailObservable().subscribe((email) => {
-            Log.print("new email", email);
             this.contactForm.patchValue({email: email});
         });
     }
 
     async updateContact() {
-        Log.print("uc");
-        Log.print(this.uData);
         await storeUserCredential(this.dialog, "Updating user User Data", this.uData,
             {
                 name: EAttributes.alias,

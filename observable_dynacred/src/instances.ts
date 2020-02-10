@@ -97,6 +97,7 @@ export class Instances {
         this.newBlock
             .pipe(
                 filter((v) => !v.equals(lastBlock)),
+                filter(() => {Log.print("newBlock for", id); return true;}),
                 mergeMap((v) => this.getInstanceFromChain(id)))
             .subscribe(bsNew);
         this.cache.set(id, bsNew);

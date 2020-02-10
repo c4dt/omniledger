@@ -31,7 +31,6 @@ import Log from "@dedis/cothority/log";
 })
 export class BcviewerService {
 
-    @Output() update: EventEmitter<void> = new EventEmitter();
     @Output() newStatus: EventEmitter<void> = new EventEmitter();
     currentBlock: SkipBlock;
 }

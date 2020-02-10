@@ -42,7 +42,6 @@ export class User {
     public static async migrate(db: IDataBase, inst: Instances): Promise<User | undefined> {
         try {
             const migrate: IMigrate | undefined = await db.getObject(this.keyMigrate);
-            Log.print("migrate is:", migrate);
             if (migrate && migrate.version === this.versionMigrate) {
                 // Just suppose everything is here and let it fail otherwise.
                 Log.lvl1("Migrating from", migrate);
@@ -62,7 +61,6 @@ export class User {
                     const privPHBuf = Buffer.from(migrate.keyPersonhood, "hex");
                     phKP = KeyPair.fromPrivate(privPHBuf);
                 }
-                Log.print("not deleting old config");
                 // await db.set(this.keyMigrate, Buffer.alloc(0));
                 const u = new User(db, cred, idKP, phKP);
                 await u.save();

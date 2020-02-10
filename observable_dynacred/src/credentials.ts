@@ -46,7 +46,7 @@ export class Credentials {
     private contactsCache = new Map<string, Subject<Credentials>>();
 
     constructor(private inst: Instances, public readonly id: InstanceID,
-                private cred: Subject<byzcoin.contracts.CredentialStruct>) {
+                private cred: ReplaySubject<byzcoin.contracts.CredentialStruct>) {
     }
 
     public static async fromScratch(inst: Instances, id: InstanceID): Promise<Credentials> {
@@ -69,8 +69,7 @@ export class Credentials {
                 const fields = name.split(":");
                 return cred.getAttribute(fields[0], fields[1]) || Buffer.alloc(0);
             }),
-            distinctUntilChanged((a, b) => a.equals(b)),
-            filter((a)=>{Log.print("new", a); return true;}))
+            distinctUntilChanged((a, b) => a.equals(b)))
             .subscribe(newBS);
         this.attributeCache.set(name, newBS);
         return newBS;
@@ -138,7 +137,7 @@ export class Credentials {
             )
     }
 
-    public async updateCredentials(bc: IByzCoinAddTransaction, priv: Scalar, ...cred: IUpdateCredential[]): Promise<void> {
+    public updateCredentials(bc: IByzCoinAddTransaction, priv: Scalar, ...cred: IUpdateCredential[]) {
         this.cred.pipe(first()).subscribe(async (orig) => {
             for (const c of cred) {
                 const fields = c.name.split(":");
@@ -158,7 +157,8 @@ export class Credentials {
             const signer = [[new SignerEd25519(ed25519.point().mul(priv), priv)]];
             await ctx.updateCountersAndSign(bc, signer);
             await bc.sendTransactionAndWait(ctx);
-            await this.inst.reload();
+            Log.print("tx sent and got new");
+            // await this.inst.reload();
         });
     }
 

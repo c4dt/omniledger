@@ -8,8 +8,11 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {Data, TProgress} from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 import {DialogTransactionComponent} from "./dialog-transaction";
-import {IUpdateCredential} from "observable_dynacred/build/credentials";
+import {IUpdateCredential} from "observable_dynacred";
 import {UserData} from "src/app/user-data.service";
+import {pairs} from "rxjs";
+import {count, pairwise} from "rxjs/operators";
+import {first} from "rxjs/internal/operators/first";
 
 /**
  * Shows a simple snack-message at the bottom of the screen. The message is informative
@@ -108,11 +111,16 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
  */
 export async function storeUserCredential(dialog: MatDialog, title: string, uData: UserData,
                                           ...cred: IUpdateCredential[]) {
-    Log.print("suc");
     return showTransactions(dialog, title, async (progress: TProgress) => {
+        Log.print("storing creds");
+        const obs = await uData.inst.instanceObservable(uData.user.id);
         progress(50, "Storing Credential");
+        Log.print("storing cred");
         await uData.user.credential.updateCredentials(uData.bc as any, uData.user.kp.priv,
             ...cred);
+        Log.print("stored cred");
+        await obs.pipe(pairwise(),first()).toPromise();
+        Log.print("got instance from observer");
     });
 }
 

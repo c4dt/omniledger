@@ -24,11 +24,12 @@ export class UserData extends Data {
     bc: ByzCoinRPC;
     config: Config;
     conn: RosterWSConnection;
+    inst: Instances;
     user: User;
     private readonly storageKeyLatest = "latest_skipblock";
     // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
     // this will be updated.
-    private readonly id0x6000 = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
+    private readonly idKnown = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
 
     constructor() {
         super(undefined); // poison
@@ -60,13 +61,12 @@ export class UserData extends Data {
         } else {
             const sc = new SkipchainRPC(this.conn);
             try {
-                latest = await sc.getSkipBlock(this.id0x6000);
-                Log.lvl2("Got skipblock 0x6000");
+                latest = await sc.getSkipBlock(this.idKnown);
+                Log.lvl2("Got known skipblock");
             } catch (e) {
-                Log.lvl2("couldn't get block 0x6000", e);
+                Log.lvl2("couldn't get known block", e);
             }
         }
-        Log.print("Loading byzcoin", this.config.byzCoinID, latest.genesis);
         latest = undefined;
         this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
@@ -86,11 +86,9 @@ export class UserData extends Data {
 
     async loadUser() {
         try {
-            Log.print("loading user");
             const db = new DataBaseDB();
-            const inst = await Instances.fromScratch(db, this.bc as any);
-            this.user = await User.load(db, inst);
-            Log.print("loaded user", this.user);
+            this.inst = await Instances.fromScratch(db, this.bc as any);
+            this.user = await User.load(db, this.inst);
         } catch(e) {
             Log.catch(e);
         }
@@ -103,7 +101,6 @@ global.UserData = UserData;
 export class DataBaseDB {
     async get(key: string): Promise<Buffer | undefined> {
         const val = await StorageDB.get(key);
-        Log.print("val is:", val);
         if (val === undefined || val === null) {
             return undefined;
         }
