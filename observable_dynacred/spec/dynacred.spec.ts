@@ -53,41 +53,4 @@ describe("pony-world example", () => {
         await history.resolve(["alias2:alias3", "alias2:alias2"]);
     });
 
-    it("should not ask new proofs when not necessary", async () => {
-        const {bc, db, inst, user} = await BCTestEnv.simul();
-        const history = new HistoryObs();
-        // Wait for all proofs to be made
-        await new Promise(resolve => user.credential.aliasObservable()
-            .subscribe(resolve));
-        (bc as ByzCoinSimul).getProofObserver.subscribe(() => history.push("P"));
-
-        Log.lvl2("Creating new instances object - there should be only one" +
-            " getProof");
-        const inst2 = await Instances.fromScratch(db, bc);
-        await inst2.reload();
-        await history.resolve(["P", "P"]);
-        const io2 = (await inst2.instanceObservable(user.id)).subscribe(() => history.push("i2"));
-        await history.resolve(["i2"]);
-        io2.unsubscribe();
-
-        Log.lvl2("Changing the config-instance, new instances object should" +
-            " request proof for new instance");
-        await bc.sendTransactionAndWait(new ClientTransaction({
-            instructions: [
-                Instruction.createInvoke(user.id, CredentialsInstance.contractID,
-                    CredentialsInstance.commandUpdate, [
-                        new Argument({
-                            name: CredentialsInstance.argumentCredential,
-                            value: Buffer.from("123")
-                        })
-                    ])]
-        }));
-        const inst3 = await Instances.fromScratch(db, bc);
-        await inst3.reload();
-        await history.resolve(["P", "P"]);
-        const io3 = (await inst3.instanceObservable(user.id)).subscribe(
-            (ii) => history.push("i3:" + ii.version.toNumber()));
-        await history.resolve(["i3:0", "P", "i3:1"]);
-        io3.unsubscribe();
-    });
 });

@@ -227,7 +227,6 @@ export class ContactsComponent implements OnInit {
                             await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
                                 [this.uData.keyIdentitySigner]);
                         });
-                    await this.bcvs.updateBlocks();
                 }
             }
         });
@@ -280,7 +279,6 @@ export class ContactsComponent implements OnInit {
                 progress(90, "Updating Calypso");
                 this.updateCalypso();
             });
-        await this.bcvs.updateBlocks();
     }
 
     async changeGroups(a: DarcInstance, filter: string) {
@@ -303,7 +301,6 @@ export class ContactsComponent implements OnInit {
                         progress(50, "Storing new DARC");
                         await a.evolveDarcAndWait(result, [this.uData.keyIdentitySigner], 5);
                     });
-                await this.bcvs.updateBlocks();
             }
         });
     }
@@ -313,7 +310,6 @@ export class ContactsComponent implements OnInit {
             .filter((aDI) => !aDI.id.equals(a.id)));
         await storeCredential(this.dialog, "Deleting action", this.uData);
         await this.updateActions();
-        await this.bcvs.updateBlocks();
     }
 
     async actionCreate() {
@@ -354,7 +350,6 @@ export class ContactsComponent implements OnInit {
             await this.uData.save();
         });
 
-        await this.bcvs.updateBlocks();
     }
 
     async actionAdd() {
@@ -371,7 +366,6 @@ export class ContactsComponent implements OnInit {
         this.uData.contact.setGroups((await this.uData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
         await storeCredential(this.dialog, "Deleting action", this.uData);
         await this.updateGroups();
-        await this.bcvs.updateBlocks();
     }
 
     async groupCreate() {
@@ -396,7 +390,6 @@ export class ContactsComponent implements OnInit {
             await this.uData.save();
         });
 
-        await this.bcvs.updateBlocks();
     }
 
     async groupAdd() {

@@ -1,8 +1,19 @@
 // tslint:disable:max-classes-per-file
 
-import {Observable, Subject} from "rxjs";
-import Long = require("long");
+import {Subject} from "rxjs";
 import {byzcoin, darc, Log, personhood, skipchain} from "@dedis/cothority";
+import {IInstance, IProof, newIInstance} from "src/instances";
+import {
+    IByzCoinAddTransaction,
+    IByzCoinBlockStreamer,
+    IByzCoinProof
+} from "src/interfaces";
+
+import {ITest} from "spec/simul/itest";
+import {IUser} from "src/credentialFactory";
+import {map} from "rxjs/operators";
+import Long = require("long");
+
 const {SkipBlock} = skipchain;
 const {StateChangeBody, Instruction} = byzcoin;
 const {SpawnerStruct, CredentialsInstance} = personhood;
@@ -11,15 +22,6 @@ type Darc = darc.Darc;
 type IIdentity = darc.IIdentity;
 type Coin = byzcoin.contracts.Coin;
 type ClientTransaction = byzcoin.ClientTransaction;
-
-import {IInstance, IProof, newIInstance} from "src/instances";
-import {
-    IByzCoinAddTransaction, IByzCoinBlockStreamer,
-    IByzCoinProof
-} from "src/interfaces";
-
-import {ITest} from "spec/simul/itest";
-import {IUser} from "src/credentialFactory";
 
 class SimulProof {
     public latest: skipchain.SkipBlock;
@@ -50,24 +52,25 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
-    static async fromScratch(t: ITest): Promise<ByzCoinSimul>{
+    constructor(private test: ITest) {
+    }
+
+    static async fromScratch(t: ITest): Promise<ByzCoinSimul> {
         const bc = new ByzCoinSimul(t);
         await bc.storeTest();
         return bc;
     }
 
-    constructor(private test: ITest){}
-
     public async sendTransactionAndWait(tx: ClientTransaction): Promise<void> {
         for (const instr of tx.instructions) {
-            switch(instr.type){
+            switch (instr.type) {
                 case Instruction.typeInvoke:
                     const inv = instr.invoke;
                     Log.lvl3("Invoke contract", instr.instanceID);
                     if (inv.contractID !== CredentialsInstance.contractID ||
                         inv.command !== CredentialsInstance.commandUpdate ||
                         inv.args.length !== 1 ||
-                        inv.args[0].name !== CredentialsInstance.argumentCredential){
+                        inv.args[0].name !== CredentialsInstance.argumentCredential) {
                         throw new Error("know only how to update" +
                             " credential")
                     }
@@ -99,7 +102,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
         return ip;
     }
 
-    public async storeTest(){
+    public async storeTest() {
         this.globalState.addInstances(
             newIInstance(this.test.spawner.spawnerID,
                 Buffer.from(SpawnerStruct.encode(this.test.spawner.spawner).finish()), "Spawner"),
@@ -123,18 +126,24 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
     }
 
     // Dummy implementations with always-1 counters
-    public async getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>{
+    public async getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]> {
         return this.updateCachedCounters(signers);
     }
-    public async updateCachedCounters(signers: IIdentity[]): Promise<Long[]>{
+
+    public async updateCachedCounters(signers: IIdentity[]): Promise<Long[]> {
         return signers.map(() => Long.fromNumber(1));
     }
-    public getNextCounter(signer: IIdentity): Long{
+
+    public getNextCounter(signer: IIdentity): Long {
         return Long.fromNumber(1);
     }
 
     getNewBlocks(): Subject<skipchain.SkipBlock> {
-        throw new Error("not yet implemented");
+        const newBlocks = new Subject<skipchain.SkipBlock>();
+        this.blocks.newBlock.pipe(
+            map((block) => new skipchain.SkipBlock({index: block.index.toNumber()}))
+        ).subscribe(newBlocks);
+        return newBlocks;
     }
 }
 
@@ -185,6 +194,7 @@ class Block {
 }
 
 class Blocks {
+    public newBlock = new Subject<Block>();
     private blocks: Block[] = [new Block()];
 
     public getLatestBlock(): Block {
@@ -192,6 +202,8 @@ class Blocks {
     }
 
     public addBlock() {
-        this.blocks.push(new Block(this.getLatestBlock()));
+        const block = new Block(this.getLatestBlock());
+        this.blocks.push(block);
+        this.newBlock.next(block);
     }
 }

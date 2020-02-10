@@ -1,10 +1,15 @@
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
-import {distinctUntilChanged} from "rxjs/operators";
+import {distinctUntilChanged, map} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long from "long";
 import {byzcoin, Log, skipchain} from "@dedis/cothority";
-import {configInstanceID, IByzCoinProof, IDataBase} from "./interfaces";
+import {
+    configInstanceID,
+    IByzCoinBlockStreamer,
+    IByzCoinProof,
+    IDataBase
+} from "./interfaces";
 
 type InstanceID = byzcoin.InstanceID;
 type SkipBlock = skipchain.SkipBlock;
@@ -54,7 +59,7 @@ export class Instances {
     constructor(private db: IDataBase, private bc: IByzCoinProof, private newBlock: BehaviorSubject<Long>) {
     }
 
-    public static async fromScratch(db: IDataBase, bc: IByzCoinProof): Promise<Instances> {
+    public static async fromScratch(db: IDataBase, bc: IByzCoinProof & IByzCoinBlockStreamer): Promise<Instances> {
         const blockIndexBuf = await db.get(Instances.dbKeyBlockIndex);
         let blockIndex = Long.fromNumber(-1);
         if (blockIndexBuf !== undefined) {
@@ -64,6 +69,9 @@ export class Instances {
             blockIndex = Long.fromNumber(p.latest.index);
         }
         const newBlock = new BehaviorSubject(blockIndex);
+        bc.getNewBlocks().pipe(
+            map((block) => Long.fromNumber(block.index))
+        ).subscribe(newBlock);
         return new Instances(db, bc, newBlock);
     }
 
@@ -93,7 +101,7 @@ export class Instances {
             .subscribe(bsNew);
         this.cache.set(id, bsNew);
         return bsNew.pipe(
-            distinctUntilChanged((a, b) =>a.version.equals(b.version))
+            distinctUntilChanged((a, b) => a.version.equals(b.version))
         );
     }
 
@@ -116,12 +124,6 @@ export class Instances {
             version: p.stateChangeBody.version,
         };
         await this.db.setObject(inst.key.toString("hex"), inst);
-        if (!inst.block.equals(this.newBlock.getValue())) {
-            Log.lvl3("got new block:", inst.block);
-            await this.db.set(Instances.dbKeyBlockIndex,
-                Buffer.from(inst.block.toBytes()));
-            this.newBlock.next(inst.block);
-        }
         return inst;
     }
 }

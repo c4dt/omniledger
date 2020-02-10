@@ -1,8 +1,7 @@
-import {byzcoin, Log, network} from "@dedis/cothority";
+import {Log} from "@dedis/cothority";
 
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
-import {configInstanceID} from "src/interfaces";
 import {EAttributes} from "src/credentials";
 
 describe("using real byzcoin, it should", () => {
@@ -35,7 +34,7 @@ describe("using real byzcoin, it should", () => {
         await history.resolve(["newContact:alias2"]);
     });
 
-    fit("should listen for new blocks", async () => {
+    it("should listen for new blocks", async () => {
         const history = new HistoryObs();
         bcTestEnv.bc.getNewBlocks().subscribe(
             {

@@ -39,7 +39,10 @@ export class StorageDB {
         }
         try {
             return JSON.parse(d, (key, value) => {
-                if (value && typeof value === "object" && value.type === "Buffer") {
+                if (value === undefined || value === null){
+                    return undefined;
+                }
+                if (typeof value === "object" && value.type === "Buffer") {
                     return Buffer.from(value);
                 } else if (value.low !== undefined && value.high !== undefined) {
                     return Long.fromValue(value);

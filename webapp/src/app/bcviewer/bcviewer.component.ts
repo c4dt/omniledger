@@ -1,18 +1,30 @@
-import { Component, EventEmitter, Inject, Injectable, OnInit, Output } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import {
+    Component,
+    EventEmitter,
+    Inject,
+    Injectable,
+    OnInit,
+    Output
+} from "@angular/core";
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogRef
+} from "@angular/material/dialog";
 import Long from "long";
-import { sprintf } from "sprintf-js";
+import {sprintf} from "sprintf-js";
 
-import { ByzCoinRPC, Instruction } from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC, Instruction} from "@dedis/cothority/byzcoin";
 import Instance from "@dedis/cothority/byzcoin/instance";
 import Proof from "@dedis/cothority/byzcoin/proof";
 import DataBody from "@dedis/cothority/byzcoin/proto/data-body";
 import DataHeader from "@dedis/cothority/byzcoin/proto/data-header";
 import TxResult from "@dedis/cothority/byzcoin/proto/tx-result";
-import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import { ForwardLink, SkipBlock } from "@dedis/cothority/skipchain";
+import CredentialsInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
+import {ForwardLink, SkipBlock} from "@dedis/cothority/skipchain";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-import { UserData } from "../user-data.service";
+import {UserData} from "../user-data.service";
+import Log from "@dedis/cothority/log";
 
 @Injectable({
     providedIn: "root",
@@ -22,11 +34,6 @@ export class BcviewerService {
     @Output() update: EventEmitter<void> = new EventEmitter();
     @Output() newStatus: EventEmitter<void> = new EventEmitter();
     currentBlock: SkipBlock;
-
-    updateBlocks() {
-        this.update.emit();
-    }
-
 }
 
 @Component({
@@ -41,35 +48,15 @@ export class BcviewerComponent implements OnInit {
     constructor(private showBlockService: BcviewerService,
                 private dialog: MatDialog,
                 private uData: UserData) {
-        setInterval(async () => {
-            await this.updateBlocks();
-        }, 30000);
-        setTimeout(async () => {
-            await this.updateBlocks();
-        }, 1000);
     }
 
-    async updateBlocks(): Promise<any> {
-        if (this.uData.bc) {
-            if (!this.scRPC) {
-                this.scRPC = new SkipchainRPC(this.uData.conn);
-            }
-            let latest = this.uData.bc.genesisID;
-            if (this.blocks && this.blocks.length > 0) {
-                latest = this.blocks[this.blocks.length - 1].sb.hash;
-            }
-            const sbBlocks = await this.scRPC.getUpdateChain(latest, false);
-            sbBlocks.forEach((sbB) => {
-                if (!this.blocks.find((b) => b.sb.hash.equals(sbB.hash))) {
-                    this.blocks.push(new BCBlock(this.scRPC, sbB));
-                }
-            });
-            if (this.blocks.length > 4) {
-                this.blocks.splice(0, this.blocks.length - 4);
-            }
-            this.showBlockService.currentBlock = this.blocks[this.blocks.length - 1].sb;
-            this.showBlockService.newStatus.emit();
+    updateBlock(block: SkipBlock) {
+        this.blocks.push(new BCBlock(this.scRPC, block));
+        if (this.blocks.length > 4) {
+            this.blocks.splice(0, this.blocks.length - 4);
         }
+        this.showBlockService.currentBlock = this.blocks[this.blocks.length - 1].sb;
+        this.showBlockService.newStatus.emit();
     }
 
     async showBlock(block: BCBlock) {
@@ -78,9 +65,12 @@ export class BcviewerComponent implements OnInit {
     }
 
     async ngOnInit() {
-        this.showBlockService.update.subscribe(async () => {
-            await this.updateBlocks();
-        });
+        this.scRPC = new SkipchainRPC(this.uData.conn);
+        const sbBlocks = await this.scRPC.getUpdateChain(this.uData.bc.genesisID, false);
+        sbBlocks.forEach((block) => this.updateBlock(block));
+        // TODO: there is a race-condition where a block is created between
+        //  the getUpdateChain and the subscription to the getNewBlocks.
+        this.uData.bc.getNewBlocks().subscribe((block) => this.updateBlock(block));
     }
 }
 

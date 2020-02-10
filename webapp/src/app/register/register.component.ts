@@ -60,7 +60,6 @@ export class RegisterComponent implements OnInit {
                 ephemeralKey: new FormControl("2d9e65673748d99ba5ba7b6be76ff462aaf226461ea226fbb059cbb2af4a7e0c",
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
-            this.bcs.updateBlocks();
         }
     }
 

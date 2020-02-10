@@ -3,6 +3,7 @@ import { Component, ElementRef, Inject, OnInit, Renderer2, ViewChild } from "@an
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { BcviewerService } from "../app/bcviewer/bcviewer.component";
 import { TWorker } from "./Ui";
+import Log from "@dedis/cothority/log";
 
 export interface IDialogTransactionConfig<T> {
     title: string;
@@ -36,6 +37,7 @@ export class DialogTransactionComponent<T> implements OnInit {
     async ngOnInit() {
         this.updateBlocks();
         if (!this.bcv.currentBlock) {
+            Log.print("waiting for first block");
             await new Promise((resolve) => {
                 this.bcv.newStatus.subscribe(() => {
                     resolve();
@@ -47,7 +49,7 @@ export class DialogTransactionComponent<T> implements OnInit {
     }
 
     updateBlocks() {
-        this.bcv.updateBlocks();
+        Log.print("updating blocks", this.bcv.currentBlock);
         if (this.bcv.currentBlock &&
             this.blockIndex < this.bcv.currentBlock.index) {
             this.blockIndex = this.bcv.currentBlock.index;
@@ -77,6 +79,7 @@ export class DialogTransactionComponent<T> implements OnInit {
     }
 
     addBlock(index: number = this.blockIndex): Element {
+        Log.print()
         if (!this.main) {
             return undefined;
         }

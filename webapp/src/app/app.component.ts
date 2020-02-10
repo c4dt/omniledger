@@ -50,7 +50,6 @@ export class AppComponent implements OnInit {
         }
 
         Log.lvl2("Starting to update blocks for viewer");
-        this.bcs.updateBlocks();
         this.bcviewer = true;
 
         if (window.location.pathname.match(/\/register(\/device)?/)) {

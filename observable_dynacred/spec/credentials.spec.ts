@@ -1,4 +1,4 @@
-import {CredentialFactory} from "../src/credentialFactory";
+import {CredentialFactory} from "src/credentialFactory";
 import {Log} from "@dedis/cothority";
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
@@ -42,7 +42,6 @@ describe("Credentials should", () => {
         Log.lvl3("rm #4");
         await user.rmContact(bc, Buffer.from(contacts[0].credID));
         await history.resolve(["del0"]);
-        return;
 
         // Add multiple
         await user.addContact(bc, contacts[0].credID);

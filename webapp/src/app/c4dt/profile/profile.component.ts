@@ -7,8 +7,8 @@ import {Router} from "@angular/router";
 import {storeCredential, storeUserCredential} from "../../../lib/Ui";
 import {BcviewerService} from "../../bcviewer/bcviewer.component";
 import {UserData} from "../../user-data.service";
-import {EAttributes} from "observable_dynacred/build/credentials";
 import Log from "@dedis/cothority/log";
+import {EAttributes} from "observable_dynacred";
 
 @Component({
     selector: "app-profile",
