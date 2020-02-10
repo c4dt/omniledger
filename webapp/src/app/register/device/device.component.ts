@@ -9,6 +9,7 @@ import { Data, StorageDB, TProgress } from "@c4dt/dynacred";
 import { Router } from "@angular/router";
 import { showDialogOKC, showTransactions } from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
+import {User} from "observable_dynacred";
 
 @Component({
     selector: "app-device",
@@ -28,8 +29,7 @@ export class DeviceComponent implements OnInit {
 
     async ngOnInit() {
         try {
-            const buf = await StorageDB.get(this.uData.dataFileName);
-            if (buf !== undefined && buf.length > 0) {
+            if (await this.uData.hasUser()){
                 if (!(await showDialogOKC(this.dialog, "Overwrite user?", "There seems to" +
                     "be a user already defined on this browser. Do you want to overwrite it?",
                     {OKButton: "Overwrite", CancelButton: "Keep existing"}))) {

@@ -45,6 +45,5 @@ export class ProfileComponent implements OnInit {
                 name: EAttributes.email,
                 value: this.contactForm.controls.email.value
             });
-        // await storeCredential(this.dialog, "Updating User Data", this.uData);
     }
 }

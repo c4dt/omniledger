@@ -7,7 +7,7 @@ import {byzcoin, darc, Log} from "@dedis/cothority";
 
 import {Instances} from "./instances";
 import {IByzCoinAddTransaction} from "./interfaces";
-import {filter} from "rxjs/internal/operators/filter";
+import {Coin} from "@dedis/cothority/byzcoin/contracts";
 
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type InstanceID = byzcoin.InstanceID;
@@ -21,13 +21,15 @@ export enum EAttributes {
     email = "1-public:email",
     coinID = "1-public:coin",
     contacts = "1-public:contactsBuf",
+    devInitial = "1-devices:initial",
+    phone = "1-public:phone",
     version = "1-public:version",
     structVersion = "1-public:structVersion",
     seed = "1-public:seedPub",
     spawner = "1-public:spawner",
     ltsID = "1-config:ltsID",
     ltsX = "1-config:ltsX",
-    devInitial = "1-devices:initial"
+    view = "1-config:view"
 }
 
 export interface IUpdateCredential {
@@ -75,16 +77,39 @@ export class Credentials {
         return newBS;
     }
 
-    public aliasObservable(): Observable<string> {
-        return this.attributeObservable(EAttributes.alias).pipe(map((buf) => buf.toString()));
+    public stringObservable(attr: EAttributes): ReplaySubject<string> {
+        const rs = new ReplaySubject<string>(1);
+        this.attributeObservable(attr).pipe(map((buf) => buf.toString()))
+            .subscribe(rs);
+        return rs;
     }
 
-    public emailObservable(): Observable<string> {
-        return this.attributeObservable(EAttributes.email).pipe(map((buf) => buf.toString()));
+    public aliasObservable(): ReplaySubject<string> {
+        return this.stringObservable(EAttributes.alias);
     }
 
-    public coinIDObservable(): Observable<InstanceID> {
-        return this.attributeObservable(EAttributes.coinID).pipe(map((buf) => <InstanceID>buf));
+    public emailObservable(): ReplaySubject<string> {
+        return this.stringObservable(EAttributes.email);
+    }
+
+    public phoneObservable(): ReplaySubject<string> {
+        return this.stringObservable(EAttributes.phone);
+    }
+
+    public coinIDObservable(): ReplaySubject<InstanceID> {
+        const rs = new ReplaySubject<InstanceID>(1);
+        this.attributeObservable(EAttributes.coinID).pipe(map((buf) => <InstanceID>buf))
+            .subscribe(rs);
+        return rs;
+    }
+
+    public async coinObservable(): Promise<ReplaySubject<Coin>> {
+        const rs = new ReplaySubject<Coin>(1);
+        const coinID = await this.coinIDObservable().pipe(first()).toPromise();
+        (await this.inst.instanceObservable(coinID)).pipe(
+            map((inst) => Coin.decode(inst.value))
+        ).subscribe(rs);
+        return rs;
     }
 
     // contactsObservable returns an observable that emits a list of new

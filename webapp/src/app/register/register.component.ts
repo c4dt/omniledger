@@ -33,8 +33,7 @@ export class RegisterComponent implements OnInit {
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
-            const buf = await StorageDB.get(this.uData.dataFileName);
-            if (buf !== undefined && buf.length > 0) {
+            if (await this.uData.hasUser()){
                 const overwrite = await showDialogOKC(this.dialog, "Overwrite user?",
                     "There seems to be a user already stored in this browser - do you want to overwrite it?");
                 if (overwrite) {

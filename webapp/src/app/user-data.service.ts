@@ -93,6 +93,13 @@ export class UserData extends Data {
             Log.catch(e);
         }
     }
+
+    async hasUser(): Promise<boolean> {
+        const bufOld = await StorageDB.get(this.dataFileName);
+        const bufNew = await StorageDB.get(User.keyCredID);
+        return (bufOld !== undefined && bufOld.length > 0) ||
+            (bufNew !== undefined && bufNew.length > 0);
+    }
 }
 
 // @ts-ignore

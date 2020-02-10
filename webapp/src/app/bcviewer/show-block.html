@@ -25,18 +25,22 @@
                         <div fxFlex="1 1 20em">{{roster.join(", ")}}</div>
                     </div>
                     <div fxLayout="row">
-                        <div fxFlex="1 1 20em">BackwardLinks:
+                        <div fxFlex="1 1 10em">BackwardLinks:</div>
+                        <div fxFlex="1 1 20em">
                             <span *ngFor="let backward of data.backwardLinks" (click)="goBlock(backward)" class="link">
                                 {{backward.index}}</span>
                         </div>
-                        <div fxFlex="1 1 20em">ForwardLinks:
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="1 1 10em">ForwardLinks:</div>
+                        <div fxFlex="1 1 20em">
                             <span *ngFor="let forward of data.forwardLinks" (click)="goBlock(forward)" class="link">
                                 {{forward.index}}/{{forward.sign}}</span>
                         </div>
                     </div>
                 </div>
             </mat-expansion-panel>
-            <mat-expansion-panel expanded="true">
+            <mat-expansion-panel expanded="false">
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         ByzCoin Body

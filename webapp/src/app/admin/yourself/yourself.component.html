@@ -1,7 +1,5 @@
 <ul>
-  <li>Memory: {{uData.coinInstance.value.toNumber()}}
-    -
-    <button mat-button (click)="updateCoins()">Update</button>
+  <li>Memory: {{coins}}
   </li>
 </ul>
 <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact()">

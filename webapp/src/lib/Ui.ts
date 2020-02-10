@@ -92,7 +92,7 @@ export async function showDialogInfo(dialog: MatDialog, title: string, text: str
  *
  * @param dialog reference to the matDialog
  * @param title shown in h1 in the dialog
- * @param store the callback to the actual storing of the credential.
+ * @param uData reference to the Data class
  */
 export async function storeCredential(dialog: MatDialog, title: string, uData: Data) {
     return showTransactions(dialog, title, async (progress: TProgress) => {

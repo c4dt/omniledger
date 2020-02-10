@@ -6,8 +6,9 @@ import { Router } from "@angular/router";
 
 import { Data } from "@c4dt/dynacred";
 
-import { showSnack, storeCredential } from "../../../lib/Ui";
+import {showSnack, storeCredential, storeUserCredential} from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
+import {EAttributes} from "observable_dynacred";
 
 @Component({
     selector: "app-yourself",
@@ -16,37 +17,49 @@ import { UserData } from "../../user-data.service";
 export class YourselfComponent implements OnInit {
     contactForm: FormGroup;
     views = Data.views;
+    coins = "loading";
 
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
-                private router: Router,
                 public uData: UserData) {
     }
 
     async ngOnInit() {
-        this.updateContactForm();
-    }
-
-    updateContactForm() {
         this.contactForm = new FormGroup({
-            alias: new FormControl(this.uData.contact.alias),
-            email: new FormControl(this.uData.contact.email, Validators.email),
-            phone: new FormControl(this.uData.contact.phone),
-            view: new FormControl(this.uData.contact.view),
+            alias: new FormControl("loading"),
+            email: new FormControl("loading", Validators.email),
+            phone: new FormControl("loading"),
+            view: new FormControl("loading"),
         });
-    }
+        const c = this.uData.user.credential;
+        c.aliasObservable().subscribe((alias) =>
+            this.contactForm.patchValue({alias}));
+        c.emailObservable().subscribe((email) =>
+            this.contactForm.patchValue({email}));
+        c.phoneObservable().subscribe((phone) =>
+            this.contactForm.patchValue({phone}));
+        c.stringObservable(EAttributes.view).subscribe((view) =>
+            this.contactForm.patchValue({view}));
+        (await c.coinObservable()).subscribe((coin) =>
+            this.coins = coin.value.toString()
+        )
 
-    async updateCoins() {
-        await showSnack(this.snack, "Updating coins", async () => {
-            await this.uData.coinInstance.update();
-        });
     }
 
     async updateContact() {
-        this.uData.contact.alias = this.contactForm.controls.alias.value;
-        this.uData.contact.email = this.contactForm.controls.email.value;
-        this.uData.contact.phone = this.contactForm.controls.phone.value;
-        this.uData.contact.view = this.contactForm.controls.view.value;
-        await storeCredential(this.dialog, "Updating User Data", this.uData);
+        await storeUserCredential(this.dialog, "Updating user User Data", this.uData,
+            {
+                name: EAttributes.alias,
+                value: this.contactForm.controls.alias.value
+            },
+            {
+                name: EAttributes.email,
+                value: this.contactForm.controls.email.value
+            },
+            {
+                name: EAttributes.phone,
+                value: this.contactForm.controls.phone.value
+            }
+            );
     }
 }

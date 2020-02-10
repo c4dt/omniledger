@@ -1,16 +1,13 @@
-import Timer = NodeJS.Timer;
 import {
     AfterViewInit,
     Component,
     ElementRef,
     Inject,
-    OnInit,
     Renderer2,
     ViewChild
 } from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {TWorker} from "./Ui";
-import Log from "@dedis/cothority/log";
 import {UserData} from "src/app/user-data.service";
 import {map, startWith} from "rxjs/operators";
 import {Subscription} from "rxjs";
