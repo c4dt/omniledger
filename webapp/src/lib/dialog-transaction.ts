@@ -2,7 +2,7 @@ import {
     AfterViewInit,
     Component,
     ElementRef,
-    Inject,
+    Inject, OnInit,
     Renderer2,
     ViewChild
 } from "@angular/core";
@@ -11,6 +11,7 @@ import {TWorker} from "./Ui";
 import {UserData} from "src/app/user-data.service";
 import {map, startWith} from "rxjs/operators";
 import {Subscription} from "rxjs";
+import {Log} from "@dedis/cothority";
 
 export interface IDialogTransactionConfig<T> {
     title: string;
@@ -22,7 +23,7 @@ export interface IDialogTransactionConfig<T> {
     styleUrls: ["./dialog-transaction.scss"],
     templateUrl: "dialog-transaction.html",
 })
-export class DialogTransactionComponent<T> implements AfterViewInit {
+export class DialogTransactionComponent<T> implements AfterViewInit, OnInit {
 
     percentage: number = 0;
     text: string;
@@ -40,7 +41,11 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
         @Inject(MAT_DIALOG_DATA) public data: IDialogTransactionConfig<T>) {
     }
 
+    ngOnInit(){
+    }
+
     async ngAfterViewInit() {
+        this.startTransactions();
         const last = this.uData.bc.latest.index;
         this.ub = this.uData.bc.getNewBlocks().pipe(
             map((block) => block.index),
@@ -50,12 +55,13 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
 
     updateBlocks(index: number) {
         if (this.blocks.length === 3) {
-            this.startTransactions();
+            // this.startTransactions();
         }
         this.addBlock(index);
     }
 
     async startTransactions() {
+        Log.print("start transactions");
         const prog = (p: number, t: string) => this.progress(p, t);
         try {
             const result = await this.data.worker(prog);

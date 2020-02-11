@@ -1,5 +1,4 @@
 import {BehaviorSubject, Observable, ReplaySubject, Subject} from "rxjs";
-import {curve, Scalar} from "@dedis/kyber";
 import {distinctUntilChanged, map, pairwise, startWith} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
@@ -7,7 +6,8 @@ import {byzcoin, darc, Log} from "@dedis/cothority";
 
 import {Instances} from "./instances";
 import {IByzCoinAddTransaction} from "./interfaces";
-import {Coin} from "@dedis/cothority/byzcoin/contracts";
+import {Coin, Credential} from "@dedis/cothority/byzcoin/contracts";
+import {curve, Scalar} from "@dedis/kyber";
 
 type CredentialStruct = byzcoin.contracts.CredentialStruct;
 type InstanceID = byzcoin.InstanceID;
@@ -32,6 +32,11 @@ export enum EAttributes {
     view = "1-config:view"
 }
 
+export enum ECredentials {
+    devices = "1-devices",
+    recoveries = "1-recovery"
+}
+
 export interface IUpdateCredential {
     name: EAttributes;
     value: string | InstanceID;
@@ -45,6 +50,7 @@ export class Credentials {
     public static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
     public static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
     private attributeCache = new Map<string, ReplaySubject<Buffer>>();
+    private credentialCache = new Map<string, ReplaySubject<Credential>>();
     private contactsCache = new Map<string, Subject<Credentials>>();
 
     constructor(private inst: Instances, public readonly id: InstanceID,
@@ -57,6 +63,23 @@ export class Credentials {
             .pipe(map((ii) => CredentialStruct.decode(ii.value)))
             .subscribe(cred);
         return new Credentials(inst, id, cred);
+    }
+
+    public credentialObservable(name: ECredentials): ReplaySubject<Credential> {
+        let bs = this.credentialCache.get(name);
+        if (bs !== undefined) {
+            return bs;
+        }
+
+        const newBS = new ReplaySubject<Credential>(1);
+        this.cred.pipe(
+            map((cred) => {
+                return cred.getCredential(name) || new Credential();
+            }),
+            distinctUntilChanged((a, b) => a.toString() !== b.toString()))
+            .subscribe(newBS);
+        this.credentialCache.set(name, newBS);
+        return newBS;
     }
 
     public attributeObservable(name: EAttributes): ReplaySubject<Buffer> {

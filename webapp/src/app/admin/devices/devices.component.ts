@@ -1,17 +1,30 @@
-import { Location } from "@angular/common";
-import { Component, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import {Location} from "@angular/common";
+import {Component, Inject} from "@angular/core";
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogRef
+} from "@angular/material/dialog";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
-import { InstanceID } from "@dedis/cothority/byzcoin";
+import {InstanceID} from "@dedis/cothority/byzcoin";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { Darc } from "@dedis/cothority/darc";
+import {Darc} from "@dedis/cothority/darc";
 
-import { Device, TProgress } from "@c4dt/dynacred";
+import {Device, TProgress} from "@c4dt/dynacred";
 
-import { Attribute, Credential } from "@dedis/cothority/personhood/credentials-instance";
-import { showDialogInfo, showDialogOKC, showSnack, showTransactions } from "../../../lib/Ui";
-import { UserData } from "../../user-data.service";
+import {
+    Attribute,
+    Credential
+} from "@dedis/cothority/personhood/credentials-instance";
+import {
+    showDialogInfo,
+    showDialogOKC,
+    showSnack,
+    showTransactions
+} from "src/lib/Ui";
+import {UserData} from "../../user-data.service";
+import {ECredentials} from "observable_dynacred";
 
 type RenameType = "devices" | "recovery";
 
@@ -19,7 +32,7 @@ type RenameType = "devices" | "recovery";
     selector: "app-devices",
     templateUrl: "./devices.component.html",
 })
-export class DevicesComponent implements OnInit {
+export class DevicesComponent {
     devices: Device[] = [];
     recovery: Device[] = [];
 
@@ -29,21 +42,16 @@ export class DevicesComponent implements OnInit {
         private location: Location,
         private uData: UserData,
     ) {
-    }
-
-    updateDevices() {
-        const cred = this.uData.contact.credential.getCredential("1-devices");
-        if (cred) {
-            this.devices = cred.attributes.map((a) => new Device(a.name, a.value));
-        }
-        const rec = this.uData.contact.credential.getCredential("1-recovery");
-        if (rec !== undefined) {
-            this.recovery = rec.attributes.map((a) => new Device(a.name, a.value));
-        }
-    }
-
-    ngOnInit() {
-        this.updateDevices();
+        uData.user.credential.credentialObservable(ECredentials.devices)
+            .subscribe((devices) => {
+                    this.devices = devices.attributes.map((a) => new Device(a.name, a.value));
+                }
+            );
+        uData.user.credential.credentialObservable(ECredentials.recoveries)
+            .subscribe((recoveries) => {
+                    this.recovery = recoveries.attributes.map((a) => new Device(a.name, a.value));
+                }
+            );
     }
 
     async deleteDevice(device: Device) {
@@ -67,7 +75,6 @@ export class DevicesComponent implements OnInit {
                     progress(60, "Updating Device List");
                     await this.uData.contact.sendUpdate();
                     progress(-90, "Fetching all devices");
-                    this.updateDevices();
                 });
         }
 
@@ -92,7 +99,6 @@ export class DevicesComponent implements OnInit {
                             progress(75, "Updating Device List");
                             await this.uData.contact.sendUpdate();
                             progress(-90, "Fetching all devices");
-                            this.updateDevices();
                             return d;
                         });
                 const url = window.location.protocol + "//" + window.location.host +
@@ -103,7 +109,12 @@ export class DevicesComponent implements OnInit {
     }
 
     async rename(dev: Device, typeStr: RenameType) {
-        const ac = this.dialog.open(RenameComponent, {data: {name: dev.name, typeStr}});
+        const ac = this.dialog.open(RenameComponent, {
+            data: {
+                name: dev.name,
+                typeStr
+            }
+        });
         ac.afterClosed().subscribe(async (result) => {
             if (result === undefined || result === "") {
                 return;
@@ -121,7 +132,10 @@ export class DevicesComponent implements OnInit {
                     const atts = typeStr === "devices" ? this.devices : this.recovery;
                     this.uData.contact.credential.setCredential(name,
                         new Credential({
-                            attributes: atts.map((d) => new Attribute({name: d.name, value: d.darcID})),
+                            attributes: atts.map((d) => new Attribute({
+                                name: d.name,
+                                value: d.darcID
+                            })),
                             name,
                         }));
                     this.uData.contact.incVersion();
