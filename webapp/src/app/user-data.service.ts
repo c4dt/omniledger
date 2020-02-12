@@ -10,7 +10,7 @@ import { RosterWSConnection } from "@dedis/cothority/network/connection";
 import { SkipBlock, SkipchainRPC } from "@dedis/cothority/skipchain";
 import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
-import {Instances, User} from "observable_dynacred";
+import {DoThings, Instances, User} from "observable_dynacred";
 
 @Injectable({
     providedIn: "root",
@@ -87,9 +87,11 @@ export class UserData extends Data {
 
     async loadUser() {
         try {
+            Log.print("loading user");
             const db = new DataBaseDB();
             this.inst = await Instances.fromScratch(db, this.bc as any);
-            this.user = await User.load(db, this.inst);
+            this.user = await User.load(new DoThings(this.bc as any, db, this.inst));
+            Log.print("user is", this.user);
         } catch(e) {
             Log.catch(e);
         }

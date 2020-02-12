@@ -42,16 +42,16 @@ export class DevicesComponent {
         private location: Location,
         private uData: UserData,
     ) {
-        uData.user.credential.credentialObservable(ECredentials.devices)
-            .subscribe((devices) => {
-                    this.devices = devices.attributes.map((a) => new Device(a.name, a.value));
-                }
-            );
-        uData.user.credential.credentialObservable(ECredentials.recoveries)
-            .subscribe((recoveries) => {
-                    this.recovery = recoveries.attributes.map((a) => new Device(a.name, a.value));
-                }
-            );
+        // uData.user.credential.credentialObservable(ECredentials.devices)
+        //     .subscribe((devices) => {
+        //             this.devices = devices.attributes.map((a) => new Device(a.name, a.value));
+        //         }
+        //     );
+        // uData.user.credential.credentialObservable(ECredentials.recoveries)
+        //     .subscribe((recoveries) => {
+        //             this.recovery = recoveries.attributes.map((a) => new Device(a.name, a.value));
+        //         }
+        //     );
     }
 
     async deleteDevice(device: Device) {
@@ -60,7 +60,7 @@ export class DevicesComponent {
                 "it's not possible to remove the only device you have.", "Understood");
         }
         const signerDarc = await DarcInstance.fromByzcoin(this.uData.bc, device.darcID);
-        if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.user.keyIdentitySigner])) {
+        if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.user.dt.kiSigner])) {
             return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                 "reasons.", "Understood");
         }

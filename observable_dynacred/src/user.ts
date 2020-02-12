@@ -1,15 +1,16 @@
+import {byzcoin, Log} from "@dedis/cothority";
+import {Signer, SignerEd25519} from "@dedis/cothority/darc";
+
 import {KeyPair} from "./keypair";
 import {IByzCoinAddTransaction, IByzCoinProof, IDataBase} from "./interfaces";
 import {
     CredentialStructBS,
     EAttributesPublic,
     ECredentials,
-} from "src/credentialStructBS";
+} from "./credentialStructBS";
 import {Instances} from "./instances";
-import {byzcoin, Log} from "@dedis/cothority";
-import {Signer, SignerEd25519} from "@dedis/cothority/darc";
-import {ContactListBS} from "src/contactListBS";
-import {CoinBS} from "src/coinBS";
+import {ContactListBS} from "./contactListBS";
+import {CoinBS} from "./coinBS";
 
 type InstanceID = byzcoin.InstanceID;
 const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
@@ -32,9 +33,20 @@ export class DoThings {
         public bc: IByzCoinAddTransaction & IByzCoinProof,
         public db: IDataBase,
         public inst: Instances,
-        public kp: KeyPair,
+        private kpp?: KeyPair,
     ) {
-        this.kiSigner = new SignerEd25519(kp.pub, kp.priv);
+        if (kpp) {
+            this.kp = kpp;
+        }
+    }
+
+    get kp(): KeyPair{
+        return this.kpp;
+    }
+
+    set kp(k: KeyPair){
+        this.kpp = k;
+        this.kiSigner = new SignerEd25519(k.pub, k.priv);
     }
 }
 
@@ -49,7 +61,7 @@ export class User {
     public static readonly keyCredID = "credID";
     public static readonly keyMigrate = "storage/data.json";
     public static readonly versionMigrate = 1;
-
+    public static migrateOnce = false;
 
     constructor(public dt: DoThings,
                 public readonly csbs: CredentialStructBS,
@@ -80,7 +92,9 @@ export class User {
                     return undefined;
                 }
                 const credID = CredentialsInstance.credentialIID(seed);
-                // await db.set(this.keyMigrate, Buffer.alloc(0));
+                if (User.migrateOnce) {
+                    await dt.db.set(this.keyMigrate, Buffer.alloc(0));
+                }
                 const u = await User.fromScratch(dt, credID);
                 await u.save();
                 return u;

@@ -3,7 +3,7 @@ import {Log} from "@dedis/cothority";
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
 
-describe("using real byzcoin, it should", () => {
+xdescribe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;
 
     beforeAll(async () => {

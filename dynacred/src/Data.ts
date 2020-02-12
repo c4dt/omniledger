@@ -123,7 +123,7 @@ export class Data {
     }
 
     set contacts(cs: Contact[]) {
-        this.contact.contactList = cs;
+        this.contact.contacts = cs;
     }
 
     get uniqueMeetings(): number {

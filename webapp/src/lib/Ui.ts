@@ -5,13 +5,16 @@ import {
     MatDialogRef
 } from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Data, TProgress} from "@c4dt/dynacred";
-import Log from "@dedis/cothority/log";
-import {DialogTransactionComponent} from "./dialog-transaction";
-import {IUpdateCredential} from "observable_dynacred";
-import {UserData} from "src/app/user-data.service";
 import {elementAt, pairwise, take} from "rxjs/operators";
 import {first} from "rxjs/internal/operators/first";
+
+import {Data, TProgress} from "@c4dt/dynacred";
+import Log from "@dedis/cothority/log";
+
+import {IUpdateCredential} from "observable_dynacred";
+
+import {DialogTransactionComponent} from "./dialog-transaction";
+import {UserData} from "src/app/user-data.service";
 
 /**
  * Shows a simple snack-message at the bottom of the screen. The message is informative
@@ -112,10 +115,9 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
 export async function storeUserCredential(dialog: MatDialog, title: string, uData: UserData,
                                           ...cred: IUpdateCredential[]) {
     return showTransactions(dialog, title, async (progress: TProgress) => {
-        const obs = await uData.inst.instanceObservable(uData.user.id);
+        const obs = await uData.inst.instanceObservable(uData.user.csbs.id);
         progress(50, "Storing Credential");
-        await uData.user.credential.updateCredentials(uData.bc as any, uData.user.kp.priv,
-            ...cred);
+        await uData.user.csbs.updateCredentials(...cred);
         // Take the second, as the instanceObservable always returns the
         // currently available instance.
         await obs.pipe(elementAt(1)).toPromise();

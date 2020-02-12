@@ -8,7 +8,11 @@ import { Data } from "@c4dt/dynacred";
 
 import {showSnack, storeCredential, storeUserCredential} from "../../../lib/Ui";
 import { UserData } from "../../user-data.service";
-import {EAttributes} from "observable_dynacred";
+import {
+    EAttributesConfig,
+    EAttributesPublic,
+    ECredentials
+} from "observable_dynacred";
 
 @Component({
     selector: "app-yourself",
@@ -31,16 +35,17 @@ export class YourselfComponent implements OnInit {
             phone: new FormControl("loading"),
             view: new FormControl("loading"),
         });
-        const c = this.uData.user.credential;
-        c.aliasObservable().subscribe((alias) =>
+        const pub = this.uData.user.csbs.credPublic;
+        const conf = this.uData.user.csbs.credConfig;
+        pub.alias.subscribe((alias) =>
             this.contactForm.patchValue({alias}));
-        c.emailObservable().subscribe((email) =>
+        pub.email.subscribe((email) =>
             this.contactForm.patchValue({email}));
-        c.phoneObservable().subscribe((phone) =>
+        pub.phone.subscribe((phone) =>
             this.contactForm.patchValue({phone}));
-        c.stringObservable(EAttributes.view).subscribe((view) =>
+        conf.view.subscribe((view) =>
             this.contactForm.patchValue({view}));
-        (await c.coinObservable()).subscribe((coin) =>
+        this.uData.user.coin.subscribe((coin) =>
             this.coins = coin.value.toString()
         )
 
@@ -49,16 +54,24 @@ export class YourselfComponent implements OnInit {
     async updateContact() {
         await storeUserCredential(this.dialog, "Updating user User Data", this.uData,
             {
-                name: EAttributes.alias,
+                cred: ECredentials.pub,
+                attr: EAttributesPublic.alias,
                 value: this.contactForm.controls.alias.value
             },
             {
-                name: EAttributes.email,
+                cred: ECredentials.pub,
+                attr: EAttributesPublic.email,
                 value: this.contactForm.controls.email.value
             },
             {
-                name: EAttributes.phone,
+                cred: ECredentials.pub,
+                attr: EAttributesPublic.phone,
                 value: this.contactForm.controls.phone.value
+            },
+            {
+                cred: ECredentials.config,
+                attr: EAttributesConfig.view,
+                value: this.contactForm.controls.view.value
             }
             );
     }

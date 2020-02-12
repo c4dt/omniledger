@@ -1,9 +1,8 @@
-import {Log} from "@dedis/cothority";
-
 import {IMigrate, User} from "src/user";
 
 import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
+import {Log} from "@dedis/cothority";
 
 describe("User class should", () => {
     it("setting up of a new user in testing", async () => {
@@ -41,6 +40,7 @@ describe("User class should", () => {
 
     it("correctly migrate", async () => {
         const {dt, db, inst, user, test} = await BCTestEnv.simul();
+        User.migrateOnce = true;
 
         await db.set(User.keyPriv, Buffer.alloc(0));
         await expectAsync(User.load(dt)).toBeRejected();

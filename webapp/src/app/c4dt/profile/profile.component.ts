@@ -7,7 +7,7 @@ import {Router} from "@angular/router";
 import {storeCredential, storeUserCredential} from "../../../lib/Ui";
 import {UserData} from "../../user-data.service";
 import Log from "@dedis/cothority/log";
-import {EAttributes} from "observable_dynacred";
+import {EAttributesPublic, ECredentials} from "observable_dynacred";
 
 @Component({
     selector: "app-profile",
@@ -27,10 +27,10 @@ export class ProfileComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.uData.user.credential.aliasObservable().subscribe((alias) => {
+        this.uData.user.csbs.credPublic.alias.subscribe((alias) => {
             this.contactForm.patchValue({alias: alias});
         });
-        this.uData.user.credential.emailObservable().subscribe((email) => {
+        this.uData.user.csbs.credPublic.email.subscribe((email) => {
             this.contactForm.patchValue({email: email});
         });
     }
@@ -38,12 +38,15 @@ export class ProfileComponent implements OnInit {
     async updateContact() {
         await storeUserCredential(this.dialog, "Updating user User Data", this.uData,
             {
-                name: EAttributes.alias,
+                cred: ECredentials.pub,
+                attr: EAttributesPublic.alias,
                 value: this.contactForm.controls.alias.value
             },
             {
-                name: EAttributes.email,
+                cred: ECredentials.pub,
+                attr: EAttributesPublic.email,
                 value: this.contactForm.controls.email.value
-            });
+            }
+        );
     }
 }

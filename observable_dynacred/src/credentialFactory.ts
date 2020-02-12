@@ -3,7 +3,7 @@ import {byzcoin, calypso, darc, personhood} from "@dedis/cothority";
 import Long = require("long");
 import {randomBytes} from "crypto";
 
-import {CredentialStructBS} from "src/credentialStructBS";
+import {CredentialStructBS} from "./credentialStructBS";
 import {KeyPair} from "./keypair";
 
 const ed25519 = new curve.edwards25519.Curve();
