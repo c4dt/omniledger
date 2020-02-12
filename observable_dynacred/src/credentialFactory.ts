@@ -3,7 +3,7 @@ import {byzcoin, calypso, darc, personhood} from "@dedis/cothority";
 import Long = require("long");
 import {randomBytes} from "crypto";
 
-import {Credentials} from "./credentials";
+import {CredentialStructBS} from "src/credentialStructBS";
 import {KeyPair} from "./keypair";
 
 const ed25519 = new curve.edwards25519.Curve();
@@ -102,7 +102,7 @@ export class CredentialFactory {
         cred.setAttribute("1-public", "seedPub", pub.marshalBinary());
         cred.setAttribute("1-config", "spawner", spawner);
         const svBuf = Buffer.alloc(4);
-        svBuf.writeInt32LE(Credentials.structVersionLatest, 0);
+        svBuf.writeInt32LE(CredentialStructBS.structVersionLatest, 0);
         cred.setAttribute("1-config", "structVersion", svBuf);
         cred.setAttribute("1-devices", "initial", deviceDarcID);
         if (lts) {

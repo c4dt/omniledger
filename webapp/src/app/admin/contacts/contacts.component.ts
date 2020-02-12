@@ -262,7 +262,7 @@ export class ContactsComponent implements OnInit {
     }
 
     async contactDelete(toDelete: Contact) {
-        this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
+        this.uData.contactList = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
         await storeCredential(this.dialog, "Unlinking contact " + toDelete.alias, this.uData);
     }
 

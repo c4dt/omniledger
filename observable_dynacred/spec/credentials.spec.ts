@@ -14,7 +14,7 @@ describe("Credentials should", () => {
         });
         contacts.forEach((u) => bc.storeUser(u));
 
-        user.credential.contactsObservable().subscribe((newContacts) => {
+        user.contactList.contactsObservable().subscribe((newContacts) => {
             newContacts.forEach((c) => {
                 c.subscribe({
                     next: (nc) => {
@@ -31,22 +31,22 @@ describe("Credentials should", () => {
 
         Log.lvl2("block of adds and deletions");
         Log.lvl3("add #1");
-        await user.addContact(bc, contacts[0].credID);
+        await user.contactList.addContact(contacts[0].credID);
         await history.resolve(["add0"]);
         Log.lvl3("same add #2");
-        await user.addContact(bc, contacts[0].credID);
+        await user.contactList.addContact(contacts[0].credID);
         await history.reject(["add0"]);
         Log.lvl3("same add #3 (new buffer with same id)");
-        await user.addContact(bc, Buffer.from(contacts[0].credID));
+        await user.contactList.addContact(Buffer.from(contacts[0].credID));
         await history.reject(["add0"]);
         Log.lvl3("rm #4");
-        await user.rmContact(bc, Buffer.from(contacts[0].credID));
+        await user.contactList.rmContact(Buffer.from(contacts[0].credID));
         await history.resolve(["del0"]);
 
         // Add multiple
-        await user.addContact(bc, contacts[0].credID);
+        await user.contactList.addContact(contacts[0].credID);
         await history.resolve(["add0"]);
-        await user.addContact(bc, contacts[1].credID);
+        await user.contactList.addContact(contacts[1].credID);
         await history.resolve(["add1"]);
     });
 });

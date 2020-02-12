@@ -12,12 +12,12 @@
         "node_modules/@c4dt/cothority/*"
       ],
       "@dedis/cothority": [
-        "../cothority/external/js/cothority/dist",
+        "../cothority/external/js/cothority/src",
         "src/lib/cothority/*",
         "node_modules/@dedis/cothority/*"
       ],
       "@dedis/cothority/*": [
-        "../cothority/external/js/cothority/dist/*",
+        "../cothority/external/js/cothority/src/*",
         "src/lib/cothority/*",
         "node_modules/@dedis/cothority/*"
       ],

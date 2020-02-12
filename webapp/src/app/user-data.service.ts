@@ -53,22 +53,23 @@ export class UserData extends Data {
         }
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
-        let latest: SkipBlock;
-        const latestBuf = await this.storage.get(this.storageKeyLatest);
-        if (latestBuf !== undefined) {
-            latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
-            Log.lvl2("Loaded latest block from db:", latest.index);
-        } else {
-            const sc = new SkipchainRPC(this.conn);
-            try {
+        try {
+            let latest: SkipBlock;
+            const latestBuf = await this.storage.get(this.storageKeyLatest);
+            if (latestBuf !== undefined) {
+                latest = SkipBlock.decode(Buffer.from(latestBuf, "hex"));
+                Log.lvl2("Loaded latest block from db:", latest.index);
+            } else {
+                const sc = new SkipchainRPC(this.conn);
                 latest = await sc.getSkipBlock(this.idKnown);
                 Log.lvl2("Got known skipblock");
-            } catch (e) {
-                Log.lvl2("couldn't get known block", e);
             }
+            latest = undefined;
+            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
+        } catch(e){
+            logger("Getting genesis chain", 80);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3);
         }
-        latest = undefined;
-        this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
         this.storage.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()).toString("hex"));
         logger("Done connecting", 100);

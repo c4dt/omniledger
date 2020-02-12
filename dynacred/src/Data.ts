@@ -2,19 +2,22 @@
  * system.
  */
 
-import { Buffer } from "buffer";
-import { randomBytes } from "crypto-browserify";
+import {Buffer} from "buffer";
+import {randomBytes} from "crypto-browserify";
 import Long from "long";
-import { sprintf } from "sprintf-js";
+import {sprintf} from "sprintf-js";
 import URL from "url-parse";
 
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
-import ClientTransaction, { Argument, Instruction } from "@dedis/cothority/byzcoin/client-transaction";
+import ClientTransaction, {
+    Argument,
+    Instruction
+} from "@dedis/cothority/byzcoin/client-transaction";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import Instance, { InstanceID } from "@dedis/cothority/byzcoin/instance";
-import { LongTermSecret } from "@dedis/cothority/calypso/calypso-rpc";
-import { IdentityEd25519, Rule } from "@dedis/cothority/darc";
+import Instance, {InstanceID} from "@dedis/cothority/byzcoin/instance";
+import {LongTermSecret} from "@dedis/cothority/calypso/calypso-rpc";
+import {IdentityEd25519, Rule} from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import Signer from "@dedis/cothority/darc/signer";
@@ -27,19 +30,22 @@ import CredentialInstance, {
     CredentialStruct,
     RecoverySignature,
 } from "@dedis/cothority/personhood/credentials-instance";
-import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
+import {PopPartyInstance} from "@dedis/cothority/personhood/pop-party-instance";
 import RoPaSciInstance from "@dedis/cothority/personhood/ro-pa-sci-instance";
-import SpawnerInstance, { ICreateCost, SPAWNER_COIN } from "@dedis/cothority/personhood/spawner-instance";
-import { curve, Point, Scalar, sign } from "@dedis/kyber";
+import SpawnerInstance, {
+    ICreateCost,
+    SPAWNER_COIN
+} from "@dedis/cothority/personhood/spawner-instance";
+import {curve, Point, Scalar, sign} from "@dedis/kyber";
 
-import { Badge } from "./Badge";
-import { Contact } from "./Contact";
-import { GroupContractCollection } from "./group";
-import { KeyPair, Private, Public } from "./KeyPair";
-import { PartyItem } from "./PartyItem";
-import { PersonhoodRPC, PollStruct, RoPaSci } from "./personhood-rpc";
-import { SocialNode } from "./SocialNode";
-import { IStorage, StorageDB } from "./Storage";
+import {Badge} from "./Badge";
+import {Contact} from "./Contact";
+import {GroupContractCollection} from "./group";
+import {KeyPair, Private, Public} from "./KeyPair";
+import {PartyItem} from "./PartyItem";
+import {PersonhoodRPC, PollStruct, RoPaSci} from "./personhood-rpc";
+import {SocialNode} from "./SocialNode";
+import {IStorage, StorageDB} from "./Storage";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -47,6 +53,42 @@ const ed25519 = curve.newCurve("edwards25519");
  * Data holds the data of the app.
  */
 export class Data {
+
+    static readonly urlNewDevice = "/register/device";
+    static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
+    static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
+    static readonly views = ["c4dt_user", "c4dt_partner", "c4dt_admin", "admin"];
+    static readonly defaultStorage = "storage/data.json";
+    dataFileName: string = Data.defaultStorage;
+    continuousScan: boolean;
+    personhoodPublished: boolean;
+    keyPersonhood: KeyPair;
+    keyIdentity: KeyPair;
+    lts: LongTermSecret = undefined;
+    contact: Contact;
+    parties: PartyItem[] = [];
+    badges: Badge[] = [];
+    ropascis: RoPaSciInstance[] = [];
+    polls: PollStruct[] = [];
+    meetups: SocialNode[] = [];
+    // Non-stored fields
+    recoverySignatures: RecoverySignature[] = [];
+    storage: IStorage = StorageDB;
+    references: string[] = [];
+    phrpc: PersonhoodRPC;
+
+    /**
+     * Constructs a new Data, optionally initialized with an object containing
+     * fields for initialization of the class.
+     * @param bc an initialized ByzCoinRPC class that references a working ByzCoin
+     * @param obj (optional) object with all fields for the class.
+     */
+    constructor(
+        readonly bc: ByzCoinRPC,
+        obj: any = {},
+    ) {
+        this.setValues(obj);
+    }
 
     get keyIdentitySigner(): Signer {
         return new SignerEd25519(this.keyIdentity._public.point, this.keyIdentity._private.scalar);
@@ -81,7 +123,7 @@ export class Data {
     }
 
     set contacts(cs: Contact[]) {
-        this.contact.contacts = cs;
+        this.contact.contactList = cs;
     }
 
     get uniqueMeetings(): number {
@@ -91,23 +133,19 @@ export class Data {
         return unique.length;
     }
 
+    private _groups: GroupContractCollection[] = [];
+
     get groups(): GroupContractCollection[] {
         return [...this._groups];
     }
-
-    static readonly urlNewDevice = "/register/device";
-    static readonly urlRecoveryRequest = "https://pop.dedis.ch/recoveryReq-1";
-    static readonly urlRecoverySignature = "https://pop.dedis.ch/recoverySig-1";
-    static readonly views = ["c4dt_user", "c4dt_partner", "c4dt_admin", "admin"];
-    static readonly defaultStorage = "storage/data.json";
 
     /**
      * Returns a promise with the loaded Data in it, when available. If the file
      * is not found, it returns an empty data.
      */
     static async load(
-      bc: ByzCoinRPC, storage: IStorage,
-      name: string = Data.defaultStorage, getContacts?: boolean,
+        bc: ByzCoinRPC, storage: IStorage,
+        name: string = Data.defaultStorage, getContacts?: boolean,
     ): Promise<Data> {
         Log.lvl1("Loading data from", name);
         const values = await storage.getObject(name);
@@ -138,7 +176,6 @@ export class Data {
     static async createFirstUser(bc: ByzCoinRPC, adminDarcID: InstanceID, adminKey: Scalar,
                                  alias: string, unrestricted: boolean = false):
         Promise<Data> {
-
         // Prepare adminDarc to have all necessary rules
         const adminPub = Public.base().mul(Private.fromBuffer(adminKey.marshalBinary()));
         const adminSigner = new SignerEd25519(adminPub.point, adminKey);
@@ -195,26 +232,47 @@ export class Data {
         const signers = [adminSigner];
         const instructions: Instruction[] = [darcDevice, darcSign, darcCred, darcCoin].map((dar) => {
                 return Instruction.createSpawn(adminDarcID, DarcInstance.contractID, [
-                    new Argument({name: DarcInstance.argumentDarc, value: dar.toBytes()}),
+                    new Argument({
+                        name: DarcInstance.argumentDarc,
+                        value: dar.toBytes()
+                    }),
                 ]);
             },
         );
         const idBuf = d.keyIdentity._public.toBuffer();
         instructions.push(Instruction.createSpawn(adminDarcID, CoinInstance.contractID, [
             new Argument({name: CoinInstance.argumentCoinID, value: idBuf}),
-            new Argument({name: CoinInstance.argumentDarcID, value: darcCoin.getBaseID()}),
-            new Argument({name: CoinInstance.argumentType, value: SPAWNER_COIN}),
+            new Argument({
+                name: CoinInstance.argumentDarcID,
+                value: darcCoin.getBaseID()
+            }),
+            new Argument({
+                name: CoinInstance.argumentType,
+                value: SPAWNER_COIN
+            }),
         ]));
         instructions.push(Instruction.createSpawn(adminDarcID, CredentialInstance.contractID, [
-            new Argument({name: CredentialInstance.argumentCredID, value: idBuf}),
-            new Argument({name: CredentialInstance.argumentDarcID, value: darcCred.getBaseID()}),
-            new Argument({name: CredentialInstance.argumentCredential, value: cred.toBytes()}),
+            new Argument({
+                name: CredentialInstance.argumentCredID,
+                value: idBuf
+            }),
+            new Argument({
+                name: CredentialInstance.argumentDarcID,
+                value: darcCred.getBaseID()
+            }),
+            new Argument({
+                name: CredentialInstance.argumentCredential,
+                value: cred.toBytes()
+            }),
         ]));
         const amount = Long.fromNumber(1e9);
         instructions.push(Instruction.createInvoke(CoinInstance.coinIID(idBuf),
             CoinInstance.contractID,
             CoinInstance.commandMint,
-            [new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(amount.toBytesLE())})]));
+            [new Argument({
+                name: CoinInstance.argumentCoins,
+                value: Buffer.from(amount.toBytesLE())
+            })]));
 
         const ctx = ClientTransaction.make(bc.getProtocolVersion(), ...instructions);
         await ctx.updateCountersAndSign(bc, [signers, signers, signers, signers, signers, signers,
@@ -293,37 +351,6 @@ export class Data {
         newDeviceDarc.rules.setRule("invoke:darc.evolve", d.keyIdentitySigner);
         await deviceDarc.evolveDarcAndWait(newDeviceDarc, [ephemeralSigner], 5);
         return d;
-    }
-    dataFileName: string = Data.defaultStorage;
-    continuousScan: boolean;
-    personhoodPublished: boolean;
-    keyPersonhood: KeyPair;
-    keyIdentity: KeyPair;
-    lts: LongTermSecret = undefined;
-    contact: Contact;
-    parties: PartyItem[] = [];
-    badges: Badge[] = [];
-    ropascis: RoPaSciInstance[] = [];
-    polls: PollStruct[] = [];
-    meetups: SocialNode[] = [];
-    // Non-stored fields
-    recoverySignatures: RecoverySignature[] = [];
-    storage: IStorage = StorageDB;
-    references: string[] = [];
-    phrpc: PersonhoodRPC;
-    private _groups: GroupContractCollection[] = [];
-
-    /**
-     * Constructs a new Data, optionally initialized with an object containing
-     * fields for initialization of the class.
-     * @param bc an initialized ByzCoinRPC class that references a working ByzCoin
-     * @param obj (optional) object with all fields for the class.
-     */
-    constructor(
-        readonly bc: ByzCoinRPC,
-        obj: any = {},
-    ) {
-        this.setValues(obj);
     }
 
     setFileName(n: string) {
@@ -495,7 +522,10 @@ export class Data {
             cred = orig.credential.copy();
         }
         if (referral) {
-            cred.credentials[0].attributes.push(new Attribute({name: "referred", value: referral}));
+            cred.credentials[0].attributes.push(new Attribute({
+                name: "referred",
+                value: referral
+            }));
         }
         return await this.spawnerInstance.spawnCredential(this.coinInstance, [this.keyIdentitySigner], darcID,
             cred, pub.toBuffer());

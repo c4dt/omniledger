@@ -21,8 +21,6 @@
   "author": "C4DT",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@dedis/cothority": "^3.4.3",
-    "@dedis/kyber": "^3.4.2",
     "cross-fetch": "^3.0.4",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",

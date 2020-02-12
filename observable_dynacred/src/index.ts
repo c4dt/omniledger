@@ -1,9 +1,8 @@
-import {EAttributes, ECredentials, IUpdateCredential} from "./credentials"
+import {ECredentials, IUpdateCredential} from "src/credentialStructBS"
 import {Instances} from "./instances";
 import {User} from "./user";
 
 export {
-    EAttributes,
     ECredentials,
     IUpdateCredential,
     Instances,

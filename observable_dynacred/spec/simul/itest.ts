@@ -1,7 +1,8 @@
-import {byzcoin, darc, Log, network} from "@dedis/cothority";
+import {Log, network} from "@dedis/cothority";
 
 import {
-    IByzCoinAddTransaction, IByzCoinBlockStreamer,
+    IByzCoinAddTransaction,
+    IByzCoinBlockStreamer,
     IByzCoinProof,
     IDataBase
 } from "src/interfaces";
@@ -12,14 +13,14 @@ import {
     ISpawner,
     IUser
 } from "src/credentialFactory";
-import {User} from "src/user";
+import {DoThings, User} from "src/user";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {TempDB} from "spec/simul/tempdb";
 import {ByzCoinReal} from "spec/simul/byzcoinReal";
 import {ROSTER} from "spec/support/conondes";
 import {curve} from "@dedis/kyber";
-import {Credentials} from "src/credentials";
+import {CredentialStructBS} from "src/credentialStructBS";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -37,7 +38,7 @@ export interface BCTest extends IByzCoinProof, IByzCoinAddTransaction, IByzCoinB
 }
 
 export interface TestUser extends IUser {
-    creds: Credentials;
+    creds: CredentialStructBS;
 }
 
 export class BCTestEnv {
@@ -46,7 +47,8 @@ export class BCTestEnv {
         public db: IDataBase,
         public inst: Instances,
         public test: ITest,
-        public user: User
+        public user: User,
+        public dt: DoThings
     ) {
     }
 
@@ -55,9 +57,11 @@ export class BCTestEnv {
         const test = await this.newTest("alias", db);
         const bc = await createBC(test, db);
         const inst = await Instances.fromScratch(db, bc);
+        const dt = new DoThings(bc, db, inst, test.user.keyPair);
         return new BCTestEnv(
             bc, db, inst, test,
-            await User.load(db, inst));
+            await User.load(dt),
+            dt);
     }
 
     static async simul(): Promise<BCTestEnv> {
@@ -85,11 +89,11 @@ export class BCTestEnv {
         return {genesisUser, spawner, user, roster: ROSTER.slice(0, 4)};
     }
 
-    async newCred(alias: string): Promise<TestUser>{
+    async newCred(alias: string): Promise<TestUser> {
         const user = CredentialFactory.newUser(alias, this.test.spawner.spawnerID);
         await this.bc.storeUser(user);
         return {
-            creds: await Credentials.fromScratch(this.inst, user.credID),
+            creds: await CredentialStructBS.fromScratch(this.dt, user.credID),
             ...user
         };
     }

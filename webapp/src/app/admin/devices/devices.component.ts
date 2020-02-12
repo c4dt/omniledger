@@ -60,7 +60,7 @@ export class DevicesComponent {
                 "it's not possible to remove the only device you have.", "Understood");
         }
         const signerDarc = await DarcInstance.fromByzcoin(this.uData.bc, device.darcID);
-        if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.keyIdentitySigner])) {
+        if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.user.keyIdentitySigner])) {
             return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                 "reasons.", "Understood");
         }
