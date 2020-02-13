@@ -9,6 +9,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";
 import { EventData, Page } from "tns-core-modules/ui/page/page";
 import { isAdmin, uData } from "~/lib/byzcoin-def";
+import { getAliasFromPublicKey } from "~/lib/group-ui";
 import { msgFailed } from "~/lib/messages";
 
 let page: Page;
@@ -17,7 +18,7 @@ const publicKeyList = new ObservableArray<PublicKeyListItem>();
 const predecessorList = new ObservableArray<PredecessorListItem>();
 
 const dataForm = fromObject({
-    purpose: "Testing",
+    purpose: "",
     suite: "edwards25519",
     voteThreshold: ">1/2",
 });
@@ -109,7 +110,7 @@ export async function propose() {
                 dialogs.alert(localize("group_configure.alert_not_enough_predecessor"));
                 return;
             }
-            // The new group contract has to different from its predecessor
+            // The new group contract has to be different from its predecessor
             // tslint:disable-next-line: max-line-length
             if (groupDefinition.predecessor.length === 1 && groupDefinition.isSimilarTo(gcCollection.getCurrentGroupContract().groupDefinition)) {
                 dialogs.alert({
@@ -118,6 +119,10 @@ export async function propose() {
                     okButtonText: localize("dialog.ok"),
                 });
                 return;
+            }
+            // modify groupContractCollection purpose if it is modified in groupDefinition
+            if (groupDefinition.purpose !== gcCollection.purpose) {
+                gcCollection.purpose = groupDefinition.purpose;
             }
 
             const parent = gcCollection.get(predecessorList.getItem(0).id);
@@ -330,33 +335,12 @@ async function setDataForm(groupContract?: GroupContract) {
         } else {
             Log.print("setDataForm there is no group contract");
             dataForm.set("suite", "edwards25519");
-            dataForm.set("purpose", "Testing");
+            dataForm.set("purpose", "");
             dataForm.set("voteThreshold", ">1/2");
             dataForm.set("description", uData.contact.alias);
             const pubKey = (await (uData.contact.getDevices())).map((d) => d.pubKey.toHex())[0];
             publicKeyList.push(new PublicKeyListItem(uData.contact.alias, pubKey));
         }
-    } catch (e) {
-        msgFailed(e.toString(), "Error");
-    }
-}
-
-/**
- * Find an alias for a specific publicKey
- *
- * @param publicKey
- */
-function getAliasFromPublicKey(publicKey: string, devicesPerContacts: any[][]): string | undefined {
-    try {
-        for (let i = 0; i < devicesPerContacts.length; i++) {
-            for (const device of devicesPerContacts[i]) {
-                if (publicKey === device.pubKey.toHex()) {
-                    return uData.contacts[i].alias;
-                }
-            }
-        }
-
-        return undefined;
     } catch (e) {
         msgFailed(e.toString(), "Error");
     }
