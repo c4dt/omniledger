@@ -14,7 +14,7 @@ describe("Credentials should", () => {
         });
         contacts.forEach((u) => bc.storeUser(u));
 
-        user.contactList.contactsObservable().subscribe((newContacts) => {
+        user.contactList.subscribe((newContacts) => {
             newContacts.forEach((c) => {
                 c.subscribe({
                     next: (nc) => {

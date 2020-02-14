@@ -56,8 +56,11 @@ export class BCTestEnv {
         const db = new TempDB();
         const test = await this.newTest("alias", db);
         const bc = await createBC(test, db);
+        Log.print("getting instances");
         const inst = await Instances.fromScratch(db, bc);
+        Log.print("init dt");
         const dt = new DoThings(bc, db, inst, test.user.keyPair);
+        Log.print("returning bte");
         return new BCTestEnv(
             bc, db, inst, test,
             await User.load(dt),

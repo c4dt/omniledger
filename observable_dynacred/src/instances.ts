@@ -11,6 +11,7 @@ import {
     IDataBase
 } from "./interfaces";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
+import {startWith} from "rxjs/internal/operators/startWith";
 
 type InstanceID = byzcoin.InstanceID;
 type SkipBlock = skipchain.SkipBlock;
@@ -55,7 +56,7 @@ export interface IProof {
 
 export class Instances {
     public static readonly dbKeyBlockIndex = "instance_block_index";
-    private cache = new Map<InstanceID, ReplaySubject<IInstance>>();
+    private cache = new Map<InstanceID, BehaviorSubject<IInstance>>();
 
     constructor(private db: IDataBase, private bc: IByzCoinProof, private newBlock: BehaviorSubject<Long>) {
     }
@@ -82,29 +83,26 @@ export class Instances {
             return bs;
         }
 
-        const bsNew = new ReplaySubject<IInstance>(1);
-
         // Check if the db already has a version, which might be invalid,
         // but still better than to wait for the network.
-        let lastBlock = Long.fromNumber(-1);
-        const dbInst: IInstance | undefined = await this.db.getObject(id.toString("hex"));
-        if (dbInst !== undefined) {
-            lastBlock = dbInst.block;
-            bsNew.next(dbInst);
+        let dbInst: IInstance | undefined = await this.db.getObject(id.toString("hex"));
+        if (dbInst === undefined) {
+            dbInst = await this.getInstanceFromChain(id);
         }
 
+        const bsNew = new BehaviorSubject(dbInst);
         // Set up a pipe from the block to fetch new versions if a new block
         // is available.
         this.newBlock
             .pipe(
-                filter((v) => !v.equals(lastBlock)),
-                mergeMap((v) => this.getInstanceFromChain(id))
+                filter((v) => !v.equals(dbInst.block)),
+                mergeMap((v) => this.getInstanceFromChain(id)),
+                startWith(dbInst),
+                distinctUntilChanged((a, b) => a.version.equals(b.version))
             )
             .subscribe(bsNew);
         this.cache.set(id, bsNew);
-        return bsNew.pipe(
-            distinctUntilChanged((a, b) => a.version.equals(b.version))
-        );
+        return bsNew;
     }
 
     public async reload(): Promise<void> {

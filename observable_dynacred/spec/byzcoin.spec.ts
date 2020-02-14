@@ -3,13 +3,15 @@ import {Log} from "@dedis/cothority";
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
 
-xdescribe("using real byzcoin, it should", () => {
+describe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;
 
     beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
+            Log.print("real");
             bcTestEnv = await BCTestEnv.real();
+            Log.print("all is well");
         } catch (e) {
             Log.error(e);
             return Log.rcatch(e);
@@ -46,5 +48,14 @@ xdescribe("using real byzcoin, it should", () => {
         await history.resolve(["block"]);
         await bcTestEnv.user.csbs.credPublic.email.setValue("as2@as.as");
         await history.resolve(["block"]);
+    });
+
+    it("should add and remove devices", async () => {
+        Log.print("starting");
+        const history = new HistoryObs();
+        bcTestEnv.user.credSigner.getDevicesOHO().subscribe(
+            devs => devs.forEach(dev => Log.print(dev.getValue(), dev.getName()))
+        );
+        await history.resolve(["new"]);
     })
 });

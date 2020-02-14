@@ -11,6 +11,11 @@ import Long from "long";
 import {User} from "src/user";
 import {IUser} from "src/credentialFactory";
 import {Subject} from "rxjs";
+import {
+    EAttributesConfig,
+    EAttributesPublic,
+    ECredentials
+} from "observable_dynacred";
 
 
 type IIdentity = darc.IIdentity;
@@ -42,7 +47,11 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction, IByzC
         Log.lvl1("Copy the following to `newTest` to speed up testing:", bcRPC.genesisID);
         Log.lvl2("Storing genesis user and 1st user");
         await bc.storeSpawner();
+        Log.print("storeUser");
+        test.user.cred.setAttribute(ECredentials.config, EAttributesConfig.spawner,
+            test.spawner.spawnerID);
         await bc.storeUser(test.user);
+        Log.print("db setting");
         await db.set(User.keyCredID, test.user.credID || Buffer.alloc(32));
         return bc;
     }
@@ -124,5 +133,6 @@ export class ByzCoinReal implements IByzCoinProof, IByzCoinAddTransaction, IByzC
         this.it.spawner.spawnerInstance = await SpawnerInstance.spawn(this.bc, this.it.genesisUser.darc.getBaseID(),
             signer, icc, this.it.spawner.coinID);
         this.it.spawner.spawnerID = this.it.spawner.spawnerInstance.id;
+        Log.print("spawner is:", this.it.spawner.spawnerID);
     }
 }

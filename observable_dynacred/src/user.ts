@@ -11,6 +11,8 @@ import {
 import {Instances} from "./instances";
 import {ContactListBS} from "./contactListBS";
 import {CoinBS} from "./coinBS";
+import {CredentialSignerBS} from "src/signers";
+import {SpawnerInstance} from "@dedis/cothority/personhood";
 
 type InstanceID = byzcoin.InstanceID;
 const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
@@ -34,17 +36,19 @@ export class DoThings {
         public db: IDataBase,
         public inst: Instances,
         private kpp?: KeyPair,
+        public coin?: CoinBS,
+        public spawner?: SpawnerInstance,
     ) {
         if (kpp) {
             this.kp = kpp;
         }
     }
 
-    get kp(): KeyPair{
+    get kp(): KeyPair {
         return this.kpp;
     }
 
-    set kp(k: KeyPair){
+    set kp(k: KeyPair) {
         this.kpp = k;
         this.kiSigner = new SignerEd25519(k.pub, k.priv);
     }
@@ -66,14 +70,27 @@ export class User {
     constructor(public dt: DoThings,
                 public readonly csbs: CredentialStructBS,
                 public readonly contactList: ContactListBS,
-                public readonly coin: CoinBS) {
+                public readonly coin: CoinBS,
+                public readonly credSigner: CredentialSignerBS) {
     }
 
     public static async fromScratch(dt: DoThings, credID: InstanceID): Promise<User> {
+        Log.print("csbs");
         const cbs = await CredentialStructBS.fromScratch(dt, credID);
-        const cl = new ContactListBS(dt, cbs.credPublic.contacts);
-        const coin = await CoinBS.fromScratch(dt, cbs.credPublic.coinID);
-        return new User(dt, cbs, cl, coin);
+        Log.print("getting coin");
+        if (dt.coin === undefined){
+            dt.coin = await CoinBS.fromScratch(dt, cbs.credPublic.coinID);
+        }
+        if (dt.spawner === undefined){
+            Log.print("getting spawner");
+            dt.spawner = await SpawnerInstance.fromByzcoin(dt.bc as any,
+                cbs.credConfig.spawner.getValue());
+        }
+        Log.print('returning');
+        return new User(dt, cbs,
+            new ContactListBS(dt, cbs.credPublic.contacts),
+            dt.coin,
+            await CredentialSignerBS.fromScratch(dt, cbs));
     }
 
     public static async migrate(dt: DoThings): Promise<User | undefined> {
@@ -106,11 +123,13 @@ export class User {
     }
 
     public static async load(dt: DoThings): Promise<User> {
+        Log.print("trying to migrate");
         const user = await this.migrate(dt);
         if (user) {
             return user;
         }
 
+        Log.print("getting keys");
         const privBuf = await dt.db.get(this.keyPriv);
         if (privBuf === undefined) {
             throw new Error("no private key stored");
@@ -122,6 +141,7 @@ export class User {
         }
 
         dt.kp = KeyPair.fromPrivate(privBuf);
+        Log.print("getting user from scratch");
         return User.fromScratch(dt, credID);
     }
 
