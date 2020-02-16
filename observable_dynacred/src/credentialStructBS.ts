@@ -14,9 +14,6 @@ import {
 import {curve} from "@dedis/kyber";
 import {DoThings} from "./user";
 import {filter} from "rxjs/internal/operators/filter";
-import {Log} from "@dedis/cothority";
-import {tap} from "rxjs/internal/operators/tap";
-import {IInstance} from "src/instances";
 import {ObservableToBS} from "src/observableHO";
 
 export const ed25519 = new curve.edwards25519.Curve();
@@ -28,10 +25,10 @@ export enum ECredentials {
     recoveries = "1-recovery"
 }
 
-export interface IUpdateCredential{
+export interface IUpdateCredential {
     cred: string;
     attr: string;
-    value: string | Buffer;
+    value: string | Buffer | undefined;
 }
 
 /**
@@ -78,8 +75,8 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     public async updateCredentials(...cred: IUpdateCredential[]): Promise<void> {
         const orig = this.getValue();
         for (const c of cred) {
-            let value = c.value instanceof Buffer ? c.value : Buffer.from(c.value);
-            if (value.length > 0) {
+            if (c.value !== undefined) {
+                let value = c.value instanceof Buffer ? c.value : Buffer.from(c.value);
                 orig.setAttribute(c.cred, c.attr, value);
             } else {
                 orig.deleteAttribute(c.cred, c.attr);
@@ -134,11 +131,11 @@ export class CredentialBS extends BehaviorSubject<Credential> {
         return bs;
     }
 
-    public async setValue(attr: string, value: string | Buffer): Promise<void>{
+    public async setValue(attr: string, value: string | Buffer): Promise<void> {
         return this.csbs.updateCredentials({cred: this.cred, attr, value})
     }
 
-    public async rmValue(attr: string): Promise<void>{
+    public async rmValue(attr: string): Promise<void> {
         return this.setValue(attr, Buffer.alloc(0));
     }
 }
@@ -152,9 +149,9 @@ export class CredentialAttributeBS<T extends string | Buffer> extends BehaviorSu
     public static fromScratchString(dt: DoThings, cbs: CredentialBS,
                                     name: string): CredentialAttributeBS<string> {
         const bs = cbs.getAttributeBS(name);
-        const attr = (bs.getValue()||Buffer.alloc(0)).toString();
+        const attr = (bs.getValue() || Buffer.alloc(0)).toString();
         const cabs = new CredentialAttributeBS(dt, cbs, name, attr);
-        bs.pipe(map((buf) => (buf||Buffer.alloc(0)).toString())).subscribe(cabs);
+        bs.pipe(map((buf) => (buf || Buffer.alloc(0)).toString())).subscribe(cabs);
         return cabs;
     }
 
@@ -206,6 +203,7 @@ export enum EAttributesConfig {
 export class CredentialConfig {
     public view: CredentialAttributeBS<string>;
     public spawner: CredentialAttributeBS<InstanceID>;
+
     constructor(private dt: DoThings, cbs: CredentialBS) {
         this.view = CredentialAttributeBS.fromScratchString(dt, cbs, EAttributesConfig.view);
         this.spawner = CredentialAttributeBS.fromScratchBuffer(dt, cbs, EAttributesConfig.spawner);

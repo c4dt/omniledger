@@ -13,12 +13,14 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 import {CredentialAttributeBS, CredentialStructBS} from "./credentialStructBS";
 import {DoThings} from "./user";
 import {ObservableHO} from "src/observableHO";
+import {Log} from "@dedis/cothority";
 
 export class ContactListBS extends Observable<BehaviorSubject<CredentialStructBS>[]> {
 
     constructor(private dt: DoThings, private cred: CredentialAttributeBS<Buffer>) {
         super(subscriber => {
                 ObservableHO(new ContactSO(dt, cred.pipe(
+                    map(buf => buf || Buffer.alloc(0)),
                     map((buf) => {
                         const list = [];
                         for (let i = 0; i < buf.length; i += 32) {

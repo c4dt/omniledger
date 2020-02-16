@@ -7,11 +7,7 @@ import {
     IDataBase
 } from "src/interfaces";
 import {Instances} from "src/instances";
-import {
-    CredentialFactory,
-    IGenesisDarc,
-    IUser
-} from "src/credentialFactory";
+import {CredentialFactory, IGenesisDarc, IUser} from "src/credentialFactory";
 import {DoThings, User} from "src/user";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
@@ -23,7 +19,7 @@ import {CoinInstance, SPAWNER_COIN} from "@dedis/cothority/byzcoin/contracts";
 import {SpawnerInstance} from "@dedis/cothority/personhood";
 import Long from "long";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
-import {KeyPair} from "src/keypair";
+import {SignerEd25519} from "@c4dt/cothority/darc";
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -72,12 +68,11 @@ export class BCTestEnv {
         });
     }
 
-    async finalize(): Promise<void>{
+    async finalize(): Promise<void> {
         Log.lvl3("creating instances");
         const inst = await Instances.fromScratch(this.db, this.bc);
         Log.lvl3("creating DoThings");
-        const kp = KeyPair.rand();
-        this.dt = new DoThings(this.bc, this.db, inst, kp);
+        this.dt = new DoThings(this.bc, this.db, inst, this.genesisUser.keyPair);
         Log.lvl3("creating spawner and first user", this.dt.kiSigner);
         await this.createSpawner();
         await this.createFirstUser();
@@ -109,20 +104,18 @@ export class BCTestEnv {
 
         await this.db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
         await this.db.set(User.keyCredID, user.credID || Buffer.alloc(32));
-        await this.storeUser(user);
+        await this.storeUser(user, this.spawnerCoin, this.genesisUser.keyPair.signer())
     }
 
-    public async storeUser(user: IUser) {
-        const signer = [this.dt.kiSigner];
+    public async storeUser(user: IUser, ci: CoinInstance, signer: SignerEd25519) {
         const si = this.spawnerInstance;
-        const ci = this.spawnerCoin;
 
         Log.lvl3("Spawning darcs");
-        await si.spawnDarcs(ci, signer,
+        await si.spawnDarcs(ci, [signer],
             user.darcSign, user.darcDevice, user.darcCred, user.darcCoin);
 
         Log.lvl3("Spawning coin");
-        const coinInst = await si.spawnCoin(ci, signer,
+        const coinInst = await si.spawnCoin(ci, [signer],
             user.darcCoin.getBaseID(), user.keyPair.pub.marshalBinary(), Long.fromNumber(1e6));
         if (!user.coinID.equals(coinInst.id)) {
             throw new Error("resulting coinID doesn't match");
@@ -130,18 +123,9 @@ export class BCTestEnv {
 
         Log.lvl3("Spawning credential");
         const credInst = await si.spawnCredential(ci,
-            signer, user.darcCred.getBaseID(), user.cred, user.keyPair.pub.marshalBinary());
+            [signer], user.darcCred.getBaseID(), user.cred, user.keyPair.pub.marshalBinary());
         if (!user.credID.equals(credInst.id)) {
             throw new Error("resulting credID doesn't match");
         }
-    }
-
-    async newCred(alias: string): Promise<TestUser> {
-        const user = CredentialFactory.newUser(alias, this.spawnerInstance.id);
-        await this.storeUser(user);
-        return {
-            creds: await CredentialStructBS.fromScratch(this.dt, user.credID),
-            ...user
-        };
     }
 }

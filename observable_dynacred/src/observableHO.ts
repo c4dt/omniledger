@@ -1,8 +1,8 @@
 import {BehaviorSubject, Observable} from "rxjs";
 import {map, pairwise} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
-import {Log} from "@dedis/cothority";
 import {startWith} from "rxjs/internal/operators/startWith";
+import {Log} from "@dedis/cothority";
 
 /**
  * Creates a second order observable from source S that emits an array of
@@ -40,8 +40,8 @@ export function ObservableHO<S, Q, D extends BehaviorSubject<Q>>(sob: SecondObs<
     ).pipe(
         mergeMap(async (ts: S[]) => {
             return {
-                str: ts.map(sob.srcStringer),
-                dest: await Promise.all(ts.map(sob.convert)),
+                str: ts.map(t => sob.srcStringer(t)),
+                dest: await Promise.all(ts.map(t => sob.convert(t))),
             }}),
         map((rs) => {
             rs.str.forEach((str, i) => {

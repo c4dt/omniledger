@@ -8,8 +8,6 @@ import {DoThings} from "./user";
 import {CredentialAttributeBS} from "./credentialStructBS";
 import {ObservableHO, ObservableToBS} from "src/observableHO";
 import {IInstance} from "src/instances";
-import {Log} from "@dedis/cothority";
-import {tap} from "rxjs/internal/operators/tap";
 
 
 export class CoinBS extends BehaviorSubject<Coin> {
@@ -37,8 +35,12 @@ export class CoinBS extends BehaviorSubject<Coin> {
 
     async coinInstanceBS(): Promise<BehaviorSubject<CoinInstance>> {
         return ObservableToBS(this.inst.pipe(
-            map(inst =>
-                CoinInstance.create(this.dt.bc as any, inst.key, inst.darcID, this.getValue()))
-        ));
+            map(inst => this.coinInstance()))
+        );
+    }
+
+    public coinInstance(): CoinInstance {
+        return CoinInstance.create(this.dt.bc as any, this.inst.getValue().key,
+            this.inst.getValue().darcID, this.getValue());
     }
 }

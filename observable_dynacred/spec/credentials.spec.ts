@@ -3,6 +3,8 @@ import {Log} from "@dedis/cothority";
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
 
+Log.lvl = 2;
+
 describe("Credentials should", () => {
 
     it("do with contacts:", async () => {
@@ -13,8 +15,11 @@ describe("Credentials should", () => {
         const contacts = ["foo", "bar", "alice"].map((alias) =>
             CredentialFactory.newUser(alias, spawnerInstance.id)
         );
-        contacts.forEach((u) => bct.storeUser(u));
+        for (const u of contacts){
+            await bct.storeUser(u, user.coin.coinInstance(), user.dt.kp.signer());
+        }
 
+        Log.lvl2("subscribing to contactlist");
         user.contactList.subscribe((newContacts) => {
             newContacts.forEach((c) => {
                 c.subscribe({

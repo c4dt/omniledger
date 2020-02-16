@@ -38,7 +38,7 @@ describe("Instances should", () => {
         }));
         const inst3 = await Instances.fromScratch(db, bc);
         await inst3.reload();
-        await history.resolve(["P", "P", "P", "P", "P"]);
+        await history.resolve(["P", "P", "P", "P", "P", "P", "P"]);
         const io3 = (await inst3.instanceObservable(user.csbs.id)).subscribe(
             (ii) => history.push("i3:" + ii.version.toNumber()));
         await history.resolve(["i3:1"]);

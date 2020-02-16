@@ -19,7 +19,7 @@ describe("User class should", () => {
         const email = user.csbs.credPublic.email;
         const history = new HistoryObs();
         const obs1 = alias.subscribe((alias) => history.push("alias:" + alias));
-        await history.resolve(["alias:alias"]);
+        await history.resolve(["alias:"+user.csbs.credPublic.alias.getValue()]);
 
         const obs2 = email.subscribe((email) => history.push("email:" + email));
         await history.resolve(["email:"]);
@@ -39,7 +39,7 @@ describe("User class should", () => {
     });
 
     it("correctly migrate", async () => {
-        const {dt, db, inst, user, test} = await BCTestEnv.simul();
+        const {dt, db, inst, user} = await BCTestEnv.simul();
         User.migrateOnce = true;
 
         await db.set(User.keyPriv, Buffer.alloc(0));
@@ -49,7 +49,7 @@ describe("User class should", () => {
             keyIdentity: user.dt.kp.priv.marshalBinary().toString("hex"),
             version: User.versionMigrate,
             contact: {
-                credential: test.user.cred.toBytes()
+                credential: user.csbs.getValue().toBytes()
             }
         };
         await db.setObject(User.keyMigrate, migrate);

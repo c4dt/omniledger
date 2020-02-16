@@ -4,6 +4,8 @@ import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
 import {KeyPair} from "src/keypair";
 
+Log.lvl = 2;
+
 describe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;
 
@@ -19,10 +21,10 @@ describe("using real byzcoin, it should", () => {
         Log.lvl2("Done creating instance");
     });
 
-    it("set up an admin user", async () => {
-        const history = new HistoryObs();
-        const user1 = await bcTestEnv.newCred("alias1");
-        const user2 = await bcTestEnv.newCred("alias2");
+    it("create a new user", async () => {
+        // const history = new HistoryObs();
+        // const user1 = await bcTestEnv.newCred("alias1");
+        // const user2 = await bcTestEnv.newCred("alias2");
 
         // await user1.creds.addContact(bcTestEnv.bc, user1.keyPair.priv, user2.credID);
         // user1.creds.contactsObservable().subscribe((c) => {
@@ -52,7 +54,6 @@ describe("using real byzcoin, it should", () => {
 
     it("should add and remove devices", async () => {
         const history = new HistoryObs();
-        // Log.print("credsignerdarc:", bcTestEnv.user.credSigner.getValue());
         bcTestEnv.user.credSigner.getDevicesOHO().subscribe(
             devs => history.push("new:" +
                 devs.map(dev => dev.getName()).join("--"))

@@ -4,6 +4,7 @@ import {Subject} from "rxjs";
 import {byzcoin, Log, skipchain} from "@dedis/cothority";
 import {IInstance, IProof, newIInstance} from "src/instances";
 import {
+    configInstanceID,
     IByzCoinAddTransaction,
     IByzCoinBlockStreamer,
     IByzCoinProof
@@ -71,6 +72,8 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
 
     constructor(igd: IGenesisDarc) {
         this.globalState.addDarc(igd.darc);
+        this.globalState.addOrUpdateInstance(newIInstance(configInstanceID,
+            Buffer.alloc(0), "config"))
     }
 
     public async sendTransactionAndWait(tx: ClientTransaction, wait?: number)
@@ -125,7 +128,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
                         this.globalState.addOrUpdateInstance(ciInst);
                         break;
                     case CoinInstance.commandFetch:
-                        Log.warn("coin fetch is just ignored");
+                        Log.lvl3("coin fetch is just ignored");
                         break;
                     default:
                         throw new Error(`Don't know how to coin.${i.command}`);
