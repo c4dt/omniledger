@@ -13,7 +13,7 @@ describe("using real byzcoin, it should", () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
             bcTestEnv = await BCTestEnv.real();
-            Log.print("all is well");
+            Log.lvl1("Correctly created real byzcoin");
         } catch (e) {
             Log.error(e);
             return Log.rcatch(e);

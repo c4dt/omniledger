@@ -10,7 +10,6 @@ import {
     IByzCoinProof
 } from "src/interfaces";
 
-import {IGenesisDarc} from "src/credentialFactory";
 import {map} from "rxjs/operators";
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
 import {
@@ -32,6 +31,7 @@ import {
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import {createHash} from "crypto-browserify";
 import Long = require("long");
+import {IGenesisDarc} from "spec/simul/itest";
 
 class SimulProof {
     public latest: skipchain.SkipBlock;

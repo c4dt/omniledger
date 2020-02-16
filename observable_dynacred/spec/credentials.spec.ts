@@ -1,4 +1,4 @@
-import {CredentialFactory} from "src/credentialFactory";
+import {UserFactory} from "src/userFactory";
 import {Log} from "@dedis/cothority";
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
@@ -13,7 +13,7 @@ describe("Credentials should", () => {
         const {user, spawnerInstance} = bct;
         const history = new HistoryObs();
         const contacts = ["foo", "bar", "alice"].map((alias) =>
-            CredentialFactory.newUser(alias, spawnerInstance.id)
+            new UserFactory(alias, spawnerInstance.id)
         );
         for (const u of contacts){
             await bct.storeUser(u, user.coin.coinInstance(), user.dt.kp.signer());

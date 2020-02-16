@@ -1,4 +1,4 @@
-import {Log, network} from "@dedis/cothority";
+import {darc, Log, network} from "@dedis/cothority";
 
 import {
     IByzCoinAddTransaction,
@@ -7,29 +7,32 @@ import {
     IDataBase
 } from "src/interfaces";
 import {Instances} from "src/instances";
-import {CredentialFactory, IGenesisDarc, IUser} from "src/credentialFactory";
+import {UserFactory} from "src/userFactory";
 import {DoThings, User} from "src/user";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {TempDB} from "spec/simul/tempdb";
 import {ROSTER} from "spec/support/conondes";
-import {curve} from "@dedis/kyber";
-import {CredentialStructBS} from "src/credentialStructBS";
+import {curve, Scalar} from "@dedis/kyber";
 import {CoinInstance, SPAWNER_COIN} from "@dedis/cothority/byzcoin/contracts";
-import {SpawnerInstance} from "@dedis/cothority/personhood";
+import {
+    CredentialsInstance,
+    ICreateCost,
+    SpawnerInstance
+} from "@dedis/cothority/personhood";
 import Long from "long";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
-import {SignerEd25519} from "@c4dt/cothority/darc";
+import {SignerEd25519} from "@dedis/cothority/darc";
+import {KeyPair} from "src/keypair";
 
 const ed25519 = curve.newCurve("edwards25519");
-
-Log.lvl = 2;
 
 export interface BCTest extends IByzCoinProof, IByzCoinAddTransaction, IByzCoinBlockStreamer {
 }
 
-export interface TestUser extends IUser {
-    creds: CredentialStructBS;
+export interface IGenesisDarc {
+    keyPair: KeyPair;
+    darc: darc.Darc;
 }
 
 export class BCTestEnv {
@@ -46,7 +49,7 @@ export class BCTestEnv {
     static async fromScratch(createBC: (igd: IGenesisDarc) => Promise<BCTest>): Promise<BCTestEnv> {
         const db = new TempDB();
         Log.lvl3("creating BC");
-        const genesisUser = CredentialFactory.genesisDarc(ed25519.scalar().one());
+        const genesisUser = this.genesisDarc(ed25519.scalar().one());
         const bc = await createBC(genesisUser);
         const bcte = new BCTestEnv(db, genesisUser, bc);
 
@@ -68,12 +71,39 @@ export class BCTestEnv {
         });
     }
 
+    public static genesisDarc(priv?: Scalar): IGenesisDarc {
+        const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
+        const signer = [keyPair.signer()];
+        const adminDarc = darc.Darc.createBasic(signer, signer,
+            Buffer.from("AdminDarc"),
+            ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
+                "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
+                "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"]);
+        return {keyPair, darc: adminDarc};
+    }
+
+    public static spawnerCost(): ICreateCost {
+        const coin10 = Long.fromNumber(10);
+        const coin100 = Long.fromNumber(100);
+        const coin1000 = Long.fromNumber(1000);
+        return {
+            costCRead: coin100,
+            costCWrite: coin1000,
+            costCoin: coin100,
+            costCredential: coin1000,
+            costDarc: coin100,
+            costParty: coin1000,
+            costRoPaSci: coin10,
+            costValue: coin10,
+        };
+    }
+
     async finalize(): Promise<void> {
         Log.lvl3("creating instances");
         const inst = await Instances.fromScratch(this.db, this.bc);
         Log.lvl3("creating DoThings");
         this.dt = new DoThings(this.bc, this.db, inst, this.genesisUser.keyPair);
-        Log.lvl3("creating spawner and first user", this.dt.kiSigner);
+        Log.lvl3("creating spawner and first user");
         await this.createSpawner();
         await this.createFirstUser();
         Log.lvl3("loading user");
@@ -83,7 +113,7 @@ export class BCTestEnv {
 
     public async createSpawner() {
         Log.lvl3("Storing coin and spawner instances");
-        const spawnerCost = CredentialFactory.spawnerCost();
+        const spawnerCost = BCTestEnv.spawnerCost();
         const signers = [this.genesisUser.keyPair.signer()];
         this.spawnerCoin = await CoinInstance.spawn(this.bc as any, this.genesisUser.darc.getBaseID(),
             signers, SPAWNER_COIN);
@@ -99,15 +129,16 @@ export class BCTestEnv {
 
     public async createFirstUser(): Promise<void> {
         // Create all parts of the test-user
-        const user = CredentialFactory.newUser("1st user", this.spawnerInstance.id,
+        const user = new UserFactory("1st user", this.spawnerInstance.id,
             ed25519.scalar().setBytes(Buffer.from("user")));
 
         await this.db.set(User.keyPriv, user.keyPair.priv.marshalBinary());
-        await this.db.set(User.keyCredID, user.credID || Buffer.alloc(32));
+        const credIID = CredentialsInstance.credentialIID(user.keyPair.pub.marshalBinary());
+        await this.db.set(User.keyCredID, credIID);
         await this.storeUser(user, this.spawnerCoin, this.genesisUser.keyPair.signer())
     }
 
-    public async storeUser(user: IUser, ci: CoinInstance, signer: SignerEd25519) {
+    public async storeUser(user: UserFactory, ci: CoinInstance, signer: SignerEd25519) {
         const si = this.spawnerInstance;
 
         Log.lvl3("Spawning darcs");
@@ -115,17 +146,9 @@ export class BCTestEnv {
             user.darcSign, user.darcDevice, user.darcCred, user.darcCoin);
 
         Log.lvl3("Spawning coin");
-        const coinInst = await si.spawnCoin(ci, [signer],
-            user.darcCoin.getBaseID(), user.keyPair.pub.marshalBinary(), Long.fromNumber(1e6));
-        if (!user.coinID.equals(coinInst.id)) {
-            throw new Error("resulting coinID doesn't match");
-        }
+        await si.spawnCoin(ci, [signer], user.darcCoin.getBaseID(), user.keyPair.pub.marshalBinary(), Long.fromNumber(1e6));
 
         Log.lvl3("Spawning credential");
-        const credInst = await si.spawnCredential(ci,
-            [signer], user.darcCred.getBaseID(), user.cred, user.keyPair.pub.marshalBinary());
-        if (!user.credID.equals(credInst.id)) {
-            throw new Error("resulting credID doesn't match");
-        }
+        await si.spawnCredential(ci, [signer], user.darcCred.getBaseID(), user.cred, user.keyPair.pub.marshalBinary());
     }
 }
