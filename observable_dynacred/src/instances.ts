@@ -77,7 +77,7 @@ export class Instances {
         return new Instances(db, bc, newBlock);
     }
 
-    public async instanceObservable(id: InstanceID): Promise<Observable<IInstance>> {
+    public async instanceObservable(id: InstanceID): Promise<BehaviorSubject<IInstance>> {
         const bs = this.cache.get(id);
         if (bs !== undefined) {
             return bs;

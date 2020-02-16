@@ -75,22 +75,22 @@ export class User {
     }
 
     public static async fromScratch(dt: DoThings, credID: InstanceID): Promise<User> {
-        Log.print("csbs");
+        Log.lvl3("creating user from scratch");
         const cbs = await CredentialStructBS.fromScratch(dt, credID);
-        Log.print("getting coin");
-        if (dt.coin === undefined){
+        if (dt.coin === undefined) {
+            Log.lvl3("creating coinBS");
             dt.coin = await CoinBS.fromScratch(dt, cbs.credPublic.coinID);
         }
-        if (dt.spawner === undefined){
-            Log.print("getting spawner");
+        if (dt.spawner === undefined) {
+            Log.lvl3("creating spawnerinstance");
             dt.spawner = await SpawnerInstance.fromByzcoin(dt.bc as any,
                 cbs.credConfig.spawner.getValue());
         }
-        Log.print('returning');
-        return new User(dt, cbs,
-            new ContactListBS(dt, cbs.credPublic.contacts),
-            dt.coin,
-            await CredentialSignerBS.fromScratch(dt, cbs));
+        Log.lvl3("creating contactListBS");
+        const clbs = new ContactListBS(dt, cbs.credPublic.contacts);
+        Log.lvl3("creating credentialSignerBS");
+        const csbs = await CredentialSignerBS.fromScratch(dt, cbs);
+        return new User(dt, cbs, clbs, dt.coin, csbs);
     }
 
     public static async migrate(dt: DoThings): Promise<User | undefined> {
@@ -123,13 +123,11 @@ export class User {
     }
 
     public static async load(dt: DoThings): Promise<User> {
-        Log.print("trying to migrate");
         const user = await this.migrate(dt);
         if (user) {
             return user;
         }
 
-        Log.print("getting keys");
         const privBuf = await dt.db.get(this.keyPriv);
         if (privBuf === undefined) {
             throw new Error("no private key stored");
@@ -141,7 +139,6 @@ export class User {
         }
 
         dt.kp = KeyPair.fromPrivate(privBuf);
-        Log.print("getting user from scratch");
         return User.fromScratch(dt, credID);
     }
 

@@ -10,12 +10,7 @@ import {map} from "rxjs/operators";
 
 import {InstanceID} from "@dedis/cothority/byzcoin";
 
-import {
-    CredentialAttributeBS,
-    CredentialStructBS,
-    EAttributesPublic,
-    ECredentials
-} from "./credentialStructBS";
+import {CredentialAttributeBS, CredentialStructBS} from "./credentialStructBS";
 import {DoThings} from "./user";
 import {ObservableHO} from "src/observableHO";
 
@@ -67,16 +62,8 @@ class ContactSO {
         return src.toString("hex");
     }
 
-    dstStringer(dst: CredentialStructBS): string {
-        return dst.getValue().getAttribute(ECredentials.pub,
-            EAttributesPublic.seedPub).toString("hex");
-    }
-
-    srcEqual(a: Buffer, b: Buffer): boolean {
-        if (a === undefined || b === undefined) {
-            return a === b;
-        }
-        return a.equals(b);
+    stringToSrc(str: string): Buffer {
+        return Buffer.from(str, "hex");
     }
 }
 

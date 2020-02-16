@@ -1,25 +1,16 @@
 import {curve, Point, Scalar} from "@dedis/kyber";
 import {byzcoin, calypso, darc, personhood} from "@dedis/cothority";
 import Long = require("long");
-import {randomBytes} from "crypto";
 
 import {CredentialStructBS} from "./credentialStructBS";
 import {KeyPair} from "./keypair";
+import {ICreateCost} from "@dedis/cothority/personhood";
 
 const ed25519 = new curve.edwards25519.Curve();
 
 export interface IGenesisDarc {
     keyPair: KeyPair;
     darc: darc.Darc;
-}
-
-export interface ISpawner {
-    coin: byzcoin.contracts.Coin;
-    coinID: byzcoin.InstanceID;
-    spawner: byzcoin.contracts.SpawnerStruct;
-    spawnerID: byzcoin.InstanceID;
-    spawnerInstance?: byzcoin.contracts.SpawnerInstance;
-    coinInstance?: byzcoin.contracts.CoinInstance;
 }
 
 export interface IUser {
@@ -47,24 +38,11 @@ export class CredentialFactory {
         return {keyPair, darc: adminDarc};
     }
 
-    public static spawner(gu: IGenesisDarc): ISpawner {
-        const coin = new byzcoin.contracts.Coin({
-            name: personhood.SPAWNER_COIN,
-            value: Long.fromNumber(1e9)
-        });
-        const coin10 = new byzcoin.contracts.Coin({
-            name: personhood.SPAWNER_COIN,
-            value: Long.fromNumber(10)
-        });
-        const coin100 = new byzcoin.contracts.Coin({
-            name: personhood.SPAWNER_COIN,
-            value: Long.fromNumber(100)
-        });
-        const coin1000 = new byzcoin.contracts.Coin({
-            name: personhood.SPAWNER_COIN,
-            value: Long.fromNumber(1000)
-        });
-        const spawner = new byzcoin.contracts.SpawnerStruct({
+    public static spawnerCost(): ICreateCost {
+        const coin10 = Long.fromNumber(10);
+        const coin100 = Long.fromNumber(100);
+        const coin1000 = Long.fromNumber(1000);
+        return {
             costCRead: coin100,
             costCWrite: coin1000,
             costCoin: coin100,
@@ -73,11 +51,6 @@ export class CredentialFactory {
             costParty: coin1000,
             costRoPaSci: coin10,
             costValue: coin10,
-        });
-        return {
-            coin, spawner,
-            coinID: Buffer.from(randomBytes(32)),
-            spawnerID: Buffer.from(randomBytes(32))
         };
     }
 
@@ -117,7 +90,7 @@ export class CredentialFactory {
         const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
         const signer = [keyPair.signer()];
 
-        const darcDevice = darc.Darc.createBasic(signer, signer, Buffer.from("device"));
+        const darcDevice = darc.Darc.createBasic(signer, signer, Buffer.from("device:initial"));
         const darcDeviceId = new darc.IdentityDarc({id: darcDevice.getBaseID()});
         const darcSign = darc.Darc.createBasic([darcDeviceId], [darcDeviceId], Buffer.from("signer"));
         const darcSignId = new darc.IdentityDarc({id: darcSign.getBaseID()});

@@ -18,12 +18,13 @@ import {
 } from "@dedis/cothority/darc";
 
 import {DoThings} from "./user";
-import {CredentialStructBS, ECredentials} from "src/credentialStructBS";
+import {CredentialBS, CredentialStructBS} from "src/credentialStructBS";
 import {map} from "rxjs/operators";
 import {ObservableHO, ObservableToBS} from "src/observableHO";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import {DarcInstance} from "@dedis/cothority/byzcoin/contracts";
+import {Log} from "@dedis/cothority";
 
 export class CredentialSignerBS extends BehaviorSubject<Darc> {
 
@@ -35,43 +36,43 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
     }
 
     public static async fromScratch(dt: DoThings, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
-        const darcInst = (await dt.inst.instanceObservable(credStructBS.darcID))
+        const credDarc = Darc.decode(
+            (await dt.inst.instanceObservable(credStructBS.darcID))
+                .getValue().value);
+        const signerDarcID = IdentityWrapper.fromString(
+            credDarc.rules.getRule(Darc.ruleSign).getIdentities()[0]).darc.id;
+        const darcInst = (await dt.inst.instanceObservable(signerDarcID))
             .pipe(map(inst => Darc.decode(inst.value)));
 
         const signerDarcIDs = await ObservableToBS(darcInst.pipe(
             map((d) => d.rules.getRule(Darc.ruleSign).getIdentities()
-                .map(id => IdentityWrapper.fromString(id).darc.id))));
+                .map(id => IdentityWrapper.fromString(id).darc.id))
+        ));
 
         return new CredentialSignerBS(dt, credStructBS,
             await ObservableToBS(darcInst), signerDarcIDs);
     }
 
-    getDevicesOHO(): SignerOHO {
-        return new SignerOHO(ObservableHO({
+    getDarcsOHO(creds: CredentialBS): Observable<Signer[]> {
+        return ObservableHO({
             source: this.signerDarcs.pipe(
                 map((darcIDs) => darcIDs.filter((darcID) =>
-                    this.credStructBS.credDevices.getValue().attributes
-                        .find((att) => att.value.equals(darcID))))
+                    creds.getValue().attributes
+                        .find((att) => att.value.equals(darcID))
+                ))
             ),
-            convert: async (src: InstanceID): Promise<Signer> =>
-                Signer.fromDarcID(this.dt, src),
-            srcStringer: (src: InstanceID) => src.toString("hex"),
-            srcEqual: (a, b) => a.equals(b),
-        }), ECredentials.devices);
+            convert: async (src) => Signer.fromDarcID(this.dt, src),
+            srcStringer: (src) => src.toString("hex"),
+            stringToSrc: (str) => Buffer.from(str, "hex"),
+        });
     }
 
-    getRecoveriesOHO(): SignerOHO {
-        return new SignerOHO(ObservableHO({
-            source: this.signerDarcs.pipe(
-                map((darcIDs) => darcIDs.filter((darcID) =>
-                    this.credStructBS.credRecoveries.getValue().attributes
-                        .find((att) => att.value.equals(darcID))))
-            ),
-            convert: async (src: InstanceID): Promise<Signer> =>
-                Signer.fromDarcID(this.dt, src),
-            srcStringer: (src: InstanceID) => src.toString("hex"),
-            srcEqual: (a, b) => a.equals(b),
-        }), ECredentials.recoveries);
+    getDevicesOHO(): Observable<Signer[]>{
+        return this.getDarcsOHO(this.credStructBS.credDevices);
+    }
+
+    getRecoveriesOHO(): Observable<Signer[]>{
+        return this.getDarcsOHO(this.credStructBS.credRecoveries);
     }
 
     async addSigner(name: string, signer: SignerEd25519): Promise<Darc> {
@@ -88,21 +89,14 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
         return newDarc;
     }
 
-    async addDevice(name: string, signer: SignerEd25519): Promise<void>{
-        const newDarc = await this.addSigner(name, signer);
-        await this.credStructBS.credDevices.setValue(name, newDarc.getBaseID());
+    async addDevice(name: string, signer: SignerEd25519): Promise<void> {
+        const newDarc = await this.addSigner(`device:${name}`, signer);
+        await this.credStructBS.credDevices.setValue("device", newDarc.getBaseID());
     }
 
-    async addRecovery(name: string, signer: SignerEd25519): Promise<void>{
-        const newDarc = await this.addSigner(name, signer);
-        await this.credStructBS.credRecoveries.setValue(name, newDarc.getBaseID());
-    }
-}
-
-export class SignerOHO extends Observable<Signer[]> {
-    constructor(private bs: Observable<Signer[]>,
-                public signerType: ECredentials) {
-        super()
+    async addRecovery(name: string, signer: SignerEd25519): Promise<void> {
+        const newDarc = await this.addSigner(`recovery:${name}`, signer);
+        await this.credStructBS.credRecoveries.setValue("recovery", newDarc.getBaseID());
     }
 }
 
@@ -113,8 +107,9 @@ export class Signer extends BehaviorSubject<Darc> {
     }
 
     public static async fromDarcID(dt: DoThings, darcID: InstanceID): Promise<Signer> {
-        return new Signer(await ObservableToBS((await dt.inst.instanceObservable(darcID))
-            .pipe(map(inst => Darc.decode(inst.value)))));
+        return new Signer(
+            await ObservableToBS((await dt.inst.instanceObservable(darcID))
+                .pipe(map(inst => Darc.decode(inst.value)))));
     }
 
     getName(): string {

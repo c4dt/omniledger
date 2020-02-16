@@ -7,12 +7,13 @@ describe("Credentials should", () => {
 
     it("do with contacts:", async () => {
         Log.lvl1("checking credentials adding and removing");
-        const {bc, db, inst, user, test} = await BCTestEnv.simul();
+        const bct = await BCTestEnv.simul();
+        const {user, spawnerInstance} = bct;
         const history = new HistoryObs();
-        const contacts = ["foo", "bar", "alice"].map((alias) => {
-            return CredentialFactory.newUser(alias, test.spawner.spawnerID);
-        });
-        contacts.forEach((u) => bc.storeUser(u));
+        const contacts = ["foo", "bar", "alice"].map((alias) =>
+            CredentialFactory.newUser(alias, spawnerInstance.id)
+        );
+        contacts.forEach((u) => bct.storeUser(u));
 
         user.contactList.subscribe((newContacts) => {
             newContacts.forEach((c) => {

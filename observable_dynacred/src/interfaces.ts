@@ -2,6 +2,7 @@ import {IProof} from "./instances";
 import {byzcoin, darc, skipchain} from "@dedis/cothority";
 import Long from "long";
 import {Subject} from "rxjs";
+import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
 
 type IIdentity = darc.IIdentity;
 type InstanceID = byzcoin.InstanceID;
@@ -12,10 +13,11 @@ export interface IByzCoinProof {
 }
 
 export interface IByzCoinAddTransaction {
-    sendTransactionAndWait(tx: ClientTransaction): Promise<void>;
+    sendTransactionAndWait(tx: ClientTransaction, wait?: number): Promise<AddTxResponse>;
     getSignerCounters(signers: IIdentity[], increment: number): Promise<Long[]>;
     updateCachedCounters(signers: IIdentity[]): Promise<Long[]>;
     getNextCounter(signer: IIdentity): Long;
+    getProtocolVersion(): number;
 }
 
 export interface IByzCoinBlockStreamer {

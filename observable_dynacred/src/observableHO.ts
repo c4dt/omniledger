@@ -15,7 +15,7 @@ export function ObservableHO<S, Q, D extends BehaviorSubject<Q>>(sob: SecondObs<
 
     const bssCache = new Map<string, D>();
     return sob.source.pipe(
-        map((rs) => new Set(rs)),
+        map((rs) => new Set(rs.map(r => sob.srcStringer(r)))),
         startWith(new Set()),
         pairwise(),
         map((pair) => {
@@ -23,17 +23,16 @@ export function ObservableHO<S, Q, D extends BehaviorSubject<Q>>(sob: SecondObs<
             const newBS: S[] = [];
             prev.forEach((t) => {
                 if (!curr.has(t)) {
-                    const k = sob.srcStringer(t);
-                    const bs = bssCache.get(k);
+                    const bs = bssCache.get(t);
                     if (bs !== undefined) {
                         bs.complete();
-                        bssCache.delete(k);
+                        bssCache.delete(t);
                     }
                 }
             });
             curr.forEach((t) => {
                 if (!prev.has(t)) {
-                    newBS.push(t)
+                    newBS.push(sob.stringToSrc(t))
                 }
             });
             return newBS;
@@ -101,5 +100,5 @@ export interface SecondObs<T, R> {
 
     srcStringer(source: T): string;
 
-    srcEqual(a: T, b: T): boolean;
+    stringToSrc(str: string): T;
 }

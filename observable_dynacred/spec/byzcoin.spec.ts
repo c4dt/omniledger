@@ -2,6 +2,7 @@ import {Log} from "@dedis/cothority";
 
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
+import {KeyPair} from "src/keypair";
 
 describe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;
@@ -9,7 +10,6 @@ describe("using real byzcoin, it should", () => {
     beforeAll(async () => {
         Log.lvl1("Creating Byzcoin and first instance");
         try {
-            Log.print("real");
             bcTestEnv = await BCTestEnv.real();
             Log.print("all is well");
         } catch (e) {
@@ -51,11 +51,16 @@ describe("using real byzcoin, it should", () => {
     });
 
     it("should add and remove devices", async () => {
-        Log.print("starting");
         const history = new HistoryObs();
+        // Log.print("credsignerdarc:", bcTestEnv.user.credSigner.getValue());
         bcTestEnv.user.credSigner.getDevicesOHO().subscribe(
-            devs => devs.forEach(dev => Log.print(dev.getValue(), dev.getName()))
+            devs => history.push("new:" +
+                devs.map(dev => dev.getName()).join("--"))
         );
-        await history.resolve(["new"]);
+        await history.resolve(["new:device:initial"]);
+
+        const kp = KeyPair.rand();
+        await bcTestEnv.user.credSigner.addDevice("test", kp.signer());
+        await history.resolve(["new:device:test"]);
     })
 });

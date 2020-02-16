@@ -25,16 +25,13 @@ export class CoinBS extends BehaviorSubject<Coin> {
 
     public static async fromScratch(dt: DoThings, coinID: CredentialAttributeBS<InstanceID>):
         Promise<CoinBS> {
-        Log.print("create oho");
         const oho = ObservableHO({
             source: coinID.pipe(
-                tap(c => Log.print("coin", c)),
                 map(ci => [ci])),
             convert: async (src) => ObservableToBS(await dt.inst.instanceObservable(src)),
             srcStringer: (src) => src.toString("hex"),
-            srcEqual: (a, b) => a.equals(b)
+            stringToSrc: (str) => Buffer.from(str, "hex"),
         });
-        Log.print("returning coinbs");
         return new CoinBS(dt, await ObservableToBS(oho))
     }
 
