@@ -19,7 +19,7 @@ import {
     CredentialsInstance,
     ICreateCost,
     SpawnerInstance
-} from "@dedis/cothority/personhood";
+} from "@dedis/cothority/byzcoin/contracts";
 import Long from "long";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {SignerEd25519} from "@dedis/cothority/darc";

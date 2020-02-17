@@ -1,21 +1,21 @@
-import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long from "long";
-import {byzcoin, Log, skipchain} from "@dedis/cothority";
+import {Log} from "@dedis/cothority";
 import {
     configInstanceID,
     IByzCoinBlockStreamer,
     IByzCoinProof,
     IDataBase
 } from "./interfaces";
-import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
+import {
+    InstanceID,
+    StateChangeBody
+} from "@dedis/cothority/byzcoin";
 import {startWith} from "rxjs/internal/operators/startWith";
-
-type InstanceID = byzcoin.InstanceID;
-type SkipBlock = skipchain.SkipBlock;
-type StateChangeBody = byzcoin.StateChangeBody;
+import {SkipBlock} from "@dedis/cothority/skipchain";
 
 export interface IInstance {
     key: InstanceID;
@@ -71,7 +71,7 @@ export class Instances {
             blockIndex = Long.fromNumber(p.latest.index);
         }
         const newBlock = new BehaviorSubject(blockIndex);
-        bc.getNewBlocks().pipe(
+        (await bc.getNewBlocks()).pipe(
             map((block) => Long.fromNumber(block.index))
         ).subscribe(newBlock);
         return new Instances(db, bc, newBlock);

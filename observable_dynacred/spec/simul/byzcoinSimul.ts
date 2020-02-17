@@ -1,7 +1,7 @@
 // tslint:disable:max-classes-per-file
 
-import {Subject} from "rxjs";
-import {byzcoin, Log, skipchain} from "@dedis/cothority";
+import {BehaviorSubject, Subject} from "rxjs";
+import {Log} from "@dedis/cothority";
 import {IInstance, IProof, newIInstance} from "src/instances";
 import {
     configInstanceID,
@@ -27,15 +27,15 @@ import {SkipBlock} from "@dedis/cothority/skipchain";
 import {
     CredentialsInstance,
     SpawnerInstance
-} from "@dedis/cothority/personhood";
+} from "@dedis/cothority/byzcoin/contracts";
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import {createHash} from "crypto-browserify";
 import Long = require("long");
 import {IGenesisDarc} from "spec/simul/itest";
 
 class SimulProof {
-    public latest: skipchain.SkipBlock;
-    public stateChangeBody: byzcoin.StateChangeBody;
+    public latest: SkipBlock;
+    public stateChangeBody: StateChangeBody;
     public contractID: string;
     public darcID: InstanceID;
     public value: Buffer;
@@ -180,10 +180,10 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
         return 3;
     }
 
-    getNewBlocks(): Subject<skipchain.SkipBlock> {
-        const newBlocks = new Subject<skipchain.SkipBlock>();
+    async getNewBlocks(): Promise<BehaviorSubject<SkipBlock>> {
+        const newBlocks = new BehaviorSubject(this.blocks.getLatestSkipBlock());
         this.blocks.newBlock.pipe(
-            map((block) => new skipchain.SkipBlock({index: block.index.toNumber()}))
+            map(() => this.blocks.getLatestSkipBlock())
         ).subscribe(newBlocks);
         return newBlocks;
     }
@@ -352,6 +352,10 @@ class Blocks {
 
     public getLatestBlock(): Block {
         return this.blocks[this.blocks.length - 1];
+    }
+
+    public getLatestSkipBlock(): SkipBlock{
+        return new SkipBlock({index: this.getLatestBlock().index.toNumber()})
     }
 
     public addBlock() {

@@ -1,6 +1,5 @@
-import {personhood} from "@dedis/cothority";
 import {curve, Point, Scalar} from "@dedis/kyber";
-import {darc} from "@dedis/cothority";
+import {SignerEd25519} from "@dedis/cothority/darc";
 const ed25519 = curve.newCurve("edwards25519");
 
 export class KeyPair {
@@ -35,7 +34,7 @@ export class KeyPair {
         return this.priv.marshalBinary().toString("hex");
     }
 
-    public signer(): darc.SignerEd25519 {
-        return new darc.SignerEd25519(this.pub, this.priv);
+    public signer(): SignerEd25519 {
+        return new SignerEd25519(this.pub, this.priv);
     }
 }

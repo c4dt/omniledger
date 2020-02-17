@@ -39,7 +39,7 @@ describe("using real byzcoin, it should", () => {
 
     it("should listen for new blocks", async () => {
         const history = new HistoryObs();
-        bcTestEnv.bc.getNewBlocks().subscribe(
+        (await bcTestEnv.bc.getNewBlocks()).subscribe(
             {
                 next: (b) => {
                     history.push("block");

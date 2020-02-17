@@ -1,12 +1,10 @@
 import {IProof} from "./instances";
-import {byzcoin, darc, skipchain} from "@dedis/cothority";
 import Long from "long";
-import {Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
-
-type IIdentity = darc.IIdentity;
-type InstanceID = byzcoin.InstanceID;
-type ClientTransaction = byzcoin.ClientTransaction;
+import {ClientTransaction, InstanceID} from "@dedis/cothority/byzcoin";
+import {IIdentity} from "@dedis/cothority/darc";
+import {SkipBlock} from "@dedis/cothority/skipchain";
 
 export interface IByzCoinProof {
     getProofFromLatest(inst: InstanceID): Promise<IProof>;
@@ -21,7 +19,7 @@ export interface IByzCoinAddTransaction {
 }
 
 export interface IByzCoinBlockStreamer {
-    getNewBlocks(): Subject<skipchain.SkipBlock>;
+    getNewBlocks(): Promise<BehaviorSubject<SkipBlock>>;
 }
 
 export interface IDataBase {

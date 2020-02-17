@@ -1,4 +1,4 @@
-import {byzcoin, Log} from "@dedis/cothority";
+import {Log} from "@dedis/cothority";
 import {Signer, SignerEd25519} from "@dedis/cothority/darc";
 
 import {KeyPair} from "./keypair";
@@ -12,10 +12,12 @@ import {Instances} from "./instances";
 import {ContactListBS} from "./contactListBS";
 import {CoinBS} from "./coinBS";
 import {CredentialSignerBS} from "src/signers";
-import {SpawnerInstance} from "@dedis/cothority/personhood";
-
-type InstanceID = byzcoin.InstanceID;
-const {CredentialStruct, CredentialsInstance} = byzcoin.contracts;
+import {InstanceID} from "@dedis/cothority/byzcoin";
+import {
+    CredentialsInstance,
+    CredentialStruct,
+    SpawnerInstance
+} from "@dedis/cothority/byzcoin/contracts";
 
 export interface IMigrate {
     keyPersonhood?: string;
