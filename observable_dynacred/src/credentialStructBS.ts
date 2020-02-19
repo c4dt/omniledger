@@ -14,7 +14,7 @@ import {
 import {curve} from "@dedis/kyber";
 import {DoThings} from "./user";
 import {filter} from "rxjs/internal/operators/filter";
-import {ObservableToBS} from "src/observableHO";
+import {ObservableToBS} from "./observableHO";
 
 export const ed25519 = new curve.edwards25519.Curve();
 
@@ -136,7 +136,7 @@ export class CredentialBS extends BehaviorSubject<Credential> {
     }
 
     public async rmValue(attr: string): Promise<void> {
-        return this.setValue(attr, Buffer.alloc(0));
+        return this.setValue(attr, undefined);
     }
 }
 

@@ -87,11 +87,9 @@ export class UserData extends Data {
 
     async loadUser() {
         try {
-            Log.print("loading user");
             const db = new DataBaseDB();
             this.inst = await Instances.fromScratch(db, this.bc as any);
             this.user = await User.load(new DoThings(this.bc as any, db, this.inst));
-            Log.print("user is", this.user);
         } catch(e) {
             Log.catch(e);
         }

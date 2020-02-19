@@ -18,16 +18,14 @@ import {
 } from "@dedis/cothority/darc";
 
 import {DoThings} from "./user";
-import {CredentialBS, CredentialStructBS} from "src/credentialStructBS";
+import {CredentialBS, CredentialStructBS} from "./credentialStructBS";
 import {map} from "rxjs/operators";
-import {ObservableHO, ObservableToBS} from "src/observableHO";
+import {ObservableHO, ObservableToBS} from "./observableHO";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import {DarcInstance} from "@dedis/cothority/byzcoin/contracts";
-import {Log} from "@dedis/cothority";
 
 export class CredentialSignerBS extends BehaviorSubject<Darc> {
-
     constructor(private dt: DoThings, private credStructBS: CredentialStructBS,
                 d: BehaviorSubject<Darc>,
                 private signerDarcs: BehaviorSubject<InstanceID[]>) {
@@ -35,6 +33,7 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
         d.subscribe(this);
     }
 
+    // TODO: not really sure this is what we want - shouldn't it be a HOB?
     public static async fromScratch(dt: DoThings, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
         const credDarc = Darc.decode(
             (await dt.inst.instanceObservable(credStructBS.darcID))
@@ -67,11 +66,11 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
         });
     }
 
-    getDevicesOHO(): Observable<Signer[]>{
+    getDevicesOHO(): Observable<Signer[]> {
         return this.getDarcsOHO(this.credStructBS.credDevices);
     }
 
-    getRecoveriesOHO(): Observable<Signer[]>{
+    getRecoveriesOHO(): Observable<Signer[]> {
         return this.getDarcsOHO(this.credStructBS.credRecoveries);
     }
 
@@ -89,14 +88,47 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
         return newDarc;
     }
 
-    async addDevice(name: string, signer: SignerEd25519): Promise<void> {
-        const newDarc = await this.addSigner(`device:${name}`, signer);
-        await this.credStructBS.credDevices.setValue("device", newDarc.getBaseID());
+    async rmSigner(darcID: InstanceID): Promise<void> {
+        const newSDInst = DarcInstance.create(this.dt.bc as any, this.getValue());
+        const newSD = this.getValue().evolve();
+        const idStr = new IdentityDarc({id: darcID}).toString();
+        try {
+            newSD.rules.getRule(Darc.ruleSign).remove(idStr);
+            newSD.rules.getRule(DarcInstance.ruleEvolve).remove(idStr);
+            await newSDInst.evolveDarcAndWait(newSD, [this.dt.kiSigner], 5);
+        } catch (e) {
+            if (!e.toString().match("this identity is not part of the rule")) {
+                throw e;
+            }
+        }
     }
 
-    async addRecovery(name: string, signer: SignerEd25519): Promise<void> {
-        const newDarc = await this.addSigner(`recovery:${name}`, signer);
-        await this.credStructBS.credRecoveries.setValue("recovery", newDarc.getBaseID());
+    async addDevice(name: string, signer: SignerEd25519): Promise<Darc> {
+        const dn = `device:${name}`;
+        const newDarc = await this.addSigner(dn, signer);
+        await this.credStructBS.credDevices.setValue(dn, newDarc.getBaseID());
+        return newDarc;
+    }
+
+    async rmDevice(name: string): Promise<void> {
+        const attr = this.credStructBS.credDevices.getAttributeBS(name);
+        if (!attr) {
+            throw new Error("this device does not exist");
+        }
+        const darcID = attr.getValue();
+        if (!darcID) {
+            await this.credStructBS.credDevices.rmValue(name);
+            throw new Error("no darcID for this device");
+        }
+        await this.rmSigner(darcID);
+        return this.credStructBS.credDevices.rmValue(name);
+    }
+
+    async addRecovery(name: string, signer: SignerEd25519): Promise<Darc> {
+        const rn = `recovery:${name}`;
+        const newDarc = await this.addSigner(rn, signer);
+        await this.credStructBS.credRecoveries.setValue(rn, newDarc.getBaseID());
+        return newDarc;
     }
 }
 

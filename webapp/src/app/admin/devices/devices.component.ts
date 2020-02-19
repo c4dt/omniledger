@@ -11,7 +11,7 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import {Darc} from "@dedis/cothority/darc";
 
-import {Device, TProgress} from "@c4dt/dynacred";
+import {Data, Device, TProgress} from "@c4dt/dynacred";
 
 import {
     Attribute,
@@ -24,17 +24,30 @@ import {
     showTransactions
 } from "src/lib/Ui";
 import {UserData} from "../../user-data.service";
-import {ECredentials} from "observable_dynacred";
+import {KeyPair, User} from "observable_dynacred";
+import {Log} from "@dedis/cothority";
 
 type RenameType = "devices" | "recovery";
+
+class Signer{
+    descr: string;
+    name: string;
+    darcID: InstanceID;
+
+    constructor(attr: Attribute){
+        this.descr = attr.name;
+        this.name = attr.name.replace(/^(device|recovery):/, "");
+        this.darcID = attr.value;
+    }
+}
 
 @Component({
     selector: "app-devices",
     templateUrl: "./devices.component.html",
 })
 export class DevicesComponent {
-    devices: Device[] = [];
-    recovery: Device[] = [];
+    devices: Signer[] = [];
+    recovery: Signer[] = [];
 
     constructor(
         private dialog: MatDialog,
@@ -42,49 +55,50 @@ export class DevicesComponent {
         private location: Location,
         private uData: UserData,
     ) {
-        // uData.user.credential.credentialObservable(ECredentials.devices)
-        //     .subscribe((devices) => {
-        //             this.devices = devices.attributes.map((a) => new Device(a.name, a.value));
-        //         }
-        //     );
-        // uData.user.credential.credentialObservable(ECredentials.recoveries)
-        //     .subscribe((recoveries) => {
-        //             this.recovery = recoveries.attributes.map((a) => new Device(a.name, a.value));
-        //         }
-        //     );
+        uData.user.csbs.credDevices
+            .subscribe((devices) => {
+                    Log.print("Devices are:", devices);
+                    this.devices = devices.attributes.map((a) => new Signer(a));
+                }
+            );
+        uData.user.csbs.credRecoveries
+            .subscribe((recoveries) => {
+                    this.recovery = recoveries.attributes.map((a) => new Signer(a));
+                }
+            );
     }
 
-    async deleteDevice(device: Device) {
+    async deleteDevice(device: Signer) {
         if (this.devices.length <= 1) {
             return showDialogInfo(this.dialog, "Too few devices", "There must be at least one device available, so " +
                 "it's not possible to remove the only device you have.", "Understood");
         }
-        const signerDarc = await DarcInstance.fromByzcoin(this.uData.bc, device.darcID);
-        if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.user.dt.kiSigner])) {
-            return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
-                "reasons.", "Understood");
+        try {
+            const signerDarc = await DarcInstance.fromByzcoin(this.uData.bc, device.darcID);
+            if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.user.dt.kiSigner])) {
+                return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
+                    "reasons.", "Understood");
+            }
+            const confirm = await showDialogOKC(this.dialog, `Deleting device`,
+                `Do you really want to delete the device ${device.name}?`,
+                {OKButton: `Delete`, CancelButton: `Keep`});
+            if (confirm) {
+                await showTransactions(this.dialog, "Deleting device " + device.name,
+                    async (progress: TProgress) => {
+                        progress(30, "Deleting Device");
+                        await this.uData.user.credSigner.rmDevice(device.descr);
+                    });
+            }
+        } catch(e){
+            await this.uData.user.credSigner.rmDevice(device.descr);
         }
-        const confirm = await showDialogOKC(this.dialog, `Deleting device`,
-            `Do you really want to delete the device ${device.name}?`,
-            {OKButton: `Delete`, CancelButton: `Keep`});
-        if (confirm) {
-            await showTransactions(this.dialog, "Deleting device " + device.name,
-                async (progress: TProgress) => {
-                    progress(30, "Deleting Device");
-                    await this.uData.contact.deleteDevice(device.name);
-                    progress(60, "Updating Device List");
-                    await this.uData.contact.sendUpdate();
-                    progress(-90, "Fetching all devices");
-                });
-        }
-
     }
 
     async addDevice() {
         const ac = this.dialog.open(DeviceAddComponent);
         ac.afterClosed().subscribe(async (result) => {
             if (result !== undefined && result !== "") {
-                if (this.devices.find((d) => d.name === result)) {
+                if (this.devices.find((d) => d.name === `device:${result}`)) {
                     await showDialogInfo(this.dialog, "Duplicate name", `The device-name ${result} already exists`,
                         "Change");
                     return this.addDevice();
@@ -92,14 +106,13 @@ export class DevicesComponent {
                 const device: string =
                     await showTransactions(this.dialog, "Adding new device",
                         async (progress: TProgress) => {
-                            progress(25, "Creating new device darc");
-                            const d = await this.uData.contact.createDevice(result, (p, s) => {
-                                progress(25 + p / 2, s);
-                            });
-                            progress(75, "Updating Device List");
-                            await this.uData.contact.sendUpdate();
-                            progress(-90, "Fetching all devices");
-                            return d;
+                            progress(50, "Creating new device darc");
+                            const ephemeralIdentity = KeyPair.rand().signer();
+                            Log.print("result is:", result);
+                            await this.uData.user.credSigner.addDevice(result, ephemeralIdentity);
+                            return `${User.urlNewDevice}?` +
+                                `credentialIID=${this.uData.user.csbs.id.toString("hex")}` +
+                                `&ephemeral=${ephemeralIdentity.secret.marshalBinary().toString("hex")}`;
                         });
                 const url = window.location.protocol + "//" + window.location.host +
                     this.location.prepareExternalUrl(device);
@@ -108,7 +121,7 @@ export class DevicesComponent {
         });
     }
 
-    async rename(dev: Device, typeStr: RenameType) {
+    async rename(dev: Signer, typeStr: RenameType) {
         const ac = this.dialog.open(RenameComponent, {
             data: {
                 name: dev.name,
@@ -184,7 +197,7 @@ export class DevicesComponent {
                     "Change");
                 return this.addRecovery();
             }
-            this.recovery.push(new Device(d.name, d.id));
+            // this.recovery.push(new Signer(d));
             await showTransactions(this.dialog, "Adding recovery account",
                 async (progress: TProgress) => {
                     progress(33, "Adding new recovery account");
@@ -195,7 +208,7 @@ export class DevicesComponent {
         });
     }
 
-    async deleteRecovery(d: Device) {
+    async deleteRecovery(d: Signer) {
         if (await showDialogOKC(this.dialog, "Remove Recovery",
             "Are you sure to remove this device from the option of recovery?",
             {OKButton: "Remove", CancelButton: "Keep it"})) {

@@ -49,7 +49,7 @@ export class BcviewerComponent implements OnInit {
         sbBlocks.forEach((block) => this.updateBlock(block));
         // TODO: there is a race-condition where a block is created between
         //  the getUpdateChain and the subscription to the getNewBlocks.
-        this.uData.bc.getNewBlocks().subscribe((block) => this.updateBlock(block));
+        (await this.uData.bc.getNewBlocks()).subscribe((block) => this.updateBlock(block));
     }
 }
 

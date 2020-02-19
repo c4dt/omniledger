@@ -11,7 +11,7 @@ import {
 import {Instances} from "./instances";
 import {ContactListBS} from "./contactListBS";
 import {CoinBS} from "./coinBS";
-import {CredentialSignerBS} from "src/signers";
+import {CredentialSignerBS} from "./signers";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {
     CredentialsInstance,
@@ -63,6 +63,7 @@ export class DoThings {
 // If the migration is successful, it uses this configuration, stores the
 // new information and deletes the old config.
 export class User {
+    static readonly urlNewDevice = "/register/device";
     public static readonly keyPriv = "private";
     public static readonly keyCredID = "credID";
     public static readonly keyMigrate = "storage/data.json";

@@ -12,7 +12,7 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 
 import {CredentialAttributeBS, CredentialStructBS} from "./credentialStructBS";
 import {DoThings} from "./user";
-import {ObservableHO} from "src/observableHO";
+import {ObservableHO} from "./observableHO";
 import {Log} from "@dedis/cothority";
 
 export class ContactListBS extends Observable<BehaviorSubject<CredentialStructBS>[]> {

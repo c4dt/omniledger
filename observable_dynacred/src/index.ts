@@ -6,6 +6,7 @@ import {
 } from "./credentialStructBS"
 import {Instances} from "./instances";
 import {DoThings, User} from "./user";
+import {KeyPair} from "./keypair";
 
 export {
     DoThings,
@@ -14,5 +15,6 @@ export {
     EAttributesPublic,
     IUpdateCredential,
     Instances,
+    KeyPair,
     User,
 }

@@ -6,8 +6,8 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 
 import {DoThings} from "./user";
 import {CredentialAttributeBS} from "./credentialStructBS";
-import {ObservableHO, ObservableToBS} from "src/observableHO";
-import {IInstance} from "src/instances";
+import {ObservableHO, ObservableToBS} from "./observableHO";
+import {IInstance} from "./instances";
 
 
 export class CoinBS extends BehaviorSubject<Coin> {

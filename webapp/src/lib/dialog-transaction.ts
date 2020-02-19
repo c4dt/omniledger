@@ -44,9 +44,9 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
 
     async ngAfterViewInit() {
         // TODO: replace the setTimeout with ChangeDetectorRef
-        setTimeout(() => {
+        setTimeout(async () => {
             const last = this.uData.bc.latest.index;
-            this.ub = this.uData.bc.getNewBlocks().pipe(
+            this.ub = (await this.uData.bc.getNewBlocks()).pipe(
                 map((block) => block.index),
                 startWith(last - 3, last - 2, last - 1, last),
             ).subscribe((nb) => this.updateBlocks(nb));
