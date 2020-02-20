@@ -169,7 +169,7 @@ export class CredentialAttributeBS<T extends string | Buffer> extends BehaviorSu
 }
 
 export enum EAttributesPublic {
-    contacts = "contacts",
+    contacts = "contactsBuf",
     alias = "alias",
     email = "email",
     coinID = "coin",

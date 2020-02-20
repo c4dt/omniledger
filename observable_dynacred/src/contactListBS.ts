@@ -6,13 +6,14 @@
  * then back again.
  */
 import {BehaviorSubject, Observable} from "rxjs";
-import {map} from "rxjs/operators";
+import {flatMap, map} from "rxjs/operators";
 
 import {InstanceID} from "@dedis/cothority/byzcoin";
 
 import {CredentialAttributeBS, CredentialStructBS} from "./credentialStructBS";
 import {DoThings} from "./user";
 import {ObservableHO} from "./observableHO";
+import {tap} from "rxjs/internal/operators/tap";
 import {Log} from "@dedis/cothority";
 
 export class ContactListBS extends Observable<BehaviorSubject<CredentialStructBS>[]> {
@@ -29,6 +30,14 @@ export class ContactListBS extends Observable<BehaviorSubject<CredentialStructBS
                         return list;
                     })))).subscribe(subscriber)
             }
+        );
+    }
+
+    public getFullList(): Observable<CredentialStructBS[]>{
+        return this.cred.pipe(
+            map(c => ContactList.splitList(c)),
+            flatMap(cs => Promise.all(
+                cs.map(c => CredentialStructBS.fromScratch(this.dt, c))))
         );
     }
 
@@ -72,20 +81,19 @@ class ContactSO {
 export class ContactList {
     public readonly set: Set<string>;
 
-    constructor(contacts: Buffer | Set<string> | null | undefined) {
+    constructor(contacts: Buffer | null | undefined) {
+        this.set = new Set(ContactList.splitList(contacts)
+            .map(c => c.toString("hex")));
+    }
+
+    public static splitList(contacts: Buffer | null | undefined): Buffer[]{
+        const list = [];
         if (contacts instanceof Buffer) {
-            const list = [];
             for (let i = 0; i < contacts.length; i += 32) {
-                list.push(contacts.slice(i, i + 32).toString("hex"));
-            }
-            this.set = new Set(list);
-        } else {
-            if (contacts === null || contacts === undefined) {
-                this.set = new Set<string>();
-            } else {
-                this.set = contacts;
+                list.push(contacts.slice(i, i + 32));
             }
         }
+        return list;
     }
 
     toBuffer(): Buffer {

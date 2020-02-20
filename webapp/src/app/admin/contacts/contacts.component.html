@@ -1,7 +1,8 @@
 <h2>Contacts</h2>
 <ul>
-    <li *ngFor="let contact of uData.contacts">
-        <button mat-button (click)="contactShow(contact)">{{ contact.alias | titlecase }}</button>
+    <li *ngFor="let contact of (contacts | async)">
+        <button mat-button (click)="contactShow(contact)">
+            {{ contact.credPublic.alias | async | titlecase }}</button>
         -
         <button mat-button (click)="transferCoin(contact)">Transfer</button>
         -

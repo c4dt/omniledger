@@ -33,7 +33,6 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
         d.subscribe(this);
     }
 
-    // TODO: not really sure this is what we want - shouldn't it be a HOB?
     public static async fromScratch(dt: DoThings, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
         const credDarc = Darc.decode(
             (await dt.inst.instanceObservable(credStructBS.darcID))
@@ -88,7 +87,17 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
         return newDarc;
     }
 
-    async rmSigner(darcID: InstanceID): Promise<void> {
+    async rmSigner(cred: CredentialBS, name: string): Promise<void> {
+        const attr = cred.getAttributeBS(name);
+        if (!attr) {
+            throw new Error("this signer does not exist");
+        }
+        const darcID = attr.getValue();
+        if (!darcID) {
+            await cred.rmValue(name);
+            throw new Error("no darcID for this signer");
+        }
+
         const newSDInst = DarcInstance.create(this.dt.bc as any, this.getValue());
         const newSD = this.getValue().evolve();
         const idStr = new IdentityDarc({id: darcID}).toString();
@@ -101,34 +110,58 @@ export class CredentialSignerBS extends BehaviorSubject<Darc> {
                 throw e;
             }
         }
+
+        return cred.rmValue(name);
+    }
+
+    async mvSigner(cred: CredentialBS, oldName: string, newName: string): Promise<void>{
+        const attr = cred.getAttributeBS(oldName);
+        if (!attr){
+            throw new Error("this signer doesn't exist");
+        }
+        const darcID = attr.getValue();
+        if (!darcID){
+            await cred.rmValue(oldName);
+            throw new Error("no darcID for this signer")
+        }
+        const newSDI  = await DarcInstance.fromByzcoin(this.dt.bc as any, darcID);
+        const newSD = new Darc({
+            ...newSDI.darc.evolve(),
+            description: Buffer.from(newName),
+        });
+        await newSDI.evolveDarcAndWait(newSD, [this.dt.kiSigner], 5);
+        await cred.setValue(newName, darcID);
+        await cred.rmValue(oldName);
     }
 
     async addDevice(name: string, signer: SignerEd25519): Promise<Darc> {
         const dn = `device:${name}`;
         const newDarc = await this.addSigner(dn, signer);
-        await this.credStructBS.credDevices.setValue(dn, newDarc.getBaseID());
+        await this.credStructBS.credDevices.setValue(name, newDarc.getBaseID());
         return newDarc;
     }
 
     async rmDevice(name: string): Promise<void> {
-        const attr = this.credStructBS.credDevices.getAttributeBS(name);
-        if (!attr) {
-            throw new Error("this device does not exist");
-        }
-        const darcID = attr.getValue();
-        if (!darcID) {
-            await this.credStructBS.credDevices.rmValue(name);
-            throw new Error("no darcID for this device");
-        }
-        await this.rmSigner(darcID);
-        return this.credStructBS.credDevices.rmValue(name);
+        return this.rmSigner(this.credStructBS.credDevices, name)
+    }
+
+    async mvDevice(oldName: string, newName: string): Promise<void>{
+        return this.mvSigner(this.credStructBS.credDevices, oldName, newName);
     }
 
     async addRecovery(name: string, signer: SignerEd25519): Promise<Darc> {
         const rn = `recovery:${name}`;
         const newDarc = await this.addSigner(rn, signer);
-        await this.credStructBS.credRecoveries.setValue(rn, newDarc.getBaseID());
+        await this.credStructBS.credRecoveries.setValue(name, newDarc.getBaseID());
         return newDarc;
+    }
+
+    async rmRecovery(name: string): Promise<void> {
+        return this.rmSigner(this.credStructBS.credRecoveries, name)
+    }
+
+    async mvRecovery(oldName: string, newName: string): Promise<void>{
+        return this.mvSigner(this.credStructBS.credRecoveries, oldName, newName);
     }
 }
 

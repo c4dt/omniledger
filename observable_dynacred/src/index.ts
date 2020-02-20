@@ -1,4 +1,9 @@
 import {
+    CredentialAttributeBS,
+    CredentialBS,
+    CredentialConfig,
+    CredentialPublic,
+    CredentialStructBS,
     EAttributesConfig,
     EAttributesPublic,
     ECredentials,
@@ -9,6 +14,11 @@ import {DoThings, User} from "./user";
 import {KeyPair} from "./keypair";
 
 export {
+    CredentialBS,
+    CredentialAttributeBS,
+    CredentialStructBS,
+    CredentialConfig,
+    CredentialPublic,
     DoThings,
     ECredentials,
     EAttributesConfig,

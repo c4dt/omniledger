@@ -25,6 +25,8 @@ import { ShowComponent } from "../devices/devices.component";
 import { ManageDarcComponent } from "../manage-darc";
 
 import { ContactInfoComponent } from "./contact-info/contact-info.component";
+import {CredentialBS, CredentialStructBS} from "observable_dynacred";
+import {Observable} from "rxjs";
 
 @Component({
     selector: "app-contacts",
@@ -33,6 +35,7 @@ import { ContactInfoComponent } from "./contact-info/contact-info.component";
 export class ContactsComponent implements OnInit {
     calypsoOurKeys: string[];
     calypsoOtherKeys: Map<Contact, FileBlob[]>;
+    contacts: Observable<CredentialStructBS[]>;
     actions: DarcInstance[] = [];
     groups: DarcInstance[] = [];
 
@@ -43,6 +46,7 @@ export class ContactsComponent implements OnInit {
         public uData: UserData,
     ) {
         this.calypsoOtherKeys = new Map();
+        this.contacts = uData.user.contactList.getFullList();
     }
 
     async updateActions() {
@@ -204,79 +208,79 @@ export class ContactsComponent implements OnInit {
         });
     }
 
-    async contactShow(contact: Contact) {
+    async contactShow(contact: CredentialStructBS) {
         this.dialog.open(ContactInfoComponent, {data: {contact}});
     }
 
-    async transferCoin(c: Contact) {
-        const tc = this.dialog.open(TransferCoinComponent,
-            {
-                data: {alias: c.alias},
-            });
-        tc.afterClosed().subscribe(async (result) => {
-            if (result) {
-                Log.lvl1("Got coins:", result);
-                const coins = Long.fromString(result);
-                if (coins.greaterThan(0)) {
-                    await showTransactions(this.dialog, "Transferring coins",
-                        async (progress: TProgress) => {
-                            await c.updateOrConnect(this.uData.bc);
-                            progress(50, "Transferring Coins");
-                            await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
-                                [this.uData.keyIdentitySigner]);
-                        });
-                }
-            }
-        });
+    async transferCoin(c: CredentialStructBS) {
+        // const tc = this.dialog.open(TransferCoinComponent,
+        //     {
+        //         data: {alias: c.alias},
+        //     });
+        // tc.afterClosed().subscribe(async (result) => {
+        //     if (result) {
+        //         Log.lvl1("Got coins:", result);
+        //         const coins = Long.fromString(result);
+        //         if (coins.greaterThan(0)) {
+        //             await showTransactions(this.dialog, "Transferring coins",
+        //                 async (progress: TProgress) => {
+        //                     await c.updateOrConnect(this.uData.bc);
+        //                     progress(50, "Transferring Coins");
+        //                     await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
+        //                         [this.uData.keyIdentitySigner]);
+        //                 });
+        //         }
+        //     }
+        // });
     }
 
-    async contactRecover(c: Contact) {
-        const cid = await c.getDarcSignIdentity();
-        if ((await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, cid.id,
-            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner))).length === 0) {
-            return showDialogInfo(this.dialog, "No recovery",
-                "Don't have the right to recover this user", "Understood");
-        }
-        const signers = [this.uData.keyIdentitySigner];
-        const device: string =
-            await showTransactions(this.dialog, "Adding new device",
-                async (progress: TProgress) => {
-                    c.spawnerInstance = this.uData.contact.spawnerInstance;
-                    c.data = this.uData;
-                    const now = new Date();
-                    const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
-                        this.uData.contact.alias,
-                        now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
-                    const d = await c.createDevice(name, (p, s) => {
-                        progress(25 + p / 2, s);
-                    }, signers);
-                    progress(75, "Updating Device List");
-                    await c.sendUpdate(signers);
-                    return d;
-                });
-        if (device) {
-            const url = window.location.protocol + "//" + window.location.host +
-                this.location.prepareExternalUrl(device);
-            this.dialog.open(ShowComponent, {data: url});
-        }
+    async contactRecover(c: CredentialStructBS) {
+        // const cid = await c.getDarcSignIdentity();
+        // if ((await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, cid.id,
+        //     IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner))).length === 0) {
+        //     return showDialogInfo(this.dialog, "No recovery",
+        //         "Don't have the right to recover this user", "Understood");
+        // }
+        // const signers = [this.uData.keyIdentitySigner];
+        // const device: string =
+        //     await showTransactions(this.dialog, "Adding new device",
+        //         async (progress: TProgress) => {
+        //             c.spawnerInstance = this.uData.contact.spawnerInstance;
+        //             c.data = this.uData;
+        //             const now = new Date();
+        //             const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
+        //                 this.uData.contact.alias,
+        //                 now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
+        //             const d = await c.createDevice(name, (p, s) => {
+        //                 progress(25 + p / 2, s);
+        //             }, signers);
+        //             progress(75, "Updating Device List");
+        //             await c.sendUpdate(signers);
+        //             return d;
+        //         });
+        // if (device) {
+        //     const url = window.location.protocol + "//" + window.location.host +
+        //         this.location.prepareExternalUrl(device);
+        //     this.dialog.open(ShowComponent, {data: url});
+        // }
     }
 
-    async contactDelete(toDelete: Contact) {
-        this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
-        await storeCredential(this.dialog, "Unlinking contact " + toDelete.alias, this.uData);
+    async contactDelete(toDelete: CredentialStructBS) {
+        // this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
+        // await storeCredential(this.dialog, "Unlinking contact " + toDelete.alias, this.uData);
     }
 
-    async calypsoSearch(c: Contact) {
-        await showTransactions(this.dialog, "Searching new secure data for " + c.alias.toLocaleUpperCase(),
-            async (progress: TProgress) => {
-                await c.updateOrConnect(this.uData.bc);
-                progress(33, "searching new calypso");
-                await this.uData.contact.calypso.read(c);
-                progress(66, "Storing credential");
-                await this.uData.save();
-                progress(90, "Updating Calypso");
-                this.updateCalypso();
-            });
+    async calypsoSearch(c: CredentialStructBS) {
+        // await showTransactions(this.dialog, "Searching new secure data for " + c.alias.toLocaleUpperCase(),
+        //     async (progress: TProgress) => {
+        //         await c.updateOrConnect(this.uData.bc);
+        //         progress(33, "searching new calypso");
+        //         await this.uData.contact.calypso.read(c);
+        //         progress(66, "Storing credential");
+        //         await this.uData.save();
+        //         progress(90, "Updating Calypso");
+        //         this.updateCalypso();
+        //     });
     }
 
     async changeGroups(a: DarcInstance, filter: string) {

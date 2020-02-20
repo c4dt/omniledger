@@ -86,11 +86,11 @@ export class DevicesComponent {
                 await showTransactions(this.dialog, "Deleting device " + device.name,
                     async (progress: TProgress) => {
                         progress(30, "Deleting Device");
-                        await this.uData.user.credSigner.rmDevice(device.descr);
+                        await this.uData.user.credSigner.rmDevice(device.name);
                     });
             }
         } catch(e){
-            await this.uData.user.credSigner.rmDevice(device.descr);
+            await this.uData.user.credSigner.rmDevice(device.name);
         }
     }
 
