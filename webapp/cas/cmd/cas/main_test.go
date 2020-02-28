@@ -22,7 +22,7 @@ func TestServiceValidate(t *testing.T) {
 	user1 := test.NewUser().WithCoinReserve(bc.Config.CoinCost).RunsOn(bc)
 	action := test.NewAction().CanBeUsedBy(user1).RunsOn(bc)
 
-	bc.Config.ServiceToCoinInstanceIDs["localhost"] =
+	bc.Config.ServiceToCoinInstanceIDs["http://localhost"] =
 		skipchain.SkipBlockID(byzcoin.InstanceID(action.Coin).Slice())
 
 	cas := cas.NewCAS(bc.Config)

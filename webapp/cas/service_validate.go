@@ -159,7 +159,7 @@ func (cas CAS) validateAndGetUserInfo(url url.URL, ticket string) (string, strin
 	const ServiceTicketPrefix = "ST-"
 	const InstanceIDSize = 32
 
-	servCoinID, ok := cas.Config.ServiceToCoinInstanceIDs[url.Host]
+	servCoinID, ok := cas.Config.ServiceToCoinInstanceIDs[url.String()]
 	if !ok {
 		return "", "", errors.New("invalid host")
 	}
