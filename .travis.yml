@@ -54,11 +54,13 @@ jobs:
         - cd webapp/cas
         - export GO111MODULE=on
         - go get golang.org/x/lint/golint
+        - go get honnef.co/go/tools/cmd/staticcheck
         - go get ./...
       before_script:
         - test -z "`gofmt -l .`"
         - go vet ./...
         - golint -set_exit_status
+        - staticcheck ./...
       script:
         - make cas cas-stress
         - go test ./...
