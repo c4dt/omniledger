@@ -31,6 +31,7 @@ type nameCounters struct {
 	Action uint
 }
 
+// ByzCoin represents a testing ByzCoin
 type ByzCoin struct {
 	Config cas.Config
 	Admin  ThinUser
@@ -44,6 +45,7 @@ type ByzCoin struct {
 	signersCounter map[ThinUser]uint
 }
 
+// NewByzCoin creates a testing ByzCoin
 func NewByzCoin(t *testing.T) ByzCoin {
 	l := onet.NewTCPTest(cothority.Suite)
 	servers := l.GenServers(3)
@@ -85,11 +87,13 @@ func NewByzCoin(t *testing.T) ByzCoin {
 	}
 }
 
+// Close ends the test
 func (bc ByzCoin) Close() error {
 	bc.localTest.CloseAll()
 	return nil
 }
 
+// Run execute the given Instruction as the given User
 func (bc ByzCoin) Run(user ThinUser, instrs ...byzcoin.Instruction) {
 	signerCounter := bc.signersCounter[user]
 	for i := range instrs {
