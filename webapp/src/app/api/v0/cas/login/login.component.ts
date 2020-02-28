@@ -13,6 +13,7 @@ import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
 import { showTransactions } from "../../../../../lib/Ui";
 import { UserData } from "../../../../user-data.service";
+import { Config, ConfigService } from "../config.service";
 
 enum StateT {
     LOADING,
@@ -22,59 +23,24 @@ enum StateT {
     REDIRECTING,
 }
 
-class Action {
-    constructor(
-        readonly darc: InstanceID,
-        readonly coin: InstanceID,
-    ) {
-    }
-}
-
 @Component({
     selector: "app-login",
     templateUrl: "./login.component.html",
 })
 export class LoginComponent implements OnInit {
-    // TODO eww, better use Config (as a service maybe?)
-    private static readonly serviceToDarcAndCoin: Map<string, Action> = (() => {
-        const tr = (raw: string) => Buffer.from(raw, "hex");
-        return new Map([
-            ["www.c4dt.org", new Action(
-                tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
-                tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
-            )], ["c4dt.paperboy.ch", new Action(
-                tr("5f125a9a2b1ceeab9d2320cfb97939d7cb652d77c56893bd9b6e3ecd5c25d7e8"),
-                tr("aa595fca11710bec9b36a6908f9d5db019c21c065e1de22e111c194f0bd712fa"),
-            )], ["matrix.c4dt.org", new Action(
-                tr("ff85d61d63d83b61beee6115a8c0553946c060538f1af7a6d8a6b242dc774327"),
-                tr("90b03f42b85540981f71a5e52f18e1df94a6ae68cd34ced132282a6219c2ad3d"),
-            )]]);
-    })();
-    private static readonly coinCost = 1;
-    private static readonly challengeSize = 20;
-    private static readonly txArgName = "challenge";
-
-    private static readonly challengeHasher = (val) => {
-        const hash = crypto.createHash("sha256");
-        hash.update(val);
-        return hash.digest();
-    }
-
-    private static readonly ticketEncoder = (buf: Buffer) =>
-        buf.toString("base64")
-            .replace(/\+/g, "-")
-            .replace(/\//g, "_")
     state: StateT;
-    readonly service: string;
+    readonly redirect: URL;
+    readonly service: URL;
     readonly StateT = StateT;
-    private readonly redirect: URL;
-    private readonly action: Action;
+
+    private readonly config: Promise<Config>;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
         private uData: UserData,
+        configService: ConfigService,
     ) {
         this.state = StateT.LOADING;
 
@@ -83,18 +49,22 @@ export class LoginComponent implements OnInit {
             throw new Error("missing 'service' param");
         }
 
+        this.config = configService.config;
         this.redirect = new URL(decodeURI(encodedRedirect));
-        this.service = this.redirect.host;
 
-        this.action = LoginComponent.serviceToDarcAndCoin.get(this.service);
-        if (this.action === undefined) {
-            throw new Error("no such service found");
-        }
+        const service = new URL(this.redirect.href);
+        service.hash = service.search = "";
+        this.service = service;
     }
 
     async ngOnInit() {
+        const action = (await this.config).serviceToAction.get(this.service.href);
+        if (action === undefined) {
+            throw new Error(`no such service found: ${this.service.href}`);
+        }
+
         const availables = await this.uData.bc.checkAuthorization(
-            this.uData.bc.genesisID, this.action.darc,
+            this.uData.bc.genesisID, action.darc,
             IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
         const isAuthorized = availables.indexOf(Darc.ruleSign) !== -1;
 
@@ -102,15 +72,17 @@ export class LoginComponent implements OnInit {
             StateT.ASKING_IF_LOGIN : StateT.NO_ACCESS_WITH_CHECKAUTH;
     }
 
-    private async login() {
-        const challenge = new Buffer(LoginComponent.challengeSize);
+    async login() {
+        const config = await this.config;
+
+        const challenge = new Buffer(config.challengeSize);
         await promisify(crypto.randomFill)(challenge);
 
         const success = await showTransactions(
             this.dialog, "Generating login proof",
             async (progress: TProgress) => {
                 progress(50, "Creating login token");
-                return this.putChallenge(challenge);
+                return this.putChallenge(config, challenge);
             });
 
         if (!success) {
@@ -124,12 +96,12 @@ export class LoginComponent implements OnInit {
 
         const nextLocation = this.redirect;
         nextLocation.searchParams.append("ticket",
-            `ST-${LoginComponent.ticketEncoder(ticket)}`);
+            `ST-${config.ticketEncoder(ticket)}`);
 
         window.location.replace(nextLocation.href);
     }
 
-    private async deny() {
+    async deny() {
         await this.router.navigate(["/"]);
     }
 
@@ -143,9 +115,14 @@ export class LoginComponent implements OnInit {
      * @param   challenge data to tag the transaction with
      * @return    success if we managed to put the challenge
      */
-    private async putChallenge(challenge: Buffer): Promise<boolean> {
-        const challengeHashed = LoginComponent.challengeHasher(challenge);
-        const coins = Buffer.from(new Long(LoginComponent.coinCost).toBytesLE());
+    private async putChallenge(config: Config, challenge: Buffer): Promise<boolean> {
+        const action = (await this.config).serviceToAction.get(this.service.href);
+        if (action === undefined) {
+            throw new Error("no such service found");
+        }
+
+        const challengeHashed = config.challengeHasher(challenge);
+        const coins = Buffer.from(new Long(config.coinCost).toBytesLE());
         const createInvoke = (src: InstanceID, args: Argument[]) =>
             Instruction.createInvoke(
                 src,
@@ -157,9 +134,9 @@ export class LoginComponent implements OnInit {
 
         const userCoinID = this.uData.coinInstance.id;
         const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(),
-            createInvoke(userCoinID, transfer(this.action.coin)),
-            createInvoke(this.action.coin, transfer(userCoinID).concat([
-                new Argument({name: LoginComponent.txArgName, value: challengeHashed})])));
+            createInvoke(userCoinID, transfer(action.coin)),
+            createInvoke(action.coin, transfer(userCoinID).concat([
+                new Argument({name: config.txArgName, value: challengeHashed})])));
         await ctx.updateCountersAndSign(this.uData.bc, [[this.uData.keyIdentitySigner]]);
 
         try {

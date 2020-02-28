@@ -2,7 +2,7 @@
     <div>
         <h1>Logging service</h1>
 
-        <p>An external app coming from <strong>{{ service }}</strong> asked to log you in.</p>
+        <p>An external app coming from <strong>{{ service.host + service.pathname }}</strong> asked to log you in.</p>
         <div [ngSwitch]="state">
             <ng-container *ngSwitchCase="StateT.LOADING">We are checking if you have access...</ng-container>
             <ng-container *ngSwitchCase="StateT.NO_ACCESS_WITH_CHECKAUTH || StateT.NO_ACCESS_WITH_TRANSACTION">
