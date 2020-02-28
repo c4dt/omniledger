@@ -134,6 +134,9 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 	}
 
 	txValidityDuration, err := time.ParseDuration(tomlConf.TxValidityDuration)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Config{
 		byzCoinID,
