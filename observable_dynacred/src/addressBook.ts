@@ -106,6 +106,10 @@ export class ABGroupsBS extends DarcsBS {
             await DarcsBS.createDarcsBS(bs, ConvertBS(aisBS, gr => gr.toInstanceIDs())));
     }
 
+    public find(name: string): DarcBS | undefined {
+        return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/\w${name}$/`))
+    }
+
     public create(tx: Transaction, name: string) {
         const d = tx.spawnDarcBasic(name);
         this.link(tx, d.getBaseID());

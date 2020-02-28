@@ -7,7 +7,7 @@ describe("Signers should", () => {
         const {user} = await BCTestEnv.start();
         const history = new HistoryObs();
 
-        user.credSignerBS.devices.getOHO(user).subscribe(devs => {
+        user.credSignerBS.devices.getOHO().subscribe(devs => {
             devs.forEach(dev => history.push(`${dev.getValue().getValue().description.toString()}`))
         });
         await history.resolve(["device:initial"]);

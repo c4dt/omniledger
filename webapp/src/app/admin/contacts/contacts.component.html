@@ -20,10 +20,13 @@
 
 <h2>Groups</h2>
 <ul>
-    <li *ngFor="let group of groups">
-        <button mat-button (click)="groupShow(group)"> {{ group.darc.description.toString() | titlecase }}</button>
-	-
-        <button mat-button (click)="changeGroups(group, 'contact,group')">Change users</button>
+    <li *ngFor="let group of (groups|async)">
+        <button mat-button (click)="groupShow(group)">
+            {{ group.getValue().description.toString() | titlecase }}</button>
+	    -
+        <button mat-button (click)="renameGroup(group)">Rename group</button>
+	    -
+        <button mat-button (click)="changeGroup(group, 'contact,group')">Change users</button>
         -
         <button mat-button (click)="groupUnlink(group)">Unlink group</button>
     </li>
@@ -35,10 +38,11 @@
 
 <h2>Actions</h2>
 <ul>
-    <li *ngFor="let action of actions">
-        <button mat-button (click)="actionShow(action)"> {{ action.darc.description.toString() | titlecase }}</button>
+    <li *ngFor="let action of (actions|async)">
+        <button mat-button (click)="actionShow(action)">
+            {{ action.darc.getValue().description.toString() | titlecase }}</button>
 	-
-        <button mat-button (click)="changeGroups(action, 'group')">Change groups</button>
+        <button mat-button (click)="changeGroup(action, 'group')">Change groups</button>
         -
         <button mat-button (click)="actionUnlink(action)">Unlink action</button>
     </li>

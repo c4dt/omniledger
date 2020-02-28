@@ -8,7 +8,7 @@
  * - Device - extends signer to represent a device with one key
  * - Recover - extends a signer to represent a signer allowed to recover
  */
-import {Darc, IdentityEd25519, IdentityWrapper, IIdentity} from "@dedis/cothority/darc";
+import {Darc, IdentityWrapper, IIdentity} from "@dedis/cothority/darc";
 
 import {CredentialInstanceMapBS, CredentialStructBS} from "./credentialStructBS";
 import {ConvertBS, ObservableHO} from "./observableHO";
@@ -17,7 +17,6 @@ import {DarcBS, DarcsBS} from "./darcsBS";
 import {BasicStuff} from "./user";
 import {Transaction} from "./transaction";
 import {BehaviorSubject, Observable} from "rxjs";
-import {Point} from "@dedis/kyber/index";
 import Log from "@dedis/cothority/log";
 
 export class CredentialSignerBS extends DarcBS {
@@ -49,12 +48,12 @@ export class CredentialSignerBS extends DarcBS {
 export class CSTypesBS extends DarcsBS {
     constructor(private signerDarcBS: DarcBS,
                 private cim: CredentialInstanceMapBS,
-                private prefix: string,
+                public readonly prefix: string,
                 dbs: DarcsBS) {
         super(dbs);
     }
 
-    public getOHO(bs: BasicStuff): Observable<BehaviorSubject<DarcBS>[]> {
+    public getOHO(): Observable<BehaviorSubject<DarcBS>[]> {
         return ObservableHO({
             source: this,
             convert: src => Promise.resolve(new BehaviorSubject(src)),
@@ -75,10 +74,10 @@ export class CSTypesBS extends DarcsBS {
 
     async unlink(tx: Transaction, name: string) {
         const im = this.cim.getValue();
-        if (!im.has(name)) {
+        if (!im.map.has(name)) {
             return;
         }
-        const darcID = im.get(name);
+        const darcID = im.map.get(name);
         this.cim.rmValue(tx, name);
         if (darcID) {
             this.signerDarcBS.rmSignEvolve(tx, darcID);
@@ -87,13 +86,13 @@ export class CSTypesBS extends DarcsBS {
 
     async rename(tx: Transaction, oldName: string, newName: string): Promise<void> {
         const im = this.cim.getValue();
-        if (!im.has(oldName)) {
+        if (!im.map.has(oldName)) {
             throw new Error("this signer doesn't exist");
         }
-        if (im.has(newName)) {
+        if (im.map.has(newName)) {
             throw new Error("new name already exists");
         }
-        const darcID = im.get(oldName);
+        const darcID = im.map.get(oldName);
         this.cim.rmValue(tx, oldName);
         if (darcID) {
             const dbs = this.getValue().find(d => d.getValue().getBaseID().equals(darcID));

@@ -113,7 +113,7 @@ export class User extends BasicStuff {
                 return u;
             }
         } catch (e) {
-            Log.lvl4("Nothing to migrate from", e)
+            Log.llvl4("Nothing to migrate from", e)
         }
         return undefined;
     }
@@ -124,6 +124,7 @@ export class User extends BasicStuff {
             return user;
         }
 
+        Log.print("loading", dbKey, this.keyPriv);
         const privBuf = await bs.db.get(`${dbKey}:${this.keyPriv}`);
         if (privBuf === undefined) {
             throw new Error("no private key stored");
@@ -134,10 +135,13 @@ export class User extends BasicStuff {
             throw new Error("no credentialID stored");
         }
 
+        Log.print("privBuf - credID", privBuf, credID);
+
         return User.createUser(bs, credID, privBuf, dbKey);
     }
 
     public async save(dbKey = this.dbKey): Promise<void> {
+        Log.print("setting", dbKey, User.keyPriv);
         await this.db.set(`${dbKey}:${User.keyPriv}`, this.kpp.priv.marshalBinary());
         await this.db.set(`${dbKey}:${User.keyCredID}`, this.credStructBS.id);
     }

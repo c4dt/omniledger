@@ -112,7 +112,7 @@ export class Instances {
     }
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
-        Log.lvl3("get instance", id);
+        Log.llvl3("get instance", id);
         const p = await this.bc.getProofFromLatest(id);
         if (!p.exists(id)) {
             throw new Error(`didn't find instance ${id.toString("hex")} in cache or on chain`);

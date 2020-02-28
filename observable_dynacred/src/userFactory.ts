@@ -7,7 +7,7 @@ import {
 
 import {CredentialStructBS} from "./credentialStructBS";
 import {KeyPair} from "./keypair";
-import Long = require("long");
+import Long from "long";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {Darc, IdentityDarc} from "@dedis/cothority/darc";
 import {LongTermSecret} from "@dedis/cothority/calypso";

@@ -8,20 +8,27 @@ import {
     ECredentials,
     IUpdateCredential
 } from "./credentialStructBS"
-import {DarcsBS} from "./darcsBS";
+import {DarcBS, DarcsBS} from "./darcsBS";
 import {Instances} from "./instances";
-import {User} from "./user";
+import {BasicStuff, User} from "./user";
 import {KeyPair} from "./keypair";
-import {AddressBook} from "./addressBook";
-import {BasicStuff} from "./user";
+import {ABActionsBS, ABContactsBS, ABGroupsBS, AddressBook} from "./addressBook";
+import {CredentialSignerBS, CSTypesBS} from "./signers";
+import {UserFactory} from "./userFactory";
 
 export {
     AddressBook,
+    ABActionsBS,
+    ABContactsBS,
+    ABGroupsBS,
     BasicStuff,
     CredentialBS,
+    CredentialSignerBS,
     CredentialStructBS,
     CredentialConfig,
     CredentialPublic,
+    CSTypesBS,
+    DarcBS,
     DarcsBS,
     ECredentials,
     EAttributesConfig,
@@ -30,4 +37,5 @@ export {
     Instances,
     KeyPair,
     User,
+    UserFactory,
 }

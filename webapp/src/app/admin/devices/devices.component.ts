@@ -1,40 +1,27 @@
 import {Location} from "@angular/common";
 import {Component, Inject} from "@angular/core";
-import {
-    MAT_DIALOG_DATA,
-    MatDialog,
-    MatDialogRef
-} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 import {InstanceID} from "@dedis/cothority/byzcoin";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import {Darc} from "@dedis/cothority/darc";
+import {Darc, IdentityEd25519} from "@dedis/cothority/darc";
 
-import {Data, Device, TProgress} from "@c4dt/dynacred";
+import {TProgress} from "@c4dt/dynacred";
 
-import {
-    Attribute,
-    Credential
-} from "@dedis/cothority/personhood/credentials-instance";
-import {
-    showDialogInfo,
-    showDialogOKC,
-    showSnack,
-    showTransactions
-} from "src/lib/Ui";
+import {Attribute, Credential} from "@dedis/cothority/personhood/credentials-instance";
+import {showDialogInfo, showDialogOKC, showSnack, showTransactions} from "src/lib/Ui";
 import {UserData} from "../../user-data.service";
-import {KeyPair, User} from "observable_dynacred";
+import {CSTypesBS, DarcBS, KeyPair, User} from "observable_dynacred";
 import {Log} from "@dedis/cothority";
 
 type RenameType = "devices" | "recovery";
 
-class Signer{
+class Signer {
     descr: string;
     name: string;
     darcID: InstanceID;
 
-    constructor(attr: Attribute){
+    constructor(attr: Attribute) {
         this.descr = attr.name;
         this.name = attr.name.replace(/^(device|recovery):/, "");
         this.darcID = attr.value;
@@ -46,8 +33,8 @@ class Signer{
     templateUrl: "./devices.component.html",
 })
 export class DevicesComponent {
-    devices: Signer[] = [];
-    recovery: Signer[] = [];
+    devices: CSTypesBS;
+    recovery: CSTypesBS;
 
     constructor(
         private dialog: MatDialog,
@@ -55,42 +42,35 @@ export class DevicesComponent {
         private location: Location,
         private uData: UserData,
     ) {
-        uData.user.credStructBS.credDevices
-            .subscribe((devices) => {
-                    Log.print("Devices are:", devices);
-                    this.devices = devices.attributes.map((a) => new Signer(a));
-                }
-            );
-        uData.user.credStructBS.credRecoveries
-            .subscribe((recoveries) => {
-                    this.recovery = recoveries.attributes.map((a) => new Signer(a));
-                }
-            );
+        this.devices = uData.user.credSignerBS.devices;
+        this.recovery = uData.user.credSignerBS.recoveries;
     }
 
-    async deleteDevice(device: Signer) {
-        if (this.devices.length <= 1) {
+    async deleteDevice(device: DarcBS) {
+        if (this.devices.getValue().length <= 1) {
             return showDialogInfo(this.dialog, "Too few devices", "There must be at least one device available, so " +
                 "it's not possible to remove the only device you have.", "Understood");
         }
         try {
-            const signerDarc = await DarcInstance.fromByzcoin(this.uData.bc, device.darcID);
-            if (await signerDarc.ruleMatch(Darc.ruleSign, [this.uData.user.dt.kiSigner])) {
+            const deviceID = IdentityEd25519.fromPoint(this.uData.user.kpp.pub);
+            if (device.getValue().rules.getRule(Darc.ruleSign).getIdentities().find(ident => ident === deviceID.toString())) {
                 return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
                     "reasons.", "Understood");
             }
-            const confirm = await showDialogOKC(this.dialog, `Deleting device`,
-                `Do you really want to delete the device ${device.name}?`,
+            const name = device.getValue().description.toString().replace(/^device:/, '');
+            const confirm = await showDialogOKC(this.dialog, `Unlinking device`,
+                `Do you really want to remove the device ${name} from your keyring??`,
                 {OKButton: `Delete`, CancelButton: `Keep`});
             if (confirm) {
-                await showTransactions(this.dialog, "Deleting device " + device.name,
+                await showTransactions(this.dialog, "Deleting device " + name,
                     async (progress: TProgress) => {
                         progress(30, "Deleting Device");
-                        await this.uData.user.credSignerBS.rmDevice(device.name);
+                        await this.uData.user.executeTransactions(tx =>
+                            this.uData.user.credSignerBS.devices.unlink(tx, name));
                     });
             }
-        } catch(e){
-            await this.uData.user.credSignerBS.rmDevice(device.name);
+        } catch (e) {
+            await showDialogInfo(this.dialog, "Error while unlinking", e, "Too Bad");
         }
     }
 
@@ -98,18 +78,15 @@ export class DevicesComponent {
         const ac = this.dialog.open(DeviceAddComponent);
         ac.afterClosed().subscribe(async (result) => {
             if (result !== undefined && result !== "") {
-                if (this.devices.find((d) => d.name === `device:${result}`)) {
-                    await showDialogInfo(this.dialog, "Duplicate name", `The device-name ${result} already exists`,
-                        "Change");
-                    return this.addDevice();
-                }
                 const device: string =
                     await showTransactions(this.dialog, "Adding new device",
                         async (progress: TProgress) => {
                             progress(50, "Creating new device darc");
                             const ephemeralIdentity = KeyPair.rand().signer();
                             Log.print("result is:", result);
-                            await this.uData.user.credSignerBS.addDevice(result, ephemeralIdentity);
+                            await this.uData.user.executeTransactions(tx => {
+                                this.uData.user.credSignerBS.devices.create(tx, result, [ephemeralIdentity]);
+                            });
                             return `${User.urlNewDevice}?` +
                                 `credentialIID=${this.uData.user.credStructBS.id.toString("hex")}` +
                                 `&ephemeral=${ephemeralIdentity.secret.marshalBinary().toString("hex")}`;
@@ -121,39 +98,22 @@ export class DevicesComponent {
         });
     }
 
-    async rename(dev: Signer, typeStr: RenameType) {
+    async rename(type: CSTypesBS, name: string) {
+        const oldName = name.replace(`/^${type.prefix}:/`, '');
         const ac = this.dialog.open(RenameComponent, {
             data: {
-                name: dev.name,
-                typeStr
+                name: oldName,
+                typeStr: type.prefix
             }
         });
-        ac.afterClosed().subscribe(async (result) => {
-            if (result === undefined || result === "") {
+        ac.afterClosed().subscribe(async (newName) => {
+            if (newName === undefined || newName === "") {
                 return;
             }
-            if (this.devices.concat(this.recovery).find((d) => d.name === result)) {
-                await showDialogInfo(this.dialog, "Duplicate name", `The ${typeStr}-name ${result} already exists`,
-                    "Change");
-                return this.rename(dev, typeStr);
-            }
-
-            dev.name = result;
-            await showTransactions(this.dialog, `Renaming ${typeStr}`,
+            await showTransactions(this.dialog, `Renaming ${type.prefix}:${oldName}`,
                 async (progress: TProgress) => {
-                    const name = typeStr === "devices" ? "1-devices" : "1-recovery";
-                    const atts = typeStr === "devices" ? this.devices : this.recovery;
-                    this.uData.contact.credential.setCredential(name,
-                        new Credential({
-                            attributes: atts.map((d) => new Attribute({
-                                name: d.name,
-                                value: d.darcID
-                            })),
-                            name,
-                        }));
-                    this.uData.contact.incVersion();
-                    progress(50, "Updating credential");
-                    await this.uData.save();
+                    progress(50, "Renaming and updating credential");
+                    await this.uData.user.executeTransactions(tx => type.rename(tx, oldName, newName));
                 });
         });
     }
@@ -192,7 +152,7 @@ export class DevicesComponent {
                 return showDialogInfo(this.dialog, "No such account",
                     "Didn't find the chosen account.", "Go on");
             }
-            if (this.recovery.find((r) => r.name === result)) {
+            if (this.recovery.getValue().find((r) => r.getValue().description.toString() === result)) {
                 await showDialogInfo(this.dialog, "Duplicate name", `The recovery-name ${result} already exists`,
                     "Change");
                 return this.addRecovery();
@@ -214,7 +174,8 @@ export class DevicesComponent {
             {OKButton: "Remove", CancelButton: "Keep it"})) {
             await showTransactions(this.dialog, "Removing recovery account",
                 async (progress: TProgress) => {
-                    this.recovery.splice(this.recovery.findIndex((dev) => dev.darcID.equals(d.darcID)), 1);
+                    this.recovery.getValue().splice(this.recovery.getValue().findIndex((dev) =>
+                        dev.getValue().getBaseID().equals(d.darcID)), 1);
                     progress(33, "Removing recovery account");
                     await this.uData.contact.rmSigner("1-recovery", d.darcID);
                     progress(66, "Updating account");

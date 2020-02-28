@@ -115,12 +115,10 @@ export async function storeCredential(dialog: MatDialog, title: string, uData: D
 export async function storeUserCredential(dialog: MatDialog, title: string, uData: UserData,
                                           ...cred: IUpdateCredential[]) {
     return showTransactions(dialog, title, async (progress: TProgress) => {
-        const obs = await uData.inst.instanceBS(uData.user.credStructBS.id);
         progress(50, "Storing Credential");
-        await uData.user.credStructBS.updateCredential(...cred);
-        // Take the second, as the instanceObservable always returns the
-        // currently available instance.
-        await obs.pipe(elementAt(1)).toPromise();
+        await uData.user.executeTransactions(tx => {
+            uData.user.credStructBS.updateCredential(tx, ...cred);
+        });
     });
 }
 

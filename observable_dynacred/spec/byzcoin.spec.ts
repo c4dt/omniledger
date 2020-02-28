@@ -36,7 +36,7 @@ describe("using real byzcoin, it should", () => {
         if (!bcTestEnv){return}
 
         const history = new HistoryObs();
-        bcTestEnv.user.credSignerBS.devices.getOHO(bcTestEnv.user).subscribe(
+        bcTestEnv.user.credSignerBS.devices.getOHO().subscribe(
             devs => {
                 history.push("new:" +
                     devs.map(dev => dev.getValue().getValue().description.toString()).join("--"));

@@ -2,13 +2,13 @@ import {BehaviorSubject} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
 import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@dedis/cothority/byzcoin/contracts";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
-import {curve} from "@dedis/kyber";
+import {curve, Point, PointFactory} from "@dedis/kyber";
 import {filter} from "rxjs/internal/operators/filter";
 import {ConvertBS} from "./observableHO";
 import {Log} from "@dedis/cothority";
-import {tap} from "rxjs/internal/operators/tap";
 import {Transaction} from "./transaction";
 import {BasicStuff} from "./user";
+import Long from "long";
 
 export const ed25519 = new curve.edwards25519.Curve();
 
@@ -86,6 +86,9 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     }
 
     public setCredentialStruct(tx: Transaction, credStruct: CredentialStruct) {
+        const versionBuf = Buffer.alloc(4);
+        versionBuf.writeInt32LE(this.credPublic.version.getValue() + 1, 0);
+        credStruct.setAttribute(ECredentials.pub, EAttributesPublic.version, versionBuf);
         tx.invoke(this.id, CredentialsInstance.contractID,
             CredentialsInstance.commandUpdate, [
                 new Argument({
@@ -129,6 +132,32 @@ export class CredentialBS extends BehaviorSubject<Credential> {
     public getAttributeStringBS(name: string): AttributeStringBS {
         const bs = ConvertBS(this.getAttributeBS(name), buf => buf.toString());
         return new AttributeStringBS(this.bs, this, bs, name);
+    }
+
+    public getAttributeLongBS(name: string): AttributeLongBS {
+        const bs = ConvertBS(this.getAttributeBS(name), buf => Long.fromBytesLE(Array.from(buf)));
+        return new AttributeLongBS(this.bs, this, bs, name);
+    }
+
+    public getAttributePointBS(name: string): AttributePointBS {
+        const bs = ConvertBS(this.getAttributeBS(name), buf => {
+            try {
+                return PointFactory.fromProto(buf)
+            } catch (e) {
+                return undefined;
+            }
+        });
+        return new AttributePointBS(this.bs, this, bs, name);
+    }
+
+    public getAttributeBoolBS(name: string): AttributeBoolBS {
+        const bs = ConvertBS(this.getAttributeBS(name), buf => buf.toString() === "true");
+        return new AttributeBoolBS(this.bs, this, bs, name);
+    }
+
+    public getAttributeNumberBS(name: string): AttributeNumberBS {
+        const bs = ConvertBS(this.getAttributeBS(name), buf => buf.readInt32LE(0));
+        return new AttributeNumberBS(this.bs, this, bs, name);
     }
 
     public getAttributeInstanceSetBS(name: string): AttributeInstanceSetBS {
@@ -176,20 +205,20 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
     public setInstanceMap(tx: Transaction, val: InstanceMap) {
         const cred = this.cbs.getValue();
         cred.attributes.splice(0);
-        Array.from(val.entries()).forEach(([name, value]) =>
+        Array.from(val.map.entries()).forEach(([name, value]) =>
             cred.attributes.push(new Attribute({name, value})));
         this.cbs.set(tx, cred);
     }
 
     public setValue(tx: Transaction, name: string, value: Buffer) {
         const val = this.getValue();
-        val.set(name, value);
+        val.map.set(name, value);
         return this.setInstanceMap(tx, val);
     }
 
     public rmValue(tx: Transaction, name: string) {
         const val = this.getValue();
-        val.delete(name);
+        val.map.delete(name);
         this.setInstanceMap(tx, val);
     }
 }
@@ -218,6 +247,56 @@ export class AttributeStringBS extends BehaviorSubject<string> {
     }
 }
 
+export class AttributeLongBS extends BehaviorSubject<Long> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bss: BehaviorSubject<Long>, private name: string) {
+        super(bss.getValue());
+        bss.subscribe(this);
+    }
+
+    public setValue(tx: Transaction, val: Long) {
+        return this.cbs.setValue(tx, this.name, Buffer.from(val.toBytesLE()));
+    }
+}
+
+export class AttributePointBS extends BehaviorSubject<Point> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bss: BehaviorSubject<Point>, private name: string) {
+        super(bss.getValue());
+        bss.subscribe(this);
+    }
+
+    public setValue(tx: Transaction, val: Point) {
+        return this.cbs.setValue(tx, this.name, val.toProto());
+    }
+}
+
+export class AttributeBoolBS extends BehaviorSubject<boolean> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bss: BehaviorSubject<boolean>, private name: string) {
+        super(bss.getValue());
+        bss.subscribe(this);
+    }
+
+    public setValue(tx: Transaction, val: boolean) {
+        return this.cbs.setValue(tx, this.name, Buffer.from(val ? "true" : "false"));
+    }
+}
+
+export class AttributeNumberBS extends BehaviorSubject<number> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bss: BehaviorSubject<number>, private name: string) {
+        super(bss.getValue());
+        bss.subscribe(this);
+    }
+
+    public setValue(tx: Transaction, val: number) {
+        const buf = Buffer.alloc(4);
+        buf.writeInt32LE(val, 0);
+        return this.cbs.setValue(tx, this.name, buf);
+    }
+}
+
 export class AttributeInstanceSetBS extends BehaviorSubject<InstanceSet> {
     constructor(private bs: BasicStuff, private cbs: CredentialBS,
                 bsis: BehaviorSubject<InstanceSet>, private name: string) {
@@ -238,7 +317,13 @@ export enum EAttributesPublic {
     seedPub = "seedPub",
     phone = "phone",
     actions = "actions",
-    groups = "groups;"
+    groups = "groups",
+    url = "url",
+    challenge = "challenge",
+    personhood = "personhood",
+    subscribe = "subscribe",
+    snacked = "snacked",
+    version = "version"
 }
 
 export class CredentialPublic {
@@ -250,6 +335,12 @@ export class CredentialPublic {
     public phone: AttributeStringBS;
     public actions: AttributeInstanceSetBS;
     public groups: AttributeInstanceSetBS;
+    public url: AttributeStringBS;
+    public challenge: AttributeLongBS;
+    public personhood: AttributePointBS;
+    public subscribe: AttributeBoolBS;
+    public snacked: AttributeBoolBS;
+    public version: AttributeNumberBS;
 
     constructor(cbs: CredentialBS) {
         this.contacts = cbs.getAttributeInstanceSetBS(EAttributesPublic.contacts);
@@ -260,21 +351,36 @@ export class CredentialPublic {
         this.phone = cbs.getAttributeStringBS(EAttributesPublic.phone);
         this.actions = cbs.getAttributeInstanceSetBS(EAttributesPublic.actions);
         this.groups = cbs.getAttributeInstanceSetBS(EAttributesPublic.groups);
+        this.url = cbs.getAttributeStringBS(EAttributesPublic.url);
+        this.challenge = cbs.getAttributeLongBS(EAttributesPublic.challenge);
+        this.personhood = cbs.getAttributePointBS(EAttributesPublic.personhood);
+        this.subscribe = cbs.getAttributeBoolBS(EAttributesPublic.subscribe);
+        this.snacked = cbs.getAttributeBoolBS(EAttributesPublic.snacked);
+        this.version = cbs.getAttributeNumberBS(EAttributesPublic.version);
     }
 }
 
 export enum EAttributesConfig {
     view = "view",
-    spawner = "spawner"
+    spawner = "spawner",
+    structVersion = "structVersion",
+    ltsID = "ltsID",
+    ltsX = "ltsX",
 }
 
 export class CredentialConfig {
     public view: AttributeStringBS;
     public spawnerID: AttributeBufferBS;
+    public structVersion: AttributeNumberBS;
+    public ltsID: AttributeBufferBS;
+    public ltsX: AttributePointBS;
 
     constructor(cbs: CredentialBS) {
         this.view = cbs.getAttributeStringBS(EAttributesConfig.view);
         this.spawnerID = cbs.getAttributeBufferBS(EAttributesConfig.spawner);
+        this.structVersion = cbs.getAttributeNumberBS(EAttributesConfig.structVersion);
+        this.ltsID = cbs.getAttributeBufferBS(EAttributesConfig.ltsID);
+        this.ltsX = cbs.getAttributePointBS(EAttributesConfig.ltsX);
     }
 }
 
@@ -341,20 +447,23 @@ export class InstanceSet {
     }
 }
 
-export class InstanceMap extends Map<string, Buffer> {
+export class InstanceMap {
+    public map: Map<string, Buffer>;
+
     constructor(private cred?: Credential) {
-        super(cred ? cred.attributes.map(attr => [attr.name, attr.value]) : []);
+
+        this.map = new Map(cred ? cred.attributes.map(attr => [attr.name, attr.value]) : []);
     }
 
     toCredential(): Credential {
         return new Credential({
             name: this.cred.name,
-            attributes: Array.from(this)
+            attributes: Array.from(this.map)
                 .map(m => new Argument({name: m[0], value: m[1]}))
         })
     }
 
     toInstanceIDs(): InstanceID[] {
-        return Array.from(this.values());
+        return Array.from(this.map.values());
     }
 }

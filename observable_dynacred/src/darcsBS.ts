@@ -58,11 +58,14 @@ export class DarcBS extends BehaviorSubject<Darc> {
         return newDarc;
     }
 
-    public addSignEvolve(tx: Transaction, id: InstanceID) {
-        const darcIdentity = new IdentityDarc({id});
+    public addSignEvolve(tx: Transaction, idSign: InstanceID, idEvolve = idSign) {
+        const darcIdentitySign = new IdentityDarc({id: idSign});
+        const darcIdentityEvolve = new IdentityDarc({id: idEvolve});
         const rules = this.getValue().rules.clone();
-        rules.appendToRule(Darc.ruleSign, darcIdentity, Rule.OR);
-        rules.appendToRule(DarcInstance.ruleEvolve, darcIdentity, Rule.OR);
+        rules.appendToRule(Darc.ruleSign, darcIdentitySign, Rule.OR);
+        if (idEvolve) {
+            rules.appendToRule(DarcInstance.ruleEvolve, darcIdentityEvolve, Rule.OR);
+        }
         this.evolveDarc(tx, {rules});
     }
 

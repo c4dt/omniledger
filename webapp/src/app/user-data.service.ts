@@ -10,7 +10,7 @@ import {RosterWSConnection} from "@dedis/cothority/network/connection";
 import {SkipBlock, SkipchainRPC} from "@dedis/cothority/skipchain";
 import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
-import {DoThings, Instances, User} from "observable_dynacred";
+import {BasicStuff, Instances, User} from "observable_dynacred";
 
 @Injectable({
     providedIn: "root",
@@ -24,7 +24,6 @@ export class UserData extends Data {
     bc: ByzCoinRPC;
     config: Config;
     conn: RosterWSConnection;
-    inst: Instances;
     user: User;
     private readonly storageKeyLatest = "latest_skipblock";
     // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
@@ -88,8 +87,9 @@ export class UserData extends Data {
     async loadUser() {
         try {
             const db = new DataBaseDB();
-            this.inst = await Instances.fromScratch(db, this.bc as any);
-            this.user = await User.load(new DoThings(this.bc as any, db, this.inst));
+            const inst = await Instances.fromScratch(db, this.bc);
+            const bs = new BasicStuff({bc: this.bc, db, inst});
+            this.user = await User.load(bs);
         } catch(e) {
             Log.catch(e);
         }
