@@ -80,7 +80,11 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 			Suite, Public, URL string
 		}
 
-		ServiceToCoinInstanceIDs map[string]string
+		Services []struct {
+			URLs           []string
+			DarcInstanceID string
+			CoinInstanceID string
+		}
 
 		CoinCost           uint
 		TicketEncoding     string
@@ -126,10 +130,12 @@ func ParseConfig(tomlRaw []byte) (*Config, error) {
 	}
 
 	serviceToCoinInstanceIDs := make(map[string]skipchain.SkipBlockID)
-	for k, v := range tomlConf.ServiceToCoinInstanceIDs {
-		serviceToCoinInstanceIDs[k], err = hex.DecodeString(v)
-		if err != nil {
-			return nil, err
+	for _, service := range tomlConf.Services {
+		for _, url := range service.URLs {
+			serviceToCoinInstanceIDs[url], err = hex.DecodeString(service.CoinInstanceID)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
