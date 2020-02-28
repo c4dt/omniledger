@@ -44,7 +44,7 @@ func TestServiceValidate(t *testing.T) {
 		return challenge
 	}
 
-	requireAuthContaining := func(toMatch string, challenge []byte, user test.User) {
+	requireAuthContaining := func(t *testing.T, toMatch string, challenge []byte, user test.User) {
 		ticket := append([]byte{}, challenge...)
 		ticket = append(ticket, user.Creds().Slice()...)
 		url := "/api/v0/cas/p3/serviceValidate?service=http://localhost&" +
@@ -57,20 +57,20 @@ func TestServiceValidate(t *testing.T) {
 		require.Equal(t, 200, w.Code)
 		require.Contains(t, w.Body.String(), toMatch)
 	}
-	requireAuthFailure := func(c []byte, u test.User) { requireAuthContaining("</authenticationFailure>", c, u) }
-	requireAuthSuccess := func(c []byte, u test.User) { requireAuthContaining("<authenticationSuccess>", c, u) }
+	requireAuthFailure := func(t *testing.T, c []byte, u test.User) { requireAuthContaining(t, "</authenticationFailure>", c, u) }
+	requireAuthSuccess := func(t *testing.T, c []byte, u test.User) { requireAuthContaining(t, "<authenticationSuccess>", c, u) }
 
 	t.Run("with ByzCoin", func(t *testing.T) {
 		t.Run("Working login", func(t *testing.T) {
 			t.Parallel()
 			challenge := putChallenge(t, user1, action)
-			requireAuthSuccess(challenge, user1)
+			requireAuthSuccess(t, challenge, user1)
 		})
 
 		t.Run("User not in Action", func(t *testing.T) {
 			t.Parallel()
 			user2 := test.NewUser().WithCoinReserve(bc.Config.CoinCost).RunsOn(bc)
-			requireAuthFailure(nil, user2)
+			requireAuthFailure(t, nil, user2)
 		})
 	})
 }
