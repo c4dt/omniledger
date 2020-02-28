@@ -11,7 +11,7 @@ export class WelcomeComponent {
     name: string;
 
     constructor(private uData: UserData) {
-        uData.user.csbs.credPublic.alias.subscribe((alias) => {
+        uData.user.credStructBS.credPublic.alias.subscribe((alias) => {
             this.name = alias;
         });
     }

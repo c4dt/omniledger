@@ -35,8 +35,8 @@ export class YourselfComponent implements OnInit {
             phone: new FormControl("loading"),
             view: new FormControl("loading"),
         });
-        const pub = this.uData.user.csbs.credPublic;
-        const conf = this.uData.user.csbs.credConfig;
+        const pub = this.uData.user.credStructBS.credPublic;
+        const conf = this.uData.user.credStructBS.credConfig;
         pub.alias.subscribe((alias) =>
             this.contactForm.patchValue({alias}));
         pub.email.subscribe((email) =>
@@ -45,7 +45,7 @@ export class YourselfComponent implements OnInit {
             this.contactForm.patchValue({phone}));
         conf.view.subscribe((view) =>
             this.contactForm.patchValue({view}));
-        this.uData.user.coin.subscribe((coin) =>
+        this.uData.user.coinBS.subscribe((coin) =>
             this.coins = coin.value.toString()
         )
 

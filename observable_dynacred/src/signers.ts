@@ -8,176 +8,98 @@
  * - Device - extends signer to represent a device with one key
  * - Recover - extends a signer to represent a signer allowed to recover
  */
-import {BehaviorSubject, Observable} from "rxjs";
+import {Darc, IdentityEd25519, IdentityWrapper, IIdentity} from "@dedis/cothority/darc";
 
-import {
-    Darc,
-    IdentityWrapper,
-    Rule,
-    SignerEd25519
-} from "@dedis/cothority/darc";
-
-import {DoThings} from "./user";
-import {CredentialBS, CredentialStructBS} from "./credentialStructBS";
-import {map} from "rxjs/operators";
-import {ObservableHO, ObservableToBS} from "./observableHO";
+import {CredentialInstanceMapBS, CredentialStructBS} from "./credentialStructBS";
+import {ConvertBS, ObservableHO} from "./observableHO";
 import {InstanceID} from "@dedis/cothority/byzcoin";
-import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import {DarcInstance} from "@dedis/cothority/byzcoin/contracts";
+import {DarcBS, DarcsBS} from "./darcsBS";
+import {BasicStuff} from "./user";
+import {Transaction} from "./transaction";
+import {BehaviorSubject, Observable} from "rxjs";
+import {Point} from "@dedis/kyber/index";
+import Log from "@dedis/cothority/log";
 
-export class CredentialSignerBS extends BehaviorSubject<Darc> {
-    constructor(private dt: DoThings, private credStructBS: CredentialStructBS,
-                d: BehaviorSubject<Darc>,
-                private signerDarcs: BehaviorSubject<InstanceID[]>) {
-        super(d.getValue());
-        d.subscribe(this);
+export class CredentialSignerBS extends DarcBS {
+    constructor(darcBS: DarcBS,
+                public readonly devices: CSTypesBS,
+                public readonly recoveries: CSTypesBS) {
+        super(darcBS);
     }
 
-    public static async fromScratch(dt: DoThings, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
-        const credDarc = Darc.decode(
-            (await dt.inst.instanceObservable(credStructBS.darcID))
-                .getValue().value);
-        const signerDarcID = IdentityWrapper.fromString(
-            credDarc.rules.getRule(Darc.ruleSign).getIdentities()[0]).darc.id;
-        const darcInst = (await dt.inst.instanceObservable(signerDarcID))
-            .pipe(map(inst => Darc.decode(inst.value)));
-
-        const signerDarcIDs = await ObservableToBS(darcInst.pipe(
-            map((d) => d.rules.getRule(Darc.ruleSign).getIdentities()
-                .map(id => IdentityWrapper.fromString(id).darc.id))
-        ));
-
-        return new CredentialSignerBS(dt, credStructBS,
-            await ObservableToBS(darcInst), signerDarcIDs);
-    }
-
-    getDarcsOHO(creds: CredentialBS): Observable<Signer[]> {
-        return ObservableHO({
-            source: this.signerDarcs.pipe(
-                map((darcIDs) => darcIDs.filter((darcID) =>
-                    creds.getValue().attributes
-                        .find((att) => att.value.equals(darcID))
-                ))
-            ),
-            convert: async (src) => Signer.fromDarcID(this.dt, src),
-            srcStringer: (src) => src.toString("hex"),
-            stringToSrc: (str) => Buffer.from(str, "hex"),
-        });
-    }
-
-    getDevicesOHO(): Observable<Signer[]> {
-        return this.getDarcsOHO(this.credStructBS.credDevices);
-    }
-
-    getRecoveriesOHO(): Observable<Signer[]> {
-        return this.getDarcsOHO(this.credStructBS.credRecoveries);
-    }
-
-    async addSigner(name: string, signer: SignerEd25519): Promise<Darc> {
-        const newDarc = Darc.createBasic([signer], [signer], Buffer.from(name));
-        const coin = await this.dt.coin.coinInstanceBS();
-        await this.dt.spawner.spawnDarcs(coin.getValue(), [this.dt.kiSigner], newDarc);
-
-        const darcIdentity = new IdentityDarc({id: newDarc.getBaseID()});
-        const newSDInst = DarcInstance.create(this.dt.bc as any, this.getValue());
-        const newSD = this.getValue().evolve();
-        newSD.rules.appendToRule(Darc.ruleSign, darcIdentity, Rule.OR);
-        newSD.rules.appendToRule(DarcInstance.ruleEvolve, darcIdentity, Rule.OR);
-        await newSDInst.evolveDarcAndWait(newSD, [this.dt.kiSigner], 5);
-        return newDarc;
-    }
-
-    async rmSigner(cred: CredentialBS, name: string): Promise<void> {
-        const attr = cred.getAttributeBS(name);
-        if (!attr) {
-            throw new Error("this signer does not exist");
-        }
-        const darcID = attr.getValue();
-        if (!darcID) {
-            await cred.rmValue(name);
-            throw new Error("no darcID for this signer");
-        }
-
-        const newSDInst = DarcInstance.create(this.dt.bc as any, this.getValue());
-        const newSD = this.getValue().evolve();
-        const idStr = new IdentityDarc({id: darcID}).toString();
-        try {
-            newSD.rules.getRule(Darc.ruleSign).remove(idStr);
-            newSD.rules.getRule(DarcInstance.ruleEvolve).remove(idStr);
-            await newSDInst.evolveDarcAndWait(newSD, [this.dt.kiSigner], 5);
-        } catch (e) {
-            if (!e.toString().match("this identity is not part of the rule")) {
-                throw e;
-            }
-        }
-
-        return cred.rmValue(name);
-    }
-
-    async mvSigner(cred: CredentialBS, oldName: string, newName: string): Promise<void>{
-        const attr = cred.getAttributeBS(oldName);
-        if (!attr){
-            throw new Error("this signer doesn't exist");
-        }
-        const darcID = attr.getValue();
-        if (!darcID){
-            await cred.rmValue(oldName);
-            throw new Error("no darcID for this signer")
-        }
-        const newSDI  = await DarcInstance.fromByzcoin(this.dt.bc as any, darcID);
-        const newSD = new Darc({
-            ...newSDI.darc.evolve(),
-            description: Buffer.from(newName),
-        });
-        await newSDI.evolveDarcAndWait(newSD, [this.dt.kiSigner], 5);
-        await cred.setValue(newName, darcID);
-        await cred.rmValue(oldName);
-    }
-
-    async addDevice(name: string, signer: SignerEd25519): Promise<Darc> {
-        const dn = `device:${name}`;
-        const newDarc = await this.addSigner(dn, signer);
-        await this.credStructBS.credDevices.setValue(name, newDarc.getBaseID());
-        return newDarc;
-    }
-
-    async rmDevice(name: string): Promise<void> {
-        return this.rmSigner(this.credStructBS.credDevices, name)
-    }
-
-    async mvDevice(oldName: string, newName: string): Promise<void>{
-        return this.mvSigner(this.credStructBS.credDevices, oldName, newName);
-    }
-
-    async addRecovery(name: string, signer: SignerEd25519): Promise<Darc> {
-        const rn = `recovery:${name}`;
-        const newDarc = await this.addSigner(rn, signer);
-        await this.credStructBS.credRecoveries.setValue(name, newDarc.getBaseID());
-        return newDarc;
-    }
-
-    async rmRecovery(name: string): Promise<void> {
-        return this.rmSigner(this.credStructBS.credRecoveries, name)
-    }
-
-    async mvRecovery(oldName: string, newName: string): Promise<void>{
-        return this.mvSigner(this.credStructBS.credRecoveries, oldName, newName);
+    public static async createCredentialSignerBS(bs: BasicStuff, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
+        Log.lvl3("searching signer darc", credStructBS.darcID);
+        const credDarc = await DarcBS.createDarcBS(bs, credStructBS.darcID);
+        Log.lvl3("searching signer darc");
+        const signerDarcID = IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc.id;
+        Log.lvl3("searching signer darc");
+        const darcBS = await DarcBS.createDarcBS(bs, signerDarcID);
+        Log.lvl3("loading devices");
+        const devices = new CSTypesBS(darcBS, credStructBS.credDevices, "device",
+            await DarcsBS.createDarcsBS(bs,
+                ConvertBS(credStructBS.credDevices, im => im.toInstanceIDs())));
+        Log.lvl3("loading recoveries");
+        const recoveries = new CSTypesBS(darcBS, credStructBS.credRecoveries, "recovery",
+            await DarcsBS.createDarcsBS(bs,
+                ConvertBS(credStructBS.credRecoveries, im => im.toInstanceIDs())));
+        return new CredentialSignerBS(darcBS, devices, recoveries);
     }
 }
 
-export class Signer extends BehaviorSubject<Darc> {
-    constructor(bs: BehaviorSubject<Darc>) {
-        super(bs.getValue());
-        bs.subscribe(this);
+export class CSTypesBS extends DarcsBS {
+    constructor(private signerDarcBS: DarcBS,
+                private cim: CredentialInstanceMapBS,
+                private prefix: string,
+                dbs: DarcsBS) {
+        super(dbs);
     }
 
-    public static async fromDarcID(dt: DoThings, darcID: InstanceID): Promise<Signer> {
-        return new Signer(
-            await ObservableToBS((await dt.inst.instanceObservable(darcID))
-                .pipe(map(inst => Darc.decode(inst.value)))));
+    public getOHO(bs: BasicStuff): Observable<BehaviorSubject<DarcBS>[]> {
+        return ObservableHO({
+            source: this,
+            convert: src => Promise.resolve(new BehaviorSubject(src)),
+            srcStringer: src => src.getValue().getBaseID().toString("hex"),
+        })
     }
 
-    getName(): string {
-        return this.getValue().description.toString();
+    public create(tx: Transaction, name: string, identity: IIdentity[]): Darc {
+        const newDarc = tx.spawnDarcBasic(`${this.prefix}:${name}`, identity);
+        this.link(tx, name, newDarc.getBaseID());
+        return newDarc;
+    }
+
+    public link(tx: Transaction, name: string, id: InstanceID) {
+        this.signerDarcBS.addSignEvolve(tx, id);
+        this.cim.setValue(tx, name, id);
+    }
+
+    async unlink(tx: Transaction, name: string) {
+        const im = this.cim.getValue();
+        if (!im.has(name)) {
+            return;
+        }
+        const darcID = im.get(name);
+        this.cim.rmValue(tx, name);
+        if (darcID) {
+            this.signerDarcBS.rmSignEvolve(tx, darcID);
+        }
+    }
+
+    async rename(tx: Transaction, oldName: string, newName: string): Promise<void> {
+        const im = this.cim.getValue();
+        if (!im.has(oldName)) {
+            throw new Error("this signer doesn't exist");
+        }
+        if (im.has(newName)) {
+            throw new Error("new name already exists");
+        }
+        const darcID = im.get(oldName);
+        this.cim.rmValue(tx, oldName);
+        if (darcID) {
+            const dbs = this.getValue().find(d => d.getValue().getBaseID().equals(darcID));
+            dbs.evolveDarc(tx, {description: Buffer.from(`${this.prefix}:${newName}`)});
+            this.signerDarcBS.rmSignEvolve(tx, darcID);
+            this.signerDarcBS.addSignEvolve(tx, darcID);
+        }
     }
 }

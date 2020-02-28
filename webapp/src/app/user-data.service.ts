@@ -1,14 +1,14 @@
 import "cross-fetch/polyfill";
 
-import { Injectable } from "@angular/core";
+import {Injectable} from "@angular/core";
 
-import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import Log from "@dedis/cothority/log";
 
-import { Config, Data, StorageDB } from "@c4dt/dynacred";
-import { RosterWSConnection } from "@dedis/cothority/network/connection";
-import { SkipBlock, SkipchainRPC } from "@dedis/cothority/skipchain";
-import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
+import {Config, Data, StorageDB} from "@c4dt/dynacred";
+import {RosterWSConnection} from "@dedis/cothority/network/connection";
+import {SkipBlock, SkipchainRPC} from "@dedis/cothority/skipchain";
+import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 import {DoThings, Instances, User} from "observable_dynacred";
 

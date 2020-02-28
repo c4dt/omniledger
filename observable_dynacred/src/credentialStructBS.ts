@@ -1,20 +1,14 @@
 import {BehaviorSubject} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
-import {
-    Credential,
-    CredentialsInstance,
-    CredentialStruct
-} from "@dedis/cothority/byzcoin/contracts";
-import {
-    Argument,
-    ClientTransaction,
-    InstanceID,
-    Instruction
-} from "@dedis/cothority/byzcoin";
+import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@dedis/cothority/byzcoin/contracts";
+import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {curve} from "@dedis/kyber";
-import {DoThings} from "./user";
 import {filter} from "rxjs/internal/operators/filter";
-import {ObservableToBS} from "./observableHO";
+import {ConvertBS} from "./observableHO";
+import {Log} from "@dedis/cothority";
+import {tap} from "rxjs/internal/operators/tap";
+import {Transaction} from "./transaction";
+import {BasicStuff} from "./user";
 
 export const ed25519 = new curve.edwards25519.Curve();
 
@@ -26,8 +20,8 @@ export enum ECredentials {
 }
 
 export interface IUpdateCredential {
-    cred: string;
-    attr: string;
+    cred: ECredentials;
+    attr: EAttributesPublic | EAttributesConfig | string;
     value: string | Buffer | undefined;
 }
 
@@ -41,38 +35,38 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
 
     public credPublic: CredentialPublic;
     public credConfig: CredentialConfig;
-    public credDevices: CredentialBS;
-    public credRecoveries: CredentialBS;
+    public credDevices: CredentialInstanceMapBS;
+    public credRecoveries: CredentialInstanceMapBS;
 
-    constructor(private dt: DoThings,
+    constructor(private bs: BasicStuff,
                 public readonly id: InstanceID,
                 public readonly darcID: InstanceID,
                 credBS: BehaviorSubject<CredentialStruct>) {
         super(credBS.getValue());
         credBS.subscribe(this);
 
-        this.credPublic = new CredentialPublic(dt, this.credentialBS(ECredentials.pub));
-        this.credConfig = new CredentialConfig(dt, this.credentialBS(ECredentials.config));
-        this.credDevices = this.credentialBS(ECredentials.devices);
-        this.credRecoveries = this.credentialBS(ECredentials.recoveries);
+        this.credPublic = new CredentialPublic(this.getCredentialBS(ECredentials.pub));
+        this.credConfig = new CredentialConfig(this.getCredentialBS(ECredentials.config));
+        this.credDevices = this.getCredentialInstanceMapBS(ECredentials.devices);
+        this.credRecoveries = this.getCredentialInstanceMapBS(ECredentials.recoveries);
     }
 
-    public static async fromScratch(dt: DoThings, id: InstanceID): Promise<CredentialStructBS> {
-        const instBS = await ObservableToBS(await dt.inst.instanceObservable(id));
-        const credBS = await ObservableToBS(instBS.pipe(
-            map((ii) => CredentialStruct.decode(ii.value))
-        ));
-        return new CredentialStructBS(dt, id, instBS.getValue().darcID, credBS);
+    public static async createCredentialStructBS(bs: BasicStuff, id: InstanceID): Promise<CredentialStructBS> {
+        Log.lvl3("creating CredentialStruct from scratch:", id);
+        const instBS = await bs.inst.instanceBS(id);
+        const darcID = instBS.getValue().darcID;
+        const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
+        return new CredentialStructBS(bs, id, darcID, credBS);
     }
 
-    public credentialBS(name: ECredentials): CredentialBS {
-        return CredentialBS.fromScratch(this.dt, this, name);
+    public getCredentialBS(name: ECredentials): CredentialBS {
+        return CredentialBS.fromScratch(this.bs, this, name);
     }
 
     // updateCredentials sets all new credentials given in 'cred' and then
     // sends a ClientTransaction to Byzcoin.
     // If a value of a Credential is empty, it will be deleted.
-    public async updateCredentials(...cred: IUpdateCredential[]): Promise<void> {
+    public updateCredential(tx: Transaction, ...cred: IUpdateCredential[]) {
         const orig = this.getValue();
         for (const c of cred) {
             if (c.value !== undefined) {
@@ -82,38 +76,44 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
                 orig.deleteAttribute(c.cred, c.attr);
             }
         }
-        const ctx = ClientTransaction.make(3,
-            Instruction.createInvoke(this.id, CredentialsInstance.contractID,
-                CredentialsInstance.commandUpdate, [
-                    new Argument({
-                        name: CredentialsInstance.argumentCredential,
-                        value: orig.toBytes()
-                    })
-                ]
-            )
+        this.setCredentialStruct(tx, orig);
+    }
+
+    public setCredential(tx: Transaction, cred: Credential) {
+        const credStruct = this.getValue();
+        credStruct.setCredential(cred.name, cred);
+        this.setCredentialStruct(tx, credStruct);
+    }
+
+    public setCredentialStruct(tx: Transaction, credStruct: CredentialStruct) {
+        tx.invoke(this.id, CredentialsInstance.contractID,
+            CredentialsInstance.commandUpdate, [
+                new Argument({
+                    name: CredentialsInstance.argumentCredential,
+                    value: credStruct.toBytes()
+                })
+            ]
         );
-        await ctx.updateCountersAndSign(this.dt.bc, [[this.dt.kiSigner]]);
-        await this.dt.bc.sendTransactionAndWait(ctx);
+    }
+
+    public getCredentialInstanceMapBS(name: ECredentials): CredentialInstanceMapBS {
+        return CredentialInstanceMapBS.fromScratch(this.bs, this.getCredentialBS(name));
     }
 }
 
 export class CredentialBS extends BehaviorSubject<Credential> {
-    constructor(private dt: DoThings, private csbs: CredentialStructBS,
-                private cred: string, creds: Credential) {
-        super(creds);
+    constructor(private bs: BasicStuff, private csbs: CredentialStructBS,
+                private cred: ECredentials, cbs: BehaviorSubject<Credential>) {
+        super(cbs.getValue());
+        cbs.subscribe(this);
     }
 
-    public static fromScratch(dt: DoThings, csbs: CredentialStructBS, name: string): CredentialBS {
-        const cred = csbs.getValue().getCredential(name) || new Credential();
-        const cbs = new CredentialBS(dt, csbs, name, cred);
-        csbs.pipe(map((c) => c.getCredential(name) || new Credential()))
-            .subscribe((cred) => {
-                cbs.next(cred);
-            });
-        return cbs;
+    public static fromScratch(bs: BasicStuff, csbs: CredentialStructBS, name: ECredentials): CredentialBS {
+        return new CredentialBS(bs, csbs, name,
+            ConvertBS(csbs, cs => cs.getCredential(name)));
     }
 
-    public static getAttribute(cred: Credential, name: string): Buffer | undefined {
+    private static getAttribute(cred: Credential, name: string): Buffer | undefined {
         const attr = cred.attributes.find((a) => a.name.toString() === name);
         if (attr === undefined) {
             return undefined;
@@ -121,8 +121,36 @@ export class CredentialBS extends BehaviorSubject<Credential> {
         return attr.value;
     }
 
-    public getAttributeBS(name: string): BehaviorSubject<Buffer | undefined> {
-        const bs = new BehaviorSubject<Buffer | undefined>(CredentialBS.getAttribute(this.getValue(), name));
+    public getAttributeBufferBS(name: string): AttributeBufferBS {
+        const bs = this.getAttributeBS(name);
+        return new AttributeBufferBS(this.bs, this, bs, name);
+    }
+
+    public getAttributeStringBS(name: string): AttributeStringBS {
+        const bs = ConvertBS(this.getAttributeBS(name), buf => buf.toString());
+        return new AttributeStringBS(this.bs, this, bs, name);
+    }
+
+    public getAttributeInstanceSetBS(name: string): AttributeInstanceSetBS {
+        const bs = ConvertBS(this.getAttributeBS(name), buf => new InstanceSet(buf));
+        return new AttributeInstanceSetBS(this.bs, this, bs, name);
+    }
+
+    public setValue(tx: Transaction, attr: string, value: string | Buffer) {
+        this.csbs.updateCredential(tx, {cred: this.cred, attr, value})
+    }
+
+    public rmValue(tx: Transaction, attr: string) {
+        this.setValue(tx, attr, undefined);
+    }
+
+    public set(tx: Transaction, cred: Credential) {
+        this.csbs.setCredential(tx, cred);
+    }
+
+    private getAttributeBS(name: string): BehaviorSubject<Buffer> {
+        const bs = new BehaviorSubject<Buffer | undefined>(
+            CredentialBS.getAttribute(this.getValue(), name) || Buffer.alloc(0));
         this.pipe(
             map((cred) => CredentialBS.getAttribute(cred, name)),
             filter((cred) => cred !== undefined),
@@ -130,41 +158,75 @@ export class CredentialBS extends BehaviorSubject<Credential> {
         ).subscribe(bs);
         return bs;
     }
+}
 
-    public async setValue(attr: string, value: string | Buffer): Promise<void> {
-        return this.csbs.updateCredentials({cred: this.cred, attr, value})
+export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
+    constructor(bs: BasicStuff, private cbs: CredentialBS,
+                bsim: BehaviorSubject<InstanceMap>) {
+        super(bsim.getValue());
+        bsim.subscribe(this);
     }
 
-    public async rmValue(attr: string): Promise<void> {
-        return this.setValue(attr, undefined);
+    public static fromScratch(bs: BasicStuff, cbs: CredentialBS): CredentialInstanceMapBS {
+        return new CredentialInstanceMapBS(bs, cbs,
+            ConvertBS(cbs, c => new InstanceMap(c)),
+        )
+    }
+
+    public setInstanceMap(tx: Transaction, val: InstanceMap) {
+        const cred = this.cbs.getValue();
+        cred.attributes.splice(0);
+        Array.from(val.entries()).forEach(([name, value]) =>
+            cred.attributes.push(new Attribute({name, value})));
+        this.cbs.set(tx, cred);
+    }
+
+    public setValue(tx: Transaction, name: string, value: Buffer) {
+        const val = this.getValue();
+        val.set(name, value);
+        return this.setInstanceMap(tx, val);
+    }
+
+    public rmValue(tx: Transaction, name: string) {
+        const val = this.getValue();
+        val.delete(name);
+        this.setInstanceMap(tx, val);
     }
 }
 
-export class CredentialAttributeBS<T extends string | Buffer> extends BehaviorSubject<T> {
-    constructor(private dt: DoThings, private cbs: CredentialBS,
-                private name: string, private attr: T) {
-        super(attr);
+export class AttributeBufferBS extends BehaviorSubject<Buffer> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bsb: BehaviorSubject<Buffer>, private name: string) {
+        super(bsb.getValue());
+        bsb.subscribe(this);
     }
 
-    public static fromScratchString(dt: DoThings, cbs: CredentialBS,
-                                    name: string): CredentialAttributeBS<string> {
-        const bs = cbs.getAttributeBS(name);
-        const attr = (bs.getValue() || Buffer.alloc(0)).toString();
-        const cabs = new CredentialAttributeBS(dt, cbs, name, attr);
-        bs.pipe(map((buf) => (buf || Buffer.alloc(0)).toString())).subscribe(cabs);
-        return cabs;
+    public setValue(tx: Transaction, val: Buffer) {
+        return this.cbs.setValue(tx, this.name, val);
+    }
+}
+
+export class AttributeStringBS extends BehaviorSubject<string> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bss: BehaviorSubject<string>, private name: string) {
+        super(bss.getValue());
+        bss.subscribe(this);
     }
 
-    public static fromScratchBuffer(dt: DoThings, cbs: CredentialBS,
-                                    name: string): CredentialAttributeBS<InstanceID> {
-        const bs = cbs.getAttributeBS(name);
-        const cabs = new CredentialAttributeBS(dt, cbs, name, bs.getValue());
-        bs.subscribe(cabs);
-        return cabs;
+    public setValue(tx: Transaction, val: string) {
+        return this.cbs.setValue(tx, this.name, val);
+    }
+}
+
+export class AttributeInstanceSetBS extends BehaviorSubject<InstanceSet> {
+    constructor(private bs: BasicStuff, private cbs: CredentialBS,
+                bsis: BehaviorSubject<InstanceSet>, private name: string) {
+        super(bsis.getValue());
+        bsis.subscribe(this);
     }
 
-    public async setValue(val: T): Promise<void> {
-        return this.cbs.setValue(this.name, val);
+    public setInstanceSet(tx: Transaction, val: InstanceSet) {
+        this.cbs.setValue(tx, this.name, val.toBuffer());
     }
 }
 
@@ -174,24 +236,30 @@ export enum EAttributesPublic {
     email = "email",
     coinID = "coin",
     seedPub = "seedPub",
-    phone = "phone"
+    phone = "phone",
+    actions = "actions",
+    groups = "groups;"
 }
 
 export class CredentialPublic {
-    public contacts: CredentialAttributeBS<InstanceID>;
-    public alias: CredentialAttributeBS<string>;
-    public email: CredentialAttributeBS<string>;
-    public coinID: CredentialAttributeBS<InstanceID>;
-    public seedPub: CredentialAttributeBS<Buffer>;
-    public phone: CredentialAttributeBS<string>;
+    public contacts: AttributeInstanceSetBS;
+    public alias: AttributeStringBS;
+    public email: AttributeStringBS;
+    public coinID: AttributeBufferBS;
+    public seedPub: AttributeBufferBS;
+    public phone: AttributeStringBS;
+    public actions: AttributeInstanceSetBS;
+    public groups: AttributeInstanceSetBS;
 
-    constructor(private dt: DoThings, cbs: CredentialBS) {
-        this.contacts = CredentialAttributeBS.fromScratchBuffer(dt, cbs, EAttributesPublic.contacts);
-        this.alias = CredentialAttributeBS.fromScratchString(dt, cbs, EAttributesPublic.alias);
-        this.email = CredentialAttributeBS.fromScratchString(dt, cbs, EAttributesPublic.email);
-        this.coinID = CredentialAttributeBS.fromScratchBuffer(dt, cbs, EAttributesPublic.coinID);
-        this.seedPub = CredentialAttributeBS.fromScratchBuffer(dt, cbs, EAttributesPublic.seedPub);
-        this.phone = CredentialAttributeBS.fromScratchString(dt, cbs, EAttributesPublic.phone);
+    constructor(cbs: CredentialBS) {
+        this.contacts = cbs.getAttributeInstanceSetBS(EAttributesPublic.contacts);
+        this.alias = cbs.getAttributeStringBS(EAttributesPublic.alias);
+        this.email = cbs.getAttributeStringBS(EAttributesPublic.email);
+        this.coinID = cbs.getAttributeBufferBS(EAttributesPublic.coinID);
+        this.seedPub = cbs.getAttributeBufferBS(EAttributesPublic.seedPub);
+        this.phone = cbs.getAttributeStringBS(EAttributesPublic.phone);
+        this.actions = cbs.getAttributeInstanceSetBS(EAttributesPublic.actions);
+        this.groups = cbs.getAttributeInstanceSetBS(EAttributesPublic.groups);
     }
 }
 
@@ -201,11 +269,92 @@ export enum EAttributesConfig {
 }
 
 export class CredentialConfig {
-    public view: CredentialAttributeBS<string>;
-    public spawner: CredentialAttributeBS<InstanceID>;
+    public view: AttributeStringBS;
+    public spawnerID: AttributeBufferBS;
 
-    constructor(private dt: DoThings, cbs: CredentialBS) {
-        this.view = CredentialAttributeBS.fromScratchString(dt, cbs, EAttributesConfig.view);
-        this.spawner = CredentialAttributeBS.fromScratchBuffer(dt, cbs, EAttributesConfig.spawner);
+    constructor(cbs: CredentialBS) {
+        this.view = cbs.getAttributeStringBS(EAttributesConfig.view);
+        this.spawnerID = cbs.getAttributeBufferBS(EAttributesConfig.spawner);
+    }
+}
+
+export class InstanceSet {
+    public readonly set: Set<string>;
+
+    constructor(contacts: Buffer | Credential | null | undefined) {
+        this.set = new Set(InstanceSet.splitList(contacts)
+            .map(c => c.toString("hex")));
+    }
+
+    public static splitList(contacts: Buffer | Credential | null | undefined): Buffer[] {
+        const list = [];
+        if (contacts instanceof Buffer) {
+            for (let i = 0; i < contacts.length; i += 32) {
+                list.push(contacts.slice(i, i + 32));
+            }
+        } else if (contacts instanceof Credential) {
+            for (const attr of contacts.attributes) {
+                list.push(attr.value);
+            }
+        }
+        return list;
+    }
+
+    toBuffer(): Buffer {
+        const ret = Buffer.alloc(this.set.size * 32);
+        let i = 0;
+        this.set.forEach((c) => {
+            Buffer.from(c, "hex").copy(ret, i * 32);
+            i++;
+        });
+        return ret;
+    }
+
+    toInstanceIDs(): InstanceID[] {
+        return Array.from(this.set.values()).map(hex => Buffer.from(hex, "hex"))
+    }
+
+    add(contact: InstanceID | string): InstanceSet {
+        if (contact instanceof Buffer) {
+            this.set.add(contact.toString("hex"));
+        } else {
+            this.set.add(contact);
+        }
+        return this;
+    }
+
+    rm(contact: InstanceID | string): InstanceSet {
+        if (contact instanceof Buffer) {
+            this.set.delete(contact.toString("hex"));
+        } else {
+            this.set.delete(contact);
+        }
+        return this;
+    }
+
+    has(contact: InstanceID | string): boolean {
+        if (contact instanceof Buffer) {
+            return this.set.has(contact.toString("hex"));
+        } else {
+            return this.set.has(contact);
+        }
+    }
+}
+
+export class InstanceMap extends Map<string, Buffer> {
+    constructor(private cred?: Credential) {
+        super(cred ? cred.attributes.map(attr => [attr.name, attr.value]) : []);
+    }
+
+    toCredential(): Credential {
+        return new Credential({
+            name: this.cred.name,
+            attributes: Array.from(this)
+                .map(m => new Argument({name: m[0], value: m[1]}))
+        })
+    }
+
+    toInstanceIDs(): InstanceID[] {
+        return Array.from(this.values());
     }
 }

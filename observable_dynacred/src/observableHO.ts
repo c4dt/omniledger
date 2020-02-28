@@ -2,7 +2,15 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {map, pairwise} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {startWith} from "rxjs/internal/operators/startWith";
-import {Log} from "@dedis/cothority";
+import {filter} from "rxjs/internal/operators/filter";
+
+export interface SecondObs<S, D> {
+    source: Observable<S[]>;
+
+    srcStringer(source: S): string;
+
+    convert(source: S): Promise<BehaviorSubject<D>>;
+}
 
 /**
  * Creates a second order observable from source S that emits an array of
@@ -10,39 +18,35 @@ import {Log} from "@dedis/cothority";
  * @param sob
  * @constructor
  */
-export function ObservableHO<S, Q, D extends BehaviorSubject<Q>>(sob: SecondObs<S, D>)
-    : Observable<D[]> {
+export function ObservableHO<S extends Observable<Q>, Q, D>(sob: SecondObs<S, D>)
+    : Observable<BehaviorSubject<D>[]> {
 
-    const bssCache = new Map<string, D>();
+    const bssCache = new Map<string, BehaviorSubject<D>>();
     return sob.source.pipe(
-        map((rs) => new Set(rs.map(r => sob.srcStringer(r)))),
-        startWith(new Set()),
+        map((rs) => new Map(rs.map(r => [sob.srcStringer(r), r]))),
+        startWith(new Map<string, S>()),
         pairwise(),
         map((pair) => {
             const [prev, curr] = pair;
-            const newBS: S[] = [];
-            prev.forEach((t) => {
-                if (!curr.has(t)) {
-                    const bs = bssCache.get(t);
+            [...prev.keys()].filter(k => !curr.has(k))
+                .forEach((k) => {
+                    const bs = bssCache.get(k);
                     if (bs !== undefined) {
                         bs.complete();
-                        bssCache.delete(t);
+                        bssCache.delete(k);
                     }
-                }
-            });
-            curr.forEach((t) => {
-                if (!prev.has(t)) {
-                    newBS.push(sob.stringToSrc(t))
-                }
-            });
-            return newBS;
+                });
+            return [...curr.keys()].filter(k => !prev.has(k))
+                .map(k => [k, curr.get(k)]);
         })
     ).pipe(
-        mergeMap(async (ts: S[]) => {
+        filter(ts => ts.length > 0),
+        mergeMap(async (ts: [string, S][]) => {
             return {
-                str: ts.map(t => sob.srcStringer(t)),
-                dest: await Promise.all(ts.map(t => sob.convert(t))),
-            }}),
+                str: ts.map(t => t[0]),
+                dest: await Promise.all(ts.map(t => sob.convert(t[1]))),
+            }
+        }),
         map((rs) => {
             rs.str.forEach((str, i) => {
                 bssCache.set(str, rs.dest[i]);
@@ -52,28 +56,11 @@ export function ObservableHO<S, Q, D extends BehaviorSubject<Q>>(sob: SecondObs<
     );
 }
 
-export async function BehaviorSubjectHO<T, R extends BehaviorSubject<R>>(sob: SecondObs<T, R>)
-    : Promise<BehaviorSubject<BehaviorSubject<R>[]>> {
-
-    let bs: BehaviorSubject<BehaviorSubject<R>[]>;
-    return new Promise((resolve) => {
-        ObservableHO(sob)
-            .subscribe((bss) => {
-                if (bs === undefined) {
-                    bs = new BehaviorSubject(bss);
-                    resolve(bs);
-                } else {
-                    bs.next(bss);
-                }
-            })
-    })
-}
-
-export async function ObservableToBS<T>(src: Observable<T>): Promise<BehaviorSubject<T>>{
+export async function ObservableToBS<T>(src: Observable<T>): Promise<BehaviorSubject<T>> {
     return new Promise((resolve) => {
         let bs: BehaviorSubject<T>;
         src.subscribe((next) => {
-            if (bs === undefined){
+            if (bs === undefined) {
                 bs = new BehaviorSubject(next);
                 resolve(bs);
             } else {
@@ -83,22 +70,13 @@ export async function ObservableToBS<T>(src: Observable<T>): Promise<BehaviorSub
     })
 }
 
-export function ConvertBS<S, D>(convert: IConvert<S, D>, src: BehaviorSubject<S>): BehaviorSubject<D>{
+export function ConvertBS<S, D>(src: BehaviorSubject<S>, convert: IConvert<S, D>): BehaviorSubject<D> {
     const bs = new BehaviorSubject(convert(src.getValue()));
     src.pipe(map(convert)).subscribe(bs);
     return bs;
 }
 
-export interface IConvert<S, D>{
+export interface IConvert<S, D> {
     (src: S): D;
 }
 
-export interface SecondObs<T, R> {
-    source: Observable<T[]>;
-
-    convert(source: T): Promise<R>;
-
-    srcStringer(source: T): string;
-
-    stringToSrc(str: string): T;
-}

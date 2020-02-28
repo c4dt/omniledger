@@ -1,46 +1,31 @@
 import {BehaviorSubject} from "rxjs";
-import {map} from "rxjs/operators";
+import {flatMap, map, mergeAll} from "rxjs/operators";
 
 import {Coin, CoinInstance} from "@dedis/cothority/byzcoin/contracts";
+
+import {ObservableToBS} from "./observableHO";
 import {InstanceID} from "@dedis/cothority/byzcoin";
-
-import {DoThings} from "./user";
-import {CredentialAttributeBS} from "./credentialStructBS";
-import {ObservableHO, ObservableToBS} from "./observableHO";
-import {IInstance} from "./instances";
+import {BasicStuff} from "./user";
 
 
-export class CoinBS extends BehaviorSubject<Coin> {
-    public readonly inst: BehaviorSubject<IInstance>;
+export class CoinBS extends BehaviorSubject<CoinInstance> {
 
-    constructor(private dt: DoThings,
-                coin: BehaviorSubject<BehaviorSubject<IInstance>[]>) {
-        super(Coin.decode(coin.getValue()[0].getValue().value));
-        this.inst = new BehaviorSubject(coin.getValue()[0].getValue());
-        coin.subscribe(co => co[0].subscribe(this.inst));
-        this.inst.pipe(map(inst => Coin.decode(inst.value))).subscribe(this);
+    constructor(private bs: BasicStuff,
+                coin: BehaviorSubject<CoinInstance>) {
+        super(coin.getValue());
+        coin.subscribe(this);
     }
 
-    public static async fromScratch(dt: DoThings, coinID: CredentialAttributeBS<InstanceID>):
+    public static async createCoinBS(bs: BasicStuff, coinID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<CoinBS> {
-        const oho = ObservableHO({
-            source: coinID.pipe(
-                map(ci => [ci])),
-            convert: async (src) => ObservableToBS(await dt.inst.instanceObservable(src)),
-            srcStringer: (src) => src.toString("hex"),
-            stringToSrc: (str) => Buffer.from(str, "hex"),
-        });
-        return new CoinBS(dt, await ObservableToBS(oho))
-    }
-
-    async coinInstanceBS(): Promise<BehaviorSubject<CoinInstance>> {
-        return ObservableToBS(this.inst.pipe(
-            map(inst => this.coinInstance()))
+        if (coinID instanceof Buffer){
+            coinID = new BehaviorSubject(coinID);
+        }
+        const coinObs = coinID.pipe(
+            flatMap(id => bs.inst.instanceBS(id)),
+            mergeAll(),
+            map(inst => CoinInstance.create(bs.bc as any, inst.key, inst.darcID, Coin.decode(inst.value)))
         );
-    }
-
-    public coinInstance(): CoinInstance {
-        return CoinInstance.create(this.dt.bc as any, this.inst.getValue().key,
-            this.inst.getValue().darcID, this.getValue());
+        return new CoinBS(bs, await ObservableToBS(coinObs));
     }
 }

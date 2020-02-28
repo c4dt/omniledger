@@ -27,10 +27,10 @@ export class ProfileComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.uData.user.csbs.credPublic.alias.subscribe((alias) => {
+        this.uData.user.credStructBS.credPublic.alias.subscribe((alias) => {
             this.contactForm.patchValue({alias: alias});
         });
-        this.uData.user.csbs.credPublic.email.subscribe((email) => {
+        this.uData.user.credStructBS.credPublic.email.subscribe((email) => {
             this.contactForm.patchValue({email: email});
         });
     }

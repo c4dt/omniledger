@@ -1,6 +1,5 @@
 import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
-import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {Log} from "@dedis/cothority";
 import {Instances} from "observable_dynacred";
 import {
@@ -11,38 +10,51 @@ import {
 import {CredentialsInstance} from "@dedis/cothority/byzcoin/contracts";
 
 describe("Instances should", () => {
-    it("should not ask new proofs when not necessary", async () => {
-        const {bc, db, inst, user} = await BCTestEnv.simul();
+    let bcTestEnv: BCTestEnv;
+
+    beforeAll(async () => {
+        try {
+            bcTestEnv = await BCTestEnv.start(true);
+        } catch(e){
+            Log.lvl1("cannot run this test with real byzcoin")
+        }
+    });
+
+
+    it("not ask new proofs when not necessary", async () => {
+        if (!bcTestEnv){return}
+        const {bcSimul, db, user} = bcTestEnv;
+
         const history = new HistoryObs();
         // Wait for all proofs to be made
-        await new Promise(resolve => user.csbs.credPublic.alias.subscribe(resolve));
-        (bc as ByzCoinSimul).getProofObserver.subscribe(() => history.push("P"));
+        await new Promise(resolve => user.credStructBS.credPublic.alias.subscribe(resolve));
+        bcSimul.getProofObserver.subscribe(() => history.push("P"));
 
         Log.lvl2("Creating new instances object - there should be only one" +
             " getProof");
-        const inst2 = await Instances.fromScratch(db, bc);
+        const inst2 = await Instances.fromScratch(db, bcSimul);
         await inst2.reload();
         await history.resolve(["P", "P"]);
-        const io2 = (await inst2.instanceObservable(user.csbs.id)).subscribe(() => history.push("i2"));
+        const io2 = (await inst2.instanceBS(user.credStructBS.id)).subscribe(() => history.push("i2"));
         await history.resolve(["i2"]);
         io2.unsubscribe();
 
         Log.lvl2("Changing the config-instance, new instances object should" +
             " request proof for new instance");
-        await bc.sendTransactionAndWait(new ClientTransaction({
+        await bcSimul.sendTransactionAndWait(new ClientTransaction({
             instructions: [
-                Instruction.createInvoke(user.csbs.id, CredentialsInstance.contractID,
+                Instruction.createInvoke(user.credStructBS.id, CredentialsInstance.contractID,
                     CredentialsInstance.commandUpdate, [
                         new Argument({
                             name: CredentialsInstance.argumentCredential,
-                            value: user.csbs.getValue().toBytes()
+                            value: user.credStructBS.getValue().toBytes()
                         })
                     ])]
         }));
-        const inst3 = await Instances.fromScratch(db, bc);
+        const inst3 = await Instances.fromScratch(db, bcSimul);
         await inst3.reload();
-        await history.resolve(["P", "P", "P", "P", "P", "P", "P"]);
-        const io3 = (await inst3.instanceObservable(user.csbs.id)).subscribe(
+        await history.resolve(["P", "P", "P", "P", "P", "P", "P", "P"]);
+        const io3 = (await inst3.instanceBS(user.credStructBS.id)).subscribe(
             (ii) => history.push("i3:" + ii.version.toNumber()));
         await history.resolve(["i3:1"]);
         io3.unsubscribe();

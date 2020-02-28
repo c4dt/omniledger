@@ -98,10 +98,10 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
         const i = instr.invoke;
         let arg = (name: string) =>
             (i.args.find(arg => arg.name == name) || {value: undefined}).value;
+        Log.lvl3("Invoke contract", i.contractID, instr.instanceID);
         switch (i.contractID) {
             case CredentialsInstance.contractID:
                 const inv = i;
-                Log.lvl3("Invoke contract", instr.instanceID);
                 if (inv.contractID !== CredentialsInstance.contractID ||
                     inv.command !== CredentialsInstance.commandUpdate ||
                     inv.args.length !== 1 ||
@@ -139,6 +139,9 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
                     case DarcInstance.commandEvolve:
                     case DarcInstance.commandEvolveUnrestricted:
                         const diInst = this.globalState.getInstance(instr.instanceID);
+                        if (!diInst){
+                            throw new Error("didn't find this darc-instance");
+                        }
                         diInst.value = arg(DarcInstance.argumentDarc);
                         this.globalState.addOrUpdateInstance(diInst);
                         break;
@@ -195,6 +198,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
         if (dst === undefined) {
             throw new Error("sent spawn to non-existing instance");
         }
+        const isSI = dst.contractID === SpawnerInstance.contractID;
         const blockIndex = this.blocks.getLatestBlock().index;
         let darcID = dst.darcID;
         const s = instr.spawn;
@@ -205,9 +209,10 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
             sha.update(id);
             return sha.digest();
         };
+        let ciCA: InstanceID;
         switch (s.contractID) {
             case DarcInstance.contractID:
-                const diValue = arg(DarcInstance.argumentDarc);
+                const diValue = arg(isSI ? SpawnerInstance.argumentDarc : DarcInstance.argumentDarc);
                 const d = Darc.decode(diValue);
                 this.globalState.addOrUpdateInstance({
                     key: d.getBaseID(),
@@ -219,22 +224,19 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
                 });
                 break;
             case CoinInstance.contractID:
-                let ciCA = instr.deriveId();
-                let coinID = arg("public");
-                if (coinID === undefined) {
-                    coinID = arg(CoinInstance.argumentCoinID)
-                }
+                ciCA = instr.deriveId();
+                let coinID = arg(isSI ? SpawnerInstance.argumentCoinID : CoinInstance.argumentCoinID);
                 if (coinID !== undefined) {
                     const fph = createHash("sha256");
                     fph.update(CoinInstance.contractID);
                     fph.update(coinID);
                     ciCA = fph.digest();
                 }
-                const ciDID = arg(CoinInstance.argumentDarcID);
+                const ciDID = arg(isSI ? SpawnerInstance.argumentDarcID : CoinInstance.argumentDarcID);
                 if (ciDID !== undefined) {
                     darcID = ciDID;
                 }
-                const ciType = arg(CoinInstance.argumentType);
+                const ciType = arg(isSI ? SpawnerInstance.argumentCoinName : CoinInstance.argumentType);
                 const ciCoin = new Coin({
                     name: ciType || ciid(Buffer.from("byzcoin")),
                     value: Long.fromNumber(0),
@@ -273,12 +275,12 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
                 });
                 break;
             case CredentialsInstance.contractID:
-                const ciDI = arg(SpawnerInstance.argumentDarcID);
+                const ciDI = arg(isSI ? SpawnerInstance.argumentDarcID : CredentialsInstance.argumentDarcID);
                 if (ciDI !== undefined){
                     darcID = ciDI;
                 }
                 ciCA = instr.deriveId();
-                const ciCredID = arg("credID");
+                let ciCredID = arg(isSI ? SpawnerInstance.argumentCredID : CredentialsInstance.argumentCredID);
                 if (ciCredID !== undefined){
                     const ciH = createHash("sha256");
                     ciH.update(Buffer.from(CredentialsInstance.contractID));
@@ -287,7 +289,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
                 }
                 this.globalState.addOrUpdateInstance({
                     key: ciCA,
-                    value: arg(CredentialsInstance.argumentCredential),
+                    value: arg(isSI ? SpawnerInstance.argumentCredential : CredentialsInstance.argumentCredential),
                     block: blockIndex,
                     contractID: CredentialsInstance.contractID,
                     version: Long.fromNumber(0),
@@ -322,6 +324,7 @@ class GlobalState {
         if (old !== undefined) {
             inst.version = old.version.add(1);
         } else {
+            Log.lvl3(`Creating contract '${inst.contractID}' with id ${inst.key.toString("hex")} and darcID ${inst.darcID.toString("hex")}`);
             inst.version = Long.fromNumber(0);
         }
         this.instances.set(inst.key.toString("hex"), inst);

@@ -331,7 +331,7 @@ export class Contact {
         const u = new Contact();
         switch (qrURL.origin + qrURL.pathname) {
             case Contact.urlRegistered:
-                u.bc = bc;
+                u.bcTest = bc;
                 u.credentialInstance = await CredentialsInstance.fromByzcoin(bc,
                     Buffer.from(params.credentialIID, "hex"));
                 u.credential = u.credentialInstance.credential.copy();
@@ -356,7 +356,7 @@ export class Contact {
             u.darcInstance = await DarcInstance.fromByzcoin(bc, u.credentialInstance.darcID);
             u.coinInstance = await CoinInstance.fromByzcoin(bc, u.getCoinAddress());
         }
-        u.bc = bc;
+        u.bcTest = bc;
         return u;
     }
 

@@ -14,6 +14,6 @@ export class PartnerComponent extends ContactsComponent {
             return showDialogInfo(this.dialog, "No Group Found", "There are no groups tied to your account.\n" +
                 "Wait some seconds and try again.", "Understood");
         }
-        await super.createContact("c4dt_user", [groups[0].darc.description.toString()]);
+        await super.contactNew("c4dt_user", [groups[0].darc.description.toString()]);
     }
 }

@@ -1,5 +1,4 @@
 import {
-    CredentialAttributeBS,
     CredentialBS,
     CredentialConfig,
     CredentialPublic,
@@ -9,17 +8,21 @@ import {
     ECredentials,
     IUpdateCredential
 } from "./credentialStructBS"
+import {DarcsBS} from "./darcsBS";
 import {Instances} from "./instances";
-import {DoThings, User} from "./user";
+import {User} from "./user";
 import {KeyPair} from "./keypair";
+import {AddressBook} from "./addressBook";
+import {BasicStuff} from "./user";
 
 export {
+    AddressBook,
+    BasicStuff,
     CredentialBS,
-    CredentialAttributeBS,
     CredentialStructBS,
     CredentialConfig,
     CredentialPublic,
-    DoThings,
+    DarcsBS,
     ECredentials,
     EAttributesConfig,
     EAttributesPublic,

@@ -10,12 +10,12 @@
         -
         <button mat-button (click)="contactRecover(contact)">Recover</button>
         -
-        <button mat-button (click)="contactDelete(contact)">Unlink</button>
+        <button mat-button (click)="contactUnlink(contact)">Unlink</button>
     </li>
 </ul>
 <div style="padding:10px;">
-    <button mat-stroked-button color="primary" (click)="createContact()">Create Contact</button>
-    <button mat-stroked-button color="primary" (click)="addContact()">Link Contact</button>
+    <button mat-stroked-button color="primary" (click)="contactNew()">Create Contact</button>
+    <button mat-stroked-button color="primary" (click)="contactLink()">Link Contact</button>
 </div>
 
 <h2>Groups</h2>
@@ -25,12 +25,12 @@
 	-
         <button mat-button (click)="changeGroups(group, 'contact,group')">Change users</button>
         -
-        <button mat-button (click)="groupDelete(group)">Unlink group</button>
+        <button mat-button (click)="groupUnlink(group)">Unlink group</button>
     </li>
 </ul>
 <div style="padding:10px;">
     <button mat-stroked-button color="primary" (click)="groupCreate()">Create Group</button>
-    <button mat-stroked-button color="primary" (click)="groupAdd()">Link Group</button>
+    <button mat-stroked-button color="primary" (click)="groupLink()">Link Group</button>
 </div>
 
 <h2>Actions</h2>
@@ -40,7 +40,7 @@
 	-
         <button mat-button (click)="changeGroups(action, 'group')">Change groups</button>
         -
-        <button mat-button (click)="actionDelete(action)">Unlink action</button>
+        <button mat-button (click)="actionUnlink(action)">Unlink action</button>
     </li>
 </ul>
 <div style="padding:10px;">

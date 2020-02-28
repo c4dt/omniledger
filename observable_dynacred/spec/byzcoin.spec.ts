@@ -4,40 +4,16 @@ import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
 import {KeyPair} from "src/keypair";
 
-Log.lvl = 2;
-
 describe("using real byzcoin, it should", () => {
     let bcTestEnv: BCTestEnv;
 
     beforeAll(async () => {
-        Log.lvl1("Creating Byzcoin and first instance");
-        try {
-            bcTestEnv = await BCTestEnv.real();
-            Log.lvl1("Correctly created real byzcoin");
-        } catch (e) {
-            Log.error(e);
-            return Log.rcatch(e);
-        }
-        Log.lvl2("Done creating instance");
+        bcTestEnv = await BCTestEnv.start();
     });
 
-    it("create a new user", async () => {
-        // const history = new HistoryObs();
-        // const user1 = await bcTestEnv.newCred("alias1");
-        // const user2 = await bcTestEnv.newCred("alias2");
+    it("listen for new blocks", async () => {
+        if (!bcTestEnv){return}
 
-        // await user1.creds.addContact(bcTestEnv.bc, user1.keyPair.priv, user2.credID);
-        // user1.creds.contactsObservable().subscribe((c) => {
-        //     if (c.length > 0) {
-        //         c[0].getValue().aliasObservable().subscribe((alias) =>
-        //             history.push("newContact:" + alias));
-        //     }
-        // });
-        //
-        // await history.resolve(["newContact:alias2"]);
-    });
-
-    it("should listen for new blocks", async () => {
         const history = new HistoryObs();
         (await bcTestEnv.bc.getNewBlocks()).subscribe(
             {
@@ -46,22 +22,36 @@ describe("using real byzcoin, it should", () => {
                 }
             }
         );
-        await bcTestEnv.user.csbs.credPublic.email.setValue("as@as.as");
+        await bcTestEnv.user.executeTransactions((tx) => {
+            bcTestEnv.user.credStructBS.credPublic.email.setValue(tx, "as@as.as");
+        });
         await history.resolve(["block"]);
-        await bcTestEnv.user.csbs.credPublic.email.setValue("as2@as.as");
+        await bcTestEnv.user.executeTransactions((tx) => {
+            bcTestEnv.user.credStructBS.credPublic.email.setValue(tx, "as2@as.as");
+        });
         await history.resolve(["block"]);
     });
 
     it("should add and remove devices", async () => {
+        if (!bcTestEnv){return}
+
         const history = new HistoryObs();
-        bcTestEnv.user.credSigner.getDevicesOHO().subscribe(
-            devs => history.push("new:" +
-                devs.map(dev => dev.getName()).join("--"))
+        bcTestEnv.user.credSignerBS.devices.getOHO(bcTestEnv.user).subscribe(
+            devs => {
+                history.push("new:" +
+                    devs.map(dev => dev.getValue().getValue().description.toString()).join("--"));
+            }
         );
         await history.resolve(["new:device:initial"]);
 
-        const kp = KeyPair.rand();
-        await bcTestEnv.user.credSigner.addDevice("test", kp.signer());
-        await history.resolve(["new:device:test"]);
+        // Stress-test the system - this broke previously.
+        for (let i = 0; i < 2; i++) {
+            Log.lvl2("creating darc", i);
+            const kp = KeyPair.rand();
+            await bcTestEnv.user.executeTransactions(tx => {
+                bcTestEnv.user.credSignerBS.devices.create(tx, "test" + i, [kp.signer()])
+            });
+            await history.resolve(["new:device:test" + i]);
+        }
     })
 });

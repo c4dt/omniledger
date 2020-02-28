@@ -55,13 +55,13 @@ export class DevicesComponent {
         private location: Location,
         private uData: UserData,
     ) {
-        uData.user.csbs.credDevices
+        uData.user.credStructBS.credDevices
             .subscribe((devices) => {
                     Log.print("Devices are:", devices);
                     this.devices = devices.attributes.map((a) => new Signer(a));
                 }
             );
-        uData.user.csbs.credRecoveries
+        uData.user.credStructBS.credRecoveries
             .subscribe((recoveries) => {
                     this.recovery = recoveries.attributes.map((a) => new Signer(a));
                 }
@@ -86,11 +86,11 @@ export class DevicesComponent {
                 await showTransactions(this.dialog, "Deleting device " + device.name,
                     async (progress: TProgress) => {
                         progress(30, "Deleting Device");
-                        await this.uData.user.credSigner.rmDevice(device.name);
+                        await this.uData.user.credSignerBS.rmDevice(device.name);
                     });
             }
         } catch(e){
-            await this.uData.user.credSigner.rmDevice(device.name);
+            await this.uData.user.credSignerBS.rmDevice(device.name);
         }
     }
 
@@ -109,9 +109,9 @@ export class DevicesComponent {
                             progress(50, "Creating new device darc");
                             const ephemeralIdentity = KeyPair.rand().signer();
                             Log.print("result is:", result);
-                            await this.uData.user.credSigner.addDevice(result, ephemeralIdentity);
+                            await this.uData.user.credSignerBS.addDevice(result, ephemeralIdentity);
                             return `${User.urlNewDevice}?` +
-                                `credentialIID=${this.uData.user.csbs.id.toString("hex")}` +
+                                `credentialIID=${this.uData.user.credStructBS.id.toString("hex")}` +
                                 `&ephemeral=${ephemeralIdentity.secret.marshalBinary().toString("hex")}`;
                         });
                 const url = window.location.protocol + "//" + window.location.host +

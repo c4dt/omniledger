@@ -16,6 +16,7 @@ import {
 } from "@dedis/cothority/byzcoin";
 import {startWith} from "rxjs/internal/operators/startWith";
 import {SkipBlock} from "@dedis/cothority/skipchain";
+import {tap} from "rxjs/internal/operators/tap";
 
 export interface IInstance {
     key: InstanceID;
@@ -77,7 +78,7 @@ export class Instances {
         return new Instances(db, bc, newBlock);
     }
 
-    public async instanceObservable(id: InstanceID): Promise<BehaviorSubject<IInstance>> {
+    public async instanceBS(id: InstanceID): Promise<BehaviorSubject<IInstance>> {
         const bs = this.cache.get(id);
         if (bs !== undefined) {
             return bs;
@@ -96,9 +97,10 @@ export class Instances {
         this.newBlock
             .pipe(
                 filter((v) => !v.equals(dbInst.block)),
-                mergeMap((v) => this.getInstanceFromChain(id)),
+                mergeMap((v) => this.getInstanceFromChain(id))
+            ).pipe(
                 startWith(dbInst),
-                distinctUntilChanged((a, b) => a.version.equals(b.version))
+                distinctUntilChanged((a, b) => a.version.equals(b.version)),
             )
             .subscribe(bsNew);
         this.cache.set(id, bsNew);
@@ -113,7 +115,7 @@ export class Instances {
         Log.lvl3("get instance", id);
         const p = await this.bc.getProofFromLatest(id);
         if (!p.exists(id)) {
-            throw new Error("didn't find instance in cache or on chain");
+            throw new Error(`didn't find instance ${id.toString("hex")} in cache or on chain`);
         }
         const inst = {
             block: Long.fromNumber(p.latest.index),
