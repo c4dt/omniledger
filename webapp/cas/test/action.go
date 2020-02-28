@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Action is a specialisation of a DARC that an user can do
 type Action struct {
 	Darc byzcoin.InstanceID
 	Coin coinActor
@@ -23,14 +24,17 @@ type actionBuilder struct {
 	user User
 }
 
+// NewAction start a builder of an Action
 func NewAction() actionBuilder {
 	return actionBuilder{}
 }
 
+// CanBeUsedBy set the User that can use the Action
 func (b actionBuilder) CanBeUsedBy(user User) actionBuilder {
 	return actionBuilder{user}
 }
 
+// RunsOn actually create the action on the given ByzCoin
 func (b actionBuilder) RunsOn(bc ByzCoin) Action {
 	bc.nameCounters.Action++
 	name := fmt.Sprintf("action-%d", bc.nameCounters.Action)

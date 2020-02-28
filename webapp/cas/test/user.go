@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// ThinUser is a user with a single DARC
 type ThinUser interface {
 	Signer() darc.Signer
 	Darc() byzcoin.InstanceID
@@ -34,6 +35,7 @@ func (u thinUser) Darc() byzcoin.InstanceID {
 	return u.darc
 }
 
+// NewThinUser creates a ThinUser
 func NewThinUser(signer darc.Signer, darc []byte) ThinUser {
 	return thinUser{signer, byzcoin.NewInstanceID(darc)}
 }
@@ -78,6 +80,7 @@ type userBuilder struct {
 	coinAmount uint
 }
 
+// User is a ThinUser with a coin instance and some credentials
 type User interface {
 	ThinUser
 
@@ -85,6 +88,7 @@ type User interface {
 	Creds() byzcoin.InstanceID
 }
 
+// NewUser create a User builder
 func NewUser() userBuilder {
 	return userBuilder{}
 }
