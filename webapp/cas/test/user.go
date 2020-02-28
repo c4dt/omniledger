@@ -34,7 +34,7 @@ func (u thinUser) Darc() byzcoin.InstanceID {
 	return u.darc
 }
 
-func NewThinUser(signer darc.Signer, darc []byte) thinUser {
+func NewThinUser(signer darc.Signer, darc []byte) ThinUser {
 	return thinUser{signer, byzcoin.NewInstanceID(darc)}
 }
 
@@ -60,7 +60,7 @@ func (c coinActor) Transfer(amount uint, to coinActor) byzcoin.Instruction {
 }
 
 type user struct {
-	*thinUser
+	ThinUser
 
 	coin  coinActor
 	creds byzcoin.InstanceID
@@ -191,7 +191,7 @@ func (b userBuilder) RunsOn(bc ByzCoin) user {
 	log.Info("User should be correctly registered")
 
 	thinUser := NewThinUser(newUser, d.GetBaseID())
-	return user{&thinUser, coinActor(coinIID), credIID}
+	return user{thinUser, coinActor(coinIID), credIID}
 }
 
 func coinAmountToArgument(amount uint) byzcoin.Argument {
