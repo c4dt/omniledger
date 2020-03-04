@@ -17,7 +17,9 @@ func (cas CAS) Logout(c *gin.Context) {
 			return
 		}
 
-		if _, ok := cas.Config.ServiceToCoinInstanceIDs[url.Host]; !ok {
+		url.RawQuery = ""
+		url.Fragment = ""
+		if _, ok := cas.Config.ServiceToCoinInstanceIDs[url.String()]; !ok {
 			c.String(http.StatusBadRequest, "unknown service")
 			return
 		}
