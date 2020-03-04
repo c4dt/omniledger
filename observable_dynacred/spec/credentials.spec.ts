@@ -1,4 +1,4 @@
-import {UserFactory} from "src/userFactory";
+import {UserSkeleton} from "src/userSkeleton";
 import {Log} from "@dedis/cothority";
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
@@ -18,7 +18,7 @@ describe("Credentials should", () => {
         const {user, spawnerInstance} = bcTestEnv;
         const history = new HistoryObs();
         const contacts = ["foo", "bar", "alice"].map((alias) =>
-            new UserFactory(alias, spawnerInstance.id)
+            new UserSkeleton(alias, spawnerInstance.id)
         );
 
         await user.executeTransactions(tx => {

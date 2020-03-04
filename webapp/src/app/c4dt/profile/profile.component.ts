@@ -4,10 +4,9 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Router} from "@angular/router";
 
-import {storeCredential, storeUserCredential} from "../../../lib/Ui";
-import {UserData} from "../../user-data.service";
-import Log from "@dedis/cothority/log";
+import {storeUserCredential} from "../../../lib/Ui";
 import {EAttributesPublic, ECredentials} from "observable_dynacred";
+import {UserService} from "src/app/user.service";
 
 @Component({
     selector: "app-profile",
@@ -19,7 +18,7 @@ export class ProfileComponent implements OnInit {
     constructor(private snack: MatSnackBar,
                 private router: Router,
                 private dialog: MatDialog,
-                private uData: UserData) {
+                private user: UserService) {
         this.contactForm = new FormGroup({
             alias: new FormControl("loading"),
             email: new FormControl("loading", Validators.email),
@@ -27,16 +26,16 @@ export class ProfileComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.uData.user.credStructBS.credPublic.alias.subscribe((alias) => {
+        this.user.credStructBS.credPublic.alias.subscribe((alias) => {
             this.contactForm.patchValue({alias: alias});
         });
-        this.uData.user.credStructBS.credPublic.email.subscribe((email) => {
+        this.user.credStructBS.credPublic.email.subscribe((email) => {
             this.contactForm.patchValue({email: email});
         });
     }
 
     async updateContact() {
-        await storeUserCredential(this.dialog, "Updating user User Data", this.uData,
+        await storeUserCredential(this.dialog, "Updating user User Data", this.user,
             {
                 cred: ECredentials.pub,
                 attr: EAttributesPublic.alias,

@@ -302,11 +302,11 @@ export class Contact {
         cred.setAttribute("1-public", "coin", CoinInstance.coinIID(pub.toBuffer()));
         cred.setAttribute("1-public", "version", Buffer.from(Long.fromNumber(0).toBytesLE()));
         cred.setAttribute("1-public", "seedPub", pub.toBuffer());
-        cred.setAttribute("1-config", "spawner", spawner);
+        cred.setAttribute("1-config", "spawner", spawner || Buffer.alloc(0));
         const svBuf = Buffer.alloc(4);
         svBuf.writeInt32LE(Contact.structVersionLatest, 0);
         cred.setAttribute("1-config", "structVersion", svBuf);
-        cred.setAttribute("1-devices", "initial", deviceDarcID);
+        cred.setAttribute("1-devices", "initial", deviceDarcID || Buffer.alloc(0));
         if (lts) {
             cred.setAttribute("1-config", "ltsID", lts.id);
             cred.setAttribute("1-config", "ltsX", lts.X.toProto());

@@ -8,7 +8,7 @@ import {
     CredentialSignerBS,
     CredentialStructBS
 } from "observable_dynacred";
-import {UserData} from "src/app/user-data.service";
+import {UserService} from "src/app/user.service";
 
 @Component({
     selector: "app-contact-info",
@@ -26,13 +26,13 @@ export class ContactInfoComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<ContactInfoComponent>,
-        public uData: UserData,
+        public user: UserService,
         @Inject(MAT_DIALOG_DATA) readonly data: { contact: CredentialStructBS }) {}
 
     async ngOnInit() {
         this.pub = this.data.contact.credPublic;
         this.config = this.data.contact.credConfig;
-        this.signerBS = await CredentialSignerBS.createCredentialSignerBS(this.uData.user, this.data.contact);
-        this.addressBook = await AddressBook.createAddressBook(this.uData.user, this.pub);
+        this.signerBS = await CredentialSignerBS.getCredentialSignerBS(this.user, this.data.contact);
+        this.addressBook = await AddressBook.getAddressBook(this.user, this.pub);
     }
 }

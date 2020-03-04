@@ -25,8 +25,8 @@ describe("Transactions should", () => {
         const d = tx.spawnDarcBasic("darc 1");
         await tx.send(1);
 
-        const coinInst1 = await CoinBS.createCoinBS(bcTestEnv.user, coin1.id);
-        const coinInst2 = await CoinBS.createCoinBS(bcTestEnv.user, coin2.id);
+        const coinInst1 = await CoinBS.getCoinBS(bcTestEnv.user, coin1.id);
+        const coinInst2 = await CoinBS.getCoinBS(bcTestEnv.user, coin2.id);
         const darcInst = await DarcBS.createDarcBS(bcTestEnv.user, d.getBaseID());
 
         expect(coinInst1.getValue().id).toEqual(CoinInstance.coinIID(coinIDPreHash1));

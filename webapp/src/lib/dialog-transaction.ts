@@ -1,7 +1,5 @@
 import {
     AfterViewInit,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     ElementRef,
     Inject,
@@ -10,9 +8,10 @@ import {
 } from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {TWorker} from "./Ui";
-import {UserData} from "src/app/user-data.service";
 import {map, startWith} from "rxjs/operators";
 import {Subscription} from "rxjs";
+import Log from "@dedis/cothority/log";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 export interface IDialogTransactionConfig<T> {
     title: string;
@@ -36,7 +35,7 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
     @ViewChild("main", {static: false}) private main?: ElementRef;
 
     constructor(
-        private uData: UserData,
+        private bcs: ByzCoinService,
         readonly dialogRef: MatDialogRef<DialogTransactionComponent<T>>,
         private readonly renderer: Renderer2,
         @Inject(MAT_DIALOG_DATA) public data: IDialogTransactionConfig<T>) {
@@ -45,8 +44,8 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
     async ngAfterViewInit() {
         // TODO: replace the setTimeout with ChangeDetectorRef
         setTimeout(async () => {
-            const last = this.uData.bc.latest.index;
-            this.ub = (await this.uData.bc.getNewBlocks()).pipe(
+            const last = this.bcs.bs.bc.latest.index;
+            this.ub = (await this.bcs.bs.bc.getNewBlocks()).pipe(
                 map((block) => block.index),
                 startWith(last - 3, last - 2, last - 1, last),
             ).subscribe((nb) => this.updateBlocks(nb));
@@ -71,6 +70,7 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
             }, 1000);
         } catch (e) {
             this.ub.unsubscribe();
+            Log.catch(e);
             this.error = e;
         }
     }
@@ -110,6 +110,7 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
 
     progress(percentage: number, text: string) {
         this.percentage = percentage >= 0 ? percentage : percentage * -1;
+        Log.lvl2("Progress:", percentage, text);
 
         if (percentage >= 0) {
             this.text = "";

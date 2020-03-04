@@ -3,9 +3,8 @@ import { ActivatedRoute } from "@angular/router";
 import { Contact } from "@c4dt/dynacred";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import Log from "@dedis/cothority/log";
 import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
-import { UserData } from "src/app/user-data.service";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-explorer",
@@ -19,28 +18,28 @@ export class ExplorerComponent implements OnInit {
 
     constructor(
         private readonly route: ActivatedRoute,
-        private readonly uData: UserData,
+        private readonly bcs: ByzCoinService,
     ) {}
 
     async ngOnInit() {
         this.route.paramMap.subscribe(async (params) => {
             const id = Buffer.from(params.get("id"), "hex");
 
-            const p = await this.uData.bc.getProofFromLatest(id);
+            const p = await this.bcs.bs.bc.getProofFromLatest(id);
             switch (p.contractID) {
 
                 case CredentialsInstance.contractID:
-                    this.contact = await Contact.fromByzcoin(this.uData.bc, id);
+                    this.contact = await Contact.fromByzcoin(this.bcs.bs.bc, id);
                     this.kind = "credentialObservable.ts";
                     break;
 
                 case CoinInstance.contractID:
-                    this.coin = await CoinInstance.fromByzcoin(this.uData.bc, id);
+                    this.coin = await CoinInstance.fromByzcoin(this.bcs.bs.bc, id);
                     this.kind = "coin";
                     break;
 
                 case DarcInstance.contractID:
-                    this.darc = await DarcInstance.fromByzcoin(this.uData.bc, id);
+                    this.darc = await DarcInstance.fromByzcoin(this.bcs.bs.bc, id);
                     this.kind = "darc";
                     break;
 

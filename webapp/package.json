@@ -32,6 +32,7 @@
     "keccak": "^2.1.0",
     "long": "^4.0.0",
     "rxjs": "^6.5.4",
+    "sprintf-js": "^1.1.2",
     "tslib": "^1.10.0",
     "tweetnacl-ts": "^1.0.3",
     "zone.js": "~0.9.1"

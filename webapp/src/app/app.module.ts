@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from "@angular/core";
+import { NgModule } from "@angular/core";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -48,13 +48,6 @@ import { ExplorerComponent } from "./explorer/explorer.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
-import { UserData } from "./user-data.service";
-
-// This is empty as the UserData is now initialized in the
-// app.component, so that the success can be logged.
-export function loadUserDataConfig(d: UserData) {
-    return () => {const a = 2; };
-}
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -132,15 +125,6 @@ export function loadUserDataConfig(d: UserData) {
         MatDialogModule,
         AppRoutingModule,
         QRCodeModule,
-    ],
-    providers: [
-        UserData,
-        {
-            deps: [UserData],
-            multi: true,
-            provide: APP_INITIALIZER,
-            useFactory: loadUserDataConfig,
-        },
     ],
 })
 export class AppModule {

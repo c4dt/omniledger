@@ -15,7 +15,7 @@ describe("using real byzcoin, it should", () => {
         if (!bcTestEnv){return}
 
         const history = new HistoryObs();
-        (await bcTestEnv.bc.getNewBlocks()).subscribe(
+        (await bcTestEnv.bs.bc.getNewBlocks()).subscribe(
             {
                 next: (b) => {
                     history.push("block");

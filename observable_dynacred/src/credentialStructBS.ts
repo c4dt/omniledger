@@ -1,5 +1,5 @@
 import {BehaviorSubject} from "rxjs";
-import {distinctUntilChanged, map} from "rxjs/operators";
+import {distinctUntilChanged, map, tap} from "rxjs/operators";
 import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@dedis/cothority/byzcoin/contracts";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {curve, Point, PointFactory} from "@dedis/kyber";
@@ -9,8 +9,8 @@ import {Log} from "@dedis/cothority";
 import {Transaction} from "./transaction";
 import {BasicStuff} from "./user";
 import Long from "long";
-
-export const ed25519 = new curve.edwards25519.Curve();
+import {DarcBS} from "./darcsBS";
+import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 
 export enum ECredentials {
     pub = "1-public",
@@ -51,7 +51,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         this.credRecoveries = this.getCredentialInstanceMapBS(ECredentials.recoveries);
     }
 
-    public static async createCredentialStructBS(bs: BasicStuff, id: InstanceID): Promise<CredentialStructBS> {
+    public static async getCredentialStructBS(bs: BasicStuff, id: InstanceID): Promise<CredentialStructBS> {
         Log.lvl3("creating CredentialStruct from scratch:", id);
         const instBS = await bs.inst.instanceBS(id);
         const darcID = instBS.getValue().darcID;
@@ -101,6 +101,11 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
 
     public getCredentialInstanceMapBS(name: ECredentials): CredentialInstanceMapBS {
         return CredentialInstanceMapBS.fromScratch(this.bs, this.getCredentialBS(name));
+    }
+
+    public async getSignerIdentityDarc(): Promise<IdentityDarc> {
+        const credDarc = await DarcBS.createDarcBS(this.bs, this.darcID);
+        return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }
 

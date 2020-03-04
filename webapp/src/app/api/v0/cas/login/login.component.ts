@@ -12,7 +12,7 @@ import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
 import { showTransactions } from "../../../../../lib/Ui";
-import { UserData } from "../../../../user-data.service";
+import {UserService} from "src/app/user.service";
 
 enum StateT {
     LOADING,
@@ -74,7 +74,7 @@ export class LoginComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private uData: UserData,
+        private user: UserService,
     ) {
         this.state = StateT.LOADING;
 
@@ -93,9 +93,9 @@ export class LoginComponent implements OnInit {
     }
 
     async ngOnInit() {
-        const availables = await this.uData.bc.checkAuthorization(
-            this.uData.bc.genesisID, this.action.darc,
-            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+        const availables = await this.user.bc.checkAuthorization(
+            this.user.bc.genesisID, this.action.darc,
+            IdentityWrapper.fromIdentity(this.user.kiSigner));
         const isAuthorized = availables.indexOf(Darc.ruleSign) !== -1;
 
         this.state = isAuthorized ?
@@ -119,7 +119,7 @@ export class LoginComponent implements OnInit {
         }
         this.state = StateT.REDIRECTING;
 
-        const userCredID = this.uData.contact.credentialIID;
+        const userCredID = this.user.credStructBS.id;
         const ticket = Buffer.concat([challenge, userCredID]);
 
         const nextLocation = this.redirect;
@@ -155,15 +155,15 @@ export class LoginComponent implements OnInit {
             new Argument({name: CoinInstance.argumentCoins, value: coins}),
             new Argument({name: CoinInstance.argumentDestination, value: dst})];
 
-        const userCoinID = this.uData.coinInstance.id;
-        const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(),
+        const userCoinID = this.user.coinBS.getValue().id;
+        const ctx = ClientTransaction.make(this.user.bc.getProtocolVersion(),
             createInvoke(userCoinID, transfer(this.action.coin)),
             createInvoke(this.action.coin, transfer(userCoinID).concat([
                 new Argument({name: LoginComponent.txArgName, value: challengeHashed})])));
-        await ctx.updateCountersAndSign(this.uData.bc, [[this.uData.keyIdentitySigner]]);
+        await ctx.updateCountersAndSign(this.user.bc, [[this.user.kiSigner]]);
 
         try {
-            await this.uData.bc.sendTransactionAndWait(ctx);
+            await this.user.bc.sendTransactionAndWait(ctx);
         } catch (err) {
             if (err instanceof Error && err.message.includes(
                 `Contract coin got Instruction ${ctx.instructions[1].hash().toString("hex")}` +

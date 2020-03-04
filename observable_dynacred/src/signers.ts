@@ -8,7 +8,7 @@
  * - Device - extends signer to represent a device with one key
  * - Recover - extends a signer to represent a signer allowed to recover
  */
-import {Darc, IdentityWrapper, IIdentity} from "@dedis/cothority/darc";
+import {Darc, IIdentity} from "@dedis/cothority/darc";
 
 import {CredentialInstanceMapBS, CredentialStructBS} from "./credentialStructBS";
 import {ConvertBS, ObservableHO} from "./observableHO";
@@ -26,17 +26,16 @@ export class CredentialSignerBS extends DarcBS {
         super(darcBS);
     }
 
-    public static async createCredentialSignerBS(bs: BasicStuff, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
-        Log.lvl3("searching signer darc", credStructBS.darcID);
-        const credDarc = await DarcBS.createDarcBS(bs, credStructBS.darcID);
+    public static async getCredentialSignerBS(bs: BasicStuff, credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
         Log.lvl3("searching signer darc");
-        const signerDarcID = IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc.id;
+        const signerDarcID = (await credStructBS.getSignerIdentityDarc()).id;
         Log.lvl3("searching signer darc");
         const darcBS = await DarcBS.createDarcBS(bs, signerDarcID);
         Log.lvl3("loading devices");
+        const aisbs = ConvertBS(credStructBS.credDevices, im => im.toInstanceIDs());
+        Log.lvl3("going");
         const devices = new CSTypesBS(darcBS, credStructBS.credDevices, "device",
-            await DarcsBS.createDarcsBS(bs,
-                ConvertBS(credStructBS.credDevices, im => im.toInstanceIDs())));
+            await DarcsBS.createDarcsBS(bs, aisbs));
         Log.lvl3("loading recoveries");
         const recoveries = new CSTypesBS(darcBS, credStructBS.credRecoveries, "recovery",
             await DarcsBS.createDarcsBS(bs,
@@ -72,7 +71,7 @@ export class CSTypesBS extends DarcsBS {
         this.cim.setValue(tx, name, id);
     }
 
-    async unlink(tx: Transaction, name: string) {
+    public unlink(tx: Transaction, name: string) {
         const im = this.cim.getValue();
         if (!im.map.has(name)) {
             return;
@@ -84,7 +83,7 @@ export class CSTypesBS extends DarcsBS {
         }
     }
 
-    async rename(tx: Transaction, oldName: string, newName: string): Promise<void> {
+    public rename(tx: Transaction, oldName: string, newName: string) {
         const im = this.cim.getValue();
         if (!im.map.has(oldName)) {
             throw new Error("this signer doesn't exist");
@@ -100,5 +99,9 @@ export class CSTypesBS extends DarcsBS {
             this.signerDarcBS.rmSignEvolve(tx, darcID);
             this.signerDarcBS.addSignEvolve(tx, darcID);
         }
+    }
+
+    public find(name: string): DarcBS | undefined {
+        return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/${name}/`));
     }
 }

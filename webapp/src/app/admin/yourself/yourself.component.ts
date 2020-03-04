@@ -2,17 +2,16 @@ import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Router } from "@angular/router";
 
 import { Data } from "@c4dt/dynacred";
 
-import {showSnack, storeCredential, storeUserCredential} from "../../../lib/Ui";
-import { UserData } from "../../user-data.service";
+import {storeUserCredential} from "../../../lib/Ui";
 import {
     EAttributesConfig,
     EAttributesPublic,
     ECredentials
 } from "observable_dynacred";
+import {UserService} from "src/app/user.service";
 
 @Component({
     selector: "app-yourself",
@@ -25,7 +24,7 @@ export class YourselfComponent implements OnInit {
 
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
-                public uData: UserData) {
+                public user: UserService) {
     }
 
     async ngOnInit() {
@@ -35,8 +34,8 @@ export class YourselfComponent implements OnInit {
             phone: new FormControl("loading"),
             view: new FormControl("loading"),
         });
-        const pub = this.uData.user.credStructBS.credPublic;
-        const conf = this.uData.user.credStructBS.credConfig;
+        const pub = this.user.credStructBS.credPublic;
+        const conf = this.user.credStructBS.credConfig;
         pub.alias.subscribe((alias) =>
             this.contactForm.patchValue({alias}));
         pub.email.subscribe((email) =>
@@ -45,14 +44,14 @@ export class YourselfComponent implements OnInit {
             this.contactForm.patchValue({phone}));
         conf.view.subscribe((view) =>
             this.contactForm.patchValue({view}));
-        this.uData.user.coinBS.subscribe((coin) =>
+        this.user.coinBS.subscribe((coin) =>
             this.coins = coin.value.toString()
         )
 
     }
 
     async updateContact() {
-        await storeUserCredential(this.dialog, "Updating user User Data", this.uData,
+        await storeUserCredential(this.dialog, "Updating user User Data", this.user,
             {
                 cred: ECredentials.pub,
                 attr: EAttributesPublic.alias,

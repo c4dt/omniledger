@@ -5,16 +5,16 @@ import {
     MatDialogRef
 } from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {elementAt, pairwise, take} from "rxjs/operators";
-import {first} from "rxjs/internal/operators/first";
 
-import {Data, TProgress} from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 
 import {IUpdateCredential} from "observable_dynacred";
 
 import {DialogTransactionComponent} from "./dialog-transaction";
-import {UserData} from "src/app/user-data.service";
+import {UserService} from "src/app/user.service";
+
+// Progress type to be used in showTransactions.
+export type TProgress = (percentage: number, text: string) => void;
 
 /**
  * Shows a simple snack-message at the bottom of the screen. The message is informative
@@ -95,29 +95,15 @@ export async function showDialogInfo(dialog: MatDialog, title: string, text: str
  *
  * @param dialog reference to the matDialog
  * @param title shown in h1 in the dialog
- * @param uData reference to the Data class
- */
-export async function storeCredential(dialog: MatDialog, title: string, uData: Data) {
-    return showTransactions(dialog, title, async (progress: TProgress) => {
-        progress(50, "Storing Credential");
-        await uData.save();
-    });
-}
-
-/**
- * Convenience method for showTransactions that only shows one progress step: "Storing Credential".
- *
- * @param dialog reference to the matDialog
- * @param title shown in h1 in the dialog
- * @param uData reference to the UserData service
+ * @param user reference to the UserService
  * @param cred updates to the credential
  */
-export async function storeUserCredential(dialog: MatDialog, title: string, uData: UserData,
+export async function storeUserCredential(dialog: MatDialog, title: string, user: UserService,
                                           ...cred: IUpdateCredential[]) {
     return showTransactions(dialog, title, async (progress: TProgress) => {
         progress(50, "Storing Credential");
-        await uData.user.executeTransactions(tx => {
-            uData.user.credStructBS.updateCredential(tx, ...cred);
+        await user.executeTransactions(tx => {
+            user.credStructBS.updateCredential(tx, ...cred);
         });
     });
 }

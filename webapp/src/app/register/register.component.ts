@@ -1,14 +1,19 @@
-import { Component, OnInit } from "@angular/core";
-import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { ActivatedRoute, Router } from "@angular/router";
+import {Component, OnInit} from "@angular/core";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {MatDialog} from "@angular/material/dialog";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {ActivatedRoute, Router} from "@angular/router";
 
-import { Data, Private, StorageDB, TProgress } from "@c4dt/dynacred";
+import {TProgress} from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 
-import { showDialogOKC, showTransactions } from "../../lib/Ui";
-import { UserData } from "../user-data.service";
+import {showDialogOKC, showTransactions} from "../../lib/Ui";
+import {Genesis, KeyPair, User} from "observable_dynacred";
+import {ByzCoinRPC} from "@c4dt/cothority/byzcoin";
+import Long from "long";
+import {LeaderConnection} from "@c4dt/cothority/network/connection";
+import {UserService} from "src/app/user.service";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-register",
@@ -25,7 +30,7 @@ export class RegisterComponent implements OnInit {
                 private dialog: MatDialog,
                 private route: ActivatedRoute,
                 private snack: MatSnackBar,
-                private uData: UserData) {
+                private bcs: ByzCoinService) {
     }
 
     async ngOnInit() {
@@ -33,12 +38,12 @@ export class RegisterComponent implements OnInit {
 
         this.ephemeralParam = this.route.snapshot.queryParamMap.get("ephemeral");
         if (this.ephemeralParam && this.ephemeralParam.length === 64) {
-            if (await this.uData.hasUser()){
+            if (await this.bcs.hasUser()) {
                 const overwrite = await showDialogOKC(this.dialog, "Overwrite user?",
                     "There seems to be a user already stored in this browser - do you want to overwrite it?");
                 if (overwrite) {
                     Log.lvl1("overwriting existing user");
-                    await StorageDB.set(this.uData.dataFileName, "");
+                    await User.setDbKey(this.bcs.user);
                     window.location.reload();
                 } else {
                     return await this.router.navigate(["/"]);
@@ -60,30 +65,32 @@ export class RegisterComponent implements OnInit {
         }
     }
 
-    async addID(ephemeral: string, alias: string = "", darcID: string = "") {
-        if (ephemeral.length === 64) {
+    async addID(ephemeralStr: string, alias: string = "", darcIDStr: string = "") {
+        if (ephemeralStr.length === 64) {
+            const keyPair = KeyPair.fromString(ephemeralStr);
             await showTransactions(this.dialog, "Creating new user",
                 async (progress: TProgress) => {
                     Log.lvl1("creating user");
-                    const ekStr = ephemeral;
-                    const ek = Private.fromHex(ekStr);
-                    this.uData.storage = StorageDB;
-                    if (darcID.length === 64 && alias.length > 0) {
+                    if (darcIDStr.length === 64 && alias.length > 0) {
                         Log.lvl2("creating FIRST user");
-                        progress(30, "Creating First User");
-                        const d = await Data.createFirstUser(this.uData.bc, Buffer.from(darcID, "hex"), ek.scalar,
-                            alias);
-                        this.uData.contact = d.contact;
-                        this.uData.keyIdentity = d.keyIdentity;
-                        await this.uData.connectByzcoin();
+                        progress(30, "Updating genesis darc");
+                        const darcID = Buffer.from(darcIDStr, "hex");
+                        const genesis = new Genesis({genesisUser: {keyPair, darcID}, bs: this.bcs.bs});
+                        await genesis.evolveGenesisDarc();
+                        progress(50, "Creating Coin");
+                        await genesis.createCoin();
+                        progress(70, "Creating Spawner");
+                        await genesis.createSpawner();
+                        progress(80, "Creating User");
+                        await User.createUser(genesis);
                     } else {
                         Log.lvl2("attaching to existing user and replacing password");
                         progress(30, "Creating User");
-                        await this.uData.attachAndEvolve(ek);
+                        await User.attachAndEvolve(this.bcs.user, keyPair);
                     }
                     Log.lvl1("verifying registration");
-                    progress(60, "Storing Credential");
-                    await this.uData.save();
+                    progress(90, "Loading new user");
+                    await this.bcs.loadUser();
                     Log.lvl1("done registering");
                 });
         }

@@ -24,8 +24,8 @@ import {BasicStuff} from "./user";
 import {Transaction} from "./transaction";
 import {CoinBS} from "./coinBS";
 import {ConvertBS, ObservableHO, ObservableToBS} from "./observableHO";
-import {flatMap, map} from "rxjs/operators";
-import {UserFactory} from "./userFactory";
+import {flatMap, map, tap} from "rxjs/operators";
+import {UserSkeleton} from "./userSkeleton";
 import Long from "long";
 
 export class AddressBook {
@@ -36,7 +36,7 @@ export class AddressBook {
     ) {
     }
 
-    public static async createAddressBook(bs: BasicStuff, cp: CredentialPublic): Promise<AddressBook> {
+    public static async getAddressBook(bs: BasicStuff, cp: CredentialPublic): Promise<AddressBook> {
         const contactBS = await ABContactsBS.createABContactsBS(bs, cp.contacts);
         Log.lvl3("getting groups");
         const groupsBS = await ABGroupsBS.createABGroupBS(bs, cp.groups);
@@ -59,7 +59,7 @@ export class ABContactsBS extends BehaviorSubject<CredentialStructBS[]> {
         return new ABContactsBS(aisBS,
             await ObservableToBS(aisBS.pipe(
                 flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    async (id) => CredentialStructBS.createCredentialStructBS(bs, id)
+                    async (id) => CredentialStructBS.getCredentialStructBS(bs, id)
                 )))))
         )
     }
@@ -72,7 +72,7 @@ export class ABContactsBS extends BehaviorSubject<CredentialStructBS[]> {
         });
     }
 
-    public create(tx: Transaction, user: UserFactory, initial = Long.fromNumber(0)) {
+    public create(tx: Transaction, user: UserSkeleton, initial = Long.fromNumber(0)) {
         tx.createUser(user, initial);
         this.link(tx, user.credID);
     }
@@ -110,8 +110,8 @@ export class ABGroupsBS extends DarcsBS {
         return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/\w${name}$/`))
     }
 
-    public create(tx: Transaction, name: string) {
-        const d = tx.spawnDarcBasic(name);
+    public create(tx: Transaction, name: string, signers: IIdentity[]) {
+        const d = tx.spawnDarcBasic(name, signers);
         this.link(tx, d.getBaseID());
     }
 

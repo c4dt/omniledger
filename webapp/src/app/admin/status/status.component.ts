@@ -7,7 +7,7 @@ import StatusRPC from "@dedis/cothority/status/status-rpc";
 import { Data } from "@c4dt/dynacred";
 
 import { hexBuffer } from "../../../lib/Ui";
-import { UserData } from "../../user-data.service";
+import {UserService} from "src/app/user.service";
 
 @Component({
   selector: "app-status",
@@ -21,11 +21,11 @@ export class StatusComponent implements OnInit {
 
   constructor(
       private router: Router,
-      private uData: UserData,
+      private user: UserService,
       ) {
-    this.uData.contact.getDarcSignIdentity().then((dsi) => this.signID = hexBuffer(dsi.id));
-    this.userID = hexBuffer(this.uData.contact.credentialIID);
-    this.pubKey = hexBuffer(this.uData.keyIdentity._public.toBuffer());
+    this.signID = this.user.identityDarcSigner.id.toString("hex");
+    this.userID = hexBuffer(this.user.credStructBS.id);
+    this.pubKey = hexBuffer(this.user.kpp.pub.marshalBinary());
   }
 
   async ngOnInit() {
@@ -35,7 +35,7 @@ export class StatusComponent implements OnInit {
 
   async update() {
     this.nodes = [];
-    const roster = this.uData.bc.getConfig().roster;
+    const roster = this.user.bc.getConfig().roster;
     const list = roster.list;
     const srpc = new StatusRPC(roster);
     for (let i = 0; i < list.length; i++) {
@@ -52,7 +52,7 @@ export class StatusComponent implements OnInit {
   }
 
   async deleteUser() {
-    const d = new Data(this.uData.bc);
+    const d = new Data(this.user.bc);
     await d.save();
     await this.router.navigate(["/newuser"]);
   }

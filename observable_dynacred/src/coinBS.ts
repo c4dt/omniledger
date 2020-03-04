@@ -18,7 +18,7 @@ export class CoinBS extends BehaviorSubject<CoinInstance> {
         coin.subscribe(this);
     }
 
-    public static async createCoinBS(bs: BasicStuff, coinID: BehaviorSubject<InstanceID> | InstanceID):
+    public static async getCoinBS(bs: BasicStuff, coinID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<CoinBS> {
         if (coinID instanceof Buffer) {
             coinID = new BehaviorSubject(coinID);

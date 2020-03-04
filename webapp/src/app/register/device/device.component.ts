@@ -1,15 +1,15 @@
-import { Component, OnInit } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import {Component, OnInit} from "@angular/core";
+import {MatDialog} from "@angular/material/dialog";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 import Log from "@dedis/cothority/log";
 
-import { Data, StorageDB, TProgress } from "@c4dt/dynacred";
+import {TProgress} from "@c4dt/dynacred";
 
-import { Router } from "@angular/router";
-import { showDialogOKC, showTransactions } from "../../../lib/Ui";
-import { UserData } from "../../user-data.service";
+import {Router} from "@angular/router";
+import {showDialogOKC, showTransactions} from "../../../lib/Ui";
 import {User} from "observable_dynacred";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-device",
@@ -21,7 +21,7 @@ export class DeviceComponent implements OnInit {
     constructor(
         private router: Router,
         private snack: MatSnackBar,
-        private uData: UserData,
+        private bcs: ByzCoinService,
         private dialog: MatDialog,
     ) {
         this.text = "Please wait";
@@ -29,7 +29,7 @@ export class DeviceComponent implements OnInit {
 
     async ngOnInit() {
         try {
-            if (await this.uData.hasUser()){
+            if (await this.bcs.hasUser()) {
                 if (!(await showDialogOKC(this.dialog, "Overwrite user?", "There seems to" +
                     "be a user already defined on this browser. Do you want to overwrite it?",
                     {OKButton: "Overwrite", CancelButton: "Keep existing"}))) {
@@ -39,11 +39,7 @@ export class DeviceComponent implements OnInit {
             await showTransactions(this.dialog, "Attaching to existing user",
                 async (progress: TProgress) => {
                     progress(50, "Attaching new device");
-                    const newData = await Data.attachDevice(this.uData.bc, window.location.href);
-                    newData.storage = StorageDB;
-                    await newData.save();
-                    progress(-75, "Storing Credential");
-                    await this.uData.load();
+                    this.bcs.user = await User.attachAndEvolveDevice(this.bcs.bs, window.location.href);
                 });
             await this.router.navigate(["/"]);
         } catch (e) {

@@ -31,7 +31,7 @@ import {
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import {createHash} from "crypto-browserify";
 import Long = require("long");
-import {IGenesisDarc} from "spec/simul/itest";
+import {IGenesisUser} from "spec/simul/itest";
 
 class SimulProof {
     public latest: SkipBlock;

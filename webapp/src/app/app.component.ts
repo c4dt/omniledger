@@ -7,7 +7,9 @@ import Log from "@dedis/cothority/log";
 
 import { showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
-import { UserData } from "./user-data.service";
+import {User} from "observable_dynacred";
+import {ByzCoinRPC} from "@c4dt/cothority/byzcoin";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-root",
@@ -26,7 +28,7 @@ export class AppComponent implements OnInit {
     constructor(
         private router: Router,
         private dialog: MatDialog,
-        private uData: UserData,
+        private bcs: ByzCoinService
     ) {
     }
 
@@ -37,7 +39,7 @@ export class AppComponent implements OnInit {
     }
 
     async ngOnInit() {
-        await this.uData.loadConfig((msg: string, perc: number) => {
+        await this.bcs.loadConfig((msg: string, perc: number) => {
             this.logAppend(msg, perc * 0.8);
         });
 
@@ -56,29 +58,27 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        if (!(await this.uData.isAvailableInStorage())) {
+        if (!(await this.bcs.hasUser())) {
             // No data saved - show how to get a new user
             this.loading = false;
             return this.newUser();
         } else {
             try {
                 this.logAppend("Loading data", 80);
-                await this.uData.load();
-                const signerDarc = await this.uData.contact.getDarcSignIdentity();
-                const rules = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, signerDarc.id,
-                    IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+                await this.bcs.loadUser();
+                const signerDarc = await this.bcs.user.identityDarcSigner;
+                const rules = await this.bcs.bs.bc.checkAuthorization(this.bcs.bs.bc.genesisID, signerDarc.id,
+                    IdentityWrapper.fromIdentity(this.bcs.user.kiSigner));
                 if (rules.length === 0) {
-                    this.uData.setValues({});
-                    await this.uData.save();
+                    await User.setDbKey(this.bcs.user);
                     await showDialogOKC(this.dialog, "Device revoked", "Sorry, but this device has been revoked." +
                         " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();
                 }
-                this.logAppend("Loading Observable User", 90);
-                await this.uData.loadUser();
                 this.logAppend("Done", 100);
                 this.loading = false;
             } catch (e) {
+                Log.catch(e, "failed loading user");
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {
                     width: "300px",
@@ -96,7 +96,7 @@ export class AppComponent implements OnInit {
     }
 
     async newUser(): Promise<boolean> {
-        const roster = this.uData.bc.getConfig().roster;
+        const roster = this.bcs.bs.bc.getConfig().roster;
         if (roster && !roster.list[0].address.includes("localhost")) {
             return this.router.navigate(["/newuser"]);
         } else {

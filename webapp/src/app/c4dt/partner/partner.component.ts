@@ -9,11 +9,11 @@ import { ContactsComponent } from "../../admin/contacts/contacts.component";
 })
 export class PartnerComponent extends ContactsComponent {
     async createSimpleContact() {
-        const groups = await this.uData.contact.getGroups();
+        const groups = this.user.addressBook.groups.getValue();
         if (groups.length === 0) {
-            return showDialogInfo(this.dialog, "No Group Found", "There are no groups tied to your account.\n" +
-                "Wait some seconds and try again.", "Understood");
+            return showDialogInfo(this.dialog, "No Group Found", "There are no groups tied to your account.",
+                "Understood");
         }
-        await super.contactNew("c4dt_user", [groups[0].darc.description.toString()]);
+        await super.contactNew("c4dt_user", groups.map(g => g.getValue().description.toString()));
     }
 }

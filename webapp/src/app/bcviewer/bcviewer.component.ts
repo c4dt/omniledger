@@ -16,7 +16,7 @@ import TxResult from "@dedis/cothority/byzcoin/proto/tx-result";
 import CredentialsInstance, {CredentialStruct} from "@dedis/cothority/personhood/credentials-instance";
 import {ForwardLink, SkipBlock} from "@dedis/cothority/skipchain";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-import {UserData} from "../user-data.service";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-bcviewer",
@@ -28,7 +28,7 @@ export class BcviewerComponent implements OnInit {
     blocks: BCBlock[] = [];
 
     constructor(private dialog: MatDialog,
-                private uData: UserData) {
+                private bcs: ByzCoinService) {
     }
 
     updateBlock(block: SkipBlock) {
@@ -44,12 +44,12 @@ export class BcviewerComponent implements OnInit {
     }
 
     async ngOnInit() {
-        this.scRPC = new SkipchainRPC(this.uData.conn);
-        const sbBlocks = await this.scRPC.getUpdateChain(this.uData.bc.genesisID, false);
+        this.scRPC = new SkipchainRPC(this.bcs.conn);
+        const sbBlocks = await this.scRPC.getUpdateChain(this.bcs.bs.bc.genesisID, false);
         sbBlocks.forEach((block) => this.updateBlock(block));
         // TODO: there is a race-condition where a block is created between
         //  the getUpdateChain and the subscription to the getNewBlocks.
-        (await this.uData.bc.getNewBlocks()).subscribe((block) => this.updateBlock(block));
+        (await this.bcs.bs.bc.getNewBlocks()).subscribe((block) => this.updateBlock(block));
     }
 }
 
@@ -90,7 +90,7 @@ export class ShowBlockComponent {
 
     constructor(
         private dialogRef: MatDialogRef<ShowBlockComponent>,
-        private uData: UserData,
+        private bcs: ByzCoinService,
         @Inject(MAT_DIALOG_DATA) public data: BCBlock) {
         this.updateVars();
         data.updateLinks();
@@ -98,7 +98,7 @@ export class ShowBlockComponent {
 
     updateVars() {
         this.roster = this.data.sb.roster.list.slice(1).map((l) => l.description);
-        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(this.uData.bc, txr, index));
+        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(this.bcs.bs.bc, txr, index));
     }
 
     async goBlock(l: LinkBlock) {

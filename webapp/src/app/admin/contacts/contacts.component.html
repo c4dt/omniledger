@@ -4,9 +4,7 @@
         <button mat-button (click)="contactShow(contact)">
             {{ contact.credPublic.alias | async | titlecase }}</button>
         -
-        <button mat-button (click)="transferCoin(contact)">Transfer</button>
-        -
-        <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+        <button mat-button (click)="contactTransfer(contact)">Transfer</button>
         -
         <button mat-button (click)="contactRecover(contact)">Recover</button>
         -
@@ -24,9 +22,9 @@
         <button mat-button (click)="groupShow(group)">
             {{ group.getValue().description.toString() | titlecase }}</button>
 	    -
-        <button mat-button (click)="renameGroup(group)">Rename group</button>
+        <button mat-button (click)="groupRename(group)">Rename group</button>
 	    -
-        <button mat-button (click)="changeGroup(group, 'contact,group')">Change users</button>
+        <button mat-button (click)="groupEdit(group, 'contact,group')">Edit group</button>
         -
         <button mat-button (click)="groupUnlink(group)">Unlink group</button>
     </li>
@@ -41,13 +39,15 @@
     <li *ngFor="let action of (actions|async)">
         <button mat-button (click)="actionShow(action)">
             {{ action.darc.getValue().description.toString() | titlecase }}</button>
-	-
-        <button mat-button (click)="changeGroup(action, 'group')">Change groups</button>
+    	-
+        <button mat-button (click)="groupRename(action.darc)">Rename action</button>
+        -
+        <button mat-button (click)="groupEdit(action.darc, 'group')">Edit action</button>
         -
         <button mat-button (click)="actionUnlink(action)">Unlink action</button>
     </li>
 </ul>
 <div style="padding:10px;">
     <button mat-stroked-button color="primary" (click)="actionCreate()">Create Action</button>
-    <button mat-stroked-button color="primary" (click)="actionAdd()">Link Action</button>
+    <button mat-stroked-button color="primary" (click)="actionLink()">Link Action</button>
 </div>

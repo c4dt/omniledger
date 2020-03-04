@@ -1,19 +1,11 @@
-import {BehaviorSubject} from "rxjs";
-import {distinctUntilChanged, map} from "rxjs/operators";
+import {BehaviorSubject, of} from "rxjs";
+import {catchError, distinctUntilChanged, map} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long from "long";
 import {Log} from "@dedis/cothority";
-import {
-    configInstanceID,
-    IByzCoinBlockStreamer,
-    IByzCoinProof,
-    IDataBase
-} from "./interfaces";
-import {
-    InstanceID,
-    StateChangeBody
-} from "@dedis/cothority/byzcoin";
+import {configInstanceID, IByzCoinBlockStreamer, IByzCoinProof, IDataBase} from "./interfaces";
+import {InstanceID, StateChangeBody} from "@dedis/cothority/byzcoin";
 import {startWith} from "rxjs/internal/operators/startWith";
 import {SkipBlock} from "@dedis/cothority/skipchain";
 import {tap} from "rxjs/internal/operators/tap";
@@ -97,12 +89,15 @@ export class Instances {
         this.newBlock
             .pipe(
                 filter((v) => !v.equals(dbInst.block)),
-                mergeMap((v) => this.getInstanceFromChain(id))
+                mergeMap((v) => this.getInstanceFromChain(id)),
+                catchError((err) => {
+                    Log.error("instanceBS: couldn't get new instance:", err);
+                    return of(dbInst);
+                }),
             ).pipe(
-                startWith(dbInst),
-                distinctUntilChanged((a, b) => a.version.equals(b.version)),
-            )
-            .subscribe(bsNew);
+            startWith(dbInst),
+            distinctUntilChanged((a, b) => a.version.equals(b.version)),
+        ).subscribe(bsNew);
         this.cache.set(id, bsNew);
         return bsNew;
     }
@@ -112,7 +107,7 @@ export class Instances {
     }
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {
-        Log.llvl3("get instance", id);
+        Log.lvl3("get instance", id);
         const p = await this.bc.getProofFromLatest(id);
         if (!p.exists(id)) {
             throw new Error(`didn't find instance ${id.toString("hex")} in cache or on chain`);

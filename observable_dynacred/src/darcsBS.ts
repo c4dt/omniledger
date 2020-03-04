@@ -1,13 +1,14 @@
 import {BehaviorSubject} from "rxjs";
 import {ObservableToBS} from "./observableHO";
-import {flatMap, map, mergeAll} from "rxjs/operators";
-import {Darc, Rule, Rules} from "@dedis/cothority/darc";
+import {flatMap, map, mergeAll, tap} from "rxjs/operators";
+import {Darc, IIdentity, Rule, Rules} from "@dedis/cothority/darc";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {DarcInstance} from "@dedis/cothority/byzcoin/contracts";
 import {IInstance} from "./instances";
 import {BasicStuff} from "./user";
 import {Transaction} from "./transaction";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import Log from "@c4dt/cothority/log";
 
 export class DarcsBS extends BehaviorSubject<DarcBS[]> {
     constructor(sbs: BehaviorSubject<DarcBS[]>) {
@@ -58,24 +59,37 @@ export class DarcBS extends BehaviorSubject<Darc> {
         return newDarc;
     }
 
-    public addSignEvolve(tx: Transaction, idSign: InstanceID, idEvolve = idSign) {
-        const darcIdentitySign = new IdentityDarc({id: idSign});
-        const darcIdentityEvolve = new IdentityDarc({id: idEvolve});
+    public setSignEvolve(tx: Transaction, idSign: IIdentity | InstanceID, idEvolve = idSign) {
         const rules = this.getValue().rules.clone();
-        rules.appendToRule(Darc.ruleSign, darcIdentitySign, Rule.OR);
+        rules.setRule(Darc.ruleSign, toIId(idSign));
         if (idEvolve) {
-            rules.appendToRule(DarcInstance.ruleEvolve, darcIdentityEvolve, Rule.OR);
+            rules.setRule(DarcInstance.ruleEvolve, toIId(idEvolve));
         }
         this.evolveDarc(tx, {rules});
     }
 
-    public rmSignEvolve(tx: Transaction, id: InstanceID) {
-        const darcIdentity = new IdentityDarc({id});
-        const rules = this.getValue().rules;
-        rules.getRule(Darc.ruleSign).remove(darcIdentity.toString());
-        rules.getRule(DarcInstance.ruleEvolve).remove(darcIdentity.toString());
+    public addSignEvolve(tx: Transaction, idSign: IIdentity | InstanceID, idEvolve = idSign) {
+        const rules = this.getValue().rules.clone();
+        rules.appendToRule(Darc.ruleSign, toIId(idSign), Rule.OR);
+        if (idEvolve) {
+            rules.appendToRule(DarcInstance.ruleEvolve, toIId(idEvolve), Rule.OR);
+        }
         this.evolveDarc(tx, {rules});
     }
+
+    public rmSignEvolve(tx: Transaction, id: IIdentity | InstanceID) {
+        const rules = this.getValue().rules;
+        rules.getRule(Darc.ruleSign).remove(toIId(id).toString());
+        rules.getRule(DarcInstance.ruleEvolve).remove(toIId(id).toString());
+        this.evolveDarc(tx, {rules});
+    }
+}
+
+function toIId(id: IIdentity | InstanceID): IIdentity {
+    if (id instanceof Buffer) {
+        return new IdentityDarc({id: id});
+    }
+    return id;
 }
 
 export interface IDarcAttr {

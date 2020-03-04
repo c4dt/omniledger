@@ -1,13 +1,12 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { MatSelectChange } from "@angular/material/select";
 
 import { curve } from "@dedis/kyber";
 
 import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
-import { UserData } from "../user-data.service";
+import {UserService} from "src/app/user.service";
 
 export interface IManageDarc {
     title: string;
@@ -38,7 +37,7 @@ export class ManageDarcComponent {
 
     constructor(
         private dialogRef: MatDialogRef<ManageDarcComponent>,
-        private uData: UserData,
+        private user: UserService,
         @Inject(MAT_DIALOG_DATA) public data: IManageDarc) {
         if (!data.title || data.title === "") {
             data.title = "Manage access rights";
@@ -80,25 +79,25 @@ export class ManageDarcComponent {
     async getItems(filter: string): Promise<IItem[]> {
         const items: IItem[] = [];
         if (filter.indexOf("contact") >= 0) {
-            for (const contact of this.uData.contact.contacts) {
-                items.push(this.createItem("Contact: " + contact.alias,
-                    await contact.getDarcSignIdentity()));
+            for (const contact of this.user.addressBook.contacts.getValue()) {
+                items.push(this.createItem("Contact: " + contact.credPublic.alias.getValue(),
+                    await contact.getSignerIdentityDarc()));
             }
         }
         if (filter.indexOf("action") >= 0) {
-            for (const action of await this.uData.contact.getActions()) {
-                items.push(this.createItem("Action: " + action.darc.description.toString(),
-                    new IdentityDarc({id: action.id})));
+            for (const action of await this.user.addressBook.actions.getValue()) {
+                items.push(this.createItem("Action: " + action.darc.getValue().description.toString(),
+                    new IdentityDarc({id: action.darc.getValue().id})));
             }
         }
         if (filter.indexOf("group") >= 0) {
-            for (const group of await this.uData.contact.getGroups()) {
-                items.push(this.createItem("Group: " + group.darc.description.toString(),
-                    new IdentityDarc({id: group.id})));
+            for (const group of await this.user.addressBook.groups.getValue()) {
+                items.push(this.createItem("Group: " + group.getValue().description.toString(),
+                    new IdentityDarc({id: group.getValue().id})));
             }
         }
-        items.unshift(this.createItem("Ourselves: " + this.uData.contact.alias,
-            await this.uData.contact.getDarcSignIdentity()));
+        items.unshift(this.createItem("Ourselves: " + this.user.credStructBS.credPublic.alias.getValue(),
+            this.user.identityDarcSigner));
         return items;
     }
 
