@@ -44,9 +44,14 @@ func getRouter(cas cas.CAS) *gin.Engine {
 	})
 	r.GET("/api/v0/cas/logout", cas.Logout)
 
-	// TODO fix synapse to support CAS 3.0, should be $cas/p3/proxyValidate
+	// TODO fix synapse and apache/auth_cas to support CAS 3.0
 	r.GET("/api/v0/cas/proxyValidate", func(c *gin.Context) {
 		c.XML(http.StatusOK, cas.ProxyValidateXML(
+			c.Query("service"), c.Query("ticket"),
+		))
+	})
+	r.GET("/api/v0/cas/serviceValidate", func(c *gin.Context) {
+		c.XML(http.StatusOK, cas.ServiceValidateXML(
 			c.Query("service"), c.Query("ticket"),
 		))
 	})
