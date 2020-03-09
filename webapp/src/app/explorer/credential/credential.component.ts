@@ -1,7 +1,6 @@
-import { Component, Input, OnInit } from "@angular/core";
-import { Contact } from "@c4dt/dynacred";
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc } from "@dedis/cothority/darc";
+import {Component, Input, OnInit} from "@angular/core";
+import {AddressBook, CredentialConfig, CredentialPublic, CredentialStructBS} from "observable_dynacred";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-credential",
@@ -14,17 +13,18 @@ import { IdentityDarc } from "@dedis/cothority/darc";
 export class CredentialComponent implements OnInit {
 
     @Input()
-    contact: Contact;
+    credStruct: CredentialStructBS;
 
-    signerInstanceID: IdentityDarc | undefined;
-    contacts: Contact[] | undefined;
-    actions: DarcInstance[] | undefined;
-    groups: DarcInstance[] | undefined;
+    pub: CredentialPublic;
+    config: CredentialConfig;
+    addressBook: AddressBook;
+
+    constructor(private bcs: ByzCoinService) {
+    }
 
     async ngOnInit() {
-        this.contact.getContacts().then(() => this.contacts = this.contact.contacts);
-        this.contact.getDarcSignIdentity().then((id) => this.signerInstanceID = id);
-        this.contact.getActions().then((actions) => this.actions = actions);
-        this.contact.getGroups().then((groups) => this.groups = groups);
+        this.pub = this.credStruct.credPublic;
+        this.config = this.credStruct.credConfig;
+        this.addressBook = await AddressBook.getAddressBook(this.bcs.bs, this.pub);
     }
 }

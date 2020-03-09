@@ -9,9 +9,7 @@ import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import {IdentityDarc, IdentityWrapper, SignerEd25519} from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
-import {Contact, Data, FileBlob, TProgress} from "@c4dt/dynacred";
-
-import {showDialogInfo, showTransactions} from "../../../lib/Ui";
+import {showDialogInfo, showTransactions, TProgress, UIViews} from "../../../lib/Ui";
 import {ManageDarcComponent} from "../manage-darc";
 
 import {ContactInfoComponent} from "./contact-info/contact-info.component";
@@ -36,8 +34,8 @@ import {UserService} from "src/app/user.service";
     templateUrl: "./contacts.component.html",
 })
 export class ContactsComponent implements OnInit {
-    calypsoOurKeys: string[];
-    calypsoOtherKeys: Map<Contact, FileBlob[]>;
+    // calypsoOurKeys: string[];
+    // calypsoOtherKeys: Map<Contact, FileBlob[]>;
     contacts: ABContactsBS;
     actions: ABActionsBS;
     groups: ABGroupsBS;
@@ -48,7 +46,7 @@ export class ContactsComponent implements OnInit {
         private location: Location,
         public user: UserService,
     ) {
-        this.calypsoOtherKeys = new Map();
+        // this.calypsoOtherKeys = new Map();
         this.contacts = user.addressBook.contacts;
         this.actions = user.addressBook.actions;
         this.groups = user.addressBook.groups;
@@ -417,7 +415,7 @@ export interface IUserCred {
 export class UserCredComponent {
 
     static noRecovery = "No recovery";
-    views = Data.views;
+    views = UIViews;
     showGroups: boolean;
     showViews: boolean;
     recoveryGroups: string[];
@@ -428,7 +426,7 @@ export class UserCredComponent {
         this.showGroups = data.groups === undefined;
         this.showViews = data.view === undefined;
         if (this.showViews) {
-            data.view = Data.views[0];
+            data.view = UIViews[0];
         }
         data.groups = [];
         this.recoveryGroups = [UserCredComponent.noRecovery].concat(data.groupsAvail);

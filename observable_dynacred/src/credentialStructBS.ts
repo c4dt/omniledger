@@ -82,7 +82,6 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     public setCredential(tx: Transaction, cred: Credential) {
         const credStruct = this.getValue();
         credStruct.setCredential(cred.name, cred);
-        Log.print("update with", credStruct.getCredential(ECredentials.devices));
         this.setCredentialStruct(tx, credStruct);
     }
 
@@ -203,7 +202,6 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
     }
 
     public static fromScratch(bs: BasicStuff, cbs: CredentialBS): CredentialInstanceMapBS {
-        Log.print("creating imbs:", cbs.getValue())
         return new CredentialInstanceMapBS(bs, cbs,
             ConvertBS(cbs, c => new InstanceMap(c)),
         )

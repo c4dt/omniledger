@@ -31,7 +31,8 @@ import {
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import {createHash} from "crypto-browserify";
 import Long = require("long");
-import {IGenesisUser} from "spec/simul/itest";
+import {IGenesisUser} from "src/genesis";
+import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 
 class SimulProof {
     public latest: SkipBlock;
@@ -70,7 +71,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
-    constructor(igd: IGenesisDarc) {
+    constructor(igd: IGenesisUser) {
         this.globalState.addDarc(igd.darc);
         this.globalState.addOrUpdateInstance(newIInstance(configInstanceID,
             Buffer.alloc(0), "config"))
@@ -181,6 +182,10 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
 
     public getProtocolVersion(): number {
         return 3;
+    }
+
+    async checkAuthorization(byzCoinID: InstanceID, darcID: InstanceID, ...identities: IdentityWrapper[]): Promise<string[]>{
+        return [""];
     }
 
     async getNewBlocks(): Promise<BehaviorSubject<SkipBlock>> {

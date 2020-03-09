@@ -6,12 +6,11 @@ import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { TProgress } from "@c4dt/dynacred";
 import { Argument, ClientTransaction, InstanceID, Instruction } from "@dedis/cothority/byzcoin";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
-import { showTransactions } from "../../../../../lib/Ui";
+import {showTransactions, TProgress} from "../../../../../lib/Ui";
 import {UserService} from "src/app/user.service";
 
 enum StateT {

@@ -16,6 +16,8 @@ import {UserService} from "src/app/user.service";
 // Progress type to be used in showTransactions.
 export type TProgress = (percentage: number, text: string) => void;
 
+export let UIViews = ["c4dt_user", "c4dt_partner", "c4dt_admin", "admin"];
+
 /**
  * Shows a simple snack-message at the bottom of the screen. The message is informative
  * only and be cancelled by the user.

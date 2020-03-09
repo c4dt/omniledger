@@ -4,10 +4,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 
 import Log from "@dedis/cothority/log";
 
-import {TProgress} from "@c4dt/dynacred";
-
 import {Router} from "@angular/router";
-import {showDialogOKC, showTransactions} from "../../../lib/Ui";
+import {showDialogOKC, showTransactions, TProgress} from "../../../lib/Ui";
 import {User} from "observable_dynacred";
 import {ByzCoinService} from "src/app/byz-coin.service";
 

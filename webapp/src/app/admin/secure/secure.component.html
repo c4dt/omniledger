@@ -1,25 +1,25 @@
 <h3>Our secured data</h3>
-<ul>
-  <li *ngFor="let sd of calypsoOurKeys">
-    {{ sd }} -
-    <button mat-button (click)="calypsoAccess(sd)">Change Access</button> -
-    <button mat-button (click)="calypsoDelete(sd)">Delete Data</button> -
-    <button mat-button (click)="calypsoShowAccess(sd)">Show Access</button>
-  </li>
-</ul>
-<button mat-raised-button color="primary" (click)="calypsoAddData()">Add Data</button>
-<h3>Access to other data</h3>
-<ul>
-  <li *ngFor="let user of calypsoOtherKeys | keyvalue">
-    <div *ngIf="user.key">
-      {{ user.key.alias | titlecase }} -
-      <button mat-button (click)="calypsoSearch(user.key)">Update</button>
-      <ul>
-        <li *ngFor="let fb of user.value">
-          {{ fb.name }} -
-          <button mat-button (click)="calypsoDownload(user.key, fb)">Download</button>
-        </li>
-      </ul>
-    </div>
-  </li>
-</ul>
+<!--<ul>-->
+<!--  <li *ngFor="let sd of calypsoOurKeys">-->
+<!--    {{ sd }} - -->
+<!--    <button mat-button (click)="calypsoAccess(sd)">Change Access</button> - -->
+<!--    <button mat-button (click)="calypsoDelete(sd)">Delete Data</button> - -->
+<!--    <button mat-button (click)="calypsoShowAccess(sd)">Show Access</button>-->
+<!--  </li>-->
+<!--</ul>-->
+<!--<button mat-raised-button color="primary" (click)="calypsoAddData()">Add Data</button>-->
+<!--<h3>Access to other data</h3>-->
+<!--<ul>-->
+<!--  <li *ngFor="let user of calypsoOtherKeys | keyvalue">-->
+<!--    <div *ngIf="user.key">-->
+<!--      {{ user.key.alias | titlecase }} - -->
+<!--      <button mat-button (click)="calypsoSearch(user.key)">Update</button>-->
+<!--      <ul>-->
+<!--        <li *ngFor="let fb of user.value">-->
+<!--          {{ fb.name }} - -->
+<!--          <button mat-button (click)="calypsoDownload(user.key, fb)">Download</button>-->
+<!--        </li>-->
+<!--      </ul>-->
+<!--    </div>-->
+<!--  </li>-->
+<!--</ul>-->

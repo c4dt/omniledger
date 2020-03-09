@@ -17,6 +17,7 @@ import {CredentialSignerBS, CSTypesBS} from "./signers";
 import {UserSkeleton} from "./userSkeleton";
 import {IDataBase} from "./interfaces";
 import {Genesis} from "./genesis";
+import {Config} from "./config";
 
 export {
     AddressBook,
@@ -25,6 +26,7 @@ export {
     ABGroupsBS,
     ActionBS,
     BasicStuff,
+    Config,
     CredentialBS,
     CredentialSignerBS,
     CredentialStructBS,

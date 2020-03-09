@@ -1,10 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Contact } from "@c4dt/dynacred";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import {ByzCoinService} from "src/app/byz-coin.service";
+import {CredentialStructBS} from "observable_dynacred";
 
 @Component({
     selector: "app-explorer",
@@ -12,7 +12,7 @@ import {ByzCoinService} from "src/app/byz-coin.service";
 })
 export class ExplorerComponent implements OnInit {
     kind: string | undefined;
-    contact: Contact | undefined;
+    credStruct: CredentialStructBS | undefined;
     coin: CoinInstance | undefined;
     darc: DarcInstance | undefined;
 
@@ -29,7 +29,7 @@ export class ExplorerComponent implements OnInit {
             switch (p.contractID) {
 
                 case CredentialsInstance.contractID:
-                    this.contact = await Contact.fromByzcoin(this.bcs.bs.bc, id);
+                    this.credStruct = await CredentialStructBS.getCredentialStructBS(this.bcs.bs, id);
                     this.kind = "credentialObservable.ts";
                     break;
 

@@ -4,8 +4,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 
 import Log from "@dedis/cothority/log";
 
-import {Contact, FileBlob} from "@c4dt/dynacred";
-
 import {showSnack} from "../../../lib/Ui";
 import {UserService} from "src/app/user.service";
 
@@ -14,15 +12,15 @@ import {UserService} from "src/app/user.service";
     templateUrl: "./secure.component.html",
 })
 export class SecureComponent implements OnInit {
-    calypsoOurKeys: string[];
-    calypsoOtherKeys: Map<Contact, FileBlob[]>;
+    // calypsoOurKeys: string[];
+    // calypsoOtherKeys: Map<Contact, FileBlob[]>;
 
     constructor(
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         private user: UserService,
     ) {
-        this.calypsoOtherKeys = new Map();
+        // this.calypsoOtherKeys = new Map();
     }
 
     async ngOnInit() {
@@ -48,7 +46,7 @@ export class SecureComponent implements OnInit {
         // });
     }
 
-    async calypsoSearch(c: Contact) {
+    // async calypsoSearch(c: Contact) {
         // await showTransactions(this.dialog, "Searching new secure data for " + c.alias.toLocaleUpperCase(),
         //     async (progress: TProgress) => {
         //         progress(30, "Reading secrets");
@@ -58,7 +56,7 @@ export class SecureComponent implements OnInit {
         //         progress(80, "Getting other secrets");
         //         await this.updateCalypso();
         //     });
-    }
+    // }
 
     async calypsoAccess(key: string) {
         // Log.lvl3("change groups");
@@ -125,7 +123,7 @@ export class SecureComponent implements OnInit {
         // });
     }
 
-    async calypsoDownload(c: Contact, fb: FileBlob) {
+    // async calypsoDownload(c: Contact, fb: FileBlob) {
         // const a = document.createElement("a");
         // const file: any = new Blob([fb.data], {
         //     type: "application/octet-stream",
@@ -136,7 +134,7 @@ export class SecureComponent implements OnInit {
         // document.body.appendChild(a);
         // a.click();
         // document.body.removeChild(a);
-    }
+    // }
 
     async calypsoShowAccess(key: string) {
         // this.dialog.open(CalypsoShowAccessComponent, {

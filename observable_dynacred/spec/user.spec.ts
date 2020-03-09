@@ -1,17 +1,29 @@
+import Long from "long";
+
 import {IMigrate, User} from "src/user";
 
 import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
+import {KeyPair, UserSkeleton} from "observable_dynacred";
+import Log from "@dedis/cothority/log";
+import {Darc} from "@dedis/cothority/darc";
+import {filter, first, tap} from "rxjs/operators";
 
-describe("User class should", () => {
+describe("User class should", async () => {
     let bcTestEnv: BCTestEnv;
 
     beforeAll(async () => {
-        bcTestEnv = await BCTestEnv.start();
+        try {
+            bcTestEnv = await BCTestEnv.start();
+        } catch (e) {
+            Log.catch(e);
+        }
     });
 
     it("setting up of a new user in testing", async () => {
-        if (!bcTestEnv){return}
+        if (!bcTestEnv) {
+            return
+        }
         const {user} = bcTestEnv;
 
         await user.save();
@@ -21,7 +33,9 @@ describe("User class should", () => {
     });
 
     it("reading, writing, updating values of new user", async () => {
-        if (!bcTestEnv){return}
+        if (!bcTestEnv) {
+            return
+        }
         const {user} = bcTestEnv;
 
         const alias = user.credStructBS.credPublic.alias;
@@ -56,8 +70,11 @@ describe("User class should", () => {
     });
 
     it("correctly migrate", async () => {
-        if (!bcTestEnv){return}
-        const {db, user} = bcTestEnv;
+        if (!bcTestEnv) {
+            return
+        }
+        const {user} = bcTestEnv;
+        const db = user.db;
 
         User.migrateOnce = true;
 
@@ -89,5 +106,45 @@ describe("User class should", () => {
         migrate.version--;
         await db.setObject(User.keyMigrate, migrate);
         await expectAsync(User.load(user)).toBeRejected();
+    });
+
+    it("connect to a new device", async () => {
+        const {user} = bcTestEnv;
+
+        Log.lvl2("creating new user");
+        const nuSkel = new UserSkeleton("newUser", user.spawnerInstanceBS.getValue().id);
+        await user.executeTransactions(tx => {
+            tx.createUser(nuSkel, Long.fromNumber(1e6));
+        }, 10);
+
+        Log.lvl2('reading new user');
+        const nu = await User.getUser(user, nuSkel.credID, nuSkel.keyPair.priv.marshalBinary(), "newUser");
+        const h = new HistoryObs();
+        nu.credStructBS.credPublic.alias.subscribe(a => h.push(a));
+        await h.resolve(["newUser"]);
+
+        Log.lvl2('adding device');
+        const tx = nu.startTransaction();
+        const ephemeralIdentity = KeyPair.rand().signer();
+        Log.lvl2("Signer / private is:", ephemeralIdentity, ephemeralIdentity.secret.marshalBinary());
+        nu.credSignerBS.devices.create(tx, "newDevice", [ephemeralIdentity]);
+        await tx.send(10);
+        // This is needed to make sure that everything is updated locally.
+        await nu.credSignerBS.pipe(
+            filter(d => d.rules.getRule(Darc.ruleSign).getIdentities().length == 2),
+            first()
+        ).toPromise();
+        await nu.credStructBS.credDevices.pipe(filter(im => im.map.size == 2), first()).toPromise();
+
+        Log.lvl2("connecting to new device", ephemeralIdentity.secret);
+        const nu2 = await User.attachAndEvolveDevice(user, nu.getUrlForDevice(ephemeralIdentity.secret));
+        nu2.credStructBS.credPublic.alias.subscribe(a => h.push(a));
+        await h.resolve(["newUser"]);
+
+        await nu2.executeTransactions(tx => {
+            nu2.credStructBS.credPublic.alias.setValue(tx, "newDevice2");
+        }, 10);
+
+        await h.resolve(["newDevice2", "newDevice2"]);
     })
 });

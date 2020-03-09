@@ -4,8 +4,6 @@ import { Router } from "@angular/router";
 import Log from "@dedis/cothority/log";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 
-import { Data } from "@c4dt/dynacred";
-
 import { hexBuffer } from "../../../lib/Ui";
 import {UserService} from "src/app/user.service";
 
@@ -52,8 +50,6 @@ export class StatusComponent implements OnInit {
   }
 
   async deleteUser() {
-    const d = new Data(this.user.bc);
-    await d.save();
     await this.router.navigate(["/newuser"]);
   }
 }

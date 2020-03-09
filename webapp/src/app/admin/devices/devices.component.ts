@@ -6,15 +6,10 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {Darc, IdentityDarc, IdentityEd25519} from "@dedis/cothority/darc";
 
-import {TProgress} from "@c4dt/dynacred";
-
 import {Attribute} from "@dedis/cothority/personhood/credentials-instance";
-import {showDialogInfo, showDialogOKC, showSnack, showTransactions} from "src/lib/Ui";
-import {CSTypesBS, DarcBS, KeyPair, User} from "observable_dynacred";
+import {showDialogInfo, showDialogOKC, showSnack, showTransactions, TProgress} from "src/lib/Ui";
+import {CSTypesBS, DarcBS, KeyPair} from "observable_dynacred";
 import {UserService} from "src/app/user.service";
-import Log from "@c4dt/cothority/log";
-
-type RenameType = "devices" | "recovery";
 
 class Signer {
     descr: string;
@@ -86,9 +81,7 @@ export class DevicesComponent {
                             await this.user.executeTransactions(tx => {
                                 this.user.credSignerBS.devices.create(tx, result, [ephemeralIdentity]);
                             });
-                            return `${User.urlNewDevice}?` +
-                                `credentialIID=${this.user.credStructBS.id.toString("hex")}` +
-                                `&ephemeral=${ephemeralIdentity.secret.marshalBinary().toString("hex")}`;
+                            return this.user.getUrlForDevice(ephemeralIdentity.secret);
                         });
                 const url = window.location.protocol + "//" + window.location.host +
                     this.location.prepareExternalUrl(device);

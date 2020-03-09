@@ -3,9 +3,7 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { Data } from "@c4dt/dynacred";
-
-import {storeUserCredential} from "../../../lib/Ui";
+import {storeUserCredential, UIViews} from "../../../lib/Ui";
 import {
     EAttributesConfig,
     EAttributesPublic,
@@ -19,7 +17,7 @@ import {UserService} from "src/app/user.service";
 })
 export class YourselfComponent implements OnInit {
     contactForm: FormGroup;
-    views = Data.views;
+    views = UIViews;
     coins = "loading";
 
     constructor(private snack: MatSnackBar,

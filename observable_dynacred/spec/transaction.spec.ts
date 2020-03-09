@@ -22,7 +22,7 @@ describe("Transactions should", () => {
         coinIDPreHash2.write("coinID 2");
         const coin1 = tx.spawnCoin(coinType, signerDarcID, coinIDPreHash1);
         const coin2 = tx.spawnCoin(coinType, signerDarcID, coinIDPreHash2);
-        const d = tx.spawnDarcBasic("darc 1");
+        const d = tx.spawnDarcBasic("darc 1", [bcTestEnv.user.kiSigner]);
         await tx.send(1);
 
         const coinInst1 = await CoinBS.getCoinBS(bcTestEnv.user, coin1.id);

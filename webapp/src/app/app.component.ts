@@ -8,7 +8,7 @@ import Log from "@dedis/cothority/log";
 import { showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
 import {User} from "observable_dynacred";
-import {ByzCoinRPC} from "@c4dt/cothority/byzcoin";
+import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({

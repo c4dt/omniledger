@@ -1,8 +1,10 @@
-import {stopConodes} from "spec/support/conondes";
+import {started, stopConodes} from "spec/support/conondes";
 
 afterAll(async (done) => {
     // make sure we stop the container at the end
-    await stopConodes();
+    if (started) {
+        await stopConodes();
+    }
 
     done();
 });

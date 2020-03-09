@@ -23,7 +23,7 @@ describe("Instances should", () => {
 
     it("not ask new proofs when not necessary", async () => {
         if (!bcTestEnv){return}
-        const {bcSimul, db, user} = bcTestEnv;
+        const {bcSimul, user} = bcTestEnv;
 
         const history = new HistoryObs();
         // Wait for all proofs to be made
@@ -32,7 +32,7 @@ describe("Instances should", () => {
 
         Log.lvl2("Creating new instances object - there should be only one" +
             " getProof");
-        const inst2 = await Instances.fromScratch(db, bcSimul);
+        const inst2 = await Instances.fromScratch(user.db, bcSimul);
         await inst2.reload();
         await history.resolve(["P", "P"]);
         const io2 = (await inst2.instanceBS(user.credStructBS.id)).subscribe(() => history.push("i2"));
@@ -51,7 +51,7 @@ describe("Instances should", () => {
                         })
                     ])]
         }));
-        const inst3 = await Instances.fromScratch(db, bcSimul);
+        const inst3 = await Instances.fromScratch(user.db, bcSimul);
         await inst3.reload();
         await history.resolve(["P", "P", "P", "P", "P", "P", "P", "P"]);
         const io3 = (await inst3.instanceBS(user.credStructBS.id)).subscribe(

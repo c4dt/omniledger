@@ -19,6 +19,8 @@ export const SIGNER = SignerEd25519.fromBytes(Buffer.from("0cb119094dbf72dfd169f
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
 
+export let started = false;
+
 export async function startConodes(): Promise<void> {
     const containers = await docker.listContainers({ all: true, filters: FILTERS });
     const container = containers[0];
@@ -65,6 +67,8 @@ export async function startConodes(): Promise<void> {
     // we can't wait for the end of the run command so we give
     // some time for the conodes to start
     await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+
+    started = true;
 
     console.log("=== conodes started ===");
 }

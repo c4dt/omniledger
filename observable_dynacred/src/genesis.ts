@@ -1,4 +1,4 @@
-import {BasicStuff} from "./user";
+import {BasicStuff, User} from "./user";
 import {CoinInstance, DarcInstance, SPAWNER_COIN, SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
 import {curve, Scalar} from "@dedis/kyber";
 import {KeyPair} from "./keypair";
@@ -11,6 +11,8 @@ import ISigner from "@dedis/cothority/darc/signer";
 import Long from "long";
 import {Rule, SignerEd25519} from "@dedis/cothority/darc";
 import {TempDB} from "./tempdb";
+import {UserSkeleton} from "./userSkeleton";
+import {Transaction} from "./transaction";
 
 const ed25519 = new curve.edwards25519.Curve();
 
@@ -101,7 +103,7 @@ export class Genesis {
             throw new Error("cannot create coin without a genesisUser")
         }
         const instance = await CoinInstance.spawn(this.bs.bc, this.darcID, this.signers, SPAWNER_COIN);
-        await instance.mint(this.signers, Long.fromNumber(1e9));
+        await instance.mint(this.signers, Long.fromNumber(2e9));
         this.coin = {instance, signers: this.signers};
         return this.coin;
     }
@@ -135,5 +137,16 @@ export class Genesis {
             beneficiary: this.coin.instance.id
         });
         return this.spawner;
+    }
+
+    public async createUser(alias = "1st user", priv?: Scalar, dbBase = "main"): Promise<User> {
+        if (!priv) {
+            priv = KeyPair.rand().priv;
+        }
+        const userFactory = new UserSkeleton(alias, this.spawner.id, priv);
+        const tx = new Transaction(this.bs.bc, this.spawner, this.coin);
+        tx.createUser(userFactory, Long.fromNumber(1e9));
+        await tx.send(2);
+        return User.getUser(this.bs, userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }

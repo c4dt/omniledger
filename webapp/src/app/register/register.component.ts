@@ -4,15 +4,10 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {ActivatedRoute, Router} from "@angular/router";
 
-import {TProgress} from "@c4dt/dynacred";
 import Log from "@dedis/cothority/log";
 
-import {showDialogOKC, showTransactions} from "../../lib/Ui";
+import {showDialogOKC, showTransactions, TProgress} from "../../lib/Ui";
 import {Genesis, KeyPair, User} from "observable_dynacred";
-import {ByzCoinRPC} from "@c4dt/cothority/byzcoin";
-import Long from "long";
-import {LeaderConnection} from "@c4dt/cothority/network/connection";
-import {UserService} from "src/app/user.service";
 import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
@@ -82,7 +77,7 @@ export class RegisterComponent implements OnInit {
                         progress(70, "Creating Spawner");
                         await genesis.createSpawner();
                         progress(80, "Creating User");
-                        await User.createUser(genesis);
+                        await genesis.createUser();
                     } else {
                         Log.lvl2("attaching to existing user and replacing password");
                         progress(30, "Creating User");

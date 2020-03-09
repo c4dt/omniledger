@@ -17,7 +17,7 @@ import {catchError, flatMap, map, mergeAll} from "rxjs/operators";
 import {UserSkeleton} from "./userSkeleton";
 import {Genesis, ICoin} from "./genesis";
 import {Scalar} from "@dedis/kyber/index";
-import Long from "long";
+import {DarcBS} from "./index";
 
 export interface IMigrate {
     keyPersonhood?: string;
@@ -83,8 +83,7 @@ export class User extends IUser {
         const kpp = KeyPair.fromPrivate(privBuf);
         const auth = await bs.bc.checkAuthorization(bs.bc.genesisID, credStructBS.darcID,
             IdentityWrapper.fromIdentity(kpp.signer()));
-        Log.print("Got authorization", auth);
-        Log.llvl3("getting credentialSignerBS");
+        Log.lvl3("getting credentialSignerBS");
         const credSignerBS = await CredentialSignerBS.getCredentialSignerBS(bs, credStructBS);
         const spawnerInstanceBS = await ObservableToBS(credStructBS.credConfig.spawnerID.pipe(
             flatMap(id => bs.inst.instanceBS(id)),
@@ -112,35 +111,26 @@ export class User extends IUser {
         return user;
     }
 
-
-    public static async createUser(genesis: Genesis, alias = "1st user", priv?: Scalar, dbBase = "main"): Promise<User> {
-        if (!priv) {
-            priv = KeyPair.rand().priv;
-        }
-        const userFactory = new UserSkeleton(alias, genesis.spawner.id, priv);
-        const tx = new Transaction(genesis.bs.bc, genesis.spawner, genesis.coin);
-        tx.createUser(userFactory, Long.fromNumber(1e6));
-        await tx.send(2);
-        return User.getUser(genesis.bs, userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
-    }
-
     public static async attachAndEvolve(bs: BasicStuff, ephemeral: KeyPair): Promise<User> {
         const credID = CredentialsInstance.credentialIID(ephemeral.pub.marshalBinary());
         return this.switchKey(bs, credID, ephemeral);
     }
 
+    public getUrlForDevice(priv: Scalar): string{
+        return `${User.urlNewDevice}?` +
+            `credentialIID=${this.credStructBS.id.toString("hex")}` +
+            `&ephemeral=${priv.marshalBinary().toString("hex")}`;
+    }
+
     public static async attachAndEvolveDevice(bs: BasicStuff, urlStr: string): Promise<User> {
         const url = new URL(urlStr, true);
-        Log.print("aaed", url);
         if (!url.pathname.includes(this.urlNewDevice)) {
             throw new Error("not a newDevice url");
         }
-        Log.print("aaed", url.query);
         if (!url.query.credentialIID ||
             !url.query.ephemeral) {
             throw new Error("need credentialIID and ephemeral");
         }
-        Log.print("ids are:", url.query.credentialIID, url.query.ephemeral);
         const credID = Buffer.from(url.query.credentialIID, "hex");
         const ephemeralBuf = Buffer.from(url.query.ephemeral, "hex");
         if (credID.length !== 32 || ephemeralBuf.length !== 32) {
@@ -153,17 +143,20 @@ export class User extends IUser {
     public static async switchKey(bs: BasicStuff, credID: InstanceID, previous: KeyPair): Promise<User> {
         const user = await this.getUser(bs, credID, previous.priv.marshalBinary());
         const newKP = KeyPair.rand();
-        const dbs = user.credSignerBS.devices.getValue().find(async (db) => {
+        let dbs: DarcBS;
+        for (const db of user.credSignerBS.devices.getValue()){
             const rules = await db.getValue().ruleMatch(Darc.ruleSign, [previous.signer()], () => undefined);
-            return rules.length > 0;
-        });
+            if (rules.length > 0) {
+                dbs = db;
+            }
+        }
 
         if (!dbs) {
             throw new Error("didn't find darc with that signer");
         }
         await user.executeTransactions(tx => {
             dbs.setSignEvolve(tx, newKP.signer());
-        });
+        }, 10);
         user.kpp = newKP;
         await user.save();
         return user;

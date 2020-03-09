@@ -100,6 +100,26 @@ export class Transaction {
     }
 
     public toString(): string {
-        return JSON.stringify(this.instructions);
+        return this.instructions.map((inst, i) => {
+            const t = ["Spawn", "Invoke", "Delete"][inst.type];
+            let cid: string;
+            let args: Argument[];
+            switch (inst.type) {
+                case Instruction.typeSpawn:
+                    cid = inst.spawn.contractID;
+                    args = inst.spawn.args;
+                    break;
+                case Instruction.typeInvoke:
+                    cid = `${inst.invoke.contractID} / ${inst.invoke.command}`;
+                    args = inst.invoke.args;
+                    break;
+                case Instruction.typeDelete:
+                    cid = inst.delete.contractID;
+                    args = [];
+                    break;
+            }
+            return `${i}:  ${t} ${cid}: ${inst.instanceID.toString("hex")}\n\t` +
+                args.map((kv) => `${kv.name}: ${kv.value.toString("hex")}`).join("\n\t");
+        }).join("\n\n");
     }
 }

@@ -8,7 +8,7 @@ import {IInstance} from "./instances";
 import {BasicStuff} from "./user";
 import {Transaction} from "./transaction";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 
 export class DarcsBS extends BehaviorSubject<DarcBS[]> {
     constructor(sbs: BehaviorSubject<DarcBS[]>) {

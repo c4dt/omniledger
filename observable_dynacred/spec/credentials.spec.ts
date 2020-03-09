@@ -15,10 +15,10 @@ describe("Credentials should", () => {
         if (!bcTestEnv){return}
 
         Log.lvl1("checking credentials adding and removing");
-        const {user, spawnerInstance} = bcTestEnv;
+        const {user} = bcTestEnv;
         const history = new HistoryObs();
         const contacts = ["foo", "bar", "alice"].map((alias) =>
-            new UserSkeleton(alias, spawnerInstance.id)
+            new UserSkeleton(alias, user.spawnerInstanceBS.getValue().id)
         );
 
         await user.executeTransactions(tx => {

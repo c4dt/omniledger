@@ -1,12 +1,12 @@
 import {Injectable} from '@angular/core';
-import {Config, StorageDB} from "@c4dt/dynacred";
-import {BasicStuff, Instances, User} from "observable_dynacred";
-import {ByzCoinRPC} from "@c4dt/cothority/byzcoin";
-import {RosterWSConnection} from "@c4dt/cothority/network/connection";
-import StatusRPC from "@c4dt/cothority/status/status-rpc";
-import {StatusRequest, StatusResponse} from "@c4dt/cothority/status/proto";
-import {SkipBlock, SkipchainRPC} from "@c4dt/cothority/skipchain";
-import Log from "@c4dt/cothority/log";
+import {BasicStuff, Config, Instances, User} from "observable_dynacred";
+import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
+import {RosterWSConnection} from "@dedis/cothority/network/connection";
+import StatusRPC from "@dedis/cothority/status/status-rpc";
+import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
+import {SkipBlock, SkipchainRPC} from "@dedis/cothority/skipchain";
+import Log from "@dedis/cothority/log";
+import {StorageDB} from "src/lib/storageDB";
 
 @Injectable({
     providedIn: 'root'

@@ -1,9 +1,8 @@
-import {Log, network} from "@dedis/cothority";
+import {Log} from "@dedis/cothority";
 
 import {User} from "src/user";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
-import {TempDB} from "spec/simul/tempdb";
 import {ROSTER, startConodes} from "spec/support/conondes";
 import {curve} from "@dedis/kyber";
 import Long from "long";
@@ -12,23 +11,31 @@ import {LeaderConnection} from "@dedis/cothority/network/connection";
 import {Genesis, IGenesisUser} from "src/genesis";
 
 Log.lvl = 2;
-const simul = true;
+const simul = false;
 
 const ed25519 = curve.newCurve("edwards25519");
 
 export class BCTestEnv extends Genesis {
-    public user: User;
-    public roster: network.Roster;
-    public bcSimul: ByzCoinSimul;
+    public bcSimul?: ByzCoinSimul;
+
+    constructor(
+        g: Genesis,
+        public user: User) {
+        super(g);
+    }
 
     static async start(simulOnly = false): Promise<BCTestEnv> {
-        if (simul) {
-            return this.simul();
-        } else {
-            if (simulOnly) {
-                throw new Error("running for real");
+        try {
+            if (simul) {
+                return this.simul();
+            } else {
+                if (simulOnly) {
+                    throw new Error("running for real");
+                }
+                return this.real();
             }
-            return this.real();
+        } catch (e) {
+            Log.catch(e, "couldn't start bctestenv");
         }
     }
 
@@ -38,10 +45,10 @@ export class BCTestEnv extends Genesis {
         genesis.createGenesisDarc(ed25519.scalar().one());
         Log.lvl3("creating BC");
         await genesis.createByzCoin(createBC);
+        Log.lvl3("creating spawner");
+        await genesis.createSpawner();
         Log.lvl3("creating user");
-        await User.createUser(genesis);
-        Log.lvl3("done");
-        return new BCTestEnv(genesis);
+        return new BCTestEnv(genesis, await genesis.createUser());
     }
 
     static async simul(): Promise<BCTestEnv> {
@@ -56,8 +63,8 @@ export class BCTestEnv extends Genesis {
     }
 
     static async real(): Promise<BCTestEnv> {
-        const bcte = this.fromScratch(async (igd) => {
-            await startConodes();
+        const bcte = await this.fromScratch(async (igd) => {
+            // await startConodes();
             const bc = await ByzCoinRPC.newByzCoinRPC(ROSTER, igd.darc,
                 Long.fromNumber(1e8));
             const conn = new LeaderConnection(ROSTER, ByzCoinRPC.serviceName);
