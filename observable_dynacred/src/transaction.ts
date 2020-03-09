@@ -81,20 +81,6 @@ export class Transaction {
         this.spawnCredential(user.cred, user.darcCred.getBaseID());
     }
 
-    public setAttributes(csBS: CredentialStructBS, ...cred: IUpdateCredential[]) {
-        const newCred = csBS.getValue();
-        for (const c of cred) {
-            if (c.value !== undefined) {
-                let value = c.value instanceof Buffer ? c.value : Buffer.from(c.value);
-                newCred.setAttribute(c.cred, c.attr, value);
-            } else {
-                newCred.deleteAttribute(c.cred, c.attr);
-            }
-        }
-        this.instructions.push(Instruction.createInvoke(csBS.id, CredentialsInstance.contractID, CredentialsInstance.commandUpdate,
-            [new Argument({name: CredentialsInstance.argumentCredential, value: newCred.toBytes()})]));
-    }
-
     public invoke(iid: Buffer, contractID: string, command: string, args: Argument[]) {
         this.instructions.push(Instruction.createInvoke(iid, contractID, command, args));
     }

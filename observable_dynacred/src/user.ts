@@ -2,20 +2,18 @@ import URL from "url-parse";
 import {Log} from "@dedis/cothority";
 import {CredentialStructBS, EAttributesPublic, ECredentials,} from "./credentialStructBS";
 import {AddressBook} from "./addressBook";
-import {ByzCoinRPC, Instance, InstanceID} from "@dedis/cothority/byzcoin";
+import {Instance, InstanceID} from "@dedis/cothority/byzcoin";
 import {CredentialsInstance, CredentialStruct, SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
 import {KeyPair} from "./keypair";
 import {CoinBS} from "./coinBS";
-import {CredentialSignerBS} from "./signers";
+import {CredentialSignerBS} from "./credentialSignerBS";
 import {Darc, IdentityDarc, IdentityWrapper, SignerEd25519} from "@dedis/cothority/darc";
 import {Transaction} from "./transaction";
-import {IDataBase} from "./interfaces";
-import {Instances, newIInstance} from "./instances";
+import {newIInstance} from "./instances";
 import {BehaviorSubject} from "rxjs";
 import {ObservableToBS} from "./observableHO";
 import {catchError, flatMap, map, mergeAll} from "rxjs/operators";
-import {UserSkeleton} from "./userSkeleton";
-import {Genesis, ICoin} from "./genesis";
+import {ByzCoinBS, ICoin} from "./genesis";
 import {Scalar} from "@dedis/kyber/index";
 import {DarcBS} from "./index";
 
@@ -30,16 +28,7 @@ export interface IMigrateContact {
     credential: Buffer;
 }
 
-export class BasicStuff {
-    constructor(
-        public bc: ByzCoinRPC,
-        public db: IDataBase,
-        public inst: Instances
-    ) {
-    }
-}
-
-export class IUser extends BasicStuff {
+export class IUser extends ByzCoinBS {
     public kpp: KeyPair;
     public dbBase: string;
     public credStructBS: CredentialStructBS;
@@ -76,7 +65,7 @@ export class User extends IUser {
         return new IdentityDarc({id: this.credSignerBS.getValue().getBaseID()});
     }
 
-    public static async getUser(bs: BasicStuff, credID: InstanceID, privBuf: Buffer,
+    public static async getUser(bs: ByzCoinBS, credID: InstanceID, privBuf: Buffer,
                                 dbBase = "main"): Promise<User> {
         Log.lvl3("getting credential struct BS");
         const credStructBS = await CredentialStructBS.getCredentialStructBS(bs, credID);
@@ -111,7 +100,7 @@ export class User extends IUser {
         return user;
     }
 
-    public static async attachAndEvolve(bs: BasicStuff, ephemeral: KeyPair): Promise<User> {
+    public static async attachAndEvolve(bs: ByzCoinBS, ephemeral: KeyPair): Promise<User> {
         const credID = CredentialsInstance.credentialIID(ephemeral.pub.marshalBinary());
         return this.switchKey(bs, credID, ephemeral);
     }
@@ -122,7 +111,7 @@ export class User extends IUser {
             `&ephemeral=${priv.marshalBinary().toString("hex")}`;
     }
 
-    public static async attachAndEvolveDevice(bs: BasicStuff, urlStr: string): Promise<User> {
+    public static async attachAndEvolveDevice(bs: ByzCoinBS, urlStr: string): Promise<User> {
         const url = new URL(urlStr, true);
         if (!url.pathname.includes(this.urlNewDevice)) {
             throw new Error("not a newDevice url");
@@ -140,7 +129,7 @@ export class User extends IUser {
         return this.switchKey(bs, credID, KeyPair.fromPrivate(ephemeralBuf));
     }
 
-    public static async switchKey(bs: BasicStuff, credID: InstanceID, previous: KeyPair): Promise<User> {
+    public static async switchKey(bs: ByzCoinBS, credID: InstanceID, previous: KeyPair): Promise<User> {
         const user = await this.getUser(bs, credID, previous.priv.marshalBinary());
         const newKP = KeyPair.rand();
         let dbs: DarcBS;
@@ -162,7 +151,7 @@ export class User extends IUser {
         return user;
     }
 
-    public static async migrate(bs: BasicStuff): Promise<User | undefined> {
+    public static async migrate(bs: ByzCoinBS): Promise<User | undefined> {
         try {
             const migrate: IMigrate | undefined = await bs.db.getObject(this.keyMigrate);
             if (migrate && migrate.version === this.versionMigrate) {
@@ -189,23 +178,23 @@ export class User extends IUser {
         return undefined;
     }
 
-    public static async getDbKey(bs: BasicStuff, base = "main"): Promise<Buffer> {
+    public static async getDbKey(bs: ByzCoinBS, base = "main"): Promise<Buffer> {
         return bs.db.get(`${base}:${this.keyPriv}`)
     }
 
-    public static async getDbCredID(bs: BasicStuff, base = "main"): Promise<Buffer> {
+    public static async getDbCredID(bs: ByzCoinBS, base = "main"): Promise<Buffer> {
         return bs.db.get(`${base}:${this.keyCredID}`)
     }
 
-    public static async setDbKey(bs: BasicStuff, buf: Buffer = undefined, base = "main") {
+    public static async setDbKey(bs: ByzCoinBS, buf: Buffer = undefined, base = "main") {
         return bs.db.set(`${base}:${this.keyPriv}`, buf)
     }
 
-    public static async setDbCredID(bs: BasicStuff, buf: Buffer = undefined, base = "main") {
+    public static async setDbCredID(bs: ByzCoinBS, buf: Buffer = undefined, base = "main") {
         return bs.db.set(`${base}:${this.keyCredID}`, buf)
     }
 
-    public static async load(bs: BasicStuff, base = "main"): Promise<User> {
+    public static async load(bs: ByzCoinBS, base = "main"): Promise<User> {
         const user = await this.migrate(bs);
         if (user) {
             return user;

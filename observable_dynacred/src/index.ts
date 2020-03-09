@@ -10,14 +10,13 @@ import {
 } from "./credentialStructBS"
 import {DarcBS, DarcsBS} from "./darcsBS";
 import {Instances} from "./instances";
-import {BasicStuff, User} from "./user";
+import {User} from "./user";
 import {KeyPair} from "./keypair";
 import {ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook} from "./addressBook";
-import {CredentialSignerBS, CSTypesBS} from "./signers";
+import {CredentialSignerBS, CSTypesBS} from "./credentialSignerBS";
 import {UserSkeleton} from "./userSkeleton";
 import {IDataBase} from "./interfaces";
-import {Genesis} from "./genesis";
-import {Config} from "./config";
+import {ByzCoinBS, Genesis} from "./genesis";
 
 export {
     AddressBook,
@@ -25,8 +24,7 @@ export {
     ABContactsBS,
     ABGroupsBS,
     ActionBS,
-    BasicStuff,
-    Config,
+    ByzCoinBS,
     CredentialBS,
     CredentialSignerBS,
     CredentialStructBS,

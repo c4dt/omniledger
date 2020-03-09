@@ -1,16 +1,15 @@
-import Long from "long";
+import {BCTestEnv} from "spec/simul/itest";
+import {HistoryObs} from "spec/support/historyObs";
+import {KeyPair} from "observable_dynacred";
+import {filter, first} from "rxjs/operators";
+
+import Log from "@dedis/cothority/log";
+import {Darc} from "@dedis/cothority/darc";
 
 import {IMigrate, User} from "src/user";
 
-import {BCTestEnv} from "spec/simul/itest";
-import {HistoryObs} from "spec/support/historyObs";
-import {KeyPair, UserSkeleton} from "observable_dynacred";
-import Log from "@dedis/cothority/log";
-import {Darc} from "@dedis/cothority/darc";
-import {filter, first, tap} from "rxjs/operators";
-
 describe("User class should", async () => {
-    it("setting up of a new user in testing", async () => {
+    it("save and load a user", async () => {
         const bct = await BCTestEnv.start();
         const user = await bct.createUser("new user");
 
@@ -18,41 +17,6 @@ describe("User class should", async () => {
         const user2 = await User.load(user, user.dbBase);
         expect(user2.kpp).toEqual(user.kpp);
         expect(user2.credStructBS.id).toEqual(user.credStructBS.id);
-    });
-
-    it("reading, writing, updating values of new user", async () => {
-        const bct = await BCTestEnv.start();
-        const user = await bct.createUser("update values");
-
-        const alias = user.credStructBS.credPublic.alias;
-        const email = user.credStructBS.credPublic.email;
-        const history = new HistoryObs();
-        const obs1 = alias.subscribe((alias) => history.push("alias:" + alias));
-        await history.resolve(["alias:" + user.credStructBS.credPublic.alias.getValue()]);
-
-        const obs2 = email.subscribe((email) => history.push("email:" + email));
-        await history.resolve(["email:"]);
-
-        await user.executeTransactions(tx => {
-            alias.setValue(tx, "alias2");
-        });
-        await history.resolve(["alias:alias2"]);
-
-        await user.executeTransactions(tx => {
-            alias.setValue(tx, "alias3");
-        });
-        await user.executeTransactions(tx => {
-            email.setValue(tx, "test@test.com");
-        });
-        await history.resolve(["alias:alias3", "email:test@test.com"]);
-        obs1.unsubscribe();
-        obs2.unsubscribe();
-
-        alias.subscribe((alias) => history.push("alias2:" + alias));
-        await user.executeTransactions(tx => {
-            alias.setValue(tx, "alias2");
-        });
-        await history.resolve(["alias2:alias3", "alias2:alias2"]);
     });
 
     it("correctly migrate", async () => {

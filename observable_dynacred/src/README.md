@@ -8,27 +8,21 @@ Using rxjs observables to implement a more reactive dynacred.
 
 Two main classes are used to keep all other classes together:
 - `User` holds an instance of each class needed
-- `DoThings` defines the interaction with `ByzCoin` and the caches 
+- `ByzCoinBS` defines the interaction with `ByzCoin` and the caches 
 
--> Not really sure that this is a good way to split things - couldn't they be merged?
--> `DoThings` could be split and distributed over `BasicStuff` and `User`
--> But then all dependencies of `User` would have to have access to `User`...
--> Currently the circular dependencies exist between `DoThings` and `CredentialStructBS` and others
-
-User > DoThings
-  + AddressBook
-  
-DoThings > BasicStuff
+User > ByzCoinBS
   + KeyPair
+  + dbBase
   + CredentialStructBS
+  + SpawnerInstanceBS
   + CoinBS
   + CredentialSignerBS
+  + AddressBook
   
-BasicStuff
+ByzcoinBS
   + ByzCoinRPC
   + IDataBase
   + Instances
-  + SpawnerInstance # Should move to DoThings
 
 ### Basic credential structure definitions
 
@@ -55,8 +49,8 @@ CredentialInstanceMapBS > BS<InstanceMap>
   - setValue
   - rmValue
 
-Attribute*BS > BS<*>
-  - setValue(*)
+Attribute(Buffer|String|Long|Point|Bool|Number|InstanceSet)BS > BS<*>
+  - setValue(T)
 
 CredentialPublic
   + contacts, alias, ...: Attribute*BS
@@ -66,7 +60,7 @@ CredentialConfig
   
 InstanceSet
 
-InstanceMap > Map<string, Buffer>
+InstanceMap
 
 ### Structures that fetch more information from ByzCoin
 
@@ -78,9 +72,9 @@ to `WORM` the bc-instances.
 #### AddressBook
 
 AddressBook
-  + contacts: ABContactsBS
-  + actions: ABActionsBS
-  + groups: ABGroupsBS
+  + ABContactsBS
+  + ABGroupsBS
+  + ABActionsBS
 
 ABContactsBS > BS<CredentialStructBS[]>
   - create, link, unlink, rename
@@ -97,10 +91,15 @@ ActionBS
   
 #### CredentialSigner
 
-CredentialSigner
-  + DarcBS
+CredentialSigner > DarcBS
   + devices: CSTypesBS
   + recoveries: CSTypesBS
 
 CSTypesBS > DarcsBS
   - create, link, unlink, rename
+  
+#### Darc(s)BS
+
+DarcsBS > BS<DarcBS[]>
+
+DarcBS > BS<Darc>

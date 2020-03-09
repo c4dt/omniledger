@@ -1,4 +1,4 @@
-import {BasicStuff, User} from "./user";
+import {User} from "./user";
 import {CoinInstance, DarcInstance, SPAWNER_COIN, SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
 import {curve, Scalar} from "@dedis/kyber";
 import {KeyPair} from "./keypair";
@@ -27,12 +27,21 @@ export interface ICoin {
     signers: ISigner[];
 }
 
-export class Genesis extends BasicStuff {
+export class ByzCoinBS {
+    constructor(
+        public bc: ByzCoinRPC,
+        public db: IDataBase,
+        public inst: Instances
+    ) {
+    }
+}
+
+export class Genesis extends ByzCoinBS {
     public static readonly rules = ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
         "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
         "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"];
     constructor(
-            bs: BasicStuff,
+            bs: ByzCoinBS,
             public genesisUser?: IGenesisUser,
             public spawner?: SpawnerInstance,
             public coin?: ICoin,
@@ -51,7 +60,7 @@ export class Genesis extends BasicStuff {
         const gu = {keyPair, darc: adminDarc};
         const bc = await createBC(gu);
         const inst = await Instances.fromScratch(db, bc);
-        return new Genesis(new BasicStuff(bc, db, inst), gu);
+        return new Genesis(new ByzCoinBS(bc, db, inst), gu);
     }
 
     get signers(): SignerEd25519[] {

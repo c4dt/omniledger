@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BasicStuff, Config, Instances, User} from "observable_dynacred";
+import {ByzCoinBS, Instances, User} from "observable_dynacred";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {RosterWSConnection} from "@dedis/cothority/network/connection";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
@@ -7,22 +7,26 @@ import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
 import {SkipBlock, SkipchainRPC} from "@dedis/cothority/skipchain";
 import Log from "@dedis/cothority/log";
 import {StorageDB} from "src/lib/storageDB";
+import {Config} from "src/lib/config";
 
 @Injectable({
     providedIn: 'root'
 })
-export class ByzCoinService {
-    public bs?: BasicStuff;
+export class ByzCoinService extends ByzCoinBS{
     public user?: User;
     public config?: Config;
     public conn?: RosterWSConnection;
+
+    constructor(){
+        super(undefined, undefined, undefined);
+    }
 
     private readonly storageKeyLatest = "latest_skipblock";
     // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
     // this will be updated.
     private readonly idKnown = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
 
-    async loadConfig(logger: (msg: string, percentage: number) => void): Promise<BasicStuff> {
+    async loadConfig(logger: (msg: string, percentage: number) => void): Promise<void> {
         logger("Loading config", 0);
         const res = await fetch("assets/config.toml");
         if (!res.ok) {
@@ -39,11 +43,10 @@ export class ByzCoinService {
         }
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
-        const db = new DataBaseDB();
-        let bc: ByzCoinRPC;
+        this.db = new DataBaseDB();
         try {
             let latest: SkipBlock;
-            const latestBuf = await db.get(this.storageKeyLatest);
+            const latestBuf = await this.db.get(this.storageKeyLatest);
             if (latestBuf !== undefined) {
                 latest = SkipBlock.decode(latestBuf);
                 Log.lvl2("Loaded latest block from db:", latest.index);
@@ -52,26 +55,25 @@ export class ByzCoinService {
                 latest = await sc.getSkipBlock(this.idKnown);
                 Log.lvl2("Got known skipblock");
             }
-            bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
         } catch (e) {
             logger("Getting genesis chain", 80);
-            bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3);
         }
-        Log.lvl2("storing latest block in db:", bc.latest.index);
-        await db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(bc.latest).finish()));
+        Log.lvl2("storing latest block in db:", this.bc.latest.index);
+        await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
         logger("Done connecting", 100);
-        this.bs = new BasicStuff(bc, db, await Instances.fromScratch(db, bc));
-        return this.bs
+        this.inst = await Instances.fromScratch(this.db, this.bc);
     }
 
     async loadUser(): Promise<void> {
-        this.user = await User.load(this.bs);
+        this.user = await User.load(this);
     }
 
     async hasUser(base = "main"): Promise<boolean> {
         try {
-            const key = await User.getDbKey(this.bs, base);
-            const credID = await User.getDbCredID(this.bs, base);
+            const key = await User.getDbKey(this, base);
+            const credID = await User.getDbCredID(this, base);
             return key && credID && key.length === 32 && credID.length === 32;
         } catch(e){
             Log.warn("while checking user:", e);
@@ -79,7 +81,6 @@ export class ByzCoinService {
         }
     }
 }
-
 
 class DataBaseDB {
     async get(key: string): Promise<Buffer | undefined> {

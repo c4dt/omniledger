@@ -5,20 +5,20 @@ import {Coin, CoinInstance} from "@dedis/cothority/byzcoin/contracts";
 
 import {ObservableToBS} from "./observableHO";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
-import {BasicStuff} from "./user";
 import * as Long from "long";
 import {Transaction} from "./transaction";
+import {ByzCoinBS} from "src/genesis";
 
 
 export class CoinBS extends BehaviorSubject<CoinInstance> {
 
-    constructor(private bs: BasicStuff,
+    constructor(private bs: ByzCoinBS,
                 coin: BehaviorSubject<CoinInstance>) {
         super(coin.getValue());
         coin.subscribe(this);
     }
 
-    public static async getCoinBS(bs: BasicStuff, coinID: BehaviorSubject<InstanceID> | InstanceID):
+    public static async getCoinBS(bs: ByzCoinBS, coinID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<CoinBS> {
         if (coinID instanceof Buffer) {
             coinID = new BehaviorSubject(coinID);
