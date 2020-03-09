@@ -61,7 +61,7 @@ export class User extends IUser {
     public static readonly keyCredID = "credID";
     public static readonly keyMigrate = "storage/data.json";
     public static readonly versionMigrate = 1;
-    public static migrateOnce = false;
+    public static migrateOnce = true;
 
     constructor(u: IUser) {
         super(u.bc, u.db, u.inst);
@@ -84,7 +84,7 @@ export class User extends IUser {
         const auth = await bs.bc.checkAuthorization(bs.bc.genesisID, credStructBS.darcID,
             IdentityWrapper.fromIdentity(kpp.signer()));
         Log.print("Got authorization", auth);
-        Log.lvl3("getting credentialSignerBS");
+        Log.llvl3("getting credentialSignerBS");
         const credSignerBS = await CredentialSignerBS.getCredentialSignerBS(bs, credStructBS);
         const spawnerInstanceBS = await ObservableToBS(credStructBS.credConfig.spawnerID.pipe(
             flatMap(id => bs.inst.instanceBS(id)),
@@ -130,14 +130,17 @@ export class User extends IUser {
     }
 
     public static async attachAndEvolveDevice(bs: BasicStuff, urlStr: string): Promise<User> {
-        const url = new URL(urlStr);
+        const url = new URL(urlStr, true);
+        Log.print("aaed", url);
         if (!url.pathname.includes(this.urlNewDevice)) {
             throw new Error("not a newDevice url");
         }
+        Log.print("aaed", url.query);
         if (!url.query.credentialIID ||
             !url.query.ephemeral) {
             throw new Error("need credentialIID and ephemeral");
         }
+        Log.print("ids are:", url.query.credentialIID, url.query.ephemeral);
         const credID = Buffer.from(url.query.credentialIID, "hex");
         const ephemeralBuf = Buffer.from(url.query.ephemeral, "hex");
         if (credID.length !== 32 || ephemeralBuf.length !== 32) {
@@ -244,7 +247,7 @@ export class User extends IUser {
         return new Transaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
-    public async executeTransactions(addTxs: (tx: Transaction) => Promise<any> | void, wait = 0): Promise<void> {
+    public async executeTransactions(addTxs: (tx: Transaction) => Promise<unknown> | void, wait = 0): Promise<void> {
         const tx = new Transaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
         await tx.send(wait);

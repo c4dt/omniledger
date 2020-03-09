@@ -8,10 +8,11 @@ import {Darc, IdentityDarc, IdentityEd25519} from "@dedis/cothority/darc";
 
 import {TProgress} from "@c4dt/dynacred";
 
-import {Attribute, Credential} from "@dedis/cothority/personhood/credentials-instance";
+import {Attribute} from "@dedis/cothority/personhood/credentials-instance";
 import {showDialogInfo, showDialogOKC, showSnack, showTransactions} from "src/lib/Ui";
 import {CSTypesBS, DarcBS, KeyPair, User} from "observable_dynacred";
 import {UserService} from "src/app/user.service";
+import Log from "@c4dt/cothority/log";
 
 type RenameType = "devices" | "recovery";
 
@@ -159,8 +160,9 @@ export class DevicesComponent {
                 async (progress: TProgress) => {
                     progress(50, "Adding new recovery account");
                     const recovery = new IdentityDarc({id: result});
-                    await this.user.executeTransactions(tx =>
-                        {this.user.credSignerBS.recoveries.create(tx, d.name, [recovery])});
+                    await this.user.executeTransactions(tx => {
+                        this.user.credSignerBS.recoveries.create(tx, d.name, [recovery])
+                    });
                 });
         });
     }

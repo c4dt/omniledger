@@ -98,4 +98,8 @@ export class Transaction {
     public invoke(iid: Buffer, contractID: string, command: string, args: Argument[]) {
         this.instructions.push(Instruction.createInvoke(iid, contractID, command, args));
     }
+
+    public toString(): string {
+        return JSON.stringify(this.instructions);
+    }
 }

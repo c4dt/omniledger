@@ -43,7 +43,7 @@ export class DeviceComponent implements OnInit {
                 });
             await this.router.navigate(["/"]);
         } catch (e) {
-            Log.catch("Couldn't register:", e);
+            Log.catch(e, "Couldn't register:");
             this.text = e.toString();
         }
     }

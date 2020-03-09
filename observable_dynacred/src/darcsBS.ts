@@ -78,7 +78,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
     }
 
     public rmSignEvolve(tx: Transaction, id: IIdentity | InstanceID) {
-        const rules = this.getValue().rules;
+        const rules = this.getValue().rules.clone();
         rules.getRule(Darc.ruleSign).remove(toIId(id).toString());
         rules.getRule(DarcInstance.ruleEvolve).remove(toIId(id).toString());
         this.evolveDarc(tx, {rules});

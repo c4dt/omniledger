@@ -38,6 +38,9 @@ export class StorageDB {
             return undefined;
         }
         try {
+            if (d.length === 0){
+                return {};
+            }
             return JSON.parse(d, (key, value) => {
                 if (value === undefined || value === null){
                     return undefined;
