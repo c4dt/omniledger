@@ -70,7 +70,7 @@ export class AppComponent implements OnInit {
                 const rules = await this.bcs.bs.bc.checkAuthorization(this.bcs.bs.bc.genesisID, signerDarc.id,
                     IdentityWrapper.fromIdentity(this.bcs.user.kiSigner));
                 if (rules.length === 0) {
-                    await User.setDbKey(this.bcs.user);
+                    await User.setDbKey(this.bcs.bs);
                     await showDialogOKC(this.dialog, "Device revoked", "Sorry, but this device has been revoked." +
                         " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();

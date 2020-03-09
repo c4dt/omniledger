@@ -34,8 +34,6 @@ import {UserService} from "src/app/user.service";
     templateUrl: "./contacts.component.html",
 })
 export class ContactsComponent implements OnInit {
-    // calypsoOurKeys: string[];
-    // calypsoOtherKeys: Map<Contact, FileBlob[]>;
     contacts: ABContactsBS;
     actions: ABActionsBS;
     groups: ABGroupsBS;
@@ -46,7 +44,6 @@ export class ContactsComponent implements OnInit {
         private location: Location,
         public user: UserService,
     ) {
-        // this.calypsoOtherKeys = new Map();
         this.contacts = user.addressBook.contacts;
         this.actions = user.addressBook.actions;
         this.groups = user.addressBook.groups;

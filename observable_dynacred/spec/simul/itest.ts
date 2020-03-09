@@ -9,11 +9,15 @@ import Long from "long";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {LeaderConnection} from "@dedis/cothority/network/connection";
 import {Genesis, IGenesisUser} from "src/genesis";
+import {UserSkeleton} from "observable_dynacred";
 
 Log.lvl = 2;
 const simul = false;
 
 const ed25519 = curve.newCurve("edwards25519");
+
+let bct: BCTestEnv;
+let bctError: Error;
 
 export class BCTestEnv extends Genesis {
     public bcSimul?: ByzCoinSimul;
@@ -24,27 +28,25 @@ export class BCTestEnv extends Genesis {
         super(g);
     }
 
-    static async start(simulOnly = false): Promise<BCTestEnv> {
+    static async start(): Promise<BCTestEnv> {
+        if (bct){
+            return bct;
+        }
+        if (bctError){
+            throw bctError;
+        }
         try {
-            if (simul) {
-                return this.simul();
-            } else {
-                if (simulOnly) {
-                    throw new Error("running for real");
-                }
-                return this.real();
-            }
+            bct = simul ? await this.simul() : await this.real();
+            return bct;
         } catch (e) {
-            Log.catch(e, "couldn't start bctestenv");
+            bctError = e;
+            await Log.rcatch(e, "couldn't start bctestenv");
         }
     }
 
     static async fromScratch(createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>): Promise<BCTestEnv> {
-        const genesis = new Genesis();
-        Log.lvl3("Creating Genesis user (darc + signer)");
-        genesis.createGenesisDarc(ed25519.scalar().one());
-        Log.lvl3("creating BC");
-        await genesis.createByzCoin(createBC);
+        Log.lvl3("Creating Genesis user (darc + signer) and BC");
+        const genesis = await Genesis.fromGenesisKey(ed25519.scalar().one(), createBC);
         Log.lvl3("creating spawner");
         await genesis.createSpawner();
         Log.lvl3("creating user");
@@ -72,5 +74,16 @@ export class BCTestEnv extends Genesis {
         });
         Log.lvl1("Successfully started real-byzcoin");
         return bcte;
+    }
+
+    public async createUser(alias: string): Promise<User>{
+        Log.lvl3("creating new user", alias);
+        const skel = new UserSkeleton(alias, this.user.spawnerInstanceBS.getValue().id);
+        await this.user.executeTransactions(tx => {
+            tx.createUser(skel, Long.fromNumber(1e6));
+        }, 10);
+        const u = User.getUser(this, skel.credID, skel.keyPair.priv.marshalBinary(), `db${alias}`);
+        Log.lvl3("finished creating new user");
+        return u;
     }
 }

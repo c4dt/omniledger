@@ -12,21 +12,37 @@ export class HistoryObs {
         await expectAsync(this.expect(newEntries, true, complete)).toBeResolved();
     }
 
+    public async resolveAll(newEntries: string[]): Promise<void> {
+        let found = true;
+        while (found) {
+            try {
+                await this.expect(newEntries, true, false, true);
+            } catch (e) {
+                Log.lvl4(e);
+                found = false;
+            }
+        }
+    }
+
     public async reject(newEntries: string[], complete?: boolean): Promise<void> {
         await expectAsync(this.expect(newEntries, false, complete)).toBeRejected();
     }
 
-    public async expect(newEntries: string[], succeed: boolean, complete?: boolean): Promise<void> {
+    public async expect(newEntries: string[], succeed: boolean, complete?: boolean, silent?: boolean): Promise<void> {
         return new Promise(async (res, rej) => {
             try {
                 for (let i = 0; i < 10 && this.entries.length < newEntries.length; i++) {
-                    Log.lvl3("waiting", i, this.entries.length, newEntries.length);
+                    if (!silent) {
+                        Log.lvl3("waiting", i, this.entries.length, newEntries.length);
+                    }
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
-                if (succeed) {
-                    Log.lvl2("History:", this.entries, "wanted:", newEntries);
-                } else {
-                    Log.lvl2("Want history:", this.entries, "to fail with:", newEntries);
+                if (!silent) {
+                    if (succeed) {
+                        Log.lvl2("History:", this.entries, "wanted:", newEntries);
+                    } else {
+                        Log.lvl2("Want history:", this.entries, "to fail with:", newEntries);
+                    }
                 }
                 if (this.entries.length < newEntries.length) {
                     throw new Error("not enough entries");
@@ -43,7 +59,9 @@ export class HistoryObs {
                 res();
             } catch (e) {
                 if (succeed) {
-                    Log.error(e);
+                    if (!silent) {
+                        Log.error(e);
+                    }
                 }
                 rej(e);
             }

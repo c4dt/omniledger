@@ -27,29 +27,31 @@ export interface ICoin {
     signers: ISigner[];
 }
 
-export class Genesis {
+export class Genesis extends BasicStuff {
     public static readonly rules = ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
         "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
         "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"];
-    public bs?: BasicStuff;
-    public spawner?: SpawnerInstance;
-    public coin?: ICoin;
-    public genesisUser?: IGenesisUser;
-
     constructor(
-        args?: {
-            bs?: BasicStuff,
-            spawner?: SpawnerInstance,
-            coin?: ICoin,
-            genesisUser?: IGenesisUser
-        }
+            bs: BasicStuff,
+            public genesisUser?: IGenesisUser,
+            public spawner?: SpawnerInstance,
+            public coin?: ICoin,
     ) {
-        if (args) {
-            this.bs = args.bs;
-            this.spawner = args.spawner;
-            this.coin = args.coin;
-            this.genesisUser = args.genesisUser;
+        super(bs.bc, bs.db, bs.inst);
+    }
+
+    public static async fromGenesisKey(priv: Scalar, createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>,
+                                       db?: IDataBase): Promise<Genesis>{
+        const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
+        const signer = [keyPair.signer()];
+        const adminDarc = darc.Darc.createBasic(signer, signer, Buffer.from("AdminDarc"), Genesis.rules);
+        if (!db) {
+            db = new TempDB();
         }
+        const gu = {keyPair, darc: adminDarc};
+        const bc = await createBC(gu);
+        const inst = await Instances.fromScratch(db, bc);
+        return new Genesis(new BasicStuff(bc, db, inst), gu);
     }
 
     get signers(): SignerEd25519[] {
@@ -66,50 +68,28 @@ export class Genesis {
         return this.genesisUser.darcID || this.genesisUser.darc.getBaseID();
     }
 
-    public createGenesisDarc(priv?: Scalar): IGenesisUser {
-        const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
-        const signer = [keyPair.signer()];
-        const adminDarc = darc.Darc.createBasic(signer, signer, Buffer.from("AdminDarc"), Genesis.rules);
-        this.genesisUser = {keyPair, darc: adminDarc};
-        return this.genesisUser;
-    }
-
     public async evolveGenesisDarc() {
-        const di = await DarcInstance.fromByzcoin(this.bs.bc, this.genesisUser.darcID);
+        const di = await DarcInstance.fromByzcoin(this.bc, this.genesisUser.darcID);
         const newDarc = di.darc.evolve();
         Genesis.rules.forEach(rule => newDarc.rules.appendToRule(rule, this.genesisUser.keyPair.signer(), Rule.OR));
         await di.evolveDarcAndWait(newDarc, [this.genesisUser.keyPair.signer()], 10);
     }
 
-    async createByzCoin(createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>,
-                        db?: IDataBase): Promise<BasicStuff> {
-        if (!this.genesisUser) {
-            this.createGenesisDarc();
-        }
-        if (!db) {
-            db = new TempDB();
-        }
-        const bc = await createBC(this.genesisUser);
-        const inst = await Instances.fromScratch(db, bc);
-        this.bs = new BasicStuff(bc, db, inst);
-        return undefined;
-    }
-
     async createCoin(): Promise<ICoin> {
-        if (!this.bs) {
+        if (!this.bc) {
             throw new Error("cannot create coin without having byzcoin. Call createByzCoin first");
         }
         if (!this.genesisUser) {
             throw new Error("cannot create coin without a genesisUser")
         }
-        const instance = await CoinInstance.spawn(this.bs.bc, this.darcID, this.signers, SPAWNER_COIN);
+        const instance = await CoinInstance.spawn(this.bc, this.darcID, this.signers, SPAWNER_COIN);
         await instance.mint(this.signers, Long.fromNumber(2e9));
         this.coin = {instance, signers: this.signers};
         return this.coin;
     }
 
     async createSpawner(): Promise<SpawnerInstance> {
-        if (!this.bs) {
+        if (!this.bc) {
             throw new Error("cannot create spawner without having byzcoin. Call createByzCoin first");
         }
         if (!this.coin) {
@@ -121,7 +101,7 @@ export class Genesis {
         const coin100 = Long.fromNumber(100);
         const coin1000 = Long.fromNumber(1000);
         this.spawner = await SpawnerInstance.spawn({
-            bc: this.bs.bc,
+            bc: this.bc,
             darcID: this.darcID,
             signers: this.signers,
             costs: {
@@ -144,9 +124,9 @@ export class Genesis {
             priv = KeyPair.rand().priv;
         }
         const userFactory = new UserSkeleton(alias, this.spawner.id, priv);
-        const tx = new Transaction(this.bs.bc, this.spawner, this.coin);
+        const tx = new Transaction(this.bc, this.spawner, this.coin);
         tx.createUser(userFactory, Long.fromNumber(1e9));
         await tx.send(2);
-        return User.getUser(this.bs, userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
+        return User.getUser(this, userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }

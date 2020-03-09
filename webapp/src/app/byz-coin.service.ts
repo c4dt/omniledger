@@ -95,7 +95,7 @@ class DataBaseDB {
     }
 
     async set(key: string, value: Buffer): Promise<void> {
-        await StorageDB.set(key, value.toString("hex"));
+        await StorageDB.set(key, (value || Buffer.alloc(0)).toString("hex"));
         return;
     }
 

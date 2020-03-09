@@ -240,7 +240,7 @@ export class User extends IUser {
         return new Transaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
-    public async executeTransactions(addTxs: (tx: Transaction) => Promise<unknown> | void, wait = 0): Promise<void> {
+    public async executeTransactions(addTxs: (tx: Transaction) => Promise<unknown> | unknown, wait = 0): Promise<void> {
         const tx = new Transaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
         await tx.send(wait);

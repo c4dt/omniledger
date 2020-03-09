@@ -1,8 +1,8 @@
 import {BehaviorSubject} from "rxjs";
-import {distinctUntilChanged, map, tap} from "rxjs/operators";
+import {distinctUntilChanged, map} from "rxjs/operators";
 import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@dedis/cothority/byzcoin/contracts";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
-import {curve, Point, PointFactory} from "@dedis/kyber";
+import {Point, PointFactory} from "@dedis/kyber";
 import {filter} from "rxjs/internal/operators/filter";
 import {ConvertBS} from "./observableHO";
 import {Log} from "@dedis/cothority";
@@ -104,7 +104,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     }
 
     public async getSignerIdentityDarc(): Promise<IdentityDarc> {
-        const credDarc = await DarcBS.createDarcBS(this.bs, this.darcID);
+        const credDarc = await DarcBS.getDarcBS(this.bs, this.darcID);
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }
@@ -118,7 +118,7 @@ export class CredentialBS extends BehaviorSubject<Credential> {
 
     public static fromScratch(bs: BasicStuff, csbs: CredentialStructBS, name: ECredentials): CredentialBS {
         return new CredentialBS(bs, csbs, name,
-            ConvertBS(csbs, cs => cs.getCredential(name)));
+            ConvertBS(csbs, cs => cs.getCredential(name) || new Credential({name})));
     }
 
     private static getAttribute(cred: Credential, name: string): Buffer | undefined {

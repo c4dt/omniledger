@@ -103,16 +103,17 @@ export class ABGroupsBS extends DarcsBS {
 
     public static async createABGroupBS(bs, aisBS: AttributeInstanceSetBS): Promise<ABGroupsBS> {
         return new ABGroupsBS(aisBS,
-            await DarcsBS.createDarcsBS(bs, ConvertBS(aisBS, gr => gr.toInstanceIDs())));
+            await DarcsBS.getDarcsBS(bs, ConvertBS(aisBS, gr => gr.toInstanceIDs())));
     }
 
     public find(name: string): DarcBS | undefined {
         return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/\w${name}$/`))
     }
 
-    public create(tx: Transaction, name: string, signers: IIdentity[]) {
+    public create(tx: Transaction, name: string, signers: IIdentity[]): Darc {
         const d = tx.spawnDarcBasic(name, signers);
         this.link(tx, d.getBaseID());
+        return d;
     }
 
     public link(tx: Transaction, id: InstanceID) {
@@ -145,7 +146,7 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
         return new ABActionsBS(aisBS,
             await ObservableToBS(aisBS.pipe(
                 flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    id => DarcBS.createDarcBS(bs, id)
+                    id => DarcBS.getDarcBS(bs, id)
                 ))),
                 map(dbs => dbs.map(db => new ActionBS(db)))
             )));

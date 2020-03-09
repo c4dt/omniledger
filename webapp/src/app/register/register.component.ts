@@ -38,7 +38,7 @@ export class RegisterComponent implements OnInit {
                     "There seems to be a user already stored in this browser - do you want to overwrite it?");
                 if (overwrite) {
                     Log.lvl1("overwriting existing user");
-                    await User.setDbKey(this.bcs.user);
+                    await User.setDbKey(this.bcs.bs);
                     window.location.reload();
                 } else {
                     return await this.router.navigate(["/"]);
@@ -70,7 +70,7 @@ export class RegisterComponent implements OnInit {
                         Log.lvl2("creating FIRST user");
                         progress(30, "Updating genesis darc");
                         const darcID = Buffer.from(darcIDStr, "hex");
-                        const genesis = new Genesis({genesisUser: {keyPair, darcID}, bs: this.bcs.bs});
+                        const genesis = new Genesis(this.bcs.bs, {keyPair, darcID});
                         await genesis.evolveGenesisDarc();
                         progress(50, "Creating Coin");
                         await genesis.createCoin();
@@ -81,7 +81,7 @@ export class RegisterComponent implements OnInit {
                     } else {
                         Log.lvl2("attaching to existing user and replacing password");
                         progress(30, "Creating User");
-                        await User.attachAndEvolve(this.bcs.user, keyPair);
+                        await User.attachAndEvolve(this.bcs.bs, keyPair);
                     }
                     Log.lvl1("verifying registration");
                     progress(90, "Loading new user");

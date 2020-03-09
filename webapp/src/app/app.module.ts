@@ -30,7 +30,6 @@ import {
 } from "./admin/devices/devices.component";
 import { ManageDarcComponent } from "./admin/manage-darc";
 import { PersonhoodComponent } from "./admin/personhood/personhood.component";
-import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./admin/secure/secure.component";
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
 import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
@@ -61,13 +60,10 @@ import { RegisterComponent } from "./register/register.component";
         AddContactComponent,
         TransferCoinComponent,
         UserCredComponent,
-        CalypsoUploadComponent,
-        CalypsoShowAccessComponent,
         RetryLoadComponent,
         RegisterComponent,
         YourselfComponent,
         ContactsComponent,
-        SecureComponent,
         StatusComponent,
         ProfileComponent,
         AdminComponent,
@@ -102,8 +98,6 @@ import { RegisterComponent } from "./register/register.component";
         SignupLinkComponent,
         TransferCoinComponent,
         UserCredComponent,
-        CalypsoUploadComponent,
-        CalypsoShowAccessComponent,
         RetryLoadComponent,
         CreateComponent,
         DialogOKCancelComponent,

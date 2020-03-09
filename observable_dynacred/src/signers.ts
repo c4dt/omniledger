@@ -30,15 +30,15 @@ export class CredentialSignerBS extends DarcBS {
         Log.lvl3("searching signer darc");
         const signerDarcID = (await credStructBS.getSignerIdentityDarc()).id;
         Log.lvl3("searching signer darc");
-        const darcBS = await DarcBS.createDarcBS(bs, signerDarcID);
+        const darcBS = await DarcBS.getDarcBS(bs, signerDarcID);
         Log.lvl3("loading devices");
         const aisbs = ConvertBS(credStructBS.credDevices, im => im.toInstanceIDs());
         Log.lvl3("going");
         const devices = new CSTypesBS(darcBS, credStructBS.credDevices, "device",
-            await DarcsBS.createDarcsBS(bs, aisbs));
+            await DarcsBS.getDarcsBS(bs, aisbs));
         Log.lvl3("loading recoveries");
         const recoveries = new CSTypesBS(darcBS, credStructBS.credRecoveries, "recovery",
-            await DarcsBS.createDarcsBS(bs,
+            await DarcsBS.getDarcsBS(bs,
                 ConvertBS(credStructBS.credRecoveries, im => im.toInstanceIDs())));
         return new CredentialSignerBS(darcBS, devices, recoveries);
     }

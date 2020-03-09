@@ -16,10 +16,10 @@ export class DarcsBS extends BehaviorSubject<DarcBS[]> {
         sbs.subscribe(this);
     }
 
-    public static async createDarcsBS(bs: BasicStuff, aisbs: BehaviorSubject<InstanceID[]>): Promise<DarcsBS> {
+    public static async getDarcsBS(bs: BasicStuff, aisbs: BehaviorSubject<InstanceID[]>): Promise<DarcsBS> {
         const dbs = await ObservableToBS(aisbs.pipe(
             flatMap(ais => Promise.all(ais
-                .map(iid => DarcBS.createDarcBS(bs, iid))))));
+                .map(iid => DarcBS.getDarcBS(bs, iid))))));
         return new DarcsBS(dbs);
     }
 }
@@ -32,7 +32,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         darc.subscribe(this);
     }
 
-    public static async createDarcBS(bs: BasicStuff, darcID: BehaviorSubject<InstanceID> | InstanceID):
+    public static async getDarcBS(bs: BasicStuff, darcID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<DarcBS> {
         if (darcID instanceof Buffer) {
             darcID = new BehaviorSubject(darcID);
