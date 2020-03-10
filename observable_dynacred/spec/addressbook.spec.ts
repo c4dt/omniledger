@@ -1,7 +1,9 @@
-import {BCTestEnv} from "spec/simul/itest";
 import {Log} from "@c4dt/cothority/index";
-import {HistoryObs} from "spec/support/historyObs";
+
 import {UserSkeleton} from "observable_dynacred";
+
+import {BCTestEnv} from "spec/simul/itest";
+import {HistoryObs} from "spec/support/historyObs";
 
 describe("Addressbook should", () => {
     it("handle contacts", async () => {

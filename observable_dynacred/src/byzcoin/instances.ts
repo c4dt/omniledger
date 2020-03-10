@@ -5,11 +5,21 @@ import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long from "long";
 
-import {InstanceID, StateChangeBody} from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC, ClientTransaction, CONFIG_INSTANCE_ID, InstanceID, StateChangeBody} from "@dedis/cothority/byzcoin";
 import {SkipBlock} from "@dedis/cothority/skipchain";
 import {Log} from "@dedis/cothority";
+import {AddTxResponse} from "@c4dt/cothority/byzcoin/proto/requests";
+import {IIdentity} from "@c4dt/cothority/darc";
 
-import {configInstanceID, IByzCoinBlockStreamer, IByzCoinProof, IDataBase} from "./interfaces";
+export interface IDataBase {
+    get(key: string): Promise<Buffer | undefined>;
+
+    getObject<T>(key: string): Promise<T | undefined>;
+
+    set(key: string, value: Buffer): Promise<void>;
+
+    setObject<T>(key: string, obj: T): Promise<void>;
+}
 
 export interface IInstance {
     key: InstanceID;
@@ -30,17 +40,6 @@ export function newIInstance(key: InstanceID, value: Buffer, contractID?: string
     };
 }
 
-export function printInstance(i: IInstance): string {
-    return `{
-    key: ${i.key.toString("hex")}
-    value: ${i.value.slice(0, 100).toString("hex")}
-    block: ${i.block.toNumber()}
-    contractID: ${i.contractID}
-    version: ${i.version.toNumber()}
-    darcID: ${i.darcID.toString("hex")}
-    }`;
-}
-
 export interface IProof {
     latest: SkipBlock;
     stateChangeBody: StateChangeBody;
@@ -48,20 +47,26 @@ export interface IProof {
     exists(key: Buffer): boolean;
 }
 
+interface IByzcoinInstance {
+    getProofFromLatest(inst: InstanceID): Promise<IProof>;
+    getNewBlocks(): Promise<BehaviorSubject<SkipBlock>>;
+}
+
+
 export class Instances {
     public static readonly dbKeyBlockIndex = "instance_block_index";
     private cache = new Map<InstanceID, BehaviorSubject<IInstance>>();
 
-    constructor(private db: IDataBase, private bc: IByzCoinProof, private newBlock: BehaviorSubject<Long>) {
+    constructor(private db: IDataBase, private bc: IByzcoinInstance, private newBlock: BehaviorSubject<Long>) {
     }
 
-    public static async fromScratch(db: IDataBase, bc: IByzCoinProof & IByzCoinBlockStreamer): Promise<Instances> {
+    public static async fromScratch(db: IDataBase, bc: IByzcoinInstance): Promise<Instances> {
         const blockIndexBuf = await db.get(Instances.dbKeyBlockIndex);
         let blockIndex = Long.fromNumber(-1);
         if (blockIndexBuf !== undefined) {
             blockIndex = Long.fromBytes(Array.from(blockIndexBuf));
         } else {
-            const p = await bc.getProofFromLatest(configInstanceID);
+            const p = await bc.getProofFromLatest(CONFIG_INSTANCE_ID);
             blockIndex = Long.fromNumber(p.latest.index);
         }
         const newBlock = new BehaviorSubject(blockIndex);
@@ -104,7 +109,7 @@ export class Instances {
     }
 
     public async reload(): Promise<void> {
-        await this.getInstanceFromChain(configInstanceID);
+        await this.getInstanceFromChain(CONFIG_INSTANCE_ID);
     }
 
     private async getInstanceFromChain(id: InstanceID): Promise<IInstance> {

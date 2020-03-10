@@ -10,13 +10,12 @@ import {Rule, SignerEd25519} from "@dedis/cothority/darc";
 
 import {User} from "./user";
 import {KeyPair} from "./keypair";
-import {IDataBase} from "./interfaces";
-import {Instances} from "./instances";
+import {IDataBase, Instances} from "./byzcoin/instances";
 import {TempDB} from "./tempdb";
 import {UserSkeleton} from "./userSkeleton";
-import {Transaction} from "./transaction";
 import {ByzCoinBuilder} from "./builder";
 import {ByzCoinBS} from "./byzCoinBS";
+import {CredentialTransaction} from "./credentialTransaction";
 
 const ed25519 = new curve.edwards25519.Curve();
 
@@ -129,9 +128,9 @@ export class Genesis extends ByzCoinBuilder {
             priv = KeyPair.rand().priv;
         }
         const userFactory = new UserSkeleton(alias, this.spawner.id, priv);
-        const tx = new Transaction(this.bc, this.spawner, this.coin);
+        const tx = new CredentialTransaction(this.bc, this.spawner, this.coin);
         tx.createUser(userFactory, Long.fromNumber(1e9));
-        await tx.send(2);
+        await tx.sendCoins(2);
         return this.getUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }

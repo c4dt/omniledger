@@ -8,8 +8,7 @@ import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {Point, PointFactory} from "@dedis/kyber";
 
 import {ConvertBS} from "./observableHO";
-import {Transaction} from "./transaction";
-import {ByzCoinBS} from "./byzCoinBS";
+import {CredentialTransaction} from "./credentialTransaction";
 
 export enum ECredentials {
     pub = "1-public",
@@ -62,8 +61,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     public credDevices: CredentialInstanceMapBS;
     public credRecoveries: CredentialInstanceMapBS;
 
-    constructor(private bid: ByzCoinBS,
-                public readonly id: InstanceID,
+    constructor(public readonly id: InstanceID,
                 public readonly darcID: InstanceID,
                 credBS: BehaviorSubject<CredentialStruct>) {
         super(credBS.getValue());
@@ -76,13 +74,13 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     }
 
     public getCredentialBS(name: ECredentials): CredentialBS {
-        return CredentialBS.fromScratch(this.bid, this, name);
+        return CredentialBS.fromScratch(this, name);
     }
 
     // updateCredentials sets all new credentials given in 'cred' and then
     // sends a ClientTransaction to Byzcoin.
     // If a value of a Credential is empty, it will be deleted.
-    public updateCredential(tx: Transaction, ...cred: IUpdateCredential[]) {
+    public updateCredential(tx: CredentialTransaction, ...cred: IUpdateCredential[]) {
         const orig = this.getValue();
         for (const c of cred) {
             if (c.value !== undefined) {
@@ -95,13 +93,13 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         this.setCredentialStruct(tx, orig);
     }
 
-    public setCredential(tx: Transaction, cred: Credential) {
+    public setCredential(tx: CredentialTransaction, cred: Credential) {
         const credStruct = this.getValue();
         credStruct.setCredential(cred.name, cred);
         this.setCredentialStruct(tx, credStruct);
     }
 
-    public setCredentialStruct(tx: Transaction, credStruct: CredentialStruct) {
+    public setCredentialStruct(tx: CredentialTransaction, credStruct: CredentialStruct) {
         const versionBuf = Buffer.alloc(4);
         versionBuf.writeInt32LE(this.credPublic.version.getValue() + 1, 0);
         credStruct.setAttribute(ECredentials.pub, EAttributesPublic.version, versionBuf);
@@ -116,19 +114,19 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     }
 
     public getCredentialInstanceMapBS(name: ECredentials): CredentialInstanceMapBS {
-        return CredentialInstanceMapBS.fromScratch(this.bid, this.getCredentialBS(name));
+        return CredentialInstanceMapBS.fromScratch(this.getCredentialBS(name));
     }
 }
 
 export class CredentialBS extends BehaviorSubject<Credential> {
-    constructor(private bid: ByzCoinBS, private csbs: CredentialStructBS,
+    constructor(private csbs: CredentialStructBS,
                 private cred: ECredentials, cbs: BehaviorSubject<Credential>) {
         super(cbs.getValue());
         cbs.subscribe(this);
     }
 
-    public static fromScratch(bs: ByzCoinBS, csbs: CredentialStructBS, name: ECredentials): CredentialBS {
-        return new CredentialBS(bs, csbs, name,
+    public static fromScratch(csbs: CredentialStructBS, name: ECredentials): CredentialBS {
+        return new CredentialBS(csbs, name,
             ConvertBS(csbs, cs => cs.getCredential(name) || new Credential({name})));
     }
 
@@ -142,17 +140,17 @@ export class CredentialBS extends BehaviorSubject<Credential> {
 
     public getAttributeBufferBS(name: string): AttributeBufferBS {
         const bs = this.getAttributeBS(name);
-        return new AttributeBufferBS(this.bid, this, bs, name);
+        return new AttributeBufferBS(this, bs, name);
     }
 
     public getAttributeStringBS(name: string): AttributeStringBS {
         const bs = ConvertBS(this.getAttributeBS(name), buf => buf.toString());
-        return new AttributeStringBS(this.bid, this, bs, name);
+        return new AttributeStringBS(this, bs, name);
     }
 
     public getAttributeLongBS(name: string): AttributeLongBS {
         const bs = ConvertBS(this.getAttributeBS(name), buf => Long.fromBytesLE(Array.from(buf)));
-        return new AttributeLongBS(this.bid, this, bs, name);
+        return new AttributeLongBS(this, bs, name);
     }
 
     public getAttributePointBS(name: string): AttributePointBS {
@@ -163,33 +161,33 @@ export class CredentialBS extends BehaviorSubject<Credential> {
                 return undefined;
             }
         });
-        return new AttributePointBS(this.bid, this, bs, name);
+        return new AttributePointBS(this, bs, name);
     }
 
     public getAttributeBoolBS(name: string): AttributeBoolBS {
         const bs = ConvertBS(this.getAttributeBS(name), buf => buf.toString() === "true");
-        return new AttributeBoolBS(this.bid, this, bs, name);
+        return new AttributeBoolBS(this, bs, name);
     }
 
     public getAttributeNumberBS(name: string): AttributeNumberBS {
         const bs = ConvertBS(this.getAttributeBS(name), buf => buf.readInt32LE(0));
-        return new AttributeNumberBS(this.bid, this, bs, name);
+        return new AttributeNumberBS(this, bs, name);
     }
 
     public getAttributeInstanceSetBS(name: string): AttributeInstanceSetBS {
         const bs = ConvertBS(this.getAttributeBS(name), buf => new InstanceSet(buf));
-        return new AttributeInstanceSetBS(this.bid, this, bs, name);
+        return new AttributeInstanceSetBS(this, bs, name);
     }
 
-    public setValue(tx: Transaction, attr: string, value: string | Buffer) {
+    public setValue(tx: CredentialTransaction, attr: string, value: string | Buffer) {
         this.csbs.updateCredential(tx, {cred: this.cred, attr, value})
     }
 
-    public rmValue(tx: Transaction, attr: string) {
+    public rmValue(tx: CredentialTransaction, attr: string) {
         this.setValue(tx, attr, undefined);
     }
 
-    public set(tx: Transaction, cred: Credential) {
+    public set(tx: CredentialTransaction, cred: Credential) {
         this.csbs.setCredential(tx, cred);
     }
 
@@ -206,19 +204,19 @@ export class CredentialBS extends BehaviorSubject<Credential> {
 }
 
 export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
-    constructor(bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bsim: BehaviorSubject<InstanceMap>) {
         super(bsim.getValue());
         bsim.subscribe(this);
     }
 
-    public static fromScratch(bs: ByzCoinBS, cbs: CredentialBS): CredentialInstanceMapBS {
-        return new CredentialInstanceMapBS(bs, cbs,
+    public static fromScratch(cbs: CredentialBS): CredentialInstanceMapBS {
+        return new CredentialInstanceMapBS(cbs,
             ConvertBS(cbs, c => new InstanceMap(c)),
         )
     }
 
-    public setInstanceMap(tx: Transaction, val: InstanceMap) {
+    public setInstanceMap(tx: CredentialTransaction, val: InstanceMap) {
         const cred = this.cbs.getValue();
         cred.attributes.splice(0);
         Array.from(val.map.entries()).forEach(([name, value]) =>
@@ -226,13 +224,13 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
         this.cbs.set(tx, cred);
     }
 
-    public setValue(tx: Transaction, name: string, value: Buffer) {
+    public setValue(tx: CredentialTransaction, name: string, value: Buffer) {
         const val = this.getValue();
         val.map.set(name, value);
         return this.setInstanceMap(tx, val);
     }
 
-    public rmValue(tx: Transaction, name: string) {
+    public rmValue(tx: CredentialTransaction, name: string) {
         const val = this.getValue();
         val.map.delete(name);
         this.setInstanceMap(tx, val);
@@ -240,73 +238,73 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
 }
 
 export class AttributeBufferBS extends BehaviorSubject<Buffer> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bsb: BehaviorSubject<Buffer>, private name: string) {
         super(bsb.getValue());
         bsb.subscribe(this);
     }
 
-    public setValue(tx: Transaction, val: Buffer) {
+    public setValue(tx: CredentialTransaction, val: Buffer) {
         return this.cbs.setValue(tx, this.name, val);
     }
 }
 
 export class AttributeStringBS extends BehaviorSubject<string> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bss: BehaviorSubject<string>, private name: string) {
         super(bss.getValue());
         bss.subscribe(this);
     }
 
-    public setValue(tx: Transaction, val: string) {
+    public setValue(tx: CredentialTransaction, val: string) {
         return this.cbs.setValue(tx, this.name, val);
     }
 }
 
 export class AttributeLongBS extends BehaviorSubject<Long> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bss: BehaviorSubject<Long>, private name: string) {
         super(bss.getValue());
         bss.subscribe(this);
     }
 
-    public setValue(tx: Transaction, val: Long) {
+    public setValue(tx: CredentialTransaction, val: Long) {
         return this.cbs.setValue(tx, this.name, Buffer.from(val.toBytesLE()));
     }
 }
 
 export class AttributePointBS extends BehaviorSubject<Point> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bss: BehaviorSubject<Point>, private name: string) {
         super(bss.getValue());
         bss.subscribe(this);
     }
 
-    public setValue(tx: Transaction, val: Point) {
+    public setValue(tx: CredentialTransaction, val: Point) {
         return this.cbs.setValue(tx, this.name, val.toProto());
     }
 }
 
 export class AttributeBoolBS extends BehaviorSubject<boolean> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bss: BehaviorSubject<boolean>, private name: string) {
         super(bss.getValue());
         bss.subscribe(this);
     }
 
-    public setValue(tx: Transaction, val: boolean) {
+    public setValue(tx: CredentialTransaction, val: boolean) {
         return this.cbs.setValue(tx, this.name, Buffer.from(val ? "true" : "false"));
     }
 }
 
 export class AttributeNumberBS extends BehaviorSubject<number> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bss: BehaviorSubject<number>, private name: string) {
         super(bss.getValue());
         bss.subscribe(this);
     }
 
-    public setValue(tx: Transaction, val: number) {
+    public setValue(tx: CredentialTransaction, val: number) {
         const buf = Buffer.alloc(4);
         buf.writeInt32LE(val, 0);
         return this.cbs.setValue(tx, this.name, buf);
@@ -314,13 +312,13 @@ export class AttributeNumberBS extends BehaviorSubject<number> {
 }
 
 export class AttributeInstanceSetBS extends BehaviorSubject<InstanceSet> {
-    constructor(private bs: ByzCoinBS, private cbs: CredentialBS,
+    constructor(private cbs: CredentialBS,
                 bsis: BehaviorSubject<InstanceSet>, private name: string) {
         super(bsis.getValue());
         bsis.subscribe(this);
     }
 
-    public setInstanceSet(tx: Transaction, val: InstanceSet) {
+    public setInstanceSet(tx: CredentialTransaction, val: InstanceSet) {
         this.cbs.setValue(tx, this.name, val.toBuffer());
     }
 }

@@ -1,3 +1,5 @@
+import Long from "long";
+
 import {curve, Point, Scalar} from "@dedis/kyber";
 import {
     Coin,
@@ -6,14 +8,13 @@ import {
     CredentialStruct,
     SPAWNER_COIN,
 } from "@dedis/cothority/byzcoin/contracts";
-
-import {CredentialStructBS, EAttributesConfig, EAttributesPublic, ECredentials} from "./credentialStructBS";
-import {KeyPair} from "./keypair";
-import Long from "long";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 import {Darc, IdentityDarc, IIdentity, Rule} from "@dedis/cothority/darc";
 import {LongTermSecret} from "@dedis/cothority/calypso";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
+
+import {CredentialStructBS, EAttributesConfig, EAttributesPublic, ECredentials} from "./credentialStructBS";
+import {KeyPair} from "./keypair";
 
 const ed25519 = new curve.edwards25519.Curve();
 

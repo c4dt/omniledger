@@ -1,3 +1,5 @@
+import {BehaviorSubject} from "rxjs";
+
 import {Scalar} from "@dedis/kyber";
 import {Darc, IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
 import {SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
@@ -5,25 +7,13 @@ import {SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
 import {CredentialStructBS,} from "./credentialStructBS";
 import {AddressBook} from "./addressBook";
 import {KeyPair} from "./keypair";
-import {CoinBS} from "./coinBS";
 import {CredentialSignerBS} from "./credentialSignerBS";
-import {Transaction} from "./transaction";
-import {BehaviorSubject} from "rxjs";
 import {ICoin} from "./genesis";
-import {DarcBS} from "./index";
 import {ByzCoinBuilder} from "./builder";
 import {ByzCoinBS} from "./byzCoinBS";
-
-export interface IMigrate {
-    keyPersonhood?: string;
-    keyIdentity: string;
-    version: number;
-    contact: IMigrateContact;
-}
-
-export interface IMigrateContact {
-    credential: Buffer;
-}
+import {CoinBS} from "./byzcoin/coinBS";
+import {DarcBS} from "./byzcoin/darcsBS";
+import {CredentialTransaction} from "./credentialTransaction";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
@@ -98,13 +88,13 @@ export class User extends ByzCoinBuilder {
         };
     }
 
-    public startTransaction(): Transaction {
-        return new Transaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+    public startTransaction(): CredentialTransaction {
+        return new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
-    public async executeTransactions(addTxs: (tx: Transaction) => Promise<unknown> | unknown, wait = 0): Promise<void> {
-        const tx = new Transaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+    public async executeTransactions(addTxs: (tx: CredentialTransaction) => Promise<unknown> | unknown, wait = 0): Promise<void> {
+        const tx = new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
-        await tx.send(wait);
+        await tx.sendCoins(wait);
     }
 }

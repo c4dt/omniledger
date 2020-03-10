@@ -1,6 +1,8 @@
-import {Log} from "@dedis/cothority";
 import Long from "long";
-import {IDataBase} from "./interfaces";
+
+import {Log} from "@dedis/cothority";
+
+import {IDataBase} from "./byzcoin/instances";
 
 export class TempDB implements IDataBase {
     private kv: Map<string, Buffer>;

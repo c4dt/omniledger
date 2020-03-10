@@ -6,7 +6,8 @@ import {filter, first} from "rxjs/operators";
 import Log from "@dedis/cothority/log";
 import {Darc} from "@dedis/cothority/darc";
 
-import {IMigrate, User} from "src/user";
+import {User} from "src/user";
+import {IMigrate} from "src/builder";
 
 describe("User class should", async () => {
     it("save and load a user", async () => {
@@ -69,7 +70,7 @@ describe("User class should", async () => {
         const ephemeralIdentity = KeyPair.rand().signer();
         Log.lvl2("Signer / private is:", ephemeralIdentity, ephemeralIdentity.secret.marshalBinary());
         nu.credSignerBS.devices.create(tx, "newDevice", [ephemeralIdentity]);
-        await tx.send(10);
+        await tx.sendCoins(10);
         // This is needed to make sure that everything is updated locally.
         await nu.credSignerBS.pipe(
             filter(d => d.rules.getRule(Darc.ruleSign).getIdentities().length == 2),

@@ -1,24 +1,19 @@
 // tslint:disable:max-classes-per-file
 
 import {BehaviorSubject, Subject} from "rxjs";
-import {Log} from "@dedis/cothority";
-import {IInstance, IProof, newIInstance} from "src/instances";
-import {
-    configInstanceID,
-    IByzCoinAddTransaction,
-    IByzCoinBlockStreamer,
-    IByzCoinProof
-} from "src/interfaces";
-
 import {map} from "rxjs/operators";
+import Long = require("long");
+import {createHash} from "crypto-browserify";
+
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
+import {Log} from "@dedis/cothority";
 import {
     Coin,
     CoinInstance,
     DarcInstance, SpawnerStruct
 } from "@dedis/cothority/byzcoin/contracts";
 import {
-    ClientTransaction,
+    ClientTransaction, CONFIG_INSTANCE_ID,
     InstanceID,
     Instruction,
     StateChangeBody
@@ -29,10 +24,10 @@ import {
     SpawnerInstance
 } from "@dedis/cothority/byzcoin/contracts";
 import {Darc, IIdentity} from "@dedis/cothority/darc";
-import {createHash} from "crypto-browserify";
-import Long = require("long");
-import {IGenesisUser} from "src/genesis";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
+
+import {IGenesisUser} from "src/genesis";
+import {IInstance, IProof, newIInstance} from "src/byzcoin/instances";
 
 class SimulProof {
     public latest: SkipBlock;
@@ -61,9 +56,7 @@ class SimulProof {
     }
 }
 
-export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByzCoinBlockStreamer {
-    public static configInstanceID: InstanceID = Buffer.alloc(32);
-
+export class ByzCoinSimul {
     // getProofObserver is used by the tests to check whether a proof is
     // requested at the right moment.
     public readonly getProofObserver = new Subject<IInstance>();
@@ -73,7 +66,7 @@ export class ByzCoinSimul implements IByzCoinProof, IByzCoinAddTransaction, IByz
 
     constructor(igd: IGenesisUser) {
         this.globalState.addDarc(igd.darc);
-        this.globalState.addOrUpdateInstance(newIInstance(configInstanceID,
+        this.globalState.addOrUpdateInstance(newIInstance(CONFIG_INSTANCE_ID,
             Buffer.alloc(0), "config"))
     }
 

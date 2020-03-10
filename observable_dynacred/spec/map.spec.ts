@@ -1,5 +1,6 @@
-import {InstanceMap} from "src/credentialStructBS";
 import {Credential} from "@dedis/cothority/byzcoin/contracts";
+
+import {InstanceMap} from "src/credentialStructBS";
 
 // This is to make sure changes between es5 (cannot extend Map) and es6 (can extend Map) will be still running.
 

@@ -15,8 +15,8 @@ import {InstanceID} from "@dedis/cothority/byzcoin";
 
 import {CredentialInstanceMapBS} from "./credentialStructBS";
 import {ObservableHO} from "./observableHO";
-import {DarcBS, DarcsBS} from "./darcsBS";
-import {Transaction} from "./transaction";
+import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
+import {CredentialTransaction} from "./credentialTransaction";
 
 export class CredentialSignerBS extends DarcBS {
     constructor(darcBS: DarcBS,
@@ -42,18 +42,18 @@ export class CSTypesBS extends DarcsBS {
         })
     }
 
-    public create(tx: Transaction, name: string, identity: IIdentity[]): Darc {
+    public create(tx: CredentialTransaction, name: string, identity: IIdentity[]): Darc {
         const newDarc = tx.spawnDarcBasic(`${this.prefix}:${name}`, identity);
         this.link(tx, name, newDarc.getBaseID());
         return newDarc;
     }
 
-    public link(tx: Transaction, name: string, id: InstanceID) {
+    public link(tx: CredentialTransaction, name: string, id: InstanceID) {
         this.signerDarcBS.addSignEvolve(tx, id);
         this.cim.setValue(tx, name, id);
     }
 
-    public unlink(tx: Transaction, name: string) {
+    public unlink(tx: CredentialTransaction, name: string) {
         const im = this.cim.getValue();
         if (!im.map.has(name)) {
             return;
@@ -65,7 +65,7 @@ export class CSTypesBS extends DarcsBS {
         }
     }
 
-    public rename(tx: Transaction, oldName: string, newName: string) {
+    public rename(tx: CredentialTransaction, oldName: string, newName: string) {
         const im = this.cim.getValue();
         if (!im.map.has(oldName)) {
             throw new Error("this signer doesn't exist");

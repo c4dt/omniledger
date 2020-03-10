@@ -13,11 +13,11 @@ import {CoinInstance} from "@dedis/cothority/byzcoin/contracts";
 import {Darc, IdentityDarc, IIdentity} from "@dedis/cothority/darc";
 
 import {AttributeInstanceSetBS, CredentialStructBS, EAttributesPublic, ECredentials} from "./credentialStructBS";
-import {DarcBS, DarcsBS} from "./darcsBS";
-import {Transaction} from "./transaction";
-import {CoinBS} from "./coinBS";
+import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {ObservableHO} from "./observableHO";
 import {UserSkeleton} from "./userSkeleton";
+import {CoinBS} from "./byzcoin/coinBS";
+import {CredentialTransaction} from "src/credentialTransaction";
 
 export class AddressBook {
     constructor(public readonly contacts: ABContactsBS,
@@ -44,20 +44,20 @@ export class ABContactsBS extends BehaviorSubject<CredentialStructBS[]> {
         });
     }
 
-    public create(tx: Transaction, user: UserSkeleton, initial = Long.fromNumber(0)) {
+    public create(tx: CredentialTransaction, user: UserSkeleton, initial = Long.fromNumber(0)) {
         tx.createUser(user, initial);
         this.link(tx, user.credID);
     }
 
-    public link(tx: Transaction, id: InstanceID) {
+    public link(tx: CredentialTransaction, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().add(id));
     }
 
-    public unlink(tx: Transaction, id: InstanceID) {
+    public unlink(tx: CredentialTransaction, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().rm(id));
     }
 
-    public rename(tx: Transaction, oldName: string, newName: string) {
+    public rename(tx: CredentialTransaction, oldName: string, newName: string) {
         const d = this.getValue().find(d => d.credPublic.alias.getValue() === oldName);
         if (!d) {
             throw new Error("couldn't find group with that name");
@@ -77,21 +77,21 @@ export class ABGroupsBS extends DarcsBS {
         return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/\w${name}$/`))
     }
 
-    public create(tx: Transaction, name: string, signers: IIdentity[]): Darc {
+    public create(tx: CredentialTransaction, name: string, signers: IIdentity[]): Darc {
         const d = tx.spawnDarcBasic(name, signers);
         this.link(tx, d.getBaseID());
         return d;
     }
 
-    public link(tx: Transaction, id: InstanceID) {
+    public link(tx: CredentialTransaction, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().add(id));
     }
 
-    public unlink(tx: Transaction, id: InstanceID) {
+    public unlink(tx: CredentialTransaction, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().rm(id));
     }
 
-    public rename(tx: Transaction, oldName: string, newName: string) {
+    public rename(tx: CredentialTransaction, oldName: string, newName: string) {
         const d = this.getValue().find(d => d.getValue().description.equals(Buffer.from(oldName)));
         if (!d) {
             throw new Error("couldn't find group with that name");
@@ -109,7 +109,7 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
         abs.subscribe(this);
     }
 
-    public create(tx: Transaction, desc: string, signers: IIdentity[]) {
+    public create(tx: CredentialTransaction, desc: string, signers: IIdentity[]) {
         const signDarc = tx.spawnDarcBasic(desc, signers);
         const signDarcID = new IdentityDarc({id: signDarc.id});
         const coinDarc = Darc.createBasic([], [signDarcID], Buffer.from(`${name}:coin`),
@@ -120,15 +120,15 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
         this.link(tx, signDarc.getBaseID());
     }
 
-    public link(tx: Transaction, id: InstanceID) {
+    public link(tx: CredentialTransaction, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().add(id));
     }
 
-    public unlink(tx: Transaction, id: InstanceID) {
+    public unlink(tx: CredentialTransaction, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().rm(id));
     }
 
-    public rename(tx: Transaction, oldName: string, newName: string) {
+    public rename(tx: CredentialTransaction, oldName: string, newName: string) {
         const action = this.getValue().find(a => a.darc.getValue().description.equals(Buffer.from(oldName)));
         if (!action) {
             throw new Error("couldn't find this action");

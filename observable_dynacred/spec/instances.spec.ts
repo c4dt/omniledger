@@ -1,9 +1,11 @@
-import {BCTestEnv} from "spec/simul/itest";
-import {HistoryObs} from "spec/support/historyObs";
 import {Log} from "@dedis/cothority";
-import {Instances} from "observable_dynacred";
 import {Argument, ClientTransaction, Instruction} from "@dedis/cothority/byzcoin";
 import {CredentialsInstance} from "@dedis/cothority/byzcoin/contracts";
+
+import {Instances} from "observable_dynacred";
+
+import {BCTestEnv} from "spec/simul/itest";
+import {HistoryObs} from "spec/support/historyObs";
 
 describe("Instances should", () => {
     it("not ask new proofs when not necessary", async () => {

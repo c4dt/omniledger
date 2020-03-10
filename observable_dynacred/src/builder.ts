@@ -13,16 +13,33 @@ import {
     SpawnerInstance
 } from "@dedis/cothority/byzcoin/contracts";
 
-import {CredentialPublic, CredentialStructBS, EAttributesPublic, ECredentials} from "./credentialStructBS";
+import {
+    CredentialInstanceMapBS,
+    CredentialPublic,
+    CredentialStructBS,
+    EAttributesPublic,
+    ECredentials
+} from "./credentialStructBS";
 import {ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook} from "./addressBook";
 import {KeyPair} from "./keypair";
 import {CredentialSignerBS, CSTypesBS} from "./credentialSignerBS";
 import {ConvertBS, ObservableToBS} from "./observableHO";
-import {newIInstance} from "./instances";
-import {CoinBS} from "./coinBS";
-import {IMigrate, User} from "./user";
-import {DarcBS, DarcsBS} from "./darcsBS";
+import {newIInstance} from "./byzcoin/instances";
+import {User} from "./user";
+import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {ByzCoinBS} from "./byzCoinBS";
+import {CoinBS} from "./byzcoin/coinBS";
+
+export interface IMigrate {
+    keyPersonhood?: string;
+    keyIdentity: string;
+    version: number;
+    contact: IMigrateContact;
+}
+
+export interface IMigrateContact {
+    credential: Buffer;
+}
 
 export class ByzCoinBuilder extends ByzCoinBS {
     static readonly urlNewDevice = "/register/device";
@@ -95,6 +112,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
     }
 
     public async getUserFromEphemeral(ephemeral: KeyPair, dbBase = "main"): Promise<User> {
+        Log.lvl3("getting credID");
         const credID = CredentialsInstance.credentialIID(ephemeral.pub.marshalBinary());
         const u = await this.getUser(credID, ephemeral.priv.marshalBinary(), dbBase);
         await u.switchKey(ephemeral);
@@ -102,6 +120,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
     }
 
     public async getUserFromURL(urlStr: string, dbBase = "main"): Promise<User> {
+        Log.lvl3("getting user from url", urlStr);
         const url = new URL(urlStr, true);
         if (!url.pathname.includes(User.urlNewDevice)) {
             throw new Error("not a newDevice url");
@@ -123,6 +142,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     public async getUserFromMigration(): Promise<User | undefined> {
         try {
+            Log.lvl3("trying to migrate");
             const migrate: IMigrate | undefined = await this.db.getObject(User.keyMigrate);
             if (migrate && migrate.version === User.versionMigrate) {
                 // Just suppose everything is here and let it fail otherwise.
@@ -152,6 +172,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
             return user;
         }
 
+        Log.lvl3("getting key and credID from DB");
         const [privBuf, credID] = await this.getUserKeyCredID(base);
         return this.getUser(credID, privBuf, base);
     }
@@ -167,6 +188,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     public async getCoinBS(coinID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<CoinBS> {
+        Log.lvl3("getting coinBS");
         if (coinID instanceof Buffer) {
             coinID = new BehaviorSubject(coinID);
         }
@@ -179,20 +201,19 @@ export class ByzCoinBuilder extends ByzCoinBS {
     }
 
     public async getCredentialSignerBS(credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
-        Log.lvl3("searching signer darc");
         const signerDarcID = (await this.getSignerIdentityDarc(credStructBS.darcID)).id;
-        Log.lvl3("searching signer darc");
         const darcBS = await this.getDarcBS(signerDarcID);
-        Log.lvl3("loading devices");
-        const aisbs = ConvertBS(credStructBS.credDevices, im => im.toInstanceIDs());
-        Log.lvl3("going");
-        const devices = new CSTypesBS(darcBS, credStructBS.credDevices, "device",
-            await this.getDarcsBS(aisbs));
-        Log.lvl3("loading recoveries");
-        const recoveries = new CSTypesBS(darcBS, credStructBS.credRecoveries, "recovery",
-            await this.getDarcsBS(
-                ConvertBS(credStructBS.credRecoveries, im => im.toInstanceIDs())));
+        Log.lvl3("getting devices");
+        const devices = await this.getCST(darcBS, credStructBS.credDevices, "device");
+        Log.lvl3("getting recoveries");
+        const recoveries = await this.getCST(darcBS, credStructBS.credRecoveries, "recovery");
         return new CredentialSignerBS(darcBS, devices, recoveries);
+    }
+
+    public async getCST(signerBS: DarcBS, cimbs: CredentialInstanceMapBS, prefix: string): Promise<CSTypesBS> {
+        Log.lvl3("getting CS:", prefix);
+        const aisbs = ConvertBS(cimbs, im => im.toInstanceIDs());
+        return new CSTypesBS(signerBS, cimbs, prefix, await this.getDarcsBS(aisbs));
     }
 
     public async getCredentialStructBS(id: InstanceID): Promise<CredentialStructBS> {
@@ -200,10 +221,11 @@ export class ByzCoinBuilder extends ByzCoinBS {
         const instBS = await this.inst.instanceBS(id);
         const darcID = instBS.getValue().darcID;
         const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
-        return new CredentialStructBS(this, id, darcID, credBS);
+        return new CredentialStructBS(id, darcID, credBS);
     }
 
     public async getDarcsBS(aisbs: BehaviorSubject<InstanceID[]>): Promise<DarcsBS> {
+        Log.lvl3("getting darcsBS");
         const dbs = await ObservableToBS(aisbs.pipe(
             flatMap(ais => Promise.all(ais
                 .map(iid => this.getDarcBS(iid))))));
@@ -212,20 +234,21 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     public async getDarcBS(darcID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<DarcBS> {
+        Log.lvl3("getting darcBS");
         if (darcID instanceof Buffer) {
             darcID = new BehaviorSubject(darcID);
         }
         const instObs = darcID.pipe(
-            // TODO: would it work to remove flatMap with mergeAll?
             flatMap(id => this.inst.instanceBS(id)),
             mergeAll(),
             map(inst => Darc.decode(inst.value)),
         );
         const bsDarc = await ObservableToBS(instObs);
-        return new DarcBS(bsDarc)
+        return new DarcBS(bsDarc);
     }
 
     public async getSignerIdentityDarc(darcID: InstanceID): Promise<IdentityDarc> {
+        Log.lvl3("getting signerIdentityDarc");
         const credDarc = await this.getDarcBS(darcID);
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }

@@ -1,7 +1,7 @@
 import {filter, first} from "rxjs/operators";
 
-import {IdentityDarc, SignerEd25519} from "@c4dt/cothority/darc";
-import Log from "@c4dt/cothority/log";
+import {IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
+import Log from "@dedis/cothority/log";
 
 import {KeyPair} from "src/keypair";
 

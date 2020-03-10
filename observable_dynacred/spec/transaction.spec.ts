@@ -17,7 +17,7 @@ describe("Transactions should", () => {
         const coin1 = tx.spawnCoin(coinType, signerDarcID, coinIDPreHash1);
         const coin2 = tx.spawnCoin(coinType, signerDarcID, coinIDPreHash2);
         const d = tx.spawnDarcBasic("darc 1", [user.kiSigner]);
-        await tx.send(10);
+        await tx.sendCoins(10);
 
         const coinInst1 = await user.getCoinBS(coin1.id);
         const coinInst2 = await user.getCoinBS(coin2.id);
