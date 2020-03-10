@@ -1,16 +1,17 @@
+import {filter} from "rxjs/internal/operators/filter";
 import {BehaviorSubject} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
+import Long from "long";
+
+import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@dedis/cothority/byzcoin/contracts";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {Point, PointFactory} from "@dedis/kyber";
-import {filter} from "rxjs/internal/operators/filter";
+
 import {ConvertBS} from "./observableHO";
-import {Log} from "@dedis/cothority";
 import {Transaction} from "./transaction";
-import Long from "long";
-import {DarcBS} from "./darcsBS";
-import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
-import {ByzCoinBS} from "src/genesis";
+import {ByzCoinBS} from "./genesis";
+import {ByzCoinBuilder} from "./builder";
 
 export enum ECredentials {
     pub = "1-public",
@@ -76,14 +77,6 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         this.credRecoveries = this.getCredentialInstanceMapBS(ECredentials.recoveries);
     }
 
-    public static async getCredentialStructBS(bid: ByzCoinBS, id: InstanceID): Promise<CredentialStructBS> {
-        Log.lvl3("creating CredentialStruct from scratch:", id);
-        const instBS = await bid.inst.instanceBS(id);
-        const darcID = instBS.getValue().darcID;
-        const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
-        return new CredentialStructBS(bid, id, darcID, credBS);
-    }
-
     public getCredentialBS(name: ECredentials): CredentialBS {
         return CredentialBS.fromScratch(this.bid, this, name);
     }
@@ -128,8 +121,9 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         return CredentialInstanceMapBS.fromScratch(this.bid, this.getCredentialBS(name));
     }
 
+    // TODO: what is this doing here? credStrcutBS should not return other BC-stuff!
     public async getSignerIdentityDarc(): Promise<IdentityDarc> {
-        const credDarc = await DarcBS.getDarcBS(this.bid, this.darcID);
+        const credDarc = await new ByzCoinBuilder(this.bid).getDarcBS(this.darcID);
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }

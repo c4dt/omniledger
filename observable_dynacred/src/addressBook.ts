@@ -6,43 +6,24 @@
  * then back again.
  */
 import {BehaviorSubject, Observable} from "rxjs";
+import Long from "long";
 
 import {InstanceID} from "@dedis/cothority/byzcoin";
-
-import {
-    AttributeInstanceSetBS,
-    CredentialPublic,
-    CredentialStructBS,
-    EAttributesPublic,
-    ECredentials
-} from "./credentialStructBS";
 import {CoinInstance} from "@dedis/cothority/byzcoin/contracts";
 import {Darc, IdentityDarc, IIdentity} from "@dedis/cothority/darc";
-import {Log} from "@dedis/cothority";
+
+import {AttributeInstanceSetBS, CredentialStructBS, EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {DarcBS, DarcsBS} from "./darcsBS";
 import {Transaction} from "./transaction";
 import {CoinBS} from "./coinBS";
-import {ConvertBS, ObservableHO, ObservableToBS} from "./observableHO";
-import {flatMap, map, tap} from "rxjs/operators";
+import {ObservableHO} from "./observableHO";
 import {UserSkeleton} from "./userSkeleton";
-import Long from "long";
-import {ByzCoinBS} from "src/genesis";
 
 export class AddressBook {
-
     constructor(public readonly contacts: ABContactsBS,
                 public readonly groups: ABGroupsBS,
                 public readonly actions: ABActionsBS
     ) {
-    }
-
-    public static async getAddressBook(bs: ByzCoinBS, cp: CredentialPublic): Promise<AddressBook> {
-        const contactBS = await ABContactsBS.createABContactsBS(bs, cp.contacts);
-        Log.lvl3("getting groups");
-        const groupsBS = await ABGroupsBS.createABGroupBS(bs, cp.groups);
-        Log.lvl3("getting actions");
-        const actionsBS = await ABActionsBS.createABActionsBS(bs, cp.actions);
-        return new AddressBook(contactBS, groupsBS, actionsBS);
     }
 }
 
@@ -55,16 +36,7 @@ export class ABContactsBS extends BehaviorSubject<CredentialStructBS[]> {
         bscs.subscribe(this);
     }
 
-    public static async createABContactsBS(bs: ByzCoinBS, aisBS: AttributeInstanceSetBS) {
-        return new ABContactsBS(aisBS,
-            await ObservableToBS(aisBS.pipe(
-                flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    async (id) => CredentialStructBS.getCredentialStructBS(bs, id)
-                )))))
-        )
-    }
-
-    public getOHO(bs: ByzCoinBS): Observable<BehaviorSubject<CredentialStructBS>[]> {
+    public getOHO(): Observable<BehaviorSubject<CredentialStructBS>[]> {
         return ObservableHO({
             source: this,
             convert: src => Promise.resolve(new BehaviorSubject(src)),
@@ -101,11 +73,6 @@ export class ABGroupsBS extends DarcsBS {
         super(dbs)
     }
 
-    public static async createABGroupBS(bs: ByzCoinBS, aisBS: AttributeInstanceSetBS): Promise<ABGroupsBS> {
-        return new ABGroupsBS(aisBS,
-            await DarcsBS.getDarcsBS(bs, ConvertBS(aisBS, gr => gr.toInstanceIDs())));
-    }
-
     public find(name: string): DarcBS | undefined {
         return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/\w${name}$/`))
     }
@@ -140,16 +107,6 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
     ) {
         super(abs.getValue());
         abs.subscribe(this);
-    }
-
-    public static async createABActionsBS(bs: ByzCoinBS, aisBS: AttributeInstanceSetBS): Promise<ABActionsBS> {
-        return new ABActionsBS(aisBS,
-            await ObservableToBS(aisBS.pipe(
-                flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    id => DarcBS.getDarcBS(bs, id)
-                ))),
-                map(dbs => dbs.map(db => new ActionBS(db)))
-            )));
     }
 
     public create(tx: Transaction, desc: string, signers: IIdentity[]) {

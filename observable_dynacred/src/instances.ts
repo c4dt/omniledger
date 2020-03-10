@@ -1,14 +1,15 @@
+import {startWith} from "rxjs/internal/operators/startWith";
 import {BehaviorSubject, of} from "rxjs";
 import {catchError, distinctUntilChanged, map} from "rxjs/operators";
 import {mergeMap} from "rxjs/internal/operators/mergeMap";
 import {filter} from "rxjs/internal/operators/filter";
 import Long from "long";
-import {Log} from "@dedis/cothority";
-import {configInstanceID, IByzCoinBlockStreamer, IByzCoinProof, IDataBase} from "./interfaces";
+
 import {InstanceID, StateChangeBody} from "@dedis/cothority/byzcoin";
-import {startWith} from "rxjs/internal/operators/startWith";
 import {SkipBlock} from "@dedis/cothority/skipchain";
-import {tap} from "rxjs/internal/operators/tap";
+import {Log} from "@dedis/cothority";
+
+import {configInstanceID, IByzCoinBlockStreamer, IByzCoinProof, IDataBase} from "./interfaces";
 
 export interface IInstance {
     key: InstanceID;

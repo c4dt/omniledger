@@ -11,7 +11,7 @@ import {TWorker} from "./Ui";
 import {map, startWith} from "rxjs/operators";
 import {Subscription} from "rxjs";
 import Log from "@dedis/cothority/log";
-import {ByzCoinService} from "src/app/byz-coin.service";
+import {ByzCoinService} from "../app/byz-coin.service";
 
 export interface IDialogTransactionConfig<T> {
     title: string;
@@ -44,8 +44,8 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
     async ngAfterViewInit() {
         // TODO: replace the setTimeout with ChangeDetectorRef
         setTimeout(async () => {
-            const last = this.bcs.bs.bc.latest.index;
-            this.ub = (await this.bcs.bs.bc.getNewBlocks()).pipe(
+            const last = this.bcs.bc.latest.index;
+            this.ub = (await this.bcs.bc.getNewBlocks()).pipe(
                 map((block) => block.index),
                 startWith(last - 3, last - 2, last - 1, last),
             ).subscribe((nb) => this.updateBlocks(nb));

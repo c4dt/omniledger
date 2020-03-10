@@ -1,25 +1,17 @@
 import {BehaviorSubject} from "rxjs";
-import {ObservableToBS} from "./observableHO";
-import {flatMap, map, mergeAll} from "rxjs/operators";
+
+import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import {Darc, IIdentity, Rule, Rules} from "@dedis/cothority/darc";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {DarcInstance} from "@dedis/cothority/byzcoin/contracts";
+
 import {IInstance} from "./instances";
 import {Transaction} from "./transaction";
-import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import {ByzCoinBS} from "src/genesis";
 
 export class DarcsBS extends BehaviorSubject<DarcBS[]> {
     constructor(sbs: BehaviorSubject<DarcBS[]>) {
         super(sbs.getValue());
         sbs.subscribe(this);
-    }
-
-    public static async getDarcsBS(bs: ByzCoinBS, aisbs: BehaviorSubject<InstanceID[]>): Promise<DarcsBS> {
-        const dbs = await ObservableToBS(aisbs.pipe(
-            flatMap(ais => Promise.all(ais
-                .map(iid => DarcBS.getDarcBS(bs, iid))))));
-        return new DarcsBS(dbs);
     }
 }
 
@@ -29,21 +21,6 @@ export class DarcBS extends BehaviorSubject<Darc> {
     constructor(darc: BehaviorSubject<Darc>) {
         super(darc.getValue());
         darc.subscribe(this);
-    }
-
-    public static async getDarcBS(bs: ByzCoinBS, darcID: BehaviorSubject<InstanceID> | InstanceID):
-        Promise<DarcBS> {
-        if (darcID instanceof Buffer) {
-            darcID = new BehaviorSubject(darcID);
-        }
-        const instObs = darcID.pipe(
-            // TODO: would it work to remove flatMap with mergeAll?
-            flatMap(id => bs.inst.instanceBS(id)),
-            mergeAll(),
-            map(inst => Darc.decode(inst.value)),
-        );
-        const bsDarc = await ObservableToBS(instObs);
-        return new DarcBS(bsDarc)
     }
 
     public evolveDarc(tx: Transaction, updates: IDarcAttr, unrestricted = false): Darc {

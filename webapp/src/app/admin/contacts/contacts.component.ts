@@ -3,30 +3,28 @@ import {Component, Inject, OnInit} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
-
 import Long from "long";
+import {sprintf} from "sprintf-js";
+
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import {IdentityDarc, IdentityWrapper, SignerEd25519} from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
+import {RenameComponent, ShowComponent} from "src/app/admin/devices/devices.component";
 import {showDialogInfo, showTransactions, TProgress, UIViews} from "../../../lib/Ui";
 import {ManageDarcComponent} from "../manage-darc";
-
 import {ContactInfoComponent} from "./contact-info/contact-info.component";
 import {
     ABActionsBS,
     ABContactsBS,
     ABGroupsBS,
     ActionBS,
-    CredentialSignerBS,
     CredentialStructBS,
     DarcBS,
     KeyPair,
     User,
     UserSkeleton
 } from "observable_dynacred";
-import {RenameComponent, ShowComponent} from "src/app/admin/devices/devices.component";
-import {sprintf} from "sprintf-js";
 import {UserService} from "src/app/user.service";
 
 @Component({
@@ -183,7 +181,7 @@ export class ContactsComponent implements OnInit {
             await showTransactions(this.dialog, "Adding new device", async (progress: TProgress) => {
 
                 progress(30, "Checking if we have the right to recover " + c.credPublic.alias.getValue());
-                const cSign = await CredentialSignerBS.getCredentialSignerBS(this.user, c);
+                const cSign = await this.user.getCredentialSignerBS(c);
                 if ((await this.user.bc.checkAuthorization(this.user.bc.genesisID, cSign.getValue().getBaseID(),
                     IdentityWrapper.fromIdentity(this.user.kiSigner))).length === 0) {
                     return showDialogInfo(this.dialog, "No recovery",

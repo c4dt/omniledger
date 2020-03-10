@@ -13,6 +13,7 @@ import {Rule, SignerEd25519} from "@dedis/cothority/darc";
 import {TempDB} from "./tempdb";
 import {UserSkeleton} from "./userSkeleton";
 import {Transaction} from "./transaction";
+import {ByzCoinBuilder} from "./builder";
 
 const ed25519 = new curve.edwards25519.Curve();
 
@@ -36,7 +37,7 @@ export class ByzCoinBS {
     }
 }
 
-export class Genesis extends ByzCoinBS {
+export class Genesis extends ByzCoinBuilder {
     public static readonly rules = ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
         "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
         "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"];
@@ -46,7 +47,7 @@ export class Genesis extends ByzCoinBS {
             public spawner?: SpawnerInstance,
             public coin?: ICoin,
     ) {
-        super(bs.bc, bs.db, bs.inst);
+        super(bs);
     }
 
     public static async fromGenesisKey(priv: Scalar, createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>,
@@ -136,6 +137,6 @@ export class Genesis extends ByzCoinBS {
         const tx = new Transaction(this.bc, this.spawner, this.coin);
         tx.createUser(userFactory, Long.fromNumber(1e9));
         await tx.send(2);
-        return User.getUser(this, userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
+        return this.getUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }

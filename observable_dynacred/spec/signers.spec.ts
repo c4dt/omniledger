@@ -1,10 +1,12 @@
+import {filter, first} from "rxjs/operators";
+
+import {IdentityDarc, SignerEd25519} from "@c4dt/cothority/darc";
+import Log from "@c4dt/cothority/log";
+
+import {KeyPair} from "src/keypair";
+
 import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
-import {KeyPair} from "src/keypair";
-import {IdentityDarc, SignerEd25519} from "@c4dt/cothority/darc";
-import {filter, first} from "rxjs/operators";
-import {CredentialSignerBS, User} from "observable_dynacred";
-import Log from "@c4dt/cothority/log";
 
 describe("Signers should", () => {
     it("should add and remove devices", async () => {
@@ -66,7 +68,7 @@ describe("Signers should", () => {
 
         Log.lvl2("Creating recovery user and signing up for recovery");
         // Recover user
-        const cSign = await CredentialSignerBS.getCredentialSignerBS(bct, user.credStructBS);
+        const cSign = await bct.getCredentialSignerBS(user.credStructBS);
         const eph = SignerEd25519.random();
         await other.executeTransactions(tx => {
             cSign.devices.create(tx, "recovered", [eph]);
@@ -76,7 +78,7 @@ describe("Signers should", () => {
         await user.credSignerBS.devices.pipe(filter(devs => devs.length === 2), first()).toPromise();
 
         Log.lvl2("Do the recovery into a new user");
-        const recovered = await User.getUser(bct, user.credStructBS.id, eph.secret.marshalBinary(), "newMain");
+        const recovered = await bct.getUser(user.credStructBS.id, eph.secret.marshalBinary(), "newMain");
         await recovered.credSignerBS.devices.pipe(filter(devs => devs.length === 2), first()).toPromise();
         Log.lvl2("Change the name");
         // Change the name

@@ -8,6 +8,7 @@ import {
     CredentialSignerBS,
     CredentialStructBS
 } from "observable_dynacred";
+
 import {UserService} from "src/app/user.service";
 
 @Component({
@@ -32,7 +33,7 @@ export class ContactInfoComponent implements OnInit {
     async ngOnInit() {
         this.pub = this.data.contact.credPublic;
         this.config = this.data.contact.credConfig;
-        this.signerBS = await CredentialSignerBS.getCredentialSignerBS(this.user, this.data.contact);
-        this.addressBook = await AddressBook.getAddressBook(this.user, this.pub);
+        this.signerBS = await this.user.getCredentialSignerBS(this.data.contact);
+        this.addressBook = await this.user.getAddressBook(this.pub);
     }
 }

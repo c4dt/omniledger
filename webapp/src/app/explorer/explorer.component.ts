@@ -25,21 +25,21 @@ export class ExplorerComponent implements OnInit {
         this.route.paramMap.subscribe(async (params) => {
             const id = Buffer.from(params.get("id"), "hex");
 
-            const p = await this.bcs.bs.bc.getProofFromLatest(id);
+            const p = await this.bcs.bc.getProofFromLatest(id);
             switch (p.contractID) {
 
                 case CredentialsInstance.contractID:
-                    this.credStruct = await CredentialStructBS.getCredentialStructBS(this.bcs.bs, id);
+                    this.credStruct = await this.bcs.getCredentialStructBS(id);
                     this.kind = "credentialObservable.ts";
                     break;
 
                 case CoinInstance.contractID:
-                    this.coin = await CoinInstance.fromByzcoin(this.bcs.bs.bc, id);
+                    this.coin = await CoinInstance.fromByzcoin(this.bcs.bc, id);
                     this.kind = "coin";
                     break;
 
                 case DarcInstance.contractID:
-                    this.darc = await DarcInstance.fromByzcoin(this.bcs.bs.bc, id);
+                    this.darc = await DarcInstance.fromByzcoin(this.bcs.bc, id);
                     this.kind = "darc";
                     break;
 

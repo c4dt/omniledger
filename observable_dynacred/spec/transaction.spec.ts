@@ -1,7 +1,6 @@
-import {BCTestEnv} from "spec/simul/itest";
-import {CoinBS} from "src/coinBS";
-import {DarcBS} from "src/darcsBS";
 import {CoinInstance} from "@dedis/cothority/byzcoin/contracts";
+
+import {BCTestEnv} from "spec/simul/itest";
 
 describe("Transactions should", () => {
     it("spawn things", async () => {
@@ -20,9 +19,9 @@ describe("Transactions should", () => {
         const d = tx.spawnDarcBasic("darc 1", [user.kiSigner]);
         await tx.send(10);
 
-        const coinInst1 = await CoinBS.getCoinBS(user, coin1.id);
-        const coinInst2 = await CoinBS.getCoinBS(user, coin2.id);
-        const darcInst = await DarcBS.getDarcBS(user, d.getBaseID());
+        const coinInst1 = await user.getCoinBS(coin1.id);
+        const coinInst2 = await user.getCoinBS(coin2.id);
+        const darcInst = await user.getDarcBS(d.getBaseID());
 
         expect(coinInst1.getValue().id).toEqual(CoinInstance.coinIID(coinIDPreHash1));
         expect(coinInst2.getValue().id).toEqual(CoinInstance.coinIID(coinIDPreHash2));

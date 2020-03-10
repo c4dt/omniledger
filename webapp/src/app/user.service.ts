@@ -11,7 +11,9 @@ export class UserService extends User {
     if (bcs.user === undefined){
       throw new Error("cannot initialize with missing user!");
     }
-    super(bcs.user);
+    super(bcs.user.bs, bcs.user.kpp, bcs.user.dbBase, bcs.user.credStructBS,
+        bcs.user.spawnerInstanceBS, bcs.user.coinBS, bcs.user.credSignerBS,
+        bcs.user.addressBook);
   }
 }
 

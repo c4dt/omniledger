@@ -37,7 +37,7 @@ export class DeviceComponent implements OnInit {
             await showTransactions(this.dialog, "Attaching to existing user",
                 async (progress: TProgress) => {
                     progress(50, "Attaching new device");
-                    this.bcs.user = await User.attachAndEvolveDevice(this.bcs.bs, window.location.href);
+                    this.bcs.user = await this.bcs.getUserFromURL(window.location.href);
                 });
             await this.router.navigate(["/"]);
         } catch (e) {

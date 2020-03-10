@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {ByzCoinBS, Instances, User} from "observable_dynacred";
+import {ByzCoinBS, ByzCoinBuilder, Instances, User} from "observable_dynacred";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {RosterWSConnection} from "@dedis/cothority/network/connection";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
@@ -12,13 +12,14 @@ import {Config} from "src/lib/config";
 @Injectable({
     providedIn: 'root'
 })
-export class ByzCoinService extends ByzCoinBS{
+export class ByzCoinService extends ByzCoinBuilder {
     public user?: User;
     public config?: Config;
     public conn?: RosterWSConnection;
 
     constructor(){
-        super(undefined, undefined, undefined);
+        // Initialize with undefined. Before using, the root component has to call `loadConfig`.
+        super(undefined);
     }
 
     private readonly storageKeyLatest = "latest_skipblock";
@@ -67,14 +68,13 @@ export class ByzCoinService extends ByzCoinBS{
     }
 
     async loadUser(): Promise<void> {
-        this.user = await User.load(this);
+        this.user = await this.getUserFromDB();
     }
 
     async hasUser(base = "main"): Promise<boolean> {
         try {
-            const key = await User.getDbKey(this, base);
-            const credID = await User.getDbCredID(this, base);
-            return key && credID && key.length === 32 && credID.length === 32;
+            await this.getUserKeyCredID(base);
+            return true;
         } catch(e){
             Log.warn("while checking user:", e);
             return false;

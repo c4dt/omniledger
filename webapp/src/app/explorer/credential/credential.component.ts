@@ -25,6 +25,6 @@ export class CredentialComponent implements OnInit {
     async ngOnInit() {
         this.pub = this.credStruct.credPublic;
         this.config = this.credStruct.credConfig;
-        this.addressBook = await AddressBook.getAddressBook(this.bcs.bs, this.pub);
+        this.addressBook = await this.bcs.getAddressBook(this.pub);
     }
 }

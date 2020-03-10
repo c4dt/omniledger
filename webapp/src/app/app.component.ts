@@ -67,10 +67,10 @@ export class AppComponent implements OnInit {
                 this.logAppend("Loading data", 80);
                 await this.bcs.loadUser();
                 const signerDarc = await this.bcs.user.identityDarcSigner;
-                const rules = await this.bcs.bs.bc.checkAuthorization(this.bcs.bs.bc.genesisID, signerDarc.id,
+                const rules = await this.bcs.bc.checkAuthorization(this.bcs.bc.genesisID, signerDarc.id,
                     IdentityWrapper.fromIdentity(this.bcs.user.kiSigner));
                 if (rules.length === 0) {
-                    await User.setDbKey(this.bcs.bs);
+                    await this.bcs.user.clearDB();
                     await showDialogOKC(this.dialog, "Device revoked", "Sorry, but this device has been revoked." +
                         " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();
@@ -96,7 +96,7 @@ export class AppComponent implements OnInit {
     }
 
     async newUser(): Promise<boolean> {
-        const roster = this.bcs.bs.bc.getConfig().roster;
+        const roster = this.bcs.bc.getConfig().roster;
         if (roster && !roster.list[0].address.includes("localhost")) {
             return this.router.navigate(["/newuser"]);
         } else {

@@ -1,13 +1,11 @@
 import {BehaviorSubject} from "rxjs";
-import {flatMap, map, mergeAll} from "rxjs/operators";
-
-import {Coin, CoinInstance} from "@dedis/cothority/byzcoin/contracts";
-
-import {ObservableToBS} from "./observableHO";
-import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import * as Long from "long";
+
+import {CoinInstance} from "@dedis/cothority/byzcoin/contracts";
+import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
+
 import {Transaction} from "./transaction";
-import {ByzCoinBS} from "src/genesis";
+import {ByzCoinBS} from "./genesis";
 
 
 export class CoinBS extends BehaviorSubject<CoinInstance> {
@@ -16,19 +14,6 @@ export class CoinBS extends BehaviorSubject<CoinInstance> {
                 coin: BehaviorSubject<CoinInstance>) {
         super(coin.getValue());
         coin.subscribe(this);
-    }
-
-    public static async getCoinBS(bs: ByzCoinBS, coinID: BehaviorSubject<InstanceID> | InstanceID):
-        Promise<CoinBS> {
-        if (coinID instanceof Buffer) {
-            coinID = new BehaviorSubject(coinID);
-        }
-        const coinObs = coinID.pipe(
-            flatMap(id => bs.inst.instanceBS(id)),
-            mergeAll(),
-            map(inst => CoinInstance.create(bs.bc as any, inst.key, inst.darcID, Coin.decode(inst.value)))
-        );
-        return new CoinBS(bs, await ObservableToBS(coinObs));
     }
 
     public transferCoins(tx: Transaction, dest: InstanceID, amount: Long) {
