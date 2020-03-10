@@ -81,7 +81,7 @@ export class ManageDarcComponent {
         if (filter.indexOf("contact") >= 0) {
             for (const contact of this.user.addressBook.contacts.getValue()) {
                 items.push(this.createItem("Contact: " + contact.credPublic.alias.getValue(),
-                    await contact.getSignerIdentityDarc()));
+                    await this.user.getSignerIdentityDarc(contact.darcID)));
             }
         }
         if (filter.indexOf("action") >= 0) {

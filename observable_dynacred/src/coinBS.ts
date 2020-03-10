@@ -5,13 +5,10 @@ import {CoinInstance} from "@dedis/cothority/byzcoin/contracts";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 
 import {Transaction} from "./transaction";
-import {ByzCoinBS} from "./genesis";
-
 
 export class CoinBS extends BehaviorSubject<CoinInstance> {
 
-    constructor(private bs: ByzCoinBS,
-                coin: BehaviorSubject<CoinInstance>) {
+    constructor(coin: BehaviorSubject<CoinInstance>) {
         super(coin.getValue());
         coin.subscribe(this);
     }

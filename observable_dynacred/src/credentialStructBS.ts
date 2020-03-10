@@ -3,15 +3,13 @@ import {BehaviorSubject} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
 import Long from "long";
 
-import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@dedis/cothority/byzcoin/contracts";
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {Point, PointFactory} from "@dedis/kyber";
 
 import {ConvertBS} from "./observableHO";
 import {Transaction} from "./transaction";
-import {ByzCoinBS} from "./genesis";
-import {ByzCoinBuilder} from "./builder";
+import {ByzCoinBS} from "./byzCoinBS";
 
 export enum ECredentials {
     pub = "1-public",
@@ -119,12 +117,6 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
 
     public getCredentialInstanceMapBS(name: ECredentials): CredentialInstanceMapBS {
         return CredentialInstanceMapBS.fromScratch(this.bid, this.getCredentialBS(name));
-    }
-
-    // TODO: what is this doing here? credStrcutBS should not return other BC-stuff!
-    public async getSignerIdentityDarc(): Promise<IdentityDarc> {
-        const credDarc = await new ByzCoinBuilder(this.bid).getDarcBS(this.darcID);
-        return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }
 

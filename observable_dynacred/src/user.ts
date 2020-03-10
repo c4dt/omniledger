@@ -1,16 +1,18 @@
+import {Scalar} from "@dedis/kyber";
+import {Darc, IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
+import {SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
+
 import {CredentialStructBS,} from "./credentialStructBS";
 import {AddressBook} from "./addressBook";
-import {SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
 import {KeyPair} from "./keypair";
 import {CoinBS} from "./coinBS";
 import {CredentialSignerBS} from "./credentialSignerBS";
-import {Darc, IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
 import {Transaction} from "./transaction";
 import {BehaviorSubject} from "rxjs";
-import {ByzCoinBS, ICoin} from "./genesis";
-import {Scalar} from "@dedis/kyber/index";
+import {ICoin} from "./genesis";
 import {DarcBS} from "./index";
 import {ByzCoinBuilder} from "./builder";
+import {ByzCoinBS} from "./byzCoinBS";
 
 export interface IMigrate {
     keyPersonhood?: string;
@@ -30,11 +32,6 @@ export interface IMigrateContact {
 // If the migration is successful, it uses this configuration, stores the
 // new information and deletes the old config.
 export class User extends ByzCoinBuilder {
-    static readonly urlNewDevice = "/register/device";
-    public static readonly keyPriv = "private";
-    public static readonly keyCredID = "credID";
-    public static readonly keyMigrate = "storage/data.json";
-    public static readonly versionMigrate = 1;
     public static migrateOnce = true;
 
     constructor(

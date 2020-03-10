@@ -16,8 +16,9 @@ import {ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook} from "./ad
 import {CredentialSignerBS, CSTypesBS} from "./credentialSignerBS";
 import {UserSkeleton} from "./userSkeleton";
 import {IDataBase} from "./interfaces";
-import {ByzCoinBS, Genesis} from "./genesis";
+import {Genesis, IGenesisUser} from "./genesis";
 import {ByzCoinBuilder} from "./builder";
+import {ByzCoinBS} from "./byzCoinBS";
 
 export {
     AddressBook,
@@ -40,6 +41,7 @@ export {
     EAttributesPublic,
     Genesis,
     IDataBase,
+    IGenesisUser,
     IUpdateCredential,
     Instances,
     KeyPair,

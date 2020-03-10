@@ -2,18 +2,17 @@ import URL from "url-parse";
 import {catchError, flatMap, map, mergeAll} from "rxjs/operators";
 import {BehaviorSubject} from "rxjs";
 
-import {Log} from "@c4dt/cothority/index";
-import {Instance, InstanceID} from "@c4dt/cothority/byzcoin";
-import {Darc, IdentityWrapper} from "@c4dt/cothority/darc";
+import {Log} from "@dedis/cothority/index";
+import {Instance, InstanceID} from "@dedis/cothority/byzcoin";
+import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 import {
     Coin,
     CoinInstance,
     CredentialsInstance,
     CredentialStruct,
     SpawnerInstance
-} from "@c4dt/cothority/byzcoin/contracts";
+} from "@dedis/cothority/byzcoin/contracts";
 
-import {ByzCoinBS} from "./genesis";
 import {CredentialPublic, CredentialStructBS, EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook} from "./addressBook";
 import {KeyPair} from "./keypair";
@@ -23,8 +22,15 @@ import {newIInstance} from "./instances";
 import {CoinBS} from "./coinBS";
 import {IMigrate, User} from "./user";
 import {DarcBS, DarcsBS} from "./darcsBS";
+import {ByzCoinBS} from "./byzCoinBS";
 
 export class ByzCoinBuilder extends ByzCoinBS {
+    static readonly urlNewDevice = "/register/device";
+    public static readonly keyPriv = "private";
+    public static readonly keyCredID = "credID";
+    public static readonly keyMigrate = "storage/data.json";
+    public static readonly versionMigrate = 1;
+
     constructor(bid: ByzCoinBS) {
         super(bid.bc, bid.db, bid.inst);
     }
@@ -169,12 +175,12 @@ export class ByzCoinBuilder extends ByzCoinBS {
             mergeAll(),
             map(inst => CoinInstance.create(this.bc as any, inst.key, inst.darcID, Coin.decode(inst.value)))
         );
-        return new CoinBS(this, await ObservableToBS(coinObs));
+        return new CoinBS(await ObservableToBS(coinObs));
     }
 
     public async getCredentialSignerBS(credStructBS: CredentialStructBS): Promise<CredentialSignerBS> {
         Log.lvl3("searching signer darc");
-        const signerDarcID = (await credStructBS.getSignerIdentityDarc()).id;
+        const signerDarcID = (await this.getSignerIdentityDarc(credStructBS.darcID)).id;
         Log.lvl3("searching signer darc");
         const darcBS = await this.getDarcBS(signerDarcID);
         Log.lvl3("loading devices");
@@ -217,5 +223,10 @@ export class ByzCoinBuilder extends ByzCoinBS {
         );
         const bsDarc = await ObservableToBS(instObs);
         return new DarcBS(bsDarc)
+    }
+
+    public async getSignerIdentityDarc(darcID: InstanceID): Promise<IdentityDarc> {
+        const credDarc = await this.getDarcBS(darcID);
+        return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }

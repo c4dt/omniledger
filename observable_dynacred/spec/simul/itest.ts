@@ -1,18 +1,17 @@
-import {Log} from "@dedis/cothority";
-
-import {User} from "src/user";
-
-import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
-import {ROSTER, startConodes} from "spec/support/conondes";
-import {curve} from "@dedis/kyber";
 import Long from "long";
+
+import {Log} from "@dedis/cothority";
+import {curve} from "@dedis/kyber";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {LeaderConnection} from "@dedis/cothority/network/connection";
-import {Genesis, IGenesisUser} from "src/genesis";
-import {UserSkeleton} from "observable_dynacred";
+
+import {Genesis, IGenesisUser, User, UserSkeleton} from "observable_dynacred";
+
+import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
+import {ROSTER} from "spec/support/conondes";
 
 Log.lvl = 2;
-const simul = false;
+const simul = true;
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -29,10 +28,10 @@ export class BCTestEnv extends Genesis {
     }
 
     static async start(): Promise<BCTestEnv> {
-        if (bct){
+        if (bct) {
             return bct;
         }
-        if (bctError){
+        if (bctError) {
             throw bctError;
         }
         try {
@@ -76,7 +75,7 @@ export class BCTestEnv extends Genesis {
         return bcte;
     }
 
-    public async createUser(alias: string): Promise<User>{
+    public async createUser(alias: string): Promise<User> {
         Log.lvl3("creating new user", alias);
         const skel = new UserSkeleton(alias, this.user.spawnerInstanceBS.getValue().id);
         await this.user.executeTransactions(tx => {

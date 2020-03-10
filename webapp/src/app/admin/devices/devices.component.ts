@@ -115,7 +115,7 @@ export class DevicesComponent {
         await showSnack(this.snack, "Searching actions and groups", async () => {
             for (const c of this.user.addressBook.contacts.getValue()) {
                 accounts.push({
-                    id: (await c.getSignerIdentityDarc()).id,
+                    id: (await this.user.getSignerIdentityDarc(c.darcID)).id,
                     name: c.credPublic.alias.getValue(),
                 });
             }
