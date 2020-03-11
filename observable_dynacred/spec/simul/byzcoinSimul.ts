@@ -190,8 +190,6 @@ export class ByzCoinSimul {
     }
 
     private async spawn(instr: Instruction) {
-        // TODO: calling this actually on the correct contract-type from
-        // instr.instanceID
         const dst = this.globalState.getInstance(instr.instanceID);
         if (dst === undefined) {
             throw new Error("sent spawn to non-existing instance");
