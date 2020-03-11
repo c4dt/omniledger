@@ -8,7 +8,7 @@ import {Darc, IdentityDarc, IdentityEd25519} from "@dedis/cothority/darc";
 
 import {Attribute} from "@dedis/cothority/personhood/credentials-instance";
 import {showDialogInfo, showDialogOKC, showSnack, showTransactions, TProgress} from "src/lib/Ui";
-import {CSTypesBS, DarcBS, KeyPair} from "observable_dynacred";
+import {byzcoin, CSTypesBS, KeyPair} from "observable_dynacred";
 import {UserService} from "src/app/user.service";
 
 class Signer {
@@ -41,7 +41,7 @@ export class DevicesComponent {
         this.recovery = user.credSignerBS.recoveries;
     }
 
-    async deviceDelete(device: DarcBS) {
+    async deviceDelete(device: byzcoin.DarcBS) {
         if (this.devices.getValue().length <= 1) {
             return showDialogInfo(this.dialog, "Too few devices", "There must be at least one device available, so " +
                 "it's not possible to remove the only device you have.", "Understood");
@@ -115,7 +115,7 @@ export class DevicesComponent {
         await showSnack(this.snack, "Searching actions and groups", async () => {
             for (const c of this.user.addressBook.contacts.getValue()) {
                 accounts.push({
-                    id: (await this.user.getSignerIdentityDarc(c.darcID)).id,
+                    id: (await this.user.retrieveSignerIdentityDarc(c.darcID)).id,
                     name: c.credPublic.alias.getValue(),
                 });
             }

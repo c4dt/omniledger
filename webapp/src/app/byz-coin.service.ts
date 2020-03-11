@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {ByzCoinBS, ByzCoinBuilder, Instances, User} from "observable_dynacred";
+import {byzcoin, ByzCoinBuilder, User} from "observable_dynacred";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {RosterWSConnection} from "@dedis/cothority/network/connection";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
@@ -64,16 +64,16 @@ export class ByzCoinService extends ByzCoinBuilder {
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
         await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
         logger("Done connecting", 100);
-        this.inst = await Instances.fromScratch(this.db, this.bc);
+        this.inst = await byzcoin.Instances.fromScratch(this.db, this.bc);
     }
 
     async loadUser(): Promise<void> {
-        this.user = await this.getUserFromDB();
+        this.user = await this.retrieveUserByDB();
     }
 
     async hasUser(base = "main"): Promise<boolean> {
         try {
-            await this.getUserKeyCredID(base);
+            await this.retrieveUserKeyCredID(base);
             return true;
         } catch(e){
             Log.warn("while checking user:", e);

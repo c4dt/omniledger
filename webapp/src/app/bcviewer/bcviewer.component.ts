@@ -45,11 +45,11 @@ export class BcviewerComponent implements OnInit {
 
     async ngOnInit() {
         this.scRPC = new SkipchainRPC(this.bcs.conn);
-        const sbBlocks = await this.scRPC.getUpdateChain(this.bcs.bs.bc.genesisID, false);
+        const sbBlocks = await this.scRPC.getUpdateChain(this.bcs.bc.genesisID, false);
         sbBlocks.forEach((block) => this.updateBlock(block));
         // TODO: there is a race-condition where a block is created between
         //  the getUpdateChain and the subscription to the getNewBlocks.
-        (await this.bcs.bs.bc.getNewBlocks()).subscribe((block) => this.updateBlock(block));
+        (await this.bcs.bc.getNewBlocks()).subscribe((block) => this.updateBlock(block));
     }
 }
 
@@ -98,7 +98,7 @@ export class ShowBlockComponent {
 
     updateVars() {
         this.roster = this.data.sb.roster.list.slice(1).map((l) => l.description);
-        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(this.bcs.bs.bc, txr, index));
+        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(this.bcs.bc, txr, index));
     }
 
     async goBlock(l: LinkBlock) {

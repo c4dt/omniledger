@@ -33,7 +33,7 @@ export class ContactInfoComponent implements OnInit {
     async ngOnInit() {
         this.pub = this.data.contact.credPublic;
         this.config = this.data.contact.credConfig;
-        this.signerBS = await this.user.getCredentialSignerBS(this.data.contact);
-        this.addressBook = await this.user.getAddressBook(this.pub);
+        this.signerBS = await this.user.retrieveCredentialSignerBS(this.data.contact);
+        this.addressBook = await this.user.retrieveAddressBook(this.pub);
     }
 }

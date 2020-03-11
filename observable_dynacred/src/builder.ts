@@ -49,7 +49,9 @@ export class ByzCoinBuilder extends ByzCoinBS {
     public static readonly versionMigrate = 1;
 
     constructor(bid: ByzCoinBS) {
-        super(bid.bc, bid.db, bid.inst);
+        if (bid) {
+            super(bid.bc, bid.db, bid.inst);
+        }
     }
 
     public async retrieveAddressBook(cp: CredentialPublic): Promise<AddressBook> {

@@ -19,12 +19,12 @@ export class CredentialComponent implements OnInit {
     config: CredentialConfig;
     addressBook: AddressBook;
 
-    constructor(private bcs: ByzCoinService) {
+    constructor(public bcs: ByzCoinService) {
     }
 
     async ngOnInit() {
         this.pub = this.credStruct.credPublic;
         this.config = this.credStruct.credConfig;
-        this.addressBook = await this.bcs.getAddressBook(this.pub);
+        this.addressBook = await this.bcs.retrieveAddressBook(this.pub);
     }
 }

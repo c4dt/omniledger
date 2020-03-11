@@ -18,14 +18,14 @@ import {
     ABActionsBS,
     ABContactsBS,
     ABGroupsBS,
-    ActionBS,
+    ActionBS, byzcoin,
     CredentialStructBS,
-    DarcBS,
     KeyPair,
     User,
     UserSkeleton
 } from "observable_dynacred";
 import {UserService} from "src/app/user.service";
+type DarcBS = byzcoin.DarcBS;
 
 @Component({
     selector: "app-contacts",
@@ -112,7 +112,7 @@ export class ContactsComponent implements OnInit {
 
                         progress(90, "sending to OmniLedger");
                         tx.createUser(newUser, Long.fromNumber(1e6));
-                        await tx.send();
+                        await tx.sendCoins();
                         return newUser;
                     });
                 const url = this.location.prepareExternalUrl("/register?ephemeral=" +
@@ -181,7 +181,7 @@ export class ContactsComponent implements OnInit {
             await showTransactions(this.dialog, "Adding new device", async (progress: TProgress) => {
 
                 progress(30, "Checking if we have the right to recover " + c.credPublic.alias.getValue());
-                const cSign = await this.user.getCredentialSignerBS(c);
+                const cSign = await this.user.retrieveCredentialSignerBS(c);
                 if ((await this.user.bc.checkAuthorization(this.user.bc.genesisID, cSign.getValue().getBaseID(),
                     IdentityWrapper.fromIdentity(this.user.kiSigner))).length === 0) {
                     return showDialogInfo(this.dialog, "No recovery",

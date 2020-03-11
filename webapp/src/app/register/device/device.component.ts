@@ -5,8 +5,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import Log from "@dedis/cothority/log";
 
 import {Router} from "@angular/router";
-import {showDialogOKC, showTransactions, TProgress} from "../../../lib/Ui";
-import {User} from "observable_dynacred";
+import {showDialogOKC, showTransactions, TProgress} from "src/lib/Ui";
 import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
@@ -37,7 +36,7 @@ export class DeviceComponent implements OnInit {
             await showTransactions(this.dialog, "Attaching to existing user",
                 async (progress: TProgress) => {
                     progress(50, "Attaching new device");
-                    this.bcs.user = await this.bcs.getUserFromURL(window.location.href);
+                    this.bcs.user = await this.bcs.retrieveUserByURL(window.location.href);
                 });
             await this.router.navigate(["/"]);
         } catch (e) {

@@ -12,7 +12,7 @@ import {AttributeInstanceSetBS, CredentialStructBS, EAttributesPublic, ECredenti
 import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {UserSkeleton} from "./userSkeleton";
 import {CoinBS} from "./byzcoin/coinBS";
-import {CredentialTransaction} from "src/credentialTransaction";
+import {CredentialTransaction} from "./credentialTransaction";
 
 export class AddressBook {
     constructor(public readonly contacts: ABContactsBS,

@@ -36,16 +36,13 @@ export class RegisterComponent implements OnInit {
             if (await this.bcs.hasUser()) {
                 const overwrite = await showDialogOKC(this.dialog, "Overwrite user?",
                     "There seems to be a user already stored in this browser - do you want to overwrite it?");
-                if (overwrite) {
-                    Log.lvl1("overwriting existing user");
-                    await this.bcs.user.clearDB();
-                    window.location.reload();
-                } else {
-                    return await this.router.navigate(["/"]);
+                if (!overwrite) {
+                    window.location.href = "https://c4dt.org";
+                    return;
                 }
-            } else {
-                this.registering = 1;
+                Log.lvl1("overwriting existing user");
             }
+            this.registering = 1;
         } else {
             this.register = true;
             this.registerForm = new FormGroup({
@@ -81,7 +78,7 @@ export class RegisterComponent implements OnInit {
                     } else {
                         Log.lvl2("attaching to existing user and replacing password");
                         progress(30, "Creating User");
-                        await this.bcs.getUserFromEphemeral(keyPair);
+                        await this.bcs.retrieveUserByEphemeral(keyPair);
                     }
                     Log.lvl1("verifying registration");
                     progress(90, "Loading new user");
