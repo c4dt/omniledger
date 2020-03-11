@@ -8,8 +8,8 @@ import Long from "long";
 import {ByzCoinRPC, ClientTransaction, CONFIG_INSTANCE_ID, InstanceID, StateChangeBody} from "@dedis/cothority/byzcoin";
 import {SkipBlock} from "@dedis/cothority/skipchain";
 import {Log} from "@dedis/cothority";
-import {AddTxResponse} from "@c4dt/cothority/byzcoin/proto/requests";
-import {IIdentity} from "@c4dt/cothority/darc";
+import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
+import {IIdentity} from "@dedis/cothority/darc";
 
 export interface IDataBase {
     get(key: string): Promise<Buffer | undefined>;

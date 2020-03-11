@@ -131,6 +131,6 @@ export class Genesis extends ByzCoinBuilder {
         const tx = new CredentialTransaction(this.bc, this.spawner, this.coin);
         tx.createUser(userFactory, Long.fromNumber(1e9));
         await tx.sendCoins(2);
-        return this.getUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
+        return this.retrieveUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }

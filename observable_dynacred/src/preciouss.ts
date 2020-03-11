@@ -1,8 +1,5 @@
 import {BehaviorSubject, Observable} from "rxjs";
-import {map, pairwise} from "rxjs/operators";
-import {mergeMap} from "rxjs/internal/operators/mergeMap";
-import {startWith} from "rxjs/internal/operators/startWith";
-import {filter} from "rxjs/internal/operators/filter";
+import {filter, map, mergeMap, pairwise, startWith} from "rxjs/operators";
 
 export interface SecondObs<S, D> {
     source: Observable<S[]>;
@@ -14,7 +11,11 @@ export interface SecondObs<S, D> {
 
 /**
  * Creates a second order observable from source S that emits an array of
- * BehaviorSubjecets<D>
+ * BehaviorSubjecets<D>.
+ *
+ * It is my preciouss method which took me two days to write but turned out to be unusable :( Perhaps somebody else
+ * will have the possibility to use it?
+ *
  * @param sob
  * @constructor
  */
@@ -54,29 +55,5 @@ export function ObservableHO<S extends Observable<Q>, Q, D>(sob: SecondObs<S, D>
             return rs.dest;
         })
     );
-}
-
-export async function ObservableToBS<T>(src: Observable<T>): Promise<BehaviorSubject<T>> {
-    return new Promise((resolve) => {
-        let bs: BehaviorSubject<T>;
-        src.subscribe((next) => {
-            if (bs === undefined) {
-                bs = new BehaviorSubject(next);
-                resolve(bs);
-            } else {
-                bs.next(next);
-            }
-        })
-    })
-}
-
-export function ConvertBS<S, D>(src: BehaviorSubject<S>, convert: IConvert<S, D>): BehaviorSubject<D> {
-    const bs = new BehaviorSubject(convert(src.getValue()));
-    src.pipe(map(convert)).subscribe(bs);
-    return bs;
-}
-
-export interface IConvert<S, D> {
-    (src: S): D;
 }
 

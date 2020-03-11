@@ -15,7 +15,7 @@ describe("User class should", async () => {
         const user = await bct.createUser("new user");
 
         await user.save();
-        const user2 = await bct.getUserFromDB(user.dbBase);
+        const user2 = await bct.retrieveUserByDB(user.dbBase);
         expect(user2.kpp).toEqual(user.kpp);
         expect(user2.credStructBS.id).toEqual(user.credStructBS.id);
     });
@@ -30,7 +30,7 @@ describe("User class should", async () => {
         const dbKP = `main:${User.keyPriv}`;
 
         await db.set(dbKP, Buffer.alloc(0));
-        await expectAsync(bct.getUserFromDB()).toBeRejected();
+        await expectAsync(bct.retrieveUserByDB()).toBeRejected();
 
         const migrate: IMigrate = {
             keyIdentity: user.kpp.priv.marshalBinary().toString("hex"),
@@ -40,21 +40,21 @@ describe("User class should", async () => {
             }
         };
         await db.setObject(User.keyMigrate, migrate);
-        await expectAsync(bct.getUserFromDB()).toBeResolved();
+        await expectAsync(bct.retrieveUserByDB()).toBeResolved();
 
         const mig = await db.get(User.keyMigrate);
         expect(mig).toBeDefined();
         if (mig) {
             expect(mig.length).toBe(0);
         }
-        await expectAsync(bct.getUserFromDB()).toBeResolved();
+        await expectAsync(bct.retrieveUserByDB()).toBeResolved();
 
         await db.set(dbKP, Buffer.alloc(0));
-        await expectAsync(bct.getUserFromDB()).toBeRejected();
+        await expectAsync(bct.retrieveUserByDB()).toBeRejected();
 
         migrate.version--;
         await db.setObject(User.keyMigrate, migrate);
-        await expectAsync(bct.getUserFromDB()).toBeRejected();
+        await expectAsync(bct.retrieveUserByDB()).toBeRejected();
     });
 
     it("connect to a new device", async () => {
@@ -79,7 +79,7 @@ describe("User class should", async () => {
         await nu.credStructBS.credDevices.pipe(filter(im => im.map.size == 2), first()).toPromise();
 
         Log.lvl2("connecting to new device", ephemeralIdentity.secret);
-        const nu2 = await bct.getUserFromURL(nu.getUrlForDevice(ephemeralIdentity.secret));
+        const nu2 = await bct.retrieveUserByURL(nu.getUrlForDevice(ephemeralIdentity.secret));
         nu2.credStructBS.credPublic.alias.subscribe(a => h.push(a));
         await h.resolve(["newUser"]);
 

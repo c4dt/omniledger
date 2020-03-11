@@ -19,9 +19,9 @@ describe("Transactions should", () => {
         const d = tx.spawnDarcBasic("darc 1", [user.kiSigner]);
         await tx.sendCoins(10);
 
-        const coinInst1 = await user.getCoinBS(coin1.id);
-        const coinInst2 = await user.getCoinBS(coin2.id);
-        const darcInst = await user.getDarcBS(d.getBaseID());
+        const coinInst1 = await user.retrieveCoinBS(coin1.id);
+        const coinInst2 = await user.retrieveCoinBS(coin2.id);
+        const darcInst = await user.retrieveDarcBS(d.getBaseID());
 
         expect(coinInst1.getValue().id).toEqual(CoinInstance.coinIID(coinIDPreHash1));
         expect(coinInst2.getValue().id).toEqual(CoinInstance.coinIID(coinIDPreHash2));

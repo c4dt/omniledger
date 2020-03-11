@@ -9,27 +9,29 @@ import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
 
 describe("Signers should", () => {
-    it("should add and remove devices", async () => {
+    it("add and remove devices", async () => {
         const bct = await BCTestEnv.start();
         const user = await bct.createUser("add remove devices");
 
         const history = new HistoryObs();
-        user.credSignerBS.devices.getOHO().subscribe(
+        user.credSignerBS.devices.subscribe(
             devs => {
                 history.push("new:" +
-                    devs.map(dev => dev.getValue().getValue().description.toString()).join("--"));
+                    devs.map(dev => dev.getValue().description.toString()).join("--"));
             }
         );
         await history.resolve(["new:device:initial"]);
 
         // Stress-test the system - this broke previously.
+        let newStr = "new:device:initial";
         for (let i = 0; i < 2; i++) {
             Log.lvl2("creating darc", i);
             const kp = KeyPair.rand();
             await user.executeTransactions(tx => {
                 user.credSignerBS.devices.create(tx, "test" + i, [kp.signer()])
             });
-            await history.resolve(["new:device:test" + i]);
+            newStr += "--device:test" + i;
+            await history.resolve([newStr]);
         }
     });
 
@@ -38,8 +40,8 @@ describe("Signers should", () => {
         const history = new HistoryObs();
         const user = await bct.createUser("crdev");
 
-        user.credSignerBS.devices.getOHO().subscribe(devs => {
-            devs.forEach(dev => history.push(`${dev.getValue().getValue().description.toString()}`))
+        user.credSignerBS.devices.subscribe(devs => {
+            devs.forEach(dev => history.push(`${dev.getValue().description.toString()}`))
         });
         await history.resolve(["device:initial"]);
 
@@ -48,7 +50,7 @@ describe("Signers should", () => {
             user.credSignerBS.devices.create(tx, "new", [kp.signer()]);
         });
 
-        await history.resolve(["device:new"]);
+        await history.resolve(["device:initial","device:new"]);
     });
 
     it("be able to use recoveries", async () => {
@@ -68,7 +70,7 @@ describe("Signers should", () => {
 
         Log.lvl2("Creating recovery user and signing up for recovery");
         // Recover user
-        const cSign = await bct.getCredentialSignerBS(user.credStructBS);
+        const cSign = await bct.retrieveCredentialSignerBS(user.credStructBS);
         const eph = SignerEd25519.random();
         await other.executeTransactions(tx => {
             cSign.devices.create(tx, "recovered", [eph]);
@@ -78,7 +80,7 @@ describe("Signers should", () => {
         await user.credSignerBS.devices.pipe(filter(devs => devs.length === 2), first()).toPromise();
 
         Log.lvl2("Do the recovery into a new user");
-        const recovered = await bct.getUser(user.credStructBS.id, eph.secret.marshalBinary(), "newMain");
+        const recovered = await bct.retrieveUser(user.credStructBS.id, eph.secret.marshalBinary(), "newMain");
         await recovered.credSignerBS.devices.pipe(filter(devs => devs.length === 2), first()).toPromise();
         Log.lvl2("Change the name");
         // Change the name

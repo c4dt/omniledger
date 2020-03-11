@@ -1,11 +1,7 @@
 /**
- * ContactList wraps a list of credentialIDs in a set to be able to do add,
- * rm, has and convert it back to a long buffer again.
- * As the existing sets will store happily Buffer.from("1") and
- * Buffer.from("1") twice, this class converts all buffer to hex-codes, and
- * then back again.
+ * AddressBook holds the contacts, groups and actions of a user.
  */
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import Long from "long";
 
 import {InstanceID} from "@dedis/cothority/byzcoin";
@@ -14,7 +10,6 @@ import {Darc, IdentityDarc, IIdentity} from "@dedis/cothority/darc";
 
 import {AttributeInstanceSetBS, CredentialStructBS, EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
-import {ObservableHO} from "./observableHO";
 import {UserSkeleton} from "./userSkeleton";
 import {CoinBS} from "./byzcoin/coinBS";
 import {CredentialTransaction} from "src/credentialTransaction";
@@ -34,14 +29,6 @@ export class ABContactsBS extends BehaviorSubject<CredentialStructBS[]> {
     ) {
         super(bscs.getValue());
         bscs.subscribe(this);
-    }
-
-    public getOHO(): Observable<BehaviorSubject<CredentialStructBS>[]> {
-        return ObservableHO({
-            source: this,
-            convert: src => Promise.resolve(new BehaviorSubject(src)),
-            srcStringer: src => src.id.toString("hex"),
-        });
     }
 
     public create(tx: CredentialTransaction, user: UserSkeleton, initial = Long.fromNumber(0)) {

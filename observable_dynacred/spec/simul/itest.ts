@@ -81,7 +81,7 @@ export class BCTestEnv extends Genesis {
         await this.user.executeTransactions(tx => {
             tx.createUser(skel, Long.fromNumber(1e6));
         }, 10);
-        const u = this.getUser(skel.credID, skel.keyPair.priv.marshalBinary(), `db${alias}`);
+        const u = this.retrieveUser(skel.credID, skel.keyPair.priv.marshalBinary(), `db${alias}`);
         Log.lvl3("finished creating new user");
         return u;
     }

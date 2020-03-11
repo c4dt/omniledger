@@ -8,13 +8,10 @@
  * - Device - extends signer to represent a device with one key
  * - Recover - extends a signer to represent a signer allowed to recover
  */
-import {BehaviorSubject, Observable} from "rxjs";
-
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import {InstanceID} from "@dedis/cothority/byzcoin";
 
 import {CredentialInstanceMapBS} from "./credentialStructBS";
-import {ObservableHO} from "./observableHO";
 import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {CredentialTransaction} from "./credentialTransaction";
 
@@ -32,14 +29,6 @@ export class CSTypesBS extends DarcsBS {
                 public readonly prefix: string,
                 dbs: DarcsBS) {
         super(dbs);
-    }
-
-    public getOHO(): Observable<BehaviorSubject<DarcBS>[]> {
-        return ObservableHO({
-            source: this,
-            convert: src => Promise.resolve(new BehaviorSubject(src)),
-            srcStringer: src => src.getValue().getBaseID().toString("hex"),
-        })
     }
 
     public create(tx: CredentialTransaction, name: string, identity: IIdentity[]): Darc {

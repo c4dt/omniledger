@@ -7,7 +7,7 @@ import {Attribute, Credential, CredentialsInstance, CredentialStruct} from "@ded
 import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
 import {Point, PointFactory} from "@dedis/kyber";
 
-import {ConvertBS} from "./observableHO";
+import {ConvertBS} from "./observableUtils";
 import {CredentialTransaction} from "./credentialTransaction";
 
 export enum ECredentials {

@@ -31,11 +31,11 @@ export class HistoryObs {
     public async expect(newEntries: string[], succeed: boolean, complete?: boolean, silent?: boolean): Promise<void> {
         return new Promise(async (res, rej) => {
             try {
-                for (let i = 0; i < 10 && this.entries.length < newEntries.length; i++) {
+                for (let i = 0; i < 5 && this.entries.length < newEntries.length; i++) {
                     if (!silent) {
                         Log.lvl3("waiting", i, this.entries.length, newEntries.length);
                     }
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 }
                 if (!silent) {
                     if (succeed) {
