@@ -1,13 +1,18 @@
 <div>
-    <p>Add new secret data</p>
-    <div class="form-group">
-        <label for="file">Choose File</label>
-        <input type="file"
-               id="file"
-               (change)="handleFileInput($event)">
-    </div>
-    <p>
-        <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color='primary' [mat-dialog-close]="file" cdkFocusInitial>Store Secret</button>
-    </p>
+  <p>Add new secret data</p>
+  <div class="form-group">
+    <label for="file">Choose File</label>
+    <input type="file" id="file" (change)="handleFileInput($event)" />
+  </div>
+  <p>
+    <button mat-raised-button mat-dialog-close>Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [mat-dialog-close]="file"
+      cdkFocusInitial
+    >
+      Store Secret
+    </button>
+  </p>
 </div>

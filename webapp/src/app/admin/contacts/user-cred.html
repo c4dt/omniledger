@@ -1,35 +1,54 @@
 <div>
-    <h2>Create a new user</h2>
-    <p>
-        <mat-form-field class="width100">
-            <input matInput [(ngModel)]="data.alias" placeholder="Alias for new user">
-        </mat-form-field>
-        <mat-form-field class="width100">
-            <input matInput [(ngModel)]="data.email" placeholder="Email for new user">
-        </mat-form-field>
-        <mat-form-field class="width100" *ngIf="showViews">
-            <mat-label>Default view for user</mat-label>
-            <mat-select [(value)]="data.view">
-                <mat-option *ngFor="let view of views" [value]="view">
-                    {{view | titlecase}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-        <mat-form-field *ngIf="showGroups">
-            <mat-label>Groups for user</mat-label>
-            <mat-select [(value)]="data.groups" multiple>
-                <mat-option *ngFor="let group of data.groupsAvail" [value]="group">{{group}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-        <mat-form-field *ngIf="showGroups">
-            <mat-label>Group for recovery</mat-label>
-            <mat-select [(value)]="data.recovery">
-                <mat-option *ngFor="let group of recoveryGroups" [value]="group">{{group}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-    </p>
-    <p>
-        <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color='primary' [mat-dialog-close]="data" cdkFocusInitial>Create</button>
-    </p>
+  <h2>Create a new user</h2>
+  <p>
+    <mat-form-field class="width100">
+      <input
+        matInput
+        [(ngModel)]="data.alias"
+        placeholder="Alias for new user"
+      />
+    </mat-form-field>
+    <mat-form-field class="width100">
+      <input
+        matInput
+        [(ngModel)]="data.email"
+        placeholder="Email for new user"
+      />
+    </mat-form-field>
+    <mat-form-field class="width100" *ngIf="showViews">
+      <mat-label>Default view for user</mat-label>
+      <mat-select [(value)]="data.view">
+        <mat-option *ngFor="let view of views" [value]="view">
+          {{view | titlecase}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field *ngIf="showGroups">
+      <mat-label>Groups for user</mat-label>
+      <mat-select [(value)]="data.groups" multiple>
+        <mat-option *ngFor="let group of data.groupsAvail" [value]="group"
+          >{{group}}</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field *ngIf="showGroups">
+      <mat-label>Group for recovery</mat-label>
+      <mat-select [(value)]="data.recovery">
+        <mat-option *ngFor="let group of recoveryGroups" [value]="group"
+          >{{group}}</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+  </p>
+  <p>
+    <button mat-raised-button mat-dialog-close>Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [mat-dialog-close]="data"
+      cdkFocusInitial
+    >
+      Create
+    </button>
+  </p>
 </div>

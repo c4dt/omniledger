@@ -1,12 +1,19 @@
 <div>
-    <h2>Add a new Device</h2>
-    <p>
-        <mat-form-field class="width100">
-            <input matInput [(ngModel)]="data" placeholder="Name for device">
-        </mat-form-field>
-    </p>
-    <p>
-        <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color='primary' [mat-dialog-close]="data" cdkFocusInitial>Create</button>
-    </p>
+  <h2>Add a new Device</h2>
+  <p>
+    <mat-form-field class="width100">
+      <input matInput [(ngModel)]="data" placeholder="Name for device" />
+    </mat-form-field>
+  </p>
+  <p>
+    <button mat-raised-button mat-dialog-close>Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [mat-dialog-close]="data"
+      cdkFocusInitial
+    >
+      Create
+    </button>
+  </p>
 </div>

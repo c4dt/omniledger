@@ -2,5 +2,10 @@
 <ul>
   <li>Name: {{ coin.name.toString() }}</li>
   <li>Value: {{ coin.value.toString() }}</li>
-  <li>Darc: <a [routerLink]="'/explorer/' + coin.darcID.toString('hex')">{{coin.darcID.toString('hex')}}</a> </li>
+  <li>
+    Darc:
+    <a [routerLink]="'/explorer/' + coin.darcID.toString('hex')">{{
+      coin.darcID.toString("hex")
+    }}</a>
+  </li>
 </ul>

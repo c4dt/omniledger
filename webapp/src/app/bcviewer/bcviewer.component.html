@@ -1,21 +1,24 @@
 <div *ngIf="blocks.length > 0">
-    <mat-expansion-panel>
-        <mat-expansion-panel-header>
-            <mat-panel-title>
-                Latest Blocks
-            </mat-panel-title>
-            <mat-panel-description>
-                The four latest blocks
-            </mat-panel-description>
-        </mat-expansion-panel-header>
-        <div fxFlex="auto" fxLayout="row" fxLayoutAlign="center">
-            <div style="border: 1px solid black; margin: 2px; padding: 2px;"
-                 *ngFor="let block of blocks"
-                 (click)="showBlock(block)" class="link">
-                Block-#: {{block.sb.index}}<br>
-                Time: {{block.timeStr}}<br>
-                TXs: {{block.body.txResults.length}}
-            </div>
-        </div>
-    </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Latest Blocks
+      </mat-panel-title>
+      <mat-panel-description>
+        The four latest blocks
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <div fxFlex="auto" fxLayout="row" fxLayoutAlign="center">
+      <div
+        style="border: 1px solid black; margin: 2px; padding: 2px;"
+        *ngFor="let block of blocks"
+        (click)="showBlock(block)"
+        class="link"
+      >
+        Block-#: {{ block.sb.index }}<br />
+        Time: {{ block.timeStr }}<br />
+        TXs: {{ block.body.txResults.length }}
+      </div>
+    </div>
+  </mat-expansion-panel>
 </div>
