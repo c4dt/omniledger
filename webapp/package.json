@@ -7,8 +7,8 @@
     "build": "ng build",
     "build:prod": "ng build --prod",
     "test": "ng test",
-    "lint": "ng lint",
-    "lint:fix": "ng lint --fix",
+    "lint": "ng lint && prettier --check 'src/**/*.html'",
+    "lint:fix": "ng lint --fix && prettier --write 'src/**/*.html'",
     "e2e": "ng e2e"
   },
   "private": true,
@@ -60,6 +60,7 @@
     "karma-firefox-launcher": "^1.2.0",
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^0.2.2",
+    "prettier": "^1.19.1",
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.11.0",
