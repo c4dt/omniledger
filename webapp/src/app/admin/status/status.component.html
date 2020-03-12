@@ -6,7 +6,11 @@
     <button mat-button (click)="deleteUser()">DELETE USER</button>
   </li>
   <li><a href="/omniledger/c4dt">C4DT access</a></li>
-  <li><a href="/omniledger/admin">Admin access (potentially dangerous to your account)</a></li>
+  <li>
+    <a href="/omniledger/admin"
+      >Admin access (potentially dangerous to your account)</a
+    >
+  </li>
 </ul>
 <ul>
   <li *ngFor="let node of nodes">

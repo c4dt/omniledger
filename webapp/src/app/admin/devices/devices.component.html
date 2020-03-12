@@ -1,16 +1,18 @@
 <h2>Available Devices</h2>
 <ul>
   <li *ngFor="let device of devices">
-    {{device.name}} - <button mat-button (click)="deleteDevice(device)">Delete</button>
-    - <button mat-button (click)="rename(device, 'devices')">Rename</button>
+    {{ device.name }} -
+    <button mat-button (click)="deleteDevice(device)">Delete</button> -
+    <button mat-button (click)="rename(device, 'devices')">Rename</button>
   </li>
   <button mat-stroked-button (click)="addDevice()">Add Device</button>
 </ul>
 <h2>Recovery accounts</h2>
 <ul>
   <li *ngFor="let device of recovery">
-    {{device.name}} - <button mat-button (click)="deleteRecovery(device)">Delete</button>
-    - <button mat-button (click)="rename(device, 'recovery')">Rename</button>
+    {{ device.name }} -
+    <button mat-button (click)="deleteRecovery(device)">Delete</button> -
+    <button mat-button (click)="rename(device, 'recovery')">Rename</button>
   </li>
   <button mat-stroked-button (click)="addRecovery()">Add Recovery</button>
 </ul>

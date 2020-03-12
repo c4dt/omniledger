@@ -7,7 +7,9 @@
     <button mat-button (click)="calypsoShowAccess(sd)">Show Access</button>
   </li>
 </ul>
-<button mat-raised-button color="primary" (click)="calypsoAddData()">Add Data</button>
+<button mat-raised-button color="primary" (click)="calypsoAddData()">
+  Add Data
+</button>
 <h3>Access to other data</h3>
 <ul>
   <li *ngFor="let user of calypsoOtherKeys | keyvalue">
@@ -17,7 +19,9 @@
       <ul>
         <li *ngFor="let fb of user.value">
           {{ fb.name }} -
-          <button mat-button (click)="calypsoDownload(user.key, fb)">Download</button>
+          <button mat-button (click)="calypsoDownload(user.key, fb)">
+            Download
+          </button>
         </li>
       </ul>
     </div>

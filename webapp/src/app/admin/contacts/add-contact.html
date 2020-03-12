@@ -1,13 +1,25 @@
 <div>
-    <h2>Link a contact</h2>
-    <p>
-        The userID is available in the <b>Status</b> tab.
-        <mat-form-field class="width100">
-            <input class="width100" matInput [(ngModel)]="userID" placeholder="Enter userID of your contact">
-        </mat-form-field>
-    </p>
-    <p>
-        <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color='primary' [mat-dialog-close]="userID" cdkFocusInitial>Ok</button>
-    </p>
+  <h2>Link a contact</h2>
+  <p>
+    The userID is available in the <b>Status</b> tab.
+    <mat-form-field class="width100">
+      <input
+        class="width100"
+        matInput
+        [(ngModel)]="userID"
+        placeholder="Enter userID of your contact"
+      />
+    </mat-form-field>
+  </p>
+  <p>
+    <button mat-raised-button mat-dialog-close>Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [mat-dialog-close]="userID"
+      cdkFocusInitial
+    >
+      Ok
+    </button>
+  </p>
 </div>

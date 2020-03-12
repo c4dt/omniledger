@@ -1,48 +1,70 @@
 <h2>Contacts</h2>
 <ul>
-    <li *ngFor="let contact of uData.contacts">
-        <button mat-button (click)="contactShow(contact)">{{ contact.alias | titlecase }}</button>
-        -
-        <button mat-button (click)="transferCoin(contact)">Transfer</button>
-        -
-        <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
-        -
-        <button mat-button (click)="contactRecover(contact)">Recover</button>
-        -
-        <button mat-button (click)="contactDelete(contact)">Unlink</button>
-    </li>
+  <li *ngFor="let contact of uData.contacts">
+    <button mat-button (click)="contactShow(contact)">
+      {{ contact.alias | titlecase }}
+    </button>
+    -
+    <button mat-button (click)="transferCoin(contact)">Transfer</button>
+    -
+    <button mat-button (click)="calypsoSearch(contact)">Search Data</button>
+    -
+    <button mat-button (click)="contactRecover(contact)">Recover</button>
+    -
+    <button mat-button (click)="contactDelete(contact)">Unlink</button>
+  </li>
 </ul>
 <div style="padding:10px;">
-    <button mat-stroked-button color="primary" (click)="createContact()">Create Contact</button>
-    <button mat-stroked-button color="primary" (click)="addContact()">Link Contact</button>
+  <button mat-stroked-button color="primary" (click)="createContact()">
+    Create Contact
+  </button>
+  <button mat-stroked-button color="primary" (click)="addContact()">
+    Link Contact
+  </button>
 </div>
 
 <h2>Groups</h2>
 <ul>
-    <li *ngFor="let group of groups">
-        <button mat-button (click)="groupShow(group)"> {{ group.darc.description.toString() | titlecase }}</button>
-	-
-        <button mat-button (click)="changeGroups(group, 'contact,group')">Change users</button>
-        -
-        <button mat-button (click)="groupDelete(group)">Unlink group</button>
-    </li>
+  <li *ngFor="let group of groups">
+    <button mat-button (click)="groupShow(group)">
+      {{ group.darc.description.toString() | titlecase }}
+    </button>
+    -
+    <button mat-button (click)="changeGroups(group, 'contact,group')">
+      Change users
+    </button>
+    -
+    <button mat-button (click)="groupDelete(group)">Unlink group</button>
+  </li>
 </ul>
 <div style="padding:10px;">
-    <button mat-stroked-button color="primary" (click)="groupCreate()">Create Group</button>
-    <button mat-stroked-button color="primary" (click)="groupAdd()">Link Group</button>
+  <button mat-stroked-button color="primary" (click)="groupCreate()">
+    Create Group
+  </button>
+  <button mat-stroked-button color="primary" (click)="groupAdd()">
+    Link Group
+  </button>
 </div>
 
 <h2>Actions</h2>
 <ul>
-    <li *ngFor="let action of actions">
-        <button mat-button (click)="actionShow(action)"> {{ action.darc.description.toString() | titlecase }}</button>
-	-
-        <button mat-button (click)="changeGroups(action, 'group')">Change groups</button>
-        -
-        <button mat-button (click)="actionDelete(action)">Unlink action</button>
-    </li>
+  <li *ngFor="let action of actions">
+    <button mat-button (click)="actionShow(action)">
+      {{ action.darc.description.toString() | titlecase }}
+    </button>
+    -
+    <button mat-button (click)="changeGroups(action, 'group')">
+      Change groups
+    </button>
+    -
+    <button mat-button (click)="actionDelete(action)">Unlink action</button>
+  </li>
 </ul>
 <div style="padding:10px;">
-    <button mat-stroked-button color="primary" (click)="actionCreate()">Create Action</button>
-    <button mat-stroked-button color="primary" (click)="actionAdd()">Link Action</button>
+  <button mat-stroked-button color="primary" (click)="actionCreate()">
+    Create Action
+  </button>
+  <button mat-stroked-button color="primary" (click)="actionAdd()">
+    Link Action
+  </button>
 </div>

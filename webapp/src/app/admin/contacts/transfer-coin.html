@@ -1,12 +1,23 @@
 <div>
-    <h2>Transfer coins to {{data.alias | titlecase }}:</h2>
-    <p>
-        <mat-form-field class="width100">
-            <input matInput [(ngModel)]="data.coins" placeholder="Enter number of coins">
-        </mat-form-field>
-    </p>
-    <p>
-        <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color='primary' [mat-dialog-close]="data.coins" cdkFocusInitial>Transfer</button>
-    </p>
+  <h2>Transfer coins to {{data.alias | titlecase }}:</h2>
+  <p>
+    <mat-form-field class="width100">
+      <input
+        matInput
+        [(ngModel)]="data.coins"
+        placeholder="Enter number of coins"
+      />
+    </mat-form-field>
+  </p>
+  <p>
+    <button mat-raised-button mat-dialog-close>Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [mat-dialog-close]="data.coins"
+      cdkFocusInitial
+    >
+      Transfer
+    </button>
+  </p>
 </div>

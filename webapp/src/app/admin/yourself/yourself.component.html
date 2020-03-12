@@ -1,28 +1,40 @@
 <ul>
-  <li>Memory: {{uData.coinInstance.value.toNumber()}}
+  <li>
+    Memory: {{ uData.coinInstance.value.toNumber() }}
     -
     <button mat-button (click)="updateCoins()">Update</button>
   </li>
 </ul>
 <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact()">
-
   <mat-form-field class="width100">
-    <input matInput type="text" placeholder="Alias" formControlName="alias"/>
+    <input matInput type="text" placeholder="Alias" formControlName="alias" />
   </mat-form-field>
   <mat-form-field class="width100">
-    <input matInput type="text" placeholder="Your Email" formControlName="email"/>
+    <input
+      matInput
+      type="text"
+      placeholder="Your Email"
+      formControlName="email"
+    />
   </mat-form-field>
   <mat-form-field class="width100">
-    <input matInput type="text" placeholder="Your Phone" formControlName="phone"/>
+    <input
+      matInput
+      type="text"
+      placeholder="Your Phone"
+      formControlName="phone"
+    />
   </mat-form-field>
   <mat-form-field>
     <mat-label>Selected view</mat-label>
     <mat-select formControlName="view">
       <mat-option *ngFor="let view of views" [value]="view">
-        {{view | titlecase}}
+        {{ view | titlecase }}
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <br>
-  <button mat-raised-button color="primary" class="submit-btn" type="submit">Store Data</button>
+  <br />
+  <button mat-raised-button color="primary" class="submit-btn" type="submit">
+    Store Data
+  </button>
 </form>
