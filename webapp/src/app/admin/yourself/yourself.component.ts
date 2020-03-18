@@ -8,7 +8,7 @@ import {
     EAttributesConfig,
     EAttributesPublic,
     ECredentials
-} from "observable_dynacred";
+} from "dynacred2";
 import {UserService} from "src/app/user.service";
 
 @Component({

@@ -8,7 +8,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 
 import Log from "@dedis/cothority/log";
 
-import {IUpdateCredential} from "observable_dynacred";
+import {IUpdateCredential} from "dynacred2";
 
 import {DialogTransactionComponent} from "./dialog-transaction";
 import {UserService} from "src/app/user.service";

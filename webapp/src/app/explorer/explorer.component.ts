@@ -4,7 +4,7 @@ import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 import {ByzCoinService} from "src/app/byz-coin.service";
-import {CredentialStructBS} from "observable_dynacred";
+import {CredentialStructBS} from "dynacred2";
 
 @Component({
     selector: "app-explorer",

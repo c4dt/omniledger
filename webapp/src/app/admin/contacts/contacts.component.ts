@@ -23,7 +23,7 @@ import {
     KeyPair,
     User,
     UserSkeleton
-} from "observable_dynacred";
+} from "dynacred2";
 import {UserService} from "src/app/user.service";
 type DarcBS = byzcoin.DarcBS;
 

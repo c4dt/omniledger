@@ -5,7 +5,7 @@ import {curve} from "@dedis/kyber";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {LeaderConnection} from "@dedis/cothority/network/connection";
 
-import {Genesis, IGenesisUser, User, UserSkeleton} from "observable_dynacred";
+import {Genesis, IGenesisUser, User, UserSkeleton} from "dynacred2";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {ROSTER} from "spec/support/conondes";

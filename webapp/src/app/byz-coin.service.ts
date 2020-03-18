@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {byzcoin, ByzCoinBuilder, User} from "observable_dynacred";
+import {byzcoin, ByzCoinBuilder, User} from "dynacred2";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {RosterWSConnection} from "@dedis/cothority/network/connection";
 import StatusRPC from "@dedis/cothority/status/status-rpc";

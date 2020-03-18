@@ -1,6 +1,6 @@
 import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
-import {KeyPair} from "observable_dynacred";
+import {KeyPair} from "dynacred2";
 import {filter, first} from "rxjs/operators";
 
 import Log from "@dedis/cothority/log";

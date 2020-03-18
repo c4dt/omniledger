@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {ByzCoinService} from "src/app/byz-coin.service";
-import {User} from "observable_dynacred";
+import {User} from "dynacred2";
 
 @Injectable({
   providedIn: 'root'

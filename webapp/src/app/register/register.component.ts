@@ -7,7 +7,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import Log from "@dedis/cothority/log";
 
 import {showDialogOKC, showTransactions, TProgress} from "../../lib/Ui";
-import {Genesis, KeyPair, User} from "observable_dynacred";
+import {Genesis, KeyPair, User} from "dynacred2";
 import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({

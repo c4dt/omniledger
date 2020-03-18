@@ -1,5 +1,5 @@
 {
-  "name": "observable_dynacred",
+  "name": "dynacred2",
   "version": "0.0.1",
   "description": "New dynacred library based on observables, as everything can change",
   "main": "build/index.js",

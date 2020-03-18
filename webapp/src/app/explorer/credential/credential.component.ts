@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from "@angular/core";
-import {AddressBook, CredentialConfig, CredentialPublic, CredentialStructBS} from "observable_dynacred";
+import {AddressBook, CredentialConfig, CredentialPublic, CredentialStructBS} from "dynacred2";
 import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({

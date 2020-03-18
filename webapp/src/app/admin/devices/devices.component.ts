@@ -8,7 +8,7 @@ import {Darc, IdentityDarc, IdentityEd25519} from "@dedis/cothority/darc";
 
 import {Attribute} from "@dedis/cothority/personhood/credentials-instance";
 import {showDialogInfo, showDialogOKC, showSnack, showTransactions, TProgress} from "src/lib/Ui";
-import {byzcoin, CSTypesBS, KeyPair} from "observable_dynacred";
+import {byzcoin, CSTypesBS, KeyPair} from "dynacred2";
 import {UserService} from "src/app/user.service";
 
 class Signer {

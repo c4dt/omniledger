@@ -5,7 +5,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {Router} from "@angular/router";
 
 import {storeUserCredential} from "../../../lib/Ui";
-import {EAttributesPublic, ECredentials} from "observable_dynacred";
+import {EAttributesPublic, ECredentials} from "dynacred2";
 import {UserService} from "src/app/user.service";
 
 @Component({

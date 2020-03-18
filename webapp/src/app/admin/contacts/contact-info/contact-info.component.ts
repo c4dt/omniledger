@@ -7,7 +7,7 @@ import {
     CredentialPublic,
     CredentialSignerBS,
     CredentialStructBS
-} from "observable_dynacred";
+} from "dynacred2";
 
 import {UserService} from "src/app/user.service";
 
