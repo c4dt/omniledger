@@ -23,7 +23,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         darc.subscribe(this);
     }
 
-    public evolveDarc(tx: Transaction, updates: IDarcAttr, unrestricted = false): Darc {
+    public evolve(tx: Transaction, updates: IDarcAttr, unrestricted = false): Darc {
         const newArgs = {...this.getValue().evolve(), ...updates};
         const newDarc = new Darc(newArgs);
         const cmd = unrestricted ? DarcInstance.commandEvolveUnrestricted : DarcInstance.commandEvolve;
@@ -41,7 +41,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         if (idEvolve) {
             rules.setRule(DarcInstance.ruleEvolve, toIId(idEvolve));
         }
-        this.evolveDarc(tx, {rules});
+        this.evolve(tx, {rules});
     }
 
     public addSignEvolve(tx: Transaction, idSign: IIdentity | InstanceID, idEvolve = idSign) {
@@ -50,14 +50,14 @@ export class DarcBS extends BehaviorSubject<Darc> {
         if (idEvolve) {
             rules.appendToRule(DarcInstance.ruleEvolve, toIId(idEvolve), Rule.OR);
         }
-        this.evolveDarc(tx, {rules});
+        this.evolve(tx, {rules});
     }
 
     public rmSignEvolve(tx: Transaction, id: IIdentity | InstanceID) {
         const rules = this.getValue().rules.clone();
         rules.getRule(Darc.ruleSign).remove(toIId(id).toString());
         rules.getRule(DarcInstance.ruleEvolve).remove(toIId(id).toString());
-        this.evolveDarc(tx, {rules});
+        this.evolve(tx, {rules});
     }
 }
 

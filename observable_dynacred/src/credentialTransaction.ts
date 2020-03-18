@@ -17,20 +17,24 @@ import {Darc, IIdentity} from "@dedis/cothority/darc";
 import {ICoin} from "./genesis";
 import {EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {UserSkeleton} from "./userSkeleton";
-import {Transaction} from "./byzcoin/transaction";
+import {Transaction} from "./byzcoin";
 
 export class CredentialTransaction extends Transaction {
     private cost = Long.fromNumber(0);
-    private coinInst: Instruction;
 
     constructor(bc: ByzCoinRPC, private spawner: SpawnerInstance, private coin: ICoin) {
         super(bc);
-        this.coinInst = this.invoke(coin.instance.id, CoinInstance.contractID, CoinInstance.commandFetch, []);
     }
 
     public async sendCoins(wait = 0): Promise<AddTxResponse> {
-        this.coinInst.invoke.args.push(new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(this.cost.toBytesLE())}));
-        return this.send( [this.coin.signers], wait);
+        if (this.cost.greaterThan(0)) {
+            this.unshift(Instruction.createInvoke(this.coin.instance.id, CoinInstance.contractID, CoinInstance.commandFetch,
+                [new Argument({
+                    name: CoinInstance.argumentCoins,
+                    value: Buffer.from(this.cost.toBytesLE())
+                })]));
+        }
+        return this.send([this.coin.signers], wait);
     }
 
     public spawnDarc(d: Darc): Darc {

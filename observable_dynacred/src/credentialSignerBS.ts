@@ -66,7 +66,7 @@ export class CSTypesBS extends DarcsBS {
         this.cim.rmValue(tx, oldName);
         if (darcID) {
             const dbs = this.getValue().find(d => d.getValue().getBaseID().equals(darcID));
-            dbs.evolveDarc(tx, {description: Buffer.from(`${this.prefix}:${newName}`)});
+            dbs.evolve(tx, {description: Buffer.from(`${this.prefix}:${newName}`)});
             this.signerDarcBS.rmSignEvolve(tx, darcID);
             this.signerDarcBS.addSignEvolve(tx, darcID);
         }

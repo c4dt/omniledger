@@ -83,7 +83,7 @@ export class ABGroupsBS extends DarcsBS {
         if (!d) {
             throw new Error("couldn't find group with that name");
         }
-        d.evolveDarc(tx, {description: Buffer.from(newName)});
+        d.evolve(tx, {description: Buffer.from(newName)});
     }
 }
 
@@ -120,7 +120,7 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
         if (!action) {
             throw new Error("couldn't find this action");
         }
-        action.darc.evolveDarc(tx, {description: Buffer.from(newName)});
+        action.darc.evolve(tx, {description: Buffer.from(newName)});
     }
 }
 

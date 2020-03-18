@@ -230,7 +230,7 @@ export class ContactsComponent implements OnInit {
                     async (progress) => {
                         progress(50, "Updating description");
                         await this.user.executeTransactions(tx => {
-                            g.evolveDarc(tx, {description: Buffer.from(result)})
+                            g.evolve(tx, {description: Buffer.from(result)})
                         })
                     })
             }
@@ -255,7 +255,7 @@ export class ContactsComponent implements OnInit {
                     async (progress: TProgress) => {
                         progress(50, "Storing new DARC");
                         await this.user.executeTransactions(tx => {
-                            a.evolveDarc(tx, result);
+                            a.evolve(tx, result);
                         });
                     });
             }
@@ -337,7 +337,7 @@ export class ContactsComponent implements OnInit {
                     async (progress) => {
                         progress(50, "Updating description");
                         await this.user.executeTransactions(tx => {
-                            g.evolveDarc(tx, {description: Buffer.from(result)})
+                            g.evolve(tx, {description: Buffer.from(result)})
                         })
                     })
             }

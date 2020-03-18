@@ -1,16 +1,21 @@
 # Observable Dynacred
 
-Using rxjs observables to implement a more reactive dynacred.
+This new dynacred version makes extended use of rxjs observables to implement a more reactive dynacred.
+The main goal is to remove all need of `reload` and clean up the mess that the previous dynacred has become.
+Next steps include:
+
+- calypso support for identity attributes (email, webpage)
+- sharable address-book
+- BEvm support
 
 ## Class structure
 
-### Main structures linking it all together
-
 Two main classes are used to keep all other classes together:
-- `User` holds an instance of each class needed
-- `ByzCoinBS` defines the interaction with `ByzCoin` and the caches 
+- `User` holds an instance of each class needed for a fully loaded user
+- `ByzCoinBS` defines the interaction between `ByzCoin` and the caches 
 
-User > ByzCoinBS
+```
+User > ByzCoinBuilder
   + KeyPair
   + dbBase
   + CredentialStructBS
@@ -18,11 +23,37 @@ User > ByzCoinBS
   + CoinBS
   + CredentialSignerBS
   + AddressBook
-  
+```
+
+```  
 ByzcoinBS
   + ByzCoinRPC
   + IDataBase
   + Instances
+```
+
+The following two helper classes are used throughout the code:
+
+```
+ByzCoinBuilder > ByzCoinBS
+  - retrieveAddressBook
+  - retrieveUser(|By(Ephemeral|URL|Migration|DB))
+  - retrieveUserKeyCredID
+  - retrieveCoinBS
+  - retrieveCredentialSignerBS
+  - retrieveDarcsBS
+  - retrieveDarcBS
+  - retrieveSignerDarcBS
+```
+
+```
+CredentialTransaction > Transaction
+  - sendCoins
+  - spawnDarc(|Basic)
+  - spawnCoin
+  - spawnCredential
+  - createUser
+```
 
 ### Basic credential structure definitions
 
@@ -30,6 +61,7 @@ These all stem from the `CredentialStruct` class and allow an easy way to access
 No interpretation is done that requires to query byzcoin.
 So you'll find `Buffer` and `InstanceMap`, but no `Darc` or `Coin` in these definitions.
   
+```
 CredentialStructBS > BS<CredentialStruct>
   + id, darcID
   + CredentialPublic
@@ -38,29 +70,44 @@ CredentialStructBS > BS<CredentialStruct>
   + credRecoveries: CredentialInstanceMapBS
   - getCredential(|InstanceMap)BS
   - (update|set)Credentials
+```
 
+```
 CredentialBS > BS<Credential>
   - getAttribute(|BS|Buffer|String|InstanceSet)
   - setValue
   - rmValue
-  
+```
+
+```
 CredentialInstanceMapBS > BS<InstanceMap>
   - setInstanceSet
   - setValue
   - rmValue
+```
 
+```
 Attribute(Buffer|String|Long|Point|Bool|Number|InstanceSet)BS > BS<*>
   - setValue(T)
+```
 
+```
 CredentialPublic
   + contacts, alias, ...: Attribute*BS
+```
 
+```
 CredentialConfig
   + view, spawner: Attribute*BS
+```
   
+```
 InstanceSet
+```
 
+```
 InstanceMap
+```
 
 ### Structures that fetch more information from ByzCoin
 
@@ -71,35 +118,66 @@ to `WORM` the bc-instances.
 
 #### AddressBook
 
+```
 AddressBook
   + ABContactsBS
   + ABGroupsBS
   + ABActionsBS
+```
 
+```
 ABContactsBS > BS<CredentialStructBS[]>
   - create, link, unlink, rename
+```
 
+```
 ABGroupsBS > BS<DarcsBS>
   - create, link, unlink, rename
+```
 
+```
 ABActionsBS > BS<ActionBS[]>
   - create, link, unlink, rename
+```
 
+```
 ActionBS
   + DarcBS
   + CoinBS
+```
   
 #### CredentialSigner
 
+```
 CredentialSigner > DarcBS
   + devices: CSTypesBS
   + recoveries: CSTypesBS
+```
 
+```
 CSTypesBS > DarcsBS
   - create, link, unlink, rename
+```
   
-#### Darc(s)BS
+### Classes to be integrated into dedis/ByzCoin npm
 
+```
 DarcsBS > BS<DarcBS[]>
+```
 
+```
 DarcBS > BS<Darc>
+  - evolve
+  - (set|add|rm)signEvolve
+```
+
+```
+CoinBS
+  - transfer
+```
+
+```
+Transaction
+  - send
+  - (spawn|invoke|delete)
+```
