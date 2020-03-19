@@ -10,7 +10,6 @@ import {Rule, SignerEd25519} from "@dedis/cothority/darc";
 
 import {User} from "./user";
 import {KeyPair} from "./keypair";
-import {IDataBase, Instances} from "./byzcoin/instances";
 import {TempDB} from "./tempdb";
 import {UserSkeleton} from "./userSkeleton";
 import {ByzCoinBuilder} from "./builder";
@@ -29,6 +28,17 @@ export interface ICoin {
     instance: CoinInstance;
     signers: ISigner[];
 }
+
+export interface IDataBase {
+    get(key: string): Promise<Buffer | undefined>;
+
+    getObject<T>(key: string): Promise<T | undefined>;
+
+    set(key: string, value: Buffer): Promise<void>;
+
+    setObject<T>(key: string, obj: T): Promise<void>;
+}
+
 
 export class Genesis extends ByzCoinBuilder {
     public static readonly rules = ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
@@ -58,7 +68,7 @@ export class Genesis extends ByzCoinBuilder {
         return this.genesisUser.darcID || this.genesisUser.darc.getBaseID();
     }
 
-    public static async create(priv: Scalar, createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>,
+    public static async create(priv: Scalar, createBC: (igd: IGenesisUser, db: IDataBase) => Promise<ByzCoinRPC>,
                                db?: IDataBase): Promise<Genesis> {
         const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
         const signer = [keyPair.signer()];
@@ -67,9 +77,8 @@ export class Genesis extends ByzCoinBuilder {
             db = new TempDB();
         }
         const gu = {keyPair, darc: adminDarc};
-        const bc = await createBC(gu);
-        const inst = await Instances.fromScratch(db, bc);
-        return new Genesis(new ByzCoinBS(bc, db, inst), gu);
+        const bc = await createBC(gu, db);
+        return new Genesis(new ByzCoinBS(bc, db), gu);
     }
 
     public async evolveGenesisDarc() {

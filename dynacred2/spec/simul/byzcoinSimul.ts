@@ -1,8 +1,7 @@
 // tslint:disable:max-classes-per-file
 
-import {BehaviorSubject, Subject} from "rxjs";
-import {map} from "rxjs/operators";
-import Long = require("long");
+import {BehaviorSubject, of, Subject} from "rxjs";
+import {catchError, distinctUntilChanged, filter, map, mergeMap, tap} from "rxjs/operators";
 import {createHash} from "crypto-browserify";
 
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
@@ -10,24 +9,43 @@ import {Log} from "@dedis/cothority";
 import {
     Coin,
     CoinInstance,
-    DarcInstance, SpawnerStruct
+    CredentialsInstance,
+    DarcInstance,
+    SpawnerInstance,
+    SpawnerStruct
 } from "@dedis/cothority/byzcoin/contracts";
 import {
-    ClientTransaction, CONFIG_INSTANCE_ID,
+    ClientTransaction,
+    CONFIG_INSTANCE_ID,
     InstanceID,
     Instruction,
     StateChangeBody
 } from "@dedis/cothority/byzcoin";
 import {SkipBlock} from "@dedis/cothority/skipchain";
-import {
-    CredentialsInstance,
-    SpawnerInstance
-} from "@dedis/cothority/byzcoin/contracts";
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 
-import {IGenesisUser} from "src/genesis";
-import {IInstance, IProof, newIInstance} from "src/byzcoin/instances";
+import {IDataBase, IGenesisUser} from "src/genesis";
+import Long = require("long");
+
+export interface IInstance {
+    key: InstanceID;
+    value: Buffer;
+    block: Long;
+    contractID: string;
+    version: Long;
+    darcID: InstanceID;
+}
+
+export function newIInstance(key: InstanceID, value: Buffer, contractID?: string): IInstance {
+    return {
+        block: Long.fromNumber(-1),
+        contractID: contractID || "unknown",
+        darcID: Buffer.alloc(32),
+        key, value,
+        version: Long.fromNumber(0),
+    };
+}
 
 class SimulProof {
     public latest: SkipBlock;
@@ -37,7 +55,7 @@ class SimulProof {
     public value: Buffer;
     public version: Long;
 
-    constructor(private inst: IInstance) {
+    constructor(public inst: IInstance) {
         this.latest = new SkipBlock({index: inst.block.toNumber()});
         this.contractID = inst.contractID;
         this.darcID = inst.darcID;
@@ -49,6 +67,10 @@ class SimulProof {
             value: inst.value,
             version: inst.version,
         });
+    }
+
+    get key(): InstanceID {
+        return this.inst.key;
     }
 
     public exists(key: Buffer): boolean {
@@ -64,7 +86,9 @@ export class ByzCoinSimul {
     private globalState = new GlobalState();
     private blocks = new Blocks();
 
-    constructor(igd: IGenesisUser) {
+    private cache = new Map<InstanceID, BehaviorSubject<SimulProof>>();
+
+    constructor(private db: IDataBase, igd: IGenesisUser) {
         this.globalState.addDarc(igd.darc);
         this.globalState.addOrUpdateInstance(newIInstance(CONFIG_INSTANCE_ID,
             Buffer.alloc(0), "config"))
@@ -115,7 +139,7 @@ export class ByzCoinSimul {
                 const ciCoinsNbr = ciCoins ? Long.fromBytesLE(Array.from(ciCoins)) : Long.fromNumber(0);
                 const ciInst = this.globalState.getInstance(instr.instanceID);
                 const ci = Coin.decode(ciInst.value);
-                switch(i.command){
+                switch (i.command) {
                     case CoinInstance.commandMint:
                         ci.value = ciCoinsNbr;
                         ciInst.value = ci.toBytes();
@@ -129,11 +153,11 @@ export class ByzCoinSimul {
                 }
                 break;
             case DarcInstance.contractID:
-                switch(i.command){
+                switch (i.command) {
                     case DarcInstance.commandEvolve:
                     case DarcInstance.commandEvolveUnrestricted:
                         const diInst = this.globalState.getInstance(instr.instanceID);
-                        if (!diInst){
+                        if (!diInst) {
                             throw new Error("didn't find this darc-instance");
                         }
                         diInst.value = arg(DarcInstance.argumentDarc);
@@ -146,7 +170,7 @@ export class ByzCoinSimul {
         }
     }
 
-    public async getProofFromLatest(id: InstanceID): Promise<IProof> {
+    public async getProofFromLatest(id: InstanceID): Promise<SimulProof> {
         Log.lvl3("Getting proof for", id);
         // Have some delay to mimic network setup.
         await new Promise(resolve => setTimeout(resolve, 5));
@@ -177,7 +201,7 @@ export class ByzCoinSimul {
         return 3;
     }
 
-    async checkAuthorization(byzCoinID: InstanceID, darcID: InstanceID, ...identities: IdentityWrapper[]): Promise<string[]>{
+    async checkAuthorization(byzCoinID: InstanceID, darcID: InstanceID, ...identities: IdentityWrapper[]): Promise<string[]> {
         return [""];
     }
 
@@ -187,6 +211,59 @@ export class ByzCoinSimul {
             map(() => this.blocks.getLatestSkipBlock())
         ).subscribe(newBlocks);
         return newBlocks;
+    }
+
+    async instanceObservable(id: InstanceID): Promise<BehaviorSubject<SimulProof>> {
+        const proofBS = this.cache.get(id);
+        if (proofBS !== undefined) {
+            return proofBS;
+        }
+
+        // Check if the db already has a version, which might be outdated,
+        // but still better than to wait for the network.
+        // might be old, but be informed as soon as the correct values arrive.
+        // This makes it possible to have a quick display of values that
+        const idStr = id.toString("hex");
+
+        let dbProof: IInstance | undefined = await this.db.getObject(id.toString("hex"));
+        if (dbProof === undefined) {
+            dbProof = (await this.getProofFromLatest(id)).inst;
+        }
+        const simulProof = new SimulProof(dbProof);
+
+        // Create a new BehaviorSubject with the proof, which might not be
+        // current, but a best guess from the db of a previous session.
+        const bsNew = new BehaviorSubject(simulProof);
+        this.cache.set(id, bsNew);
+
+        // Set up a pipe from the block to fetch new versions if a new block
+        // arrives.
+        // Start with an observable that emits each new block as it arrives.
+        (await this.getNewBlocks())
+            .pipe(
+                // Make sure only newer blocks than the proof are taken into
+                // account
+                filter((block) => block.index > simulProof.latest.index),
+                // Get a new proof of the instance
+                mergeMap(() => this.getProofFromLatest(id)),
+                // Handle errors by sending latest know proof
+                catchError((err) => {
+                    Log.error("instanceBS: couldn't get new instance:", err);
+                    return of(simulProof);
+                }),
+                // Don't emit proofs that are already known
+                distinctUntilChanged((a, b) =>
+                    a.stateChangeBody.version.equals(b.stateChangeBody.version)),
+                // Store new proofs in the db for later use
+                tap((proof) =>
+                    this.db.setObject(idStr, proof.inst)),
+                // Link to the BehaviorSubject
+            ).subscribe(bsNew);
+
+        // Return the BehaviorSubject - the pipe will continue to run in the
+        // background and check if the proof changed on the emission of
+        // every new block.
+        return bsNew;
     }
 
     private async spawn(instr: Instruction) {
@@ -249,7 +326,7 @@ export class ByzCoinSimul {
             case SpawnerInstance.contractID:
                 const siC = (cn: string) => new Coin({
                     value: Long.fromBytesLE(Array.from(arg(cn))),
-                    name:ciid(Buffer.from("byzcoin")),
+                    name: ciid(Buffer.from("byzcoin")),
                 });
                 const siStruct = new SpawnerStruct({
                     costCRead: siC("costCRead"),
@@ -272,12 +349,12 @@ export class ByzCoinSimul {
                 break;
             case CredentialsInstance.contractID:
                 const ciDI = arg(isSI ? SpawnerInstance.argumentDarcID : CredentialsInstance.argumentDarcID);
-                if (ciDI !== undefined){
+                if (ciDI !== undefined) {
                     darcID = ciDI;
                 }
                 ciCA = instr.deriveId();
                 let ciCredID = arg(isSI ? SpawnerInstance.argumentCredID : CredentialsInstance.argumentCredID);
-                if (ciCredID !== undefined){
+                if (ciCredID !== undefined) {
                     const ciH = createHash("sha256");
                     ciH.update(Buffer.from(CredentialsInstance.contractID));
                     ciH.update(ciCredID);
@@ -353,7 +430,7 @@ class Blocks {
         return this.blocks[this.blocks.length - 1];
     }
 
-    public getLatestSkipBlock(): SkipBlock{
+    public getLatestSkipBlock(): SkipBlock {
         return new SkipBlock({index: this.getLatestBlock().index.toNumber()})
     }
 

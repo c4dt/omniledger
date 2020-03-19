@@ -23,7 +23,7 @@ describe("User class should", async () => {
     it("correctly migrate", async () => {
         const bct = await BCTestEnv.start();
         const user = await bct.createUser("migrate");
-        const db = user.db;
+        const db = bct.db;
 
         User.migrateOnce = true;
 

@@ -3,7 +3,7 @@ import {catchError, flatMap, map, mergeAll, tap} from "rxjs/operators";
 import {BehaviorSubject} from "rxjs";
 
 import {Log} from "@dedis/cothority/index";
-import {Instance, InstanceID} from "@dedis/cothority/byzcoin";
+import {Instance, InstanceID, Proof} from "@dedis/cothority/byzcoin";
 import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 import {
     Coin,
@@ -24,7 +24,6 @@ import {ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook} from "./ad
 import {KeyPair} from "./keypair";
 import {CredentialSignerBS, CSTypesBS} from "./credentialSignerBS";
 import {ConvertBS, ObservableToBS} from "./observableUtils";
-import {newIInstance} from "./byzcoin/instances";
 import {User} from "./user";
 import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {ByzCoinBS} from "./byzCoinBS";
@@ -45,7 +44,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     constructor(bid: ByzCoinBS) {
         if (bid) {
-            super(bid.bc, bid.db, bid.inst);
+            super(bid.bc, bid.db);
         }
     }
 
@@ -75,7 +74,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     public async retrieveUser(credID: InstanceID, privBuf: Buffer,
                               dbBase = "main"): Promise<User> {
-        Log.lvl3("getting credential struct BS");
+        Log.llvl3("getting credential struct BS");
         const credStructBS = await this.retrieveCredentialStructBS(credID);
         const kpp = KeyPair.fromPrivate(privBuf);
         const auth = await this.bc.checkAuthorization(this.bc.genesisID, credStructBS.darcID,
@@ -84,11 +83,11 @@ export class ByzCoinBuilder extends ByzCoinBS {
         Log.lvl3("getting credentialSignerBS");
         const credSignerBS = await this.retrieveCredentialSignerBS(credStructBS);
         const spawnerInstanceBS = await ObservableToBS(credStructBS.credConfig.spawnerID.pipe(
-            flatMap(id => this.inst.instanceBS(id)),
+            flatMap(id => this.bc.instanceObservable(id)),
             catchError(err => {
                 Log.error(err);
                 return Promise.resolve(new BehaviorSubject(
-                    newIInstance(Buffer.alloc(32), Buffer.alloc(0), SpawnerInstance.contractID)));
+                    new Proof({})));
             }),
             mergeAll(),
             map(inst => Buffer.from(JSON.stringify({
@@ -190,7 +189,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
             coinID = new BehaviorSubject(coinID);
         }
         const coinObs = coinID.pipe(
-            flatMap(id => this.inst.instanceBS(id)),
+            flatMap(id => this.bc.instanceObservable(id)),
             mergeAll(),
             map(inst => CoinInstance.create(this.bc as any, inst.key, inst.darcID, Coin.decode(inst.value)))
         );
@@ -215,7 +214,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     public async retrieveCredentialStructBS(id: InstanceID): Promise<CredentialStructBS> {
         Log.lvl3("creating CredentialStruct from scratch:", id);
-        const instBS = await this.inst.instanceBS(id);
+        const instBS = await this.bc.instanceObservable(id);
         const darcID = instBS.getValue().darcID;
         const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
         return new CredentialStructBS(id, darcID, credBS);
@@ -236,7 +235,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
             darcID = new BehaviorSubject(darcID);
         }
         const instObs = darcID.pipe(
-            flatMap(id => this.inst.instanceBS(id)),
+            flatMap(id => this.bc.instanceObservable(id)),
             mergeAll(),
             map(inst => Darc.decode(inst.value)),
         );

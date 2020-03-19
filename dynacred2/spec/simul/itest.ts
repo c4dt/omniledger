@@ -9,6 +9,7 @@ import {Genesis, IGenesisUser, User, UserSkeleton} from "dynacred2";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {ROSTER} from "spec/support/conondes";
+import {IDataBase} from "src/genesis";
 
 Log.lvl = 2;
 const simul = true;
@@ -43,7 +44,7 @@ export class BCTestEnv extends Genesis {
         }
     }
 
-    static async fromScratch(createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>): Promise<BCTestEnv> {
+    static async fromScratch(createBC: (igd: IGenesisUser, db: IDataBase) => Promise<ByzCoinRPC>): Promise<BCTestEnv> {
         Log.lvl3("Creating Genesis user (darc + signer) and BC");
         const genesis = await Genesis.create(ed25519.scalar().one(), createBC);
         Log.lvl3("creating spawner");
@@ -54,8 +55,8 @@ export class BCTestEnv extends Genesis {
 
     static async simul(): Promise<BCTestEnv> {
         let bcs: ByzCoinSimul;
-        const bcte = await this.fromScratch(async (igd) => {
-            bcs = new ByzCoinSimul(igd) as any;
+        const bcte = await this.fromScratch(async (igd, db) => {
+            bcs = new ByzCoinSimul(db, igd) as any;
             return bcs as any;
         });
         bcte.bcSimul = bcs;

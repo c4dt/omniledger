@@ -2,7 +2,7 @@ import Long from "long";
 
 import {Log} from "@dedis/cothority";
 
-import {IDataBase} from "./byzcoin/instances";
+import {IDataBase} from "./genesis";
 
 export class TempDB implements IDataBase {
     private kv: Map<string, Buffer>;

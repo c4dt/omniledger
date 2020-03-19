@@ -2,10 +2,9 @@ import {BehaviorSubject} from "rxjs";
 
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import {Darc, IIdentity, Rule, Rules} from "@dedis/cothority/darc";
-import {Argument, InstanceID} from "@dedis/cothority/byzcoin";
+import {Argument, InstanceID, Proof} from "@dedis/cothority/byzcoin";
 import {DarcInstance} from "@dedis/cothority/byzcoin/contracts";
 
-import {IInstance} from "./instances";
 import {Transaction} from "./transaction";
 
 export class DarcsBS extends BehaviorSubject<DarcBS[]> {
@@ -16,7 +15,7 @@ export class DarcsBS extends BehaviorSubject<DarcBS[]> {
 }
 
 export class DarcBS extends BehaviorSubject<Darc> {
-    public readonly inst: BehaviorSubject<IInstance>;
+    public readonly inst: BehaviorSubject<Proof>;
 
     constructor(darc: BehaviorSubject<Darc>) {
         super(darc.getValue());

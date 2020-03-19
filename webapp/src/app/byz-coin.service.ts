@@ -56,15 +56,16 @@ export class ByzCoinService extends ByzCoinBuilder {
                 latest = await sc.getSkipBlock(this.idKnown);
                 Log.lvl2("Got known skipblock");
             }
-            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3, 1000, latest);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID,
+                3, 1000, latest, this.db);
         } catch (e) {
             logger("Getting genesis chain", 80);
-            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID, 3);
+            this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID,
+                3, 1000, undefined, this.db);
         }
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
         await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
         logger("Done connecting", 100);
-        this.inst = await byzcoin.Instances.fromScratch(this.db, this.bc);
     }
 
     async loadUser(): Promise<void> {
