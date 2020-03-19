@@ -39,7 +39,7 @@ describe("User class should", async () => {
                 credential: user.credStructBS.getValue().toBytes()
             }
         };
-        await db.setObject(User.keyMigrate, migrate);
+        await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
         await expectAsync(bct.retrieveUserByDB()).toBeResolved();
 
         const mig = await db.get(User.keyMigrate);
@@ -53,7 +53,7 @@ describe("User class should", async () => {
         await expectAsync(bct.retrieveUserByDB()).toBeRejected();
 
         migrate.version--;
-        await db.setObject(User.keyMigrate, migrate);
+        await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
         await expectAsync(bct.retrieveUserByDB()).toBeRejected();
     });
 

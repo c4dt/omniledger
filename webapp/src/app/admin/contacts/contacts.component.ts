@@ -18,13 +18,14 @@ import {
     ABActionsBS,
     ABContactsBS,
     ABGroupsBS,
-    ActionBS, byzcoin, ByzCoinBuilder,
+    ActionBS, byzcoin,
     CredentialStructBS,
     KeyPair,
     User,
     UserSkeleton
 } from "dynacred2";
 import {UserService} from "src/app/user.service";
+import {ByzCoinService} from "src/app/byz-coin.service";
 type DarcBS = byzcoin.DarcBS;
 
 @Component({
@@ -41,7 +42,7 @@ export class ContactsComponent implements OnInit {
         private snackBar: MatSnackBar,
         private location: Location,
         public user: UserService,
-        private builder: ByzCoinBuilder,
+        private builder: ByzCoinService,
     ) {
         this.contacts = user.addressBook.contacts;
         this.actions = user.addressBook.actions;

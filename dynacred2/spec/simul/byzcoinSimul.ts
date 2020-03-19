@@ -19,13 +19,15 @@ import {
     CONFIG_INSTANCE_ID,
     InstanceID,
     Instruction,
+    IStorage,
     StateChangeBody
 } from "@dedis/cothority/byzcoin";
 import {SkipBlock} from "@dedis/cothority/skipchain";
 import {Darc, IIdentity} from "@dedis/cothority/darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 
-import {IDataBase, IGenesisUser} from "src/genesis";
+import {IGenesisUser} from "src/genesis";
+import {bufferToObject} from "src/builder";
 import Long = require("long");
 
 export interface IInstance {
@@ -88,7 +90,7 @@ export class ByzCoinSimul {
 
     private cache = new Map<InstanceID, BehaviorSubject<SimulProof>>();
 
-    constructor(private db: IDataBase, igd: IGenesisUser) {
+    constructor(private db: IStorage, igd: IGenesisUser) {
         this.globalState.addDarc(igd.darc);
         this.globalState.addOrUpdateInstance(newIInstance(CONFIG_INSTANCE_ID,
             Buffer.alloc(0), "config"))
@@ -225,11 +227,9 @@ export class ByzCoinSimul {
         // This makes it possible to have a quick display of values that
         const idStr = id.toString("hex");
 
-        let dbProof: IInstance | undefined = await this.db.getObject(id.toString("hex"));
-        if (dbProof === undefined) {
-            dbProof = (await this.getProofFromLatest(id)).inst;
-        }
-        const simulProof = new SimulProof(dbProof);
+        const proofBuf = await this.db.get(id.toString("hex"));
+        const simulProof = proofBuf ? new SimulProof(bufferToObject(proofBuf)) :
+            await this.getProofFromLatest(id);
 
         // Create a new BehaviorSubject with the proof, which might not be
         // current, but a best guess from the db of a previous session.
@@ -256,7 +256,7 @@ export class ByzCoinSimul {
                     a.stateChangeBody.version.equals(b.stateChangeBody.version)),
                 // Store new proofs in the db for later use
                 tap((proof) =>
-                    this.db.setObject(idStr, proof.inst)),
+                    this.db.set(idStr, Buffer.from(JSON.stringify(proof.inst)))),
                 // Link to the BehaviorSubject
             ).subscribe(bsNew);
 

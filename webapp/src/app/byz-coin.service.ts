@@ -1,12 +1,12 @@
+import Dexie from "dexie";
 import {Injectable} from '@angular/core';
-import {byzcoin, ByzCoinBuilder, User} from "dynacred2";
+import {ByzCoinBuilder, User} from "dynacred2";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {RosterWSConnection} from "@dedis/cothority/network/connection";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
 import {SkipBlock, SkipchainRPC} from "@dedis/cothority/skipchain";
 import Log from "@dedis/cothority/log";
-import {StorageDB} from "src/lib/storageDB";
 import {Config} from "src/lib/config";
 
 @Injectable({
@@ -16,16 +16,16 @@ export class ByzCoinService extends ByzCoinBuilder {
     public user?: User;
     public config?: Config;
     public conn?: RosterWSConnection;
-
-    constructor(){
-        // Initialize with undefined. Before using, the root component has to call `loadConfig`.
-        super(undefined);
-    }
-
     private readonly storageKeyLatest = "latest_skipblock";
-    // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
     // this will be updated.
     private readonly idKnown = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
+
+    // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
+
+    constructor() {
+        // Initialize with undefined. Before using, the root component has to call `loadConfig`.
+        super(undefined, undefined);
+    }
 
     async loadConfig(logger: (msg: string, percentage: number) => void): Promise<void> {
         logger("Loading config", 0);
@@ -44,7 +44,7 @@ export class ByzCoinService extends ByzCoinBuilder {
         }
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
-        this.db = new DataBaseDB();
+        this.db = new StorageDB();
         try {
             let latest: SkipBlock;
             const latestBuf = await this.db.get(this.storageKeyLatest);
@@ -69,39 +69,74 @@ export class ByzCoinService extends ByzCoinBuilder {
     }
 
     async loadUser(): Promise<void> {
-        this.user = await this.retrieveUserByDB();
+        try {
+            this.user = await this.retrieveUserByDB();
+            return;
+        } catch(e){
+            Log.warn("couldn't find dynacred2 user, trying migration");
+        }
+        try {
+            this.user = await this.retrieveUserByMigration(new StorageDBOld());
+        } catch(e){
+            Log.warn("migration also failed - need to sign up")
+        }
     }
 
     async hasUser(base = "main"): Promise<boolean> {
         try {
             await this.retrieveUserKeyCredID(base);
             return true;
-        } catch(e){
+        } catch (e) {
             Log.warn("while checking user:", e);
             return false;
         }
     }
 }
 
-class DataBaseDB {
+export class StorageDB {
+    public db: Dexie.Table<{ key: string, buf: Buffer }, string>;
+
+    constructor() {
+        const db = new Dexie("dynasent2");
+        db.version(1).stores({
+            contacts: "&key",
+        });
+        this.db = db.table("contacts");
+    }
+
+    async set(key: string, buf: Buffer) {
+        await this.db.put({key, buf});
+    }
+
     async get(key: string): Promise<Buffer | undefined> {
-        const val = await StorageDB.get(key);
-        if (val === undefined || val === null) {
-            return undefined;
+        const entry = await this.db.get({key});
+        if (entry !== undefined) {
+            return Buffer.from(entry.buf);
         }
-        return Buffer.from(val, "hex");
+        return undefined;
+    }
+}
+
+export class StorageDBOld {
+    public db: Dexie.Table<{ key: string, buffer: string }, string>;
+
+    constructor() {
+        const db = new Dexie("dynasent");
+        db.version(1).stores({
+            contacts: "&key",
+        });
+        this.db = db.table("contacts");
     }
 
-    getObject<T>(key: string): Promise<T | undefined> {
-        return StorageDB.getObject(key);
+    async set(key: string, buf: Buffer) {
+        await this.db.put({key, buffer: buf.toString()});
     }
 
-    async set(key: string, value: Buffer): Promise<void> {
-        await StorageDB.set(key, (value || Buffer.alloc(0)).toString("hex"));
-        return;
-    }
-
-    setObject<T>(key: string, obj: T): Promise<void> {
-        return StorageDB.putObject(key, obj);
+    async get(key: string): Promise<Buffer | undefined> {
+        const entry = await this.db.get({key});
+        if (entry !== undefined) {
+            return Buffer.from(entry.buffer);
+        }
+        return undefined;
     }
 }

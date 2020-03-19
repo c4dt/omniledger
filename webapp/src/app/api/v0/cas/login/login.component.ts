@@ -12,7 +12,7 @@ import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
 import {showTransactions, TProgress} from "../../../../../lib/Ui";
 import {UserService} from "src/app/user.service";
-import {ByzCoinBuilder} from "dynacred2";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 enum StateT {
     LOADING,
@@ -75,7 +75,7 @@ export class LoginComponent implements OnInit {
         private router: Router,
         private dialog: MatDialog,
         private user: UserService,
-        private builder: ByzCoinBuilder,
+        private builder: ByzCoinService,
     ) {
         this.state = StateT.LOADING;
 

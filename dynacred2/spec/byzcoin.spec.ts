@@ -1,7 +1,7 @@
 import {HistoryObs} from "spec/support/historyObs";
 import {BCTestEnv} from "spec/simul/itest";
 
-describe("using real byzcoin, it should", () => {
+describe("ByzCoin should", () => {
     it("listen for new blocks", async () => {
         const bct = await BCTestEnv.start();
 

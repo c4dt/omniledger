@@ -6,7 +6,7 @@ import StatusRPC from "@dedis/cothority/status/status-rpc";
 
 import { hexBuffer } from "../../../lib/Ui";
 import {UserService} from "src/app/user.service";
-import {ByzCoinBuilder} from "dynacred2";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
   selector: "app-status",
@@ -21,7 +21,7 @@ export class StatusComponent implements OnInit {
   constructor(
       private router: Router,
       private user: UserService,
-      private builder: ByzCoinBuilder,
+      private builder: ByzCoinService,
       ) {
     this.signID = this.user.identityDarcSigner.id.toString("hex");
     this.userID = hexBuffer(this.user.credStructBS.id);

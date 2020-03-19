@@ -9,10 +9,10 @@ import {AddressBook} from "./addressBook";
 import {KeyPair} from "./keypair";
 import {CredentialSignerBS} from "./credentialSignerBS";
 import {ICoin} from "./genesis";
-import {ByzCoinBS} from "./byzCoinBS";
 import {CoinBS} from "./byzcoin/coinBS";
 import {DarcBS} from "./byzcoin/darcsBS";
 import {CredentialTransaction} from "./credentialTransaction";
+import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
@@ -29,7 +29,8 @@ export class User {
     static readonly urlNewDevice = "/register/device";
 
     constructor(
-        public bs: ByzCoinBS,
+        public bc: ByzCoinRPC,
+        public db: IStorage,
         public kpp: KeyPair,
         public dbBase: string,
         public credStructBS: CredentialStructBS,
@@ -76,8 +77,8 @@ export class User {
 
     public async save(base = this.dbBase, priv = this.kpp.priv.marshalBinary(),
                       credID = this.credStructBS.id): Promise<void> {
-        await this.bs.db.set(`${base}:${User.keyPriv}`, priv);
-        await this.bs.db.set(`${base}:${User.keyCredID}`, credID);
+        await this.db.set(`${base}:${User.keyPriv}`, priv);
+        await this.db.set(`${base}:${User.keyCredID}`, credID);
     }
 
     public async clearDB(base = this.dbBase) {
@@ -92,11 +93,11 @@ export class User {
     }
 
     public startTransaction(): CredentialTransaction {
-        return new CredentialTransaction(this.bs.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+        return new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
     public async executeTransactions(addTxs: (tx: CredentialTransaction) => Promise<unknown> | unknown, wait = 0): Promise<void> {
-        const tx = new CredentialTransaction(this.bs.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+        const tx = new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
         await tx.sendCoins(wait);
     }

@@ -15,7 +15,6 @@ import {CredentialSignerBS, CSTypesBS} from "./credentialSignerBS";
 import {UserSkeleton} from "./userSkeleton";
 import {Genesis, IGenesisUser} from "./genesis";
 import {ByzCoinBuilder} from "./builder";
-import {ByzCoinBS} from "./byzCoinBS";
 
 import * as byzcoin from "./byzcoin";
 
@@ -26,7 +25,6 @@ export {
     ABContactsBS,
     ABGroupsBS,
     ActionBS,
-    ByzCoinBS,
     ByzCoinBuilder,
     CredentialBS,
     CredentialSignerBS,

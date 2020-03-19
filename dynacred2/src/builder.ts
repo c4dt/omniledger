@@ -1,9 +1,10 @@
+import Long from "long";
 import URL from "url-parse";
-import {catchError, flatMap, map, mergeAll, tap} from "rxjs/operators";
+import {catchError, flatMap, map, mergeAll} from "rxjs/operators";
 import {BehaviorSubject} from "rxjs";
 
 import {Log} from "@dedis/cothority/index";
-import {Instance, InstanceID, Proof} from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC, Instance, InstanceID, IStorage, Proof} from "@dedis/cothority/byzcoin";
 import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 import {
     Coin,
@@ -26,26 +27,19 @@ import {CredentialSignerBS, CSTypesBS} from "./credentialSignerBS";
 import {ConvertBS, ObservableToBS} from "./observableUtils";
 import {User} from "./user";
 import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
-import {ByzCoinBS} from "./byzCoinBS";
 import {CoinBS} from "./byzcoin/coinBS";
 
 export interface IMigrate {
     keyPersonhood?: string;
     keyIdentity: string;
     version: number;
-    contact: IMigrateContact;
+    contact: { credential: Buffer };
 }
 
-export interface IMigrateContact {
-    credential: Buffer;
-}
+export class ByzCoinBuilder {
 
-export class ByzCoinBuilder extends ByzCoinBS {
-
-    constructor(bid: ByzCoinBS) {
-        if (bid) {
-            super(bid.bc, bid.db);
-        }
+    constructor(public bc: ByzCoinRPC,
+                public db: IStorage) {
     }
 
     public async retrieveAddressBook(cp: CredentialPublic): Promise<AddressBook> {
@@ -74,7 +68,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
 
     public async retrieveUser(credID: InstanceID, privBuf: Buffer,
                               dbBase = "main"): Promise<User> {
-        Log.llvl3("getting credential struct BS");
+        Log.lvl3("getting credential struct BS");
         const credStructBS = await this.retrieveCredentialStructBS(credID);
         const kpp = KeyPair.fromPrivate(privBuf);
         const auth = await this.bc.checkAuthorization(this.bc.genesisID, credStructBS.darcID,
@@ -101,7 +95,7 @@ export class ByzCoinBuilder extends ByzCoinBS {
         Log.lvl3("getting address book");
         const addressBook = await this.retrieveAddressBook(credStructBS.credPublic);
         const user = new User(
-            this, kpp, dbBase, credStructBS, spawnerInstanceBS, coinBS, credSignerBS, addressBook
+            this.bc, this.db, kpp, dbBase, credStructBS, spawnerInstanceBS, coinBS, credSignerBS, addressBook
         );
         await user.save();
         return user;
@@ -136,10 +130,14 @@ export class ByzCoinBuilder extends ByzCoinBS {
         return u;
     }
 
-    public async retrieveUserByMigration(): Promise<User | undefined> {
+    public async retrieveUserByMigration(dbold: IStorage): Promise<User | undefined> {
         try {
             Log.lvl3("trying to migrate");
-            const migrate: IMigrate | undefined = await this.db.getObject(User.keyMigrate);
+            const buf = await this.db.get(User.keyMigrate);
+            if (!buf) {
+                return undefined;
+            }
+            const migrate = bufferToObject(buf) as IMigrate;
             if (migrate && migrate.version === User.versionMigrate) {
                 // Just suppose everything is here and let it fail otherwise.
                 Log.lvl1("Migrating from", migrate);
@@ -163,13 +161,9 @@ export class ByzCoinBuilder extends ByzCoinBS {
     }
 
     public async retrieveUserByDB(base = "main"): Promise<User> {
-        const user = await this.retrieveUserByMigration();
-        if (user) {
-            return user;
-        }
-
         Log.lvl3("getting key and credID from DB");
         const [privBuf, credID] = await this.retrieveUserKeyCredID(base);
+        Log.print(privBuf, credID);
         return this.retrieveUser(credID, privBuf, base);
     }
 
@@ -248,4 +242,18 @@ export class ByzCoinBuilder extends ByzCoinBS {
         const credDarc = await this.retrieveDarcBS(darcID);
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
+}
+
+
+export function bufferToObject<T>(buf: Buffer): T {
+    return JSON.parse(buf.toString(), (key, value) => {
+        if (value && typeof value === "object") {
+            if (value.type && value.type === "Buffer") {
+                return Buffer.from(value);
+            } else if (value.low !== undefined && value.high !== undefined) {
+                return Long.fromValue(value);
+            }
+        }
+        return value;
+    });
 }

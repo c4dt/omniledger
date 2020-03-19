@@ -2,12 +2,13 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 
 import {
-    AddressBook, ByzCoinBuilder,
+    AddressBook,
     CredentialConfig,
     CredentialPublic,
     CredentialSignerBS,
     CredentialStructBS
 } from "dynacred2";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-contact-info",
@@ -25,7 +26,7 @@ export class ContactInfoComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<ContactInfoComponent>,
-        private builder: ByzCoinBuilder,
+        private builder: ByzCoinService,
         @Inject(MAT_DIALOG_DATA) readonly data: { contact: CredentialStructBS }) {}
 
     async ngOnInit() {

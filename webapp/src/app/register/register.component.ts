@@ -67,7 +67,7 @@ export class RegisterComponent implements OnInit {
                         Log.lvl2("creating FIRST user");
                         progress(30, "Updating genesis darc");
                         const darcID = Buffer.from(darcIDStr, "hex");
-                        const genesis = new Genesis(this.bcs, {keyPair, darcID});
+                        const genesis = new Genesis(this.bcs.db, this.bcs.bc, {keyPair, darcID});
                         await genesis.evolveGenesisDarc();
                         progress(50, "Creating Coin");
                         await genesis.createCoin();

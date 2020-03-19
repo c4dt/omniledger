@@ -7,7 +7,7 @@ import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 import {UserService} from "src/app/user.service";
-import {ByzCoinBuilder} from "dynacred2";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 export interface IManageDarc {
     title: string;
@@ -39,7 +39,7 @@ export class ManageDarcComponent {
     constructor(
         private dialogRef: MatDialogRef<ManageDarcComponent>,
         private user: UserService,
-        private builder: ByzCoinBuilder,
+        private builder: ByzCoinService,
         @Inject(MAT_DIALOG_DATA) public data: IManageDarc) {
         if (!data.title || data.title === "") {
             data.title = "Manage access rights";

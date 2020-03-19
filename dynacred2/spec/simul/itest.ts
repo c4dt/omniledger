@@ -2,14 +2,13 @@ import Long from "long";
 
 import {Log} from "@dedis/cothority";
 import {curve} from "@dedis/kyber";
-import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
 import {LeaderConnection} from "@dedis/cothority/network/connection";
 
 import {Genesis, IGenesisUser, User, UserSkeleton} from "dynacred2";
 
 import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {ROSTER} from "spec/support/conondes";
-import {IDataBase} from "src/genesis";
 
 Log.lvl = 2;
 const simul = true;
@@ -25,7 +24,7 @@ export class BCTestEnv extends Genesis {
     constructor(
         g: Genesis,
         public user: User) {
-        super(g);
+        super(g.db, g.bc);
     }
 
     static async start(): Promise<BCTestEnv> {
@@ -44,7 +43,7 @@ export class BCTestEnv extends Genesis {
         }
     }
 
-    static async fromScratch(createBC: (igd: IGenesisUser, db: IDataBase) => Promise<ByzCoinRPC>): Promise<BCTestEnv> {
+    static async fromScratch(createBC: (igd: IGenesisUser, db: IStorage) => Promise<ByzCoinRPC>): Promise<BCTestEnv> {
         Log.lvl3("Creating Genesis user (darc + signer) and BC");
         const genesis = await Genesis.create(ed25519.scalar().one(), createBC);
         Log.lvl3("creating spawner");
