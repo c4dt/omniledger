@@ -42,11 +42,6 @@ export interface IMigrateContact {
 }
 
 export class ByzCoinBuilder extends ByzCoinBS {
-    static readonly urlNewDevice = "/register/device";
-    public static readonly keyPriv = "private";
-    public static readonly keyCredID = "credID";
-    public static readonly keyMigrate = "storage/data.json";
-    public static readonly versionMigrate = 1;
 
     constructor(bid: ByzCoinBS) {
         if (bid) {

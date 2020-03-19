@@ -2,14 +2,12 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 
 import {
-    AddressBook,
+    AddressBook, ByzCoinBuilder,
     CredentialConfig,
     CredentialPublic,
     CredentialSignerBS,
     CredentialStructBS
 } from "dynacred2";
-
-import {UserService} from "src/app/user.service";
 
 @Component({
     selector: "app-contact-info",
@@ -27,13 +25,13 @@ export class ContactInfoComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<ContactInfoComponent>,
-        public user: UserService,
+        private builder: ByzCoinBuilder,
         @Inject(MAT_DIALOG_DATA) readonly data: { contact: CredentialStructBS }) {}
 
     async ngOnInit() {
         this.pub = this.data.contact.credPublic;
         this.config = this.data.contact.credConfig;
-        this.signerBS = await this.user.retrieveCredentialSignerBS(this.data.contact);
-        this.addressBook = await this.user.retrieveAddressBook(this.pub);
+        this.signerBS = await this.builder.retrieveCredentialSignerBS(this.data.contact);
+        this.addressBook = await this.builder.retrieveAddressBook(this.pub);
     }
 }

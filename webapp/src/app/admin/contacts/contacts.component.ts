@@ -18,7 +18,7 @@ import {
     ABActionsBS,
     ABContactsBS,
     ABGroupsBS,
-    ActionBS, byzcoin,
+    ActionBS, byzcoin, ByzCoinBuilder,
     CredentialStructBS,
     KeyPair,
     User,
@@ -41,6 +41,7 @@ export class ContactsComponent implements OnInit {
         private snackBar: MatSnackBar,
         private location: Location,
         public user: UserService,
+        private builder: ByzCoinBuilder,
     ) {
         this.contacts = user.addressBook.contacts;
         this.actions = user.addressBook.actions;
@@ -181,8 +182,8 @@ export class ContactsComponent implements OnInit {
             await showTransactions(this.dialog, "Adding new device", async (progress: TProgress) => {
 
                 progress(30, "Checking if we have the right to recover " + c.credPublic.alias.getValue());
-                const cSign = await this.user.retrieveCredentialSignerBS(c);
-                if ((await this.user.bc.checkAuthorization(this.user.bc.genesisID, cSign.getValue().getBaseID(),
+                const cSign = await this.builder.retrieveCredentialSignerBS(c);
+                if ((await this.builder.bc.checkAuthorization(this.builder.bc.genesisID, cSign.getValue().getBaseID(),
                     IdentityWrapper.fromIdentity(this.user.kiSigner))).length === 0) {
                     return showDialogInfo(this.dialog, "No recovery",
                         "Don't have the right to recover this user", "Understood");
@@ -354,7 +355,7 @@ export class ContactsComponent implements OnInit {
                 const id = Buffer.from(darcID, "hex");
 
                 try {
-                    const inst = await DarcInstance.fromByzcoin(this.user.bc, id);
+                    const inst = await DarcInstance.fromByzcoin(this.builder.bc, id);
                     if (dbs.getValue().some((a) => a.id.equals(id))) {
                         reject(`Given ${type} is already added under the name "${inst.darc.description}"`);
                     }

@@ -58,8 +58,8 @@ export class Genesis extends ByzCoinBuilder {
         return this.genesisUser.darcID || this.genesisUser.darc.getBaseID();
     }
 
-    public static async fromGenesisKey(priv: Scalar, createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>,
-                                       db?: IDataBase): Promise<Genesis> {
+    public static async create(priv: Scalar, createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>,
+                               db?: IDataBase): Promise<Genesis> {
         const keyPair = KeyPair.fromPrivate(priv || ed25519.scalar().pick());
         const signer = [keyPair.signer()];
         const adminDarc = darc.Darc.createBasic(signer, signer, Buffer.from("AdminDarc"), Genesis.rules);

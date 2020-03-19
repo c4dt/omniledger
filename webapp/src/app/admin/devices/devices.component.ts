@@ -10,6 +10,7 @@ import {Attribute} from "@dedis/cothority/personhood/credentials-instance";
 import {showDialogInfo, showDialogOKC, showSnack, showTransactions, TProgress} from "src/lib/Ui";
 import {byzcoin, CSTypesBS, KeyPair} from "dynacred2";
 import {UserService} from "src/app/user.service";
+import {ByzCoinService} from "src/app/byz-coin.service";
 
 class Signer {
     descr: string;
@@ -36,6 +37,7 @@ export class DevicesComponent {
         private snack: MatSnackBar,
         private location: Location,
         private user: UserService,
+        private builder: ByzCoinService,
     ) {
         this.devices = user.credSignerBS.devices;
         this.recovery = user.credSignerBS.recoveries;
@@ -115,7 +117,7 @@ export class DevicesComponent {
         await showSnack(this.snack, "Searching actions and groups", async () => {
             for (const c of this.user.addressBook.contacts.getValue()) {
                 accounts.push({
-                    id: (await this.user.retrieveSignerIdentityDarc(c.darcID)).id,
+                    id: (await this.builder.retrieveSignerIdentityDarc(c.darcID)).id,
                     name: c.credPublic.alias.getValue(),
                 });
             }

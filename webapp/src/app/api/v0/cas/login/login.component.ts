@@ -12,6 +12,7 @@ import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
 import {showTransactions, TProgress} from "../../../../../lib/Ui";
 import {UserService} from "src/app/user.service";
+import {ByzCoinBuilder} from "dynacred2";
 
 enum StateT {
     LOADING,
@@ -74,6 +75,7 @@ export class LoginComponent implements OnInit {
         private router: Router,
         private dialog: MatDialog,
         private user: UserService,
+        private builder: ByzCoinBuilder,
     ) {
         this.state = StateT.LOADING;
 
@@ -92,8 +94,8 @@ export class LoginComponent implements OnInit {
     }
 
     async ngOnInit() {
-        const availables = await this.user.bc.checkAuthorization(
-            this.user.bc.genesisID, this.action.darc,
+        const availables = await this.builder.bc.checkAuthorization(
+            this.builder.bc.genesisID, this.action.darc,
             IdentityWrapper.fromIdentity(this.user.kiSigner));
         const isAuthorized = availables.indexOf(Darc.ruleSign) !== -1;
 
@@ -155,14 +157,14 @@ export class LoginComponent implements OnInit {
             new Argument({name: CoinInstance.argumentDestination, value: dst})];
 
         const userCoinID = this.user.coinBS.getValue().id;
-        const ctx = ClientTransaction.make(this.user.bc.getProtocolVersion(),
+        const ctx = ClientTransaction.make(this.builder.bc.getProtocolVersion(),
             createInvoke(userCoinID, transfer(this.action.coin)),
             createInvoke(this.action.coin, transfer(userCoinID).concat([
                 new Argument({name: LoginComponent.txArgName, value: challengeHashed})])));
-        await ctx.updateCountersAndSign(this.user.bc, [[this.user.kiSigner]]);
+        await ctx.updateCountersAndSign(this.builder.bc, [[this.user.kiSigner]]);
 
         try {
-            await this.user.bc.sendTransactionAndWait(ctx);
+            await this.builder.bc.sendTransactionAndWait(ctx);
         } catch (err) {
             if (err instanceof Error && err.message.includes(
                 `Contract coin got Instruction ${ctx.instructions[1].hash().toString("hex")}` +

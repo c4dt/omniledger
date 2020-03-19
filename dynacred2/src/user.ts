@@ -9,7 +9,6 @@ import {AddressBook} from "./addressBook";
 import {KeyPair} from "./keypair";
 import {CredentialSignerBS} from "./credentialSignerBS";
 import {ICoin} from "./genesis";
-import {ByzCoinBuilder} from "./builder";
 import {ByzCoinBS} from "./byzCoinBS";
 import {CoinBS} from "./byzcoin/coinBS";
 import {DarcBS} from "./byzcoin/darcsBS";
@@ -21,8 +20,13 @@ import {CredentialTransaction} from "./credentialTransaction";
 // installation.
 // If the migration is successful, it uses this configuration, stores the
 // new information and deletes the old config.
-export class User extends ByzCoinBuilder {
+export class User {
     public static migrateOnce = true;
+    public static readonly keyPriv = "private";
+    public static readonly keyCredID = "credID";
+    public static readonly keyMigrate = "storage/data.json";
+    public static readonly versionMigrate = 1;
+    static readonly urlNewDevice = "/register/device";
 
     constructor(
         public bs: ByzCoinBS,
@@ -33,7 +37,6 @@ export class User extends ByzCoinBuilder {
         public coinBS: CoinBS,
         public credSignerBS: CredentialSignerBS,
         public addressBook: AddressBook) {
-        super(bs);
     }
 
     get kiSigner(): SignerEd25519 {
@@ -73,8 +76,8 @@ export class User extends ByzCoinBuilder {
 
     public async save(base = this.dbBase, priv = this.kpp.priv.marshalBinary(),
                       credID = this.credStructBS.id): Promise<void> {
-        await this.db.set(`${base}:${User.keyPriv}`, priv);
-        await this.db.set(`${base}:${User.keyCredID}`, credID);
+        await this.bs.db.set(`${base}:${User.keyPriv}`, priv);
+        await this.bs.db.set(`${base}:${User.keyCredID}`, credID);
     }
 
     public async clearDB(base = this.dbBase) {
@@ -89,11 +92,11 @@ export class User extends ByzCoinBuilder {
     }
 
     public startTransaction(): CredentialTransaction {
-        return new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+        return new CredentialTransaction(this.bs.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
     public async executeTransactions(addTxs: (tx: CredentialTransaction) => Promise<unknown> | unknown, wait = 0): Promise<void> {
-        const tx = new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+        const tx = new CredentialTransaction(this.bs.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
         await tx.sendCoins(wait);
     }

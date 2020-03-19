@@ -45,7 +45,7 @@ export class BCTestEnv extends Genesis {
 
     static async fromScratch(createBC: (igd: IGenesisUser) => Promise<ByzCoinRPC>): Promise<BCTestEnv> {
         Log.lvl3("Creating Genesis user (darc + signer) and BC");
-        const genesis = await Genesis.fromGenesisKey(ed25519.scalar().one(), createBC);
+        const genesis = await Genesis.create(ed25519.scalar().one(), createBC);
         Log.lvl3("creating spawner");
         await genesis.createSpawner();
         Log.lvl3("creating user");

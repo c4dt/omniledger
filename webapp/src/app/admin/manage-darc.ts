@@ -7,6 +7,7 @@ import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 import {UserService} from "src/app/user.service";
+import {ByzCoinBuilder} from "dynacred2";
 
 export interface IManageDarc {
     title: string;
@@ -38,6 +39,7 @@ export class ManageDarcComponent {
     constructor(
         private dialogRef: MatDialogRef<ManageDarcComponent>,
         private user: UserService,
+        private builder: ByzCoinBuilder,
         @Inject(MAT_DIALOG_DATA) public data: IManageDarc) {
         if (!data.title || data.title === "") {
             data.title = "Manage access rights";
@@ -81,7 +83,7 @@ export class ManageDarcComponent {
         if (filter.indexOf("contact") >= 0) {
             for (const contact of this.user.addressBook.contacts.getValue()) {
                 items.push(this.createItem("Contact: " + contact.credPublic.alias.getValue(),
-                    await this.user.retrieveSignerIdentityDarc(contact.darcID)));
+                    await this.builder.retrieveSignerIdentityDarc(contact.darcID)));
             }
         }
         if (filter.indexOf("action") >= 0) {
