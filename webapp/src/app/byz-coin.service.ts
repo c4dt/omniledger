@@ -73,12 +73,7 @@ export class ByzCoinService extends ByzCoinBuilder {
             this.user = await this.retrieveUserByDB();
             return;
         } catch(e){
-            Log.warn("couldn't find dynacred2 user, trying migration");
-        }
-        try {
-            this.user = await this.retrieveUserByMigration(new StorageDBOld());
-        } catch(e){
-            Log.warn("migration also failed - need to sign up")
+            Log.warn("couldn't find dynacred2 user");
         }
     }
 
@@ -88,8 +83,12 @@ export class ByzCoinService extends ByzCoinBuilder {
             return true;
         } catch (e) {
             Log.warn("while checking user:", e);
-            return false;
         }
+        return false;
+    }
+
+    async migrate(): Promise<boolean> {
+        return await this.migrateUser(new StorageDBOld());
     }
 }
 
@@ -123,7 +122,7 @@ export class StorageDBOld {
     constructor() {
         const db = new Dexie("dynasent");
         db.version(1).stores({
-            contacts: "&key",
+            contacts: "&key, buffer",
         });
         this.db = db.table("contacts");
     }

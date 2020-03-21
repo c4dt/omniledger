@@ -27,8 +27,8 @@ import {Darc, IIdentity} from "@dedis/cothority/darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
 
 import {IGenesisUser} from "src/genesis";
-import {bufferToObject} from "src/builder";
 import Long = require("long");
+import {bufferToObject} from "./user";
 
 export interface IInstance {
     key: InstanceID;

@@ -1,5 +1,7 @@
 TODO
 
-- clean up DataBase interfaces by adding a database (g|s)etObject
 - test migration of webapp
-- add mobile
+    - starts working, still needs:
+        - catch failure on GetProof
+        - speed up request of lots of instances
+- documentation

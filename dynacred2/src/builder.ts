@@ -1,7 +1,6 @@
-import Long from "long";
 import URL from "url-parse";
 import {catchError, flatMap, map, mergeAll} from "rxjs/operators";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
 
 import {Log} from "@dedis/cothority/index";
 import {ByzCoinRPC, Instance, InstanceID, IStorage, Proof} from "@dedis/cothority/byzcoin";
@@ -28,6 +27,7 @@ import {ConvertBS, ObservableToBS} from "./observableUtils";
 import {User} from "./user";
 import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {CoinBS} from "./byzcoin/coinBS";
+import {bufferToObject} from "./utils";
 
 export interface IMigrate {
     keyPersonhood?: string;
@@ -47,8 +47,11 @@ export class ByzCoinBuilder {
         const contactBS = new ABContactsBS(cp.contacts,
             await ObservableToBS(cp.contacts.pipe(
                 flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    async (id) => this.retrieveCredentialStructBS(id)
-                )))))
+                    (id) => this.retrieveCredentialStructBS(id)
+                ))),
+                map(css => css.filter(cs => cs !== undefined)),
+                )
+            )
         );
 
         Log.lvl3("getting groups");
@@ -61,6 +64,7 @@ export class ByzCoinBuilder {
                 flatMap(ais => Promise.all(ais.toInstanceIDs().map(
                     id => this.retrieveDarcBS(id)
                 ))),
+                map(dbs => dbs.filter(db => db !== undefined)),
                 map(dbs => dbs.map(db => new ActionBS(db)))
             )));
         return new AddressBook(contactBS, groupsBS, actionsBS);
@@ -68,12 +72,12 @@ export class ByzCoinBuilder {
 
     public async retrieveUser(credID: InstanceID, privBuf: Buffer,
                               dbBase = "main"): Promise<User> {
-        Log.lvl3("getting credential struct BS");
+        Log.lvl3("getting credential struct BS", credID);
         const credStructBS = await this.retrieveCredentialStructBS(credID);
         const kpp = KeyPair.fromPrivate(privBuf);
         const auth = await this.bc.checkAuthorization(this.bc.genesisID, credStructBS.darcID,
             IdentityWrapper.fromIdentity(kpp.signer()));
-        Log.print("authentication is:", auth);
+        Log.lvl1("auth is:", auth);
         Log.lvl3("getting credentialSignerBS");
         const credSignerBS = await this.retrieveCredentialSignerBS(credStructBS);
         const spawnerInstanceBS = await ObservableToBS(credStructBS.credConfig.spawnerID.pipe(
@@ -130,14 +134,14 @@ export class ByzCoinBuilder {
         return u;
     }
 
-    public async retrieveUserByMigration(dbold: IStorage): Promise<User | undefined> {
+    public async migrateUser(dbold: IStorage): Promise<boolean> {
         try {
             Log.lvl3("trying to migrate");
-            const buf = await this.db.get(User.keyMigrate);
-            if (!buf) {
-                return undefined;
+            const keyBuf = await dbold.get(User.keyMigrate);
+            if (!keyBuf) {
+                return false;
             }
-            const migrate = bufferToObject(buf) as IMigrate;
+            const migrate = bufferToObject(keyBuf) as IMigrate;
             if (migrate && migrate.version === User.versionMigrate) {
                 // Just suppose everything is here and let it fail otherwise.
                 Log.lvl1("Migrating from", migrate);
@@ -146,24 +150,23 @@ export class ByzCoinBuilder {
                     EAttributesPublic.seedPub);
                 if (!seed) {
                     Log.error("couldn't get seed");
-                    return undefined;
+                    return false;
                 }
                 const credID = CredentialsInstance.credentialIID(seed);
-                if (User.migrateOnce) {
-                    await this.db.set(User.keyMigrate, Buffer.alloc(0));
-                }
-                return this.retrieveUser(credID, Buffer.from(migrate.keyIdentity, "hex"));
+                await this.db.set(User.keyPriv, keyBuf);
+                await this.db.set(User.keyCredID, credID);
+                Log.lvl1("Successfully written private key and credID")
+                return true;
             }
         } catch (e) {
             Log.lvl4("Nothing to migrate from", e)
         }
-        return undefined;
+        return false;
     }
 
     public async retrieveUserByDB(base = "main"): Promise<User> {
         Log.lvl3("getting key and credID from DB");
         const [privBuf, credID] = await this.retrieveUserKeyCredID(base);
-        Log.print(privBuf, credID);
         return this.retrieveUser(credID, privBuf, base);
     }
 
@@ -206,24 +209,31 @@ export class ByzCoinBuilder {
         return new CSTypesBS(signerBS, cimbs, prefix, await this.retrieveDarcsBS(aisbs));
     }
 
-    public async retrieveCredentialStructBS(id: InstanceID): Promise<CredentialStructBS> {
+    public async retrieveCredentialStructBS(id: InstanceID): Promise<CredentialStructBS | undefined> {
         Log.lvl3("creating CredentialStruct from scratch:", id);
-        const instBS = await this.bc.instanceObservable(id);
-        const darcID = instBS.getValue().darcID;
-        const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
-        return new CredentialStructBS(id, darcID, credBS);
+        try {
+            const instBS = await this.bc.instanceObservable(id);
+            const darcID = instBS.getValue().darcID;
+            const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
+            return new CredentialStructBS(id, darcID, credBS);
+        } catch (e) {
+            Log.warn("couldn't get credStruct for", id);
+            return undefined;
+        }
     }
 
     public async retrieveDarcsBS(aisbs: BehaviorSubject<InstanceID[]>): Promise<DarcsBS> {
         Log.lvl3("getting darcsBS");
         const dbs = await ObservableToBS(aisbs.pipe(
             flatMap(ais => Promise.all(ais
-                .map(iid => this.retrieveDarcBS(iid))))));
+                .map(iid => this.retrieveDarcBS(iid)))),
+            map(dbs => dbs.filter(db => db !== undefined)),
+        ));
         return new DarcsBS(dbs);
     }
 
     public async retrieveDarcBS(darcID: BehaviorSubject<InstanceID> | InstanceID):
-        Promise<DarcBS> {
+        Promise<DarcBS | undefined> {
         Log.lvl3("getting darcBS");
         if (darcID instanceof Buffer) {
             darcID = new BehaviorSubject(darcID);
@@ -231,9 +241,16 @@ export class ByzCoinBuilder {
         const instObs = darcID.pipe(
             flatMap(id => this.bc.instanceObservable(id)),
             mergeAll(),
-            map(inst => Darc.decode(inst.value)),
+            catchError(err => {
+                Log.error("caught error:", err);
+                return of(undefined as Proof);
+            }),
+            map(inst => inst ? Darc.decode(inst.value) : undefined),
         );
         const bsDarc = await ObservableToBS(instObs);
+        if (bsDarc.getValue() === undefined){
+            return undefined;
+        }
         return new DarcBS(bsDarc);
     }
 
@@ -245,15 +262,3 @@ export class ByzCoinBuilder {
 }
 
 
-export function bufferToObject<T>(buf: Buffer): T {
-    return JSON.parse(buf.toString(), (key, value) => {
-        if (value && typeof value === "object") {
-            if (value.type && value.type === "Buffer") {
-                return Buffer.from(value);
-            } else if (value.low !== undefined && value.high !== undefined) {
-                return Long.fromValue(value);
-            }
-        }
-        return value;
-    });
-}

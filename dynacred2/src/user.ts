@@ -3,6 +3,7 @@ import {BehaviorSubject} from "rxjs";
 import {Scalar} from "@dedis/kyber";
 import {Darc, IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
 import {SpawnerInstance} from "@dedis/cothority/byzcoin/contracts";
+import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
 
 import {CredentialStructBS,} from "./credentialStructBS";
 import {AddressBook} from "./addressBook";
@@ -12,7 +13,6 @@ import {ICoin} from "./genesis";
 import {CoinBS} from "./byzcoin/coinBS";
 import {DarcBS} from "./byzcoin/darcsBS";
 import {CredentialTransaction} from "./credentialTransaction";
-import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
@@ -21,7 +21,6 @@ import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
 // If the migration is successful, it uses this configuration, stores the
 // new information and deletes the old config.
 export class User {
-    public static migrateOnce = true;
     public static readonly keyPriv = "private";
     public static readonly keyCredID = "credID";
     public static readonly keyMigrate = "storage/data.json";
@@ -102,3 +101,4 @@ export class User {
         await tx.sendCoins(wait);
     }
 }
+

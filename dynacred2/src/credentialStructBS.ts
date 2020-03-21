@@ -9,6 +9,8 @@ import {Point, PointFactory} from "@dedis/kyber";
 
 import {ConvertBS} from "./observableUtils";
 import {CredentialTransaction} from "./credentialTransaction";
+import Log from "@c4dt/cothority/log";
+import {bufferToObject} from "./utils";
 
 export enum ECredentials {
     pub = "1-public",
@@ -170,7 +172,8 @@ export class CredentialBS extends BehaviorSubject<Credential> {
     }
 
     public getAttributeNumberBS(name: string): AttributeNumberBS {
-        const bs = ConvertBS(this.getAttributeBS(name), buf => buf.readInt32LE(0));
+        const bs = ConvertBS(this.getAttributeBS(name), buf =>
+            buf && buf.length == 4 ? buf.readInt32LE(0) : 0);
         return new AttributeNumberBS(this, bs, name);
     }
 
@@ -384,8 +387,13 @@ export class InstanceSet {
     public static splitList(contacts: Buffer | Credential | null | undefined): Buffer[] {
         const list = [];
         if (contacts instanceof Buffer) {
-            for (let i = 0; i < contacts.length; i += 32) {
-                list.push(contacts.slice(i, i + 32));
+            if (contacts.toString().startsWith(`[{"type":"Buffer","data":`)){
+                const ids = bufferToObject(contacts) as Buffer[];
+                list.push(...ids);
+            } else {
+                for (let i = 0; i < contacts.length; i += 32) {
+                    list.push(contacts.slice(i, i + 32));
+                }
             }
         } else if (contacts instanceof Credential) {
             for (const attr of contacts.attributes) {

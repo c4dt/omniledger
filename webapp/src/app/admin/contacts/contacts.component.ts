@@ -323,7 +323,7 @@ export class ContactsComponent implements OnInit {
     }
 
     async actionShow(inst: ActionBS) {
-        this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst.darc}});
     }
 
     async actionRename(g: DarcBS) {

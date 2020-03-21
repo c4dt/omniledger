@@ -58,10 +58,14 @@ export class AppComponent implements OnInit {
             return;
         }
 
+        this.logAppend("Checking if user exists", 20);
         if (!(await this.bcs.hasUser())) {
-            // No data saved - show how to get a new user
-            this.loading = false;
-            return this.newUser();
+            this.logAppend("Checking if we can migrate", 30);
+            if (!(await this.bcs.migrate())) {
+                // No data saved - show how to get a new user
+                this.loading = false;
+                return this.newUser();
+            }
         } else {
             try {
                 this.logAppend("Loading data", 80);
