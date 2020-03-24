@@ -10,7 +10,6 @@ import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import {IdentityDarc, IdentityWrapper, SignerEd25519} from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
-import {RenameComponent, ShowComponent} from "src/app/admin/devices/devices.component";
 import {showDialogInfo, showTransactions, TProgress, UIViews} from "../../../lib/Ui";
 import {ManageDarcComponent} from "../manage-darc";
 import {ContactInfoComponent} from "./contact-info/contact-info.component";
@@ -18,7 +17,8 @@ import {
     ABActionsBS,
     ABContactsBS,
     ABGroupsBS,
-    ActionBS, byzcoin,
+    ActionBS,
+    byzcoin,
     CredentialStructBS,
     KeyPair,
     User,
@@ -26,6 +26,8 @@ import {
 } from "dynacred2";
 import {UserService} from "src/app/user.service";
 import {ByzCoinService} from "src/app/byz-coin.service";
+import {DarcInstanceInfoComponent, RenameComponent, ShowComponent} from "src/lib/show/show.component";
+
 type DarcBS = byzcoin.DarcBS;
 
 @Component({
@@ -470,17 +472,6 @@ export class CreateComponent {
     constructor(
         public dialogRef: MatDialogRef<CreateComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
-    }
-}
-
-@Component({
-    selector: "app-show-darcinstance",
-    templateUrl: "show-darcinstance.html",
-})
-export class DarcInstanceInfoComponent {
-    constructor(
-        public dialogRef: MatDialogRef<DarcInstanceInfoComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { inst: DarcBS }) {
     }
 }
 

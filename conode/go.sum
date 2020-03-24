@@ -46,6 +46,7 @@ github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5m
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
+github.com/ethereum/go-ethereum v1.8.27 h1:d+gkiLaBDk5fn3Pe/xNVaMrB/ozI+AUB2IlVBp29IrY=
 github.com/ethereum/go-ethereum v1.8.27/go.mod h1:PwpWDrCLZrV+tfrhqqF6kPknbISMHaJv9Ln3kPCZLwY=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/garyburd/redigo v1.6.0/go.mod h1:NR3MbYisc3/PwhQ00EMzDiPmrwpPxAn5GI05/YaO1SY=
@@ -190,6 +191,8 @@ go.dedis.ch/onet/v3 v3.0.32 h1:k3ZuLU4j+NYPtM+hakhUzffbzmoETpRV6+Z8aq3P0eU=
 go.dedis.ch/onet/v3 v3.0.32/go.mod h1:dDV7bRKbT3LJ7enHBcys2O0jXEY2jTUB4dq8HtekGbA=
 go.dedis.ch/onet/v3 v3.1.0 h1:KwofJGuw9T+051ejuWWxA6K1N6blNvhuwz5neasWg8Y=
 go.dedis.ch/onet/v3 v3.1.0/go.mod h1:dDV7bRKbT3LJ7enHBcys2O0jXEY2jTUB4dq8HtekGbA=
+go.dedis.ch/onet/v3 v3.1.1 h1:DN0t3Qj611kUrdmNn5quhWDdite1bxhoqoPna8IAWS0=
+go.dedis.ch/onet/v3 v3.1.1/go.mod h1:dDV7bRKbT3LJ7enHBcys2O0jXEY2jTUB4dq8HtekGbA=
 go.dedis.ch/onet/v4 v4.0.0-pre1 h1:sWZQj5tTrRCSeoBc3FYKfQmHrxq3DntLztbxdW5GjO4=
 go.dedis.ch/onet/v4 v4.0.0-pre1/go.mod h1:8jjB3FoDndY5weXSE+I1Nc9/6kwAGUyw4cXcJNswmSk=
 go.dedis.ch/protobuf v1.0.5/go.mod h1:eIV4wicvi6JK0q/QnfIEGeSFNG0ZeB24kzut5+HaRLo=

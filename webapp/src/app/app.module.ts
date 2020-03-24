@@ -16,7 +16,6 @@ import {
     ContactsComponent,
     CreateComponent,
     DarcInstanceAddComponent,
-    DarcInstanceInfoComponent,
     SignupLinkComponent,
     TransferCoinComponent,
     UserCredComponent,
@@ -25,9 +24,7 @@ import {
     DeviceAddComponent,
     DeviceRecoveryComponent,
     DevicesComponent,
-    RenameComponent,
-    ShowComponent,
-} from "./admin/devices/devices.component";
+    } from "./admin/devices/devices.component";
 import { ManageDarcComponent } from "./admin/manage-darc";
 import { PersonhoodComponent } from "./admin/personhood/personhood.component";
 import { StatusComponent } from "./admin/status/status.component";
@@ -47,6 +44,7 @@ import { ExplorerComponent } from "./explorer/explorer.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
+import {DarcInstanceInfoComponent, RenameComponent, ShowComponent} from "src/lib/show/show.component";
 
 @NgModule({
     bootstrap: [AppComponent],

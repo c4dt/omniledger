@@ -11,6 +11,7 @@ import {showDialogInfo, showDialogOKC, showSnack, showTransactions, TProgress} f
 import {byzcoin, CSTypesBS, KeyPair} from "dynacred2";
 import {UserService} from "src/app/user.service";
 import {ByzCoinService} from "src/app/byz-coin.service";
+import {DarcInstanceInfoComponent, RenameComponent, ShowComponent} from "src/lib/show/show.component";
 
 class Signer {
     descr: string;
@@ -63,7 +64,7 @@ export class DevicesComponent {
                     async (progress: TProgress) => {
                         progress(30, "Deleting Device");
                         await this.user.executeTransactions(tx =>
-                            this.user.credSignerBS.devices.unlink(tx, name));
+                            this.user.credSignerBS.devices.unlink(tx, device.getValue().getBaseID()));
                     });
             }
         } catch (e) {
@@ -92,7 +93,8 @@ export class DevicesComponent {
         });
     }
 
-    async rename(type: CSTypesBS, name: string) {
+    async rename(type: CSTypesBS, dev: byzcoin.DarcBS) {
+        const name = this.getName(type, dev);
         const oldName = name.replace(`/^${type.prefix}:/`, '');
         const ac = this.dialog.open(RenameComponent, {
             data: {
@@ -107,7 +109,7 @@ export class DevicesComponent {
             await showTransactions(this.dialog, `Renaming ${type.prefix}:${oldName}`,
                 async (progress: TProgress) => {
                     progress(50, "Renaming and updating credential");
-                    await this.user.executeTransactions(tx => type.rename(tx, oldName, newName));
+                    await this.user.executeTransactions(tx => type.rename(tx, dev.getValue().getBaseID(), newName));
                 });
         });
     }
@@ -162,7 +164,7 @@ export class DevicesComponent {
         });
     }
 
-    async recoveryDelete(d: Signer) {
+    async recoveryDelete(dev: byzcoin.DarcBS) {
         if (await showDialogOKC(this.dialog, "Remove Recovery",
             "Are you sure to remove this device from the option of recovery?",
             {OKButton: "Remove", CancelButton: "Keep it"})) {
@@ -170,10 +172,18 @@ export class DevicesComponent {
                 async (progress: TProgress) => {
                     progress(50, "Removing recovery account");
                     await this.user.executeTransactions(tx => {
-                        this.user.credSignerBS.recoveries.unlink(tx, d.name);
+                        this.user.credSignerBS.recoveries.unlink(tx, dev.getValue().getBaseID());
                     });
                 });
         }
+    }
+
+    getName(cst: CSTypesBS, dev: byzcoin.DarcBS): string{
+        return cst.cim.getEntry(dev.getValue().getBaseID());
+    }
+
+    async darcShow(inst: byzcoin.DarcBS) {
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
     }
 }
 
@@ -187,36 +197,6 @@ export class DeviceAddComponent {
     constructor(
         public dialogRef: MatDialogRef<DeviceAddComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
-    }
-}
-
-@Component({
-    selector: "show",
-    templateUrl: "show.html",
-})
-export class ShowComponent {
-    constructor(
-        public dialogRef: MatDialogRef<ShowComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: string) {
-    }
-}
-
-interface IDeviceType {
-    typeStr: string;
-    name: string;
-}
-
-@Component({
-    selector: "rename",
-    templateUrl: "rename.html",
-})
-export class RenameComponent {
-    origName: string;
-
-    constructor(
-        public dialogRef: MatDialogRef<RenameComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: IDeviceType) {
-        this.origName = data.name;
     }
 }
 

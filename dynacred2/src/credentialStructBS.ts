@@ -222,21 +222,29 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
     public setInstanceMap(tx: CredentialTransaction, val: InstanceMap) {
         const cred = this.cbs.getValue();
         cred.attributes.splice(0);
-        Array.from(val.map.entries()).forEach(([name, value]) =>
-            cred.attributes.push(new Attribute({name, value})));
+        Array.from(val.map.entries()).forEach(([idStr, name]) =>
+            cred.attributes.push(new Attribute({name, value: Buffer.from(idStr, "hex")})));
         this.cbs.set(tx, cred);
     }
 
-    public setValue(tx: CredentialTransaction, name: string, value: Buffer) {
+    public setEntry(tx: CredentialTransaction, name: string, id: Buffer) {
         const val = this.getValue();
-        val.map.set(name, value);
+        val.map.set(id.toString("hex"), name);
         return this.setInstanceMap(tx, val);
     }
 
-    public rmValue(tx: CredentialTransaction, name: string) {
+    public rmEntry(tx: CredentialTransaction, id: Buffer) {
         const val = this.getValue();
-        val.map.delete(name);
+        val.map.delete(id.toString("hex"));
         this.setInstanceMap(tx, val);
+    }
+
+    public hasEntry(id: Buffer): boolean{
+        return this.getValue().map.has(id.toString("hex"));
+    }
+
+    public getEntry(id: Buffer): string{
+        return this.getValue().map.get(id.toString("hex"));
     }
 }
 
@@ -445,22 +453,24 @@ export class InstanceSet {
 }
 
 export class InstanceMap {
-    public map: Map<string, Buffer>;
+    // Even though we map id:string, we need to use the .toString("hex"), so that the
+    // map functions - keys cannot be Buffers :(
+    public map: Map<string, string>;
 
     constructor(private cred?: Credential) {
-
-        this.map = new Map(cred ? cred.attributes.map(attr => [attr.name, attr.value]) : []);
+        this.map = new Map(cred ? cred.attributes.map(attr =>
+            [attr.value.toString("hex"), attr.name]) : []);
     }
 
     toCredential(): Credential {
         return new Credential({
             name: this.cred.name,
             attributes: Array.from(this.map)
-                .map(m => new Argument({name: m[0], value: m[1]}))
+                .map(m => new Argument({name: m[1], value: Buffer.from(m[0], "hex")}))
         })
     }
 
     toInstanceIDs(): InstanceID[] {
-        return Array.from(this.map.values());
+        return Array.from(this.map.keys()).map(str => Buffer.from(str, "hex"));
     }
 }

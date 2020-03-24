@@ -25,7 +25,7 @@ export class CredentialSignerBS extends DarcBS {
 
 export class CSTypesBS extends DarcsBS {
     constructor(private signerDarcBS: DarcBS,
-                private cim: CredentialInstanceMapBS,
+                public readonly cim: CredentialInstanceMapBS,
                 public readonly prefix: string,
                 dbs: DarcsBS) {
         super(dbs);
@@ -39,37 +39,27 @@ export class CSTypesBS extends DarcsBS {
 
     public link(tx: CredentialTransaction, name: string, id: InstanceID) {
         this.signerDarcBS.addSignEvolve(tx, id);
-        this.cim.setValue(tx, name, id);
+        this.cim.setEntry(tx, name, id);
     }
 
-    public unlink(tx: CredentialTransaction, name: string) {
-        const im = this.cim.getValue();
-        if (!im.map.has(name)) {
+    public unlink(tx: CredentialTransaction, id: InstanceID) {
+        if (!this.cim.hasEntry(id)) {
             return;
         }
-        const darcID = im.map.get(name);
-        this.cim.rmValue(tx, name);
-        if (darcID) {
-            this.signerDarcBS.rmSignEvolve(tx, darcID);
-        }
+        this.cim.rmEntry(tx, id);
+        this.signerDarcBS.rmSignEvolve(tx, id);
     }
 
-    public rename(tx: CredentialTransaction, oldName: string, newName: string) {
-        const im = this.cim.getValue();
-        if (!im.map.has(oldName)) {
+    public rename(tx: CredentialTransaction, id: Buffer, newName: string) {
+        if (!this.cim.hasEntry(id)) {
             throw new Error("this signer doesn't exist");
         }
-        if (im.map.has(newName)) {
+        if ([...this.cim.getValue().map.values()].includes(newName)) {
             throw new Error("new name already exists");
         }
-        const darcID = im.map.get(oldName);
-        this.cim.rmValue(tx, oldName);
-        if (darcID) {
-            const dbs = this.getValue().find(d => d.getValue().getBaseID().equals(darcID));
-            dbs.evolve(tx, {description: Buffer.from(`${this.prefix}:${newName}`)});
-            this.signerDarcBS.rmSignEvolve(tx, darcID);
-            this.signerDarcBS.addSignEvolve(tx, darcID);
-        }
+        // const dbs = this.getValue().find(d => d.getValue().getBaseID().equals(id));
+        // dbs.evolve(tx, {description: Buffer.from(`${this.prefix}:${newName}`)});
+        this.cim.setEntry(tx, newName, id);
     }
 
     public find(name: string): DarcBS | undefined {
