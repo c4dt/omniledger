@@ -63,6 +63,11 @@ export class CSTypesBS extends DarcsBS {
     }
 
     public find(name: string): DarcBS | undefined {
-        return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/${name}/`));
+        const didDesc = [...this.cim.getValue().map.entries()].find((id) => id[1] === name);
+        if (didDesc === undefined){
+            return undefined;
+        }
+        const did = Buffer.from(didDesc[0], "hex");
+        return this.getValue().find(dbs => dbs.getValue().getBaseID().equals(did));
     }
 }

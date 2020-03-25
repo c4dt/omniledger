@@ -134,14 +134,14 @@ export class ByzCoinBuilder {
         return u;
     }
 
-    public async migrateUser(dbold: IStorage): Promise<boolean> {
+    public async migrateUser(dbold: IStorage, base = "main"): Promise<boolean> {
         try {
             Log.lvl3("trying to migrate");
-            const keyBuf = await dbold.get(User.keyMigrate);
-            if (!keyBuf) {
+            const userData = await dbold.get(User.keyMigrate);
+            if (!userData) {
                 return false;
             }
-            const migrate = bufferToObject(keyBuf) as IMigrate;
+            const migrate = bufferToObject(userData) as IMigrate;
             if (migrate && migrate.version === User.versionMigrate) {
                 // Just suppose everything is here and let it fail otherwise.
                 Log.lvl1("Migrating from", migrate);
@@ -153,9 +153,10 @@ export class ByzCoinBuilder {
                     return false;
                 }
                 const credID = CredentialsInstance.credentialIID(seed);
-                await this.db.set(User.keyPriv, keyBuf);
-                await this.db.set(User.keyCredID, credID);
-                Log.lvl1("Successfully written private key and credID")
+                const privKey = Buffer.from(migrate.keyIdentity, "hex");
+                await this.db.set(`${base}:${User.keyPriv}`, privKey);
+                await this.db.set(`${base}:${User.keyCredID}`, credID);
+                Log.lvl1("Successfully written private key and credID");
                 return true;
             }
         } catch (e) {

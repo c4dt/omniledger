@@ -3,7 +3,7 @@ import Long from "long";
 import {Log} from "@dedis/cothority";
 import {curve} from "@dedis/kyber";
 import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
-import {LeaderConnection} from "@dedis/cothority/network/connection";
+import {LeaderConnection} from "@dedis/cothority/network";
 
 import {Genesis, IGenesisUser, User, UserSkeleton} from "dynacred2";
 

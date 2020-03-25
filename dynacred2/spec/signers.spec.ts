@@ -88,8 +88,9 @@ describe("Signers should", () => {
         await user.credStructBS.credPublic.alias.pipe(filter(a => a === "recovered"), first()).toPromise();
 
         Log.lvl2("Remove old device and confirm name-change is impossible");
+        const initialID = recovered.credSignerBS.devices.find("initial").getValue().getBaseID();
         await recovered.executeTransactions(tx => {
-            recovered.credSignerBS.devices.unlink(tx, "initial");
+            recovered.credSignerBS.devices.unlink(tx, initialID);
         });
         await recovered.credSignerBS.devices.pipe(filter(devs => devs.length === 1), first()).toPromise();
         if (bct.bcSimul) {

@@ -25,8 +25,6 @@ describe("User class should", async () => {
         const user = await bct.createUser("migrate");
         const db = bct.db;
 
-        User.migrateOnce = true;
-
         const dbKP = `main:${User.keyPriv}`;
 
         await db.set(dbKP, Buffer.alloc(0));
@@ -40,14 +38,9 @@ describe("User class should", async () => {
             }
         };
         await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
-        await expectAsync(bct.retrieveUserByDB()).toBeResolved();
-
-        const mig = await db.get(User.keyMigrate);
-        expect(mig).toBeDefined();
-        if (mig) {
-            expect(mig.length).toBe(0);
-        }
-        await expectAsync(bct.retrieveUserByDB()).toBeResolved();
+        expect(await bct.migrateUser(db)).toBeTruthy();
+        const newUser = await bct.retrieveUserByDB();
+        expect(newUser.credStructBS.credPublic.alias.getValue()).toBe("migrate");
 
         await db.set(dbKP, Buffer.alloc(0));
         await expectAsync(bct.retrieveUserByDB()).toBeRejected();
