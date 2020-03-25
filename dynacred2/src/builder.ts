@@ -2,7 +2,7 @@ import URL from "url-parse";
 import {catchError, flatMap, map, mergeAll} from "rxjs/operators";
 import {BehaviorSubject, of} from "rxjs";
 
-import {Log} from "@dedis/cothority/index";
+import {Log} from "@dedis/cothority";
 import {ByzCoinRPC, Instance, InstanceID, IStorage, Proof} from "@dedis/cothority/byzcoin";
 import {Darc, IdentityDarc, IdentityWrapper} from "@dedis/cothority/darc";
 import {
@@ -218,7 +218,7 @@ export class ByzCoinBuilder {
             const credBS = ConvertBS(instBS, inst => CredentialStruct.decode(inst.value));
             return new CredentialStructBS(id, darcID, credBS);
         } catch (e) {
-            Log.warn("couldn't get credStruct for", id);
+            Log.warn("couldn't get credStruct for", id, e);
             return undefined;
         }
     }

@@ -2,7 +2,7 @@ import Long from "long";
 
 import {Log} from "@dedis/cothority";
 import {curve} from "@dedis/kyber";
-import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC, CONFIG_INSTANCE_ID, IStorage} from "@dedis/cothority/byzcoin";
 import {LeaderConnection} from "@dedis/cothority/network";
 
 import {Genesis, IGenesisUser, User, UserSkeleton} from "dynacred2";
@@ -11,7 +11,7 @@ import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {ROSTER} from "spec/support/conondes";
 
 Log.lvl = 2;
-const simul = true;
+const simul = false;
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -64,12 +64,12 @@ export class BCTestEnv extends Genesis {
     }
 
     static async real(): Promise<BCTestEnv> {
-        const bcte = await this.fromScratch(async (igd) => {
+        const bcte = await this.fromScratch(async (igd, db) => {
             // await startConodes();
             const bc = await ByzCoinRPC.newByzCoinRPC(ROSTER, igd.darc,
                 Long.fromNumber(1e8));
             const conn = new LeaderConnection(ROSTER, ByzCoinRPC.serviceName);
-            return ByzCoinRPC.fromByzcoin(conn, bc.genesisID);
+            return ByzCoinRPC.fromByzcoin(conn, bc.genesisID, 0, 1000, undefined, db);
         });
         Log.lvl1("Successfully started real-byzcoin");
         return bcte;

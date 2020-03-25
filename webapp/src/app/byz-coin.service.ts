@@ -2,7 +2,7 @@ import Dexie from "dexie";
 import {Injectable} from '@angular/core';
 import {ByzCoinBuilder, User} from "dynacred2";
 import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
-import {RosterWSConnection} from "@dedis/cothority/network/connection";
+import {RosterWSConnection} from "@dedis/cothority/network";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
 import {SkipBlock, SkipchainRPC} from "@dedis/cothority/skipchain";

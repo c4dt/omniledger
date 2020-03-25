@@ -84,7 +84,7 @@ export class Genesis extends ByzCoinBuilder {
             throw new Error("cannot create coin without a genesisUser")
         }
         const instance = await CoinInstance.spawn(this.bc, this.darcID, this.signers, SPAWNER_COIN);
-        await instance.mint(this.signers, Long.fromNumber(2e9));
+        await instance.mint(this.signers, Long.fromNumber(1e11));
         this.coin = {instance, signers: this.signers};
         return this.coin;
     }
@@ -127,7 +127,7 @@ export class Genesis extends ByzCoinBuilder {
         const userFactory = new UserSkeleton(alias, this.spawner.id, priv);
         const tx = new CredentialTransaction(this.bc, this.spawner, this.coin);
         tx.createUser(userFactory, Long.fromNumber(1e9));
-        await tx.sendCoins(2);
+        await tx.sendCoins(10);
         return this.retrieveUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }
