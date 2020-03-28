@@ -78,8 +78,7 @@ export class ByzCoinBuilder {
         const auth = await this.bc.checkAuthorization(this.bc.genesisID, credStructBS.darcID,
             IdentityWrapper.fromIdentity(kpp.signer()));
         Log.lvl1("auth is:", auth);
-        Log.lvl3("getting credentialSignerBS");
-        const credSignerBS = await this.retrieveCredentialSignerBS(credStructBS);
+        Log.lvl3("getting spawner");
         const spawnerInstanceBS = await ObservableToBS(credStructBS.credConfig.spawnerID.pipe(
             flatMap(id => this.bc.instanceObservable(id)),
             catchError(err => {
@@ -96,10 +95,13 @@ export class ByzCoinBuilder {
         ));
         Log.lvl3("getting coinBS");
         const coinBS = await this.retrieveCoinBS(credStructBS.credPublic.coinID);
+        Log.lvl3("getting credentialSignerBS");
+        const credSignerBS = await this.retrieveCredentialSignerBS(credStructBS);
         Log.lvl3("getting address book");
         const addressBook = await this.retrieveAddressBook(credStructBS.credPublic);
         const user = new User(
-            this.bc, this.db, kpp, dbBase, credStructBS, spawnerInstanceBS, coinBS, credSignerBS, addressBook
+            this.bc, this.db, kpp, dbBase, credStructBS, spawnerInstanceBS,
+            coinBS, credSignerBS, addressBook
         );
         await user.save();
         return user;
@@ -249,7 +251,7 @@ export class ByzCoinBuilder {
             map(inst => inst ? Darc.decode(inst.value) : undefined),
         );
         const bsDarc = await ObservableToBS(instObs);
-        if (bsDarc.getValue() === undefined){
+        if (bsDarc.getValue() === undefined) {
             return undefined;
         }
         return new DarcBS(bsDarc);

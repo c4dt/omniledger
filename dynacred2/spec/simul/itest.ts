@@ -11,7 +11,7 @@ import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {ROSTER} from "spec/support/conondes";
 
 Log.lvl = 2;
-const simul = false;
+export const simul = false;
 
 const ed25519 = curve.newCurve("edwards25519");
 
@@ -24,7 +24,7 @@ export class BCTestEnv extends Genesis {
     constructor(
         g: Genesis,
         public user: User) {
-        super(g.db, g.bc);
+        super(g.db, g.bc, g.genesisUser, g.spawner, g.coin);
     }
 
     static async start(): Promise<BCTestEnv> {

@@ -10,12 +10,14 @@ import {Point, PointFactory} from "@dedis/kyber";
 import {ConvertBS} from "./observableUtils";
 import {CredentialTransaction} from "./credentialTransaction";
 import {bufferToObject} from "./utils";
+import Log from "@c4dt/cothority/log";
 
 export enum ECredentials {
     pub = "1-public",
     config = "1-config",
     devices = "1-devices",
-    recoveries = "1-recovery"
+    recoveries = "1-recovery",
+    calypso = "1-calypso"
 }
 
 export enum EAttributesPublic {
@@ -61,6 +63,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     public credConfig: CredentialConfig;
     public credDevices: CredentialInstanceMapBS;
     public credRecoveries: CredentialInstanceMapBS;
+    public credCalypso: CredentialInstanceMapBS;
 
     constructor(public readonly id: InstanceID,
                 public readonly darcID: InstanceID,
@@ -72,6 +75,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         this.credConfig = new CredentialConfig(this.getCredentialBS(ECredentials.config));
         this.credDevices = this.getCredentialInstanceMapBS(ECredentials.devices);
         this.credRecoveries = this.getCredentialInstanceMapBS(ECredentials.recoveries);
+        this.credCalypso = this.getCredentialInstanceMapBS(ECredentials.calypso);
     }
 
     public getCredentialBS(name: ECredentials): CredentialBS {
@@ -96,6 +100,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
 
     public setCredential(tx: CredentialTransaction, cred: Credential) {
         const credStruct = this.getValue();
+        Log.print("setting new cred to:", cred);
         credStruct.setCredential(cred.name, cred);
         this.setCredentialStruct(tx, credStruct);
     }
@@ -238,11 +243,11 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
         this.setInstanceMap(tx, val);
     }
 
-    public hasEntry(id: Buffer): boolean{
+    public hasEntry(id: Buffer): boolean {
         return this.getValue().map.has(id.toString("hex"));
     }
 
-    public getEntry(id: Buffer): string{
+    public getEntry(id: Buffer): string {
         return this.getValue().map.get(id.toString("hex"));
     }
 }
@@ -394,7 +399,7 @@ export class InstanceSet {
     public static splitList(contacts: Buffer | Credential | null | undefined): Buffer[] {
         const list = [];
         if (contacts instanceof Buffer) {
-            if (contacts.toString().startsWith(`[{"type":"Buffer","data":`)){
+            if (contacts.toString().startsWith(`[{"type":"Buffer","data":`)) {
                 const ids = bufferToObject(contacts) as Buffer[];
                 list.push(...ids);
             } else {
@@ -457,6 +462,7 @@ export class InstanceMap {
     public map: Map<string, string>;
 
     constructor(private cred?: Credential) {
+        Log.print("updating with", cred);
         this.map = new Map(cred ? cred.attributes.map(attr =>
             [attr.value.toString("hex"), attr.name]) : []);
     }
@@ -470,6 +476,17 @@ export class InstanceMap {
     }
 
     toInstanceIDs(): InstanceID[] {
-        return Array.from(this.map.keys()).map(str => Buffer.from(str, "hex"));
+        return this.toKVs().map(kv => kv.key);
     }
+
+    toKVs(): InstanceMapKV[] {
+        return [...this.map.entries()].map(kv => {
+            return {key: Buffer.from(kv[0], "hex"), value: kv[1]}
+        })
+    }
+}
+
+export interface InstanceMapKV {
+    key: Buffer,
+    value: string
 }

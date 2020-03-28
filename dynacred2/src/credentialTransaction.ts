@@ -1,6 +1,6 @@
 import Long from "long";
 
-import {Argument, ByzCoinRPC, InstanceID, Instruction} from "@dedis/cothority/byzcoin";
+import {Argument, ByzCoinRPC, ClientTransaction, InstanceID, Instruction} from "@dedis/cothority/byzcoin";
 import {
     Coin,
     CoinInstance,
@@ -18,15 +18,22 @@ import {ICoin} from "./genesis";
 import {EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {UserSkeleton} from "./userSkeleton";
 import {Transaction} from "./byzcoin";
+import {CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret, Read, Write} from "@dedis/cothority/calypso";
+import {createCipheriv, randomBytes} from "crypto-browserify";
+import {Point} from "@dedis/kyber/index";
 
 export class CredentialTransaction extends Transaction {
     private cost = Long.fromNumber(0);
 
-    constructor(bc: ByzCoinRPC, private spawner: SpawnerInstance, private coin: ICoin) {
+    constructor(public bc: ByzCoinRPC, private spawner: SpawnerInstance, private coin: ICoin) {
         super(bc);
     }
 
-    public async sendCoins(wait = 0): Promise<AddTxResponse> {
+    public clone(): CredentialTransaction {
+        return new CredentialTransaction(this.bc, this.spawner, this.coin);
+    }
+
+    public async sendCoins(wait = 0): Promise<[ClientTransaction, AddTxResponse]> {
         if (this.cost.greaterThan(0)) {
             this.unshift(Instruction.createInvoke(this.coin.instance.id, CoinInstance.contractID, CoinInstance.commandFetch,
                 [new Argument({
@@ -73,6 +80,36 @@ export class CredentialTransaction extends Transaction {
                 new Argument({name: SpawnerInstance.argumentDarcID, value: darcID}),
                 new Argument({name: SpawnerInstance.argumentCredential, value: cred.toBytes()})]);
         this.cost = this.cost.add(this.spawner.costs.costCredential.value);
+    }
+
+    public spawnCalypsoWrite(darcID: InstanceID, wr: Write) {
+        this.spawn(
+            this.spawner.id,
+            CalypsoWriteInstance.contractID,
+            [
+                new Argument({
+                    name: CalypsoWriteInstance.argumentWrite,
+                    value: Buffer.from(Write.encode(wr).finish())
+                }),
+                new Argument({
+                    name: CalypsoWriteInstance.argumentDarcID,
+                    value: darcID
+                })]);
+        this.cost = this.cost.add(this.spawner.costs.costCWrite.value);
+    }
+
+    public spawnCalypsoRead(wrID: InstanceID, pub: Point) {
+        const read = new Read({write: wrID, xc: pub.marshalBinary()});
+        this.spawn(
+            wrID,
+            CalypsoReadInstance.contractID,
+            [new Argument({
+                name: CalypsoReadInstance.argumentRead,
+                value: Buffer.from(Read.encode(read).finish()),
+            }),
+            ]
+        )
+        this.cost = this.cost.add(this.spawner.costs.costCRead.value);
     }
 
     public createUser(user: UserSkeleton, initial = Long.fromNumber(0)) {

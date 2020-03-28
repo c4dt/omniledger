@@ -1,6 +1,7 @@
 import {Argument, ByzCoinRPC, ClientTransaction, Instruction} from "@dedis/cothority/byzcoin";
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
 import ISigner from "@dedis/cothority/darc/signer";
+import Log from "@c4dt/cothority/log";
 
 export class Transaction {
     private instructions: Instruction[] = [];
@@ -8,10 +9,10 @@ export class Transaction {
     constructor(protected bc: ByzCoinRPC) {
     }
 
-    public async send(signers: ISigner[][], wait = 0): Promise<AddTxResponse> {
+    public async send(signers: ISigner[][], wait = 0): Promise<[ClientTransaction, AddTxResponse]> {
         const ctx = ClientTransaction.make(this.bc.getProtocolVersion(), ...this.instructions);
         await ctx.updateCountersAndSign(this.bc, signers);
-        return this.bc.sendTransactionAndWait(ctx, wait);
+        return [ctx, await this.bc.sendTransactionAndWait(ctx, wait)];
     }
 
     public push(inst: Instruction): Instruction{

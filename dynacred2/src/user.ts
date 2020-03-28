@@ -13,6 +13,8 @@ import {ICoin} from "./genesis";
 import {CoinBS} from "./byzcoin/coinBS";
 import {DarcBS} from "./byzcoin/darcsBS";
 import {CredentialTransaction} from "./credentialTransaction";
+import {Calypso} from "./calypso";
+import {LongTermSecret} from "@dedis/cothority/calypso";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
@@ -26,6 +28,7 @@ export class User {
     public static readonly keyMigrate = "storage/data.json";
     public static readonly versionMigrate = 1;
     static readonly urlNewDevice = "/register/device";
+    public calypso?: Calypso;
 
     constructor(
         public bc: ByzCoinRPC,
@@ -37,6 +40,18 @@ export class User {
         public coinBS: CoinBS,
         public credSignerBS: CredentialSignerBS,
         public addressBook: AddressBook) {
+
+        const ltsID = credStructBS.credConfig.ltsID.getValue();
+        const ltsX = credStructBS.credConfig.ltsX.getValue();
+        if (ltsID && ltsID.length === 32 && ltsX) {
+            const lts = new LongTermSecret(this.bc, ltsID, ltsX);
+            const iCoin = {
+                instance: this.coinBS.getValue(),
+                signers: [this.kpp.signer()]
+            }
+            const tx = new CredentialTransaction(bc, spawnerInstanceBS.getValue(), iCoin);
+            this.calypso = new Calypso(lts, tx, credSignerBS.getValue().getBaseID(), credStructBS.credCalypso);
+        }
     }
 
     get kiSigner(): SignerEd25519 {
