@@ -10,7 +10,7 @@ import {Point, PointFactory} from "@dedis/kyber";
 import {ConvertBS} from "./observableUtils";
 import {CredentialTransaction} from "./credentialTransaction";
 import {bufferToObject} from "./utils";
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 
 export enum ECredentials {
     pub = "1-public",

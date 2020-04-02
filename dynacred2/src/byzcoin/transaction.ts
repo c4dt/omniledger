@@ -1,7 +1,7 @@
 import {Argument, ByzCoinRPC, ClientTransaction, Instruction} from "@dedis/cothority/byzcoin";
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
 import ISigner from "@dedis/cothority/darc/signer";
-import Log from "@c4dt/cothority/log";
+import Log from "@dedis/cothority/log";
 
 export class Transaction {
     private instructions: Instruction[] = [];
