@@ -1,5 +1,6 @@
 import {curve, Point, Scalar} from "@dedis/kyber";
 import {SignerEd25519} from "@dedis/cothority/darc";
+import {Log} from "@dedis/cothority";
 const ed25519 = curve.newCurve("edwards25519");
 
 export class KeyPair {
@@ -15,7 +16,7 @@ export class KeyPair {
     }
 
     public static fromPrivate(priv: Scalar | Buffer): KeyPair {
-        if (priv instanceof Buffer) {
+        if (!isScalar(priv)) {
             if (priv.length !== ed25519.scalarLen()){
                 throw new Error("private key must be of length " + ed25519.scalarLen());
             }
@@ -37,4 +38,8 @@ export class KeyPair {
     public signer(): SignerEd25519 {
         return new SignerEd25519(this.pub, this.priv);
     }
+}
+
+function isScalar(o: any): o is Scalar {
+    return 'marshalBinary' in o;
 }

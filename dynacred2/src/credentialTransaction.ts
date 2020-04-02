@@ -12,15 +12,15 @@ import {
 } from "@dedis/cothority/byzcoin/contracts";
 import {Log} from "@dedis/cothority/index";
 import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
-import {Darc, IIdentity} from "@dedis/cothority/darc";
+import {Darc, IIdentity, Rule} from "@dedis/cothority/darc";
 
 import {ICoin} from "./genesis";
 import {EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {UserSkeleton} from "./userSkeleton";
 import {Transaction} from "./byzcoin";
-import {CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret, Read, Write} from "@dedis/cothority/calypso";
-import {createCipheriv, randomBytes} from "crypto-browserify";
+import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from "@dedis/cothority/calypso";
 import {Point} from "@dedis/kyber/index";
+import {randomBytes} from "crypto";
 
 export class CredentialTransaction extends Transaction {
     private cost = Long.fromNumber(0);
@@ -82,34 +82,33 @@ export class CredentialTransaction extends Transaction {
         this.cost = this.cost.add(this.spawner.costs.costCredential.value);
     }
 
-    public spawnCalypsoWrite(darcID: InstanceID, wr: Write) {
-        this.spawn(
-            this.spawner.id,
-            CalypsoWriteInstance.contractID,
-            [
-                new Argument({
-                    name: CalypsoWriteInstance.argumentWrite,
-                    value: Buffer.from(Write.encode(wr).finish())
-                }),
-                new Argument({
-                    name: CalypsoWriteInstance.argumentDarcID,
-                    value: darcID
-                })]);
+    public spawnCalypsoWrite(darcID: InstanceID, wr: Write, preID = randomBytes(32)): InstanceID {
+        const args = [
+            new Argument({name: CalypsoWriteInstance.argumentWrite, value: Buffer.from(Write.encode(wr).finish())}),
+            new Argument({name: CalypsoWriteInstance.argumentDarcID, value: darcID}),
+            new Argument({name: CalypsoWriteInstance.argumentPreID, value: preID})];
+        this.spawn(this.spawner.id, CalypsoWriteInstance.contractID, args);
         this.cost = this.cost.add(this.spawner.costs.costCWrite.value);
+        return CalypsoWriteInstance.preToInstID(preID);
     }
 
-    public spawnCalypsoRead(wrID: InstanceID, pub: Point) {
+    public spawnCalypsoRead(wrID: InstanceID, pub: Point, preID = randomBytes(32)): InstanceID {
         const read = new Read({write: wrID, xc: pub.marshalBinary()});
-        this.spawn(
-            wrID,
-            CalypsoReadInstance.contractID,
-            [new Argument({
-                name: CalypsoReadInstance.argumentRead,
-                value: Buffer.from(Read.encode(read).finish()),
-            }),
-            ]
-        )
+        const args = [
+            new Argument({name: CalypsoReadInstance.argumentRead, value: Buffer.from(Read.encode(read).finish())}),
+            new Argument({name: CalypsoReadInstance.argumentPreID, value: preID}),
+        ];
+        this.spawn(wrID, CalypsoReadInstance.contractID, args);
         this.cost = this.cost.add(this.spawner.costs.costCRead.value);
+        return CalypsoReadInstance.preToInstID(preID);
+    }
+
+    public evolveDarcAddRules(d: Darc, rules: Rule[]): Darc {
+        const newD = d.evolve();
+        rules.forEach(rule => newD.rules.setRuleExp(rule.action, rule.getExpr()));
+        this.invoke(d.getBaseID(), DarcInstance.contractID, DarcInstance.commandEvolve,
+            [new Argument({name: DarcInstance.argumentDarc, value: newD.toBytes()})]);
+        return newD;
     }
 
     public createUser(user: UserSkeleton, initial = Long.fromNumber(0)) {

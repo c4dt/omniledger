@@ -15,6 +15,7 @@ import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 
 import {CredentialStructBS, EAttributesConfig, EAttributesPublic, ECredentials} from "./credentialStructBS";
 import {KeyPair} from "./keypair";
+import Log from "@dedis/cothority/log";
 
 const ed25519 = new curve.edwards25519.Curve();
 
@@ -106,5 +107,10 @@ export class UserSkeleton {
     public addRecovery(id: IIdentity) {
         this.darcSign.rules.getRule(Darc.ruleSign).append(id.toString(), Rule.OR);
         this.darcSign.rules.getRule(DarcInstance.ruleEvolve).append(id.toString(), Rule.OR);
+    }
+
+    public addLTS(lts: LongTermSecret){
+        this.cred.setAttribute(ECredentials.config, EAttributesConfig.ltsID, lts.id);
+        this.cred.setAttribute(ECredentials.config, EAttributesConfig.ltsX, lts.X.toProto());
     }
 }

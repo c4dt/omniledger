@@ -15,6 +15,7 @@ import {DarcBS} from "./byzcoin/darcsBS";
 import {CredentialTransaction} from "./credentialTransaction";
 import {Calypso} from "./calypso";
 import {LongTermSecret} from "@dedis/cothority/calypso";
+import Log from "@dedis/cothority/log";
 
 // The user class is to be used only once for a given DB. It is unique for
 // one URL-domain and represents the logged in user.
@@ -48,9 +49,8 @@ export class User {
             const iCoin = {
                 instance: this.coinBS.getValue(),
                 signers: [this.kpp.signer()]
-            }
-            const tx = new CredentialTransaction(bc, spawnerInstanceBS.getValue(), iCoin);
-            this.calypso = new Calypso(lts, tx, credSignerBS.getValue().getBaseID(), credStructBS.credCalypso);
+            };
+            this.calypso = new Calypso(lts, credSignerBS.getValue().getBaseID(), credStructBS.credCalypso);
         }
     }
 

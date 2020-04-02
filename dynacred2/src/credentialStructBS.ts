@@ -100,7 +100,6 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
 
     public setCredential(tx: CredentialTransaction, cred: Credential) {
         const credStruct = this.getValue();
-        Log.print("setting new cred to:", cred);
         credStruct.setCredential(cred.name, cred);
         this.setCredentialStruct(tx, credStruct);
     }
@@ -462,7 +461,6 @@ export class InstanceMap {
     public map: Map<string, string>;
 
     constructor(private cred?: Credential) {
-        Log.print("updating with", cred);
         this.map = new Map(cred ? cred.attributes.map(attr =>
             [attr.value.toString("hex"), attr.name]) : []);
     }

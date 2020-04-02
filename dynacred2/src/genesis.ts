@@ -13,6 +13,7 @@ import {KeyPair} from "./keypair";
 import {UserSkeleton} from "./userSkeleton";
 import {ByzCoinBuilder} from "./builder";
 import {CredentialTransaction} from "./credentialTransaction";
+import {LongTermSecret} from "@dedis/cothority/calypso";
 
 const ed25519 = new curve.edwards25519.Curve();
 
@@ -120,12 +121,15 @@ export class Genesis extends ByzCoinBuilder {
         return this.spawner;
     }
 
-    public async createUser(alias = "1st user", priv?: Scalar, dbBase = "main"): Promise<User> {
+    public async createUser(alias = "1st user", priv?: Scalar, dbBase = "main", lts?: LongTermSecret): Promise<User> {
         if (!priv) {
             priv = KeyPair.rand().priv;
         }
         const userFactory = new UserSkeleton(alias, this.spawner.id, priv);
         const tx = new CredentialTransaction(this.bc, this.spawner, this.coin);
+        if (lts){
+            userFactory.addLTS(lts);
+        }
         tx.createUser(userFactory, Long.fromNumber(1e9));
         await tx.sendCoins(10);
         return this.retrieveUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
