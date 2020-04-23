@@ -22,10 +22,21 @@ To better understand the interactions of the system, one can look at the [messag
 To test integration, we also provide `cmd/cas-stress`, a small user story simulator. In this case, it simulates the user login into either WordPress or Matrix using CAS. It needs a user data extracted from the browser' IndexedDB (the value of `IndexedDB.dynasent.contacts`). For example, one could use it as
 
 `
-cas-stress --with-matrix-url https://matrix.c4dt.org --with-wordpress-url https://c4dt.org --user-data-path path/to/extracted/user/data
+cas-stress --user-data-path path/to/extracted/user/data matrix https://matrix.c4dt.org
+cas-stress --user-data-path path/to/extracted/user/data wordpress https://c4dt.org
 `
 
-It will regularly take one of the services, simulate a login until it fails then exit with an return code != 0.
+It will take the given service and simulate a login fot the given user.
+
+To extract the user data from the browser, one could use something like
+```javascript
+window.indexedDB.open("dynasent", 10).onsuccess = (event) =>
+	event.target.result
+		.transaction(["contacts"])
+		.objectStore("contacts")
+		.get("storage/data.json").onsuccess = (event) =>
+			console.log(JSON.stringify(event.target.result))
+```
 
 # Configuration for `cas`
 
