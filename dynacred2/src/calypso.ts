@@ -4,12 +4,14 @@ import {Instance, InstanceID} from "@dedis/cothority/byzcoin";
 import {CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret, Write} from "@dedis/cothority/calypso";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import {IdentityWrapper} from "@dedis/cothority/darc";
-import Log from "@dedis/cothority/log";
 import {KeyPair} from "./keypair";
 import {createCipheriv, randomBytes} from "crypto-browserify";
 import {createDecipheriv} from "crypto";
 import {Point} from "@dedis/kyber/index";
-import {TProgress} from "src/app/dialogs/transaction/transaction";
+
+// Copied from webapp/lib/UI.ts - should probably be merged in CredentialTransaction and then be used
+// in showTransactions - which should also be revamped. But that is for later...
+export type TProgress = (percentage: number, text: string) => void;
 
 export class Calypso {
     constructor(

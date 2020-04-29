@@ -10,6 +10,7 @@ export class Transaction {
 
     public async send(signers: ISigner[][], wait = 0): Promise<[ClientTransaction, AddTxResponse]> {
         const ctx = ClientTransaction.make(this.bc.getProtocolVersion(), ...this.instructions);
+        this.instructions = [];
         await ctx.updateCountersAndSign(this.bc, signers);
         return [ctx, await this.bc.sendTransactionAndWait(ctx, wait)];
     }

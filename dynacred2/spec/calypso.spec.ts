@@ -19,8 +19,7 @@ describe("Calypso should", () => {
         const ocs = new OnChainSecretRPC(bct.bc);
         await ocs.authorizeRoster();
         const lts = await LongTermSecret.spawn(bct.bc, bct.darcID, bct.signers, ROSTER);
-        const calypso = new Calypso(lts, bct.user.startTransaction(), bct.user.identityDarcSigner.id,
-            bct.user.credStructBS.credCalypso);
+        const calypso = new Calypso(lts, bct.user.identityDarcSigner.id, bct.user.credStructBS.credCalypso);
 
         const calypsoDarc = Darc.createBasic([bct.user.kiSigner], [bct.user.kiSigner],
             Buffer.from("calypsoDarc"));
@@ -33,18 +32,22 @@ describe("Calypso should", () => {
         const fileName = "test.txt";
         expect(bct.user.credStructBS.credCalypso.getValue().map.size).toBe(0);
         const content = Buffer.from("very important secret");
-        const wrID = await calypso.addFile(calypsoDarc.getBaseID(), fileName, content);
+        const tx = bct.user.startTransaction();
+        const wrID = calypso.addFile(tx, calypsoDarc.getBaseID(), fileName, content);
+        await tx.sendCoins(10);
         const im = bct.user.credStructBS.credCalypso.getValue();
         expect(im.map.size).toBe(1);
         expect(im.toKVs()[0].key.equals(wrID)).toBeTruthy();
         expect(im.toKVs()[0].value).toBe(fileName);
 
         const kp = KeyPair.rand();
-        const buf = await calypso.getFile(wrID, kp);
+        const buf = await calypso.getFile(tx, wrID, kp);
+        await tx.sendCoins(10);
         expect(content.equals(buf)).toBeTruthy();
 
-        await calypso.rmFile(fileName);
-        await expectAsync(calypso.getFile(wrID, kp)).toBeRejected();
+        calypso.rmFile(tx, fileName);
+        await tx.sendCoins(10);
+        await expectAsync(calypso.getFile(tx, wrID, kp)).toBeRejected();
     });
 
     it("be able to encrypt and decrypt using GCM", async () => {

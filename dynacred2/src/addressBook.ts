@@ -13,6 +13,7 @@ import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {UserSkeleton} from "./userSkeleton";
 import {CoinBS} from "./byzcoin/coinBS";
 import {CredentialTransaction} from "./credentialTransaction";
+import Log from "@c4dt/cothority/log";
 
 export class AddressBook {
     constructor(public readonly contacts: ABContactsBS,
@@ -61,7 +62,8 @@ export class ABGroupsBS extends DarcsBS {
     }
 
     public find(name: string): DarcBS | undefined {
-        return this.getValue().find(dbs => dbs.getValue().description.toString().match(`/\w${name}$/`))
+        this.getValue().forEach(dbs => Log.print(dbs.getValue().description.toString()));
+        return this.getValue().find(dbs => dbs.getValue().description.toString().match(`\\b${name}$`))
     }
 
     public create(tx: CredentialTransaction, name: string, signers: IIdentity[]): Darc {

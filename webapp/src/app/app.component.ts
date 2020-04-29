@@ -30,6 +30,7 @@ export class AppComponent implements OnInit {
         private dialog: MatDialog,
         private bcs: ByzCoinService
     ) {
+        Log.lvl = 2;
     }
 
     logAppend(msg: string, perc: number) {

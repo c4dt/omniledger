@@ -119,7 +119,7 @@ export class ByzCoinBuilder {
         Log.lvl3("getting user from url", urlStr);
         const url = new URL(urlStr, true);
         if (!url.pathname.includes(User.urlNewDevice)) {
-            throw new Error("not a newDevice url");
+            throw new Error("not a newDevice url: " + url.pathname);
         }
         if (!url.query.credentialIID ||
             !url.query.ephemeral) {
@@ -257,9 +257,10 @@ export class ByzCoinBuilder {
         return new DarcBS(bsDarc);
     }
 
-    public async retrieveSignerIdentityDarc(darcID: InstanceID): Promise<IdentityDarc> {
+    public async retrieveSignerIdentityDarc(credDarcID: InstanceID): Promise<IdentityDarc> {
         Log.lvl3("getting signerIdentityDarc");
-        const credDarc = await this.retrieveDarcBS(darcID);
+        const credDarc = await this.retrieveDarcBS(credDarcID);
+        Log.print(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities());
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }

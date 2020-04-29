@@ -11,7 +11,7 @@ import {ByzCoinSimul} from "spec/simul/byzcoinSimul";
 import {ROSTER} from "spec/support/conondes";
 
 Log.lvl = 2;
-export const simul = false;
+export const simul = true;
 
 const ed25519 = curve.newCurve("edwards25519");
 

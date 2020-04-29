@@ -1,10 +1,10 @@
 import {BCTestEnv} from "spec/simul/itest";
 import {HistoryObs} from "spec/support/historyObs";
-import {KeyPair} from "dynacred2";
+import {KeyPair, UserSkeleton} from "dynacred2";
 import {filter, first} from "rxjs/operators";
 
 import Log from "@dedis/cothority/log";
-import {Darc} from "@dedis/cothority/darc";
+import {Darc, IdentityDarc} from "@dedis/cothority/darc";
 
 import {User} from "src/user";
 import {IMigrate} from "src/builder";
@@ -81,5 +81,23 @@ describe("User class should", async () => {
         }, 10);
 
         await h.resolve(["newDevice2", "newDevice2"]);
+    });
+
+    it("support using a recovery account during initial signup", async () => {
+        const bct = await BCTestEnv.start();
+        const nu = await bct.createUser("master");
+        const tx = nu.startTransaction()
+        const rec = tx.spawnDarcBasic("recover", [nu.kiSigner]);
+        await tx.sendCoins(10);
+
+        const kp = KeyPair.rand();
+        const clientSkel = new UserSkeleton("client", bct.spawner.id, kp.priv);
+        clientSkel.addRecovery(new IdentityDarc({id: rec.getBaseID()}));
+        tx.createUser(clientSkel);
+        await tx.sendCoins(10);
+
+        Log.lvl = 3;
+        const client = await bct.retrieveUserByEphemeral(kp);
+        expect(client.kpp.priv.equals(kp.priv)).toBeFalsy();
     })
 });

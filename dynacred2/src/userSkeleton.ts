@@ -105,8 +105,10 @@ export class UserSkeleton {
     }
 
     public addRecovery(id: IIdentity) {
+        Log.print("before recovery:", this.darcSign.rules.getRule(Darc.ruleSign));
         this.darcSign.rules.getRule(Darc.ruleSign).append(id.toString(), Rule.OR);
         this.darcSign.rules.getRule(DarcInstance.ruleEvolve).append(id.toString(), Rule.OR);
+        Log.print("after recovery:", this.darcSign.rules.getRule(Darc.ruleSign));
     }
 
     public addLTS(lts: LongTermSecret){
