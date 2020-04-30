@@ -19,11 +19,11 @@ CAS 2.0 (Matrix needs that)
 
 To better understand the interactions of the system, one can look at the [messages' UML](login.png).
 
-To test integration, we also provide `cmd/cas-stress`, a small user story simulator. In this case, it simulates the user login into either WordPress or Matrix using CAS. It needs a user data extracted from the browser' IndexedDB (the value of `IndexedDB.dynasent.contacts`). For example, one could use it as
+To test integration, we also provide `cmd/cas-test`, a small user story simulator. In this case, it simulates the user login into either WordPress or Matrix using CAS. It needs a user data extracted from the browser' IndexedDB (the value of `IndexedDB.dynasent.contacts`). For example, one could use it as
 
 `
-cas-stress --user-data-path path/to/extracted/user/data matrix https://matrix.c4dt.org
-cas-stress --user-data-path path/to/extracted/user/data wordpress https://c4dt.org
+cas-test --user-data-path path/to/extracted/user/data matrix https://matrix.c4dt.org
+cas-test --user-data-path path/to/extracted/user/data wordpress https://c4dt.org
 `
 
 It will take the given service and simulate a login fot the given user.

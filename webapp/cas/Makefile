@@ -1,5 +1,5 @@
 .PHONY: all
-all: cas cas-stress
+all: cas cas-test
 
 %: cmd/%/main.go $(wildcard *.go)
 	go build -o $@ ./$(dir $<)
