@@ -15,7 +15,6 @@ describe("Calypso should", () => {
         }
         const bct = await BCTestEnv.start();
 
-        Log.print("creating LTS");
         const ocs = new OnChainSecretRPC(bct.bc);
         await ocs.authorizeRoster();
         const lts = await LongTermSecret.spawn(bct.bc, bct.darcID, bct.signers, ROSTER);

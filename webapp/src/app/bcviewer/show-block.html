@@ -27,14 +27,15 @@
                     <div fxLayout="row">
                         <div fxFlex="1 1 10em">BackwardLinks:</div>
                         <div fxFlex="1 1 20em">
-                            <span *ngFor="let backward of data.backwardLinks" (click)="goBlock(backward)" class="link">
+                            <span *ngFor="let backward of data.backwardLinks" (click)="goBlock(backward.id)"
+                                  class="link">
                                 {{backward.index}}</span>
                         </div>
                     </div>
                     <div fxLayout="row">
                         <div fxFlex="1 1 10em">ForwardLinks:</div>
                         <div fxFlex="1 1 20em">
-                            <span *ngFor="let forward of data.forwardLinks" (click)="goBlock(forward)" class="link">
+                            <span *ngFor="let forward of data.forwardLinks" (click)="goBlock(forward.id)" class="link">
                                 {{forward.index}}/{{forward.sign}}</span>
                         </div>
                     </div>
@@ -56,7 +57,7 @@
                             <div *ngFor="let inst of ctx.instructions">
                                 <li>Instruction: {{inst.index}}</li>
                                 <ul>
-                                    <li *ngIf="inst.instance">Instance: {{inst.instance.description}}</li>
+                                    <li>Instance: {{inst.description}}</li>
                                     <li>ContractID: {{inst.contractID}} :: Type: {{inst.type}}
                                         <span *ngIf="inst.command">:: Command: {{inst.command}}</span></li>
                                     <li *ngIf="inst.args">Arguments: {{inst.args.join(" - ")}}</li>

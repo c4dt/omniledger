@@ -12,6 +12,7 @@ import {byzcoin, CSTypesBS, KeyPair} from "dynacred2";
 import {UserService} from "src/app/user.service";
 import {ByzCoinService} from "src/app/byz-coin.service";
 import {DarcInstanceInfoComponent, RenameComponent, ShowComponent} from "src/lib/show/show.component";
+import Log from "@c4dt/cothority/log";
 
 class Signer {
     descr: string;
@@ -138,7 +139,7 @@ export class DevicesComponent {
         }
         const ac = this.dialog.open(DeviceRecoveryComponent, {data: accounts});
         ac.afterClosed().subscribe(async (result) => {
-            if (result === undefined) {
+            if (result === undefined || result === "") {
                 return;
             }
 
@@ -178,8 +179,12 @@ export class DevicesComponent {
         }
     }
 
-    getName(cst: CSTypesBS, dev: byzcoin.DarcBS): string{
+    getName(cst: CSTypesBS, dev: byzcoin.DarcBS): string {
         return cst.cim.getEntry(dev.getValue().getBaseID());
+    }
+
+    isActiveDevice(cst: CSTypesBS, dev: byzcoin.DarcBS): boolean {
+        return cst !== undefined && this.getName(cst, dev) !== undefined;
     }
 
     async darcShow(inst: byzcoin.DarcBS) {

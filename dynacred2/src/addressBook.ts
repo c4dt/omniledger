@@ -62,7 +62,6 @@ export class ABGroupsBS extends DarcsBS {
     }
 
     public find(name: string): DarcBS | undefined {
-        this.getValue().forEach(dbs => Log.print(dbs.getValue().description.toString()));
         return this.getValue().find(dbs => dbs.getValue().description.toString().match(`\\b${name}$`))
     }
 

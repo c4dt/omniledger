@@ -260,7 +260,6 @@ export class ByzCoinBuilder {
     public async retrieveSignerIdentityDarc(credDarcID: InstanceID): Promise<IdentityDarc> {
         Log.lvl3("getting signerIdentityDarc");
         const credDarc = await this.retrieveDarcBS(credDarcID);
-        Log.print(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities());
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
 }
