@@ -100,19 +100,28 @@ func injectUser(page *agouti.Page, userData string) error {
 	}
 
 	storageDBInjector := `
-	const dynasentDone = new Promise((resolve) =>
-		window.indexedDB.open("dynasent", 10).onupgradeneeded = (event) =>
+	const dynasentDone = new Promise((resolve) => {
+		const request = window.indexedDB.open("dynasent", 10)
+		request.onupgradeneeded = (event) =>
 			event.target.result.
 				createObjectStore("contacts", {keyPath: "key"}).
-				put(JSON.parse(data)).onsuccess = resolve)
+				put(JSON.parse(data)).onsuccess
+		request.onsuccess = resolve
+	})
 
-	const dbnamesDone = new Promise((resolve) =>
-		window.indexedDB.open("__dbnames", 10).onupgradeneeded = (event) => {
-			const store = event.target.result.
-				createObjectStore("dbnames", {keyPath: "name"})
-			store.createIndex("buffer", "buffer", {unique: false, multiEntry: false})
-			store.put({name: "dynasent"}).onsuccess = resolve
-		})
+	const dbnamesDone = new Promise((resolve) => {
+		const objectStoreName = "dbnames"
+		const request = window.indexedDB.open("__dbnames", 10)
+		request.onupgradeneeded = (event) =>
+			event.target.result.
+				createObjectStore(objectStoreName, {keyPath: "name"}).
+				createIndex("buffer", "buffer", {unique: false, multiEntry: false})
+		request.onsuccess = (event) =>
+			event.target.result.transaction(objectStoreName, "readwrite").
+				objectStore(objectStoreName).
+				put({name: "dynasent"}).
+				onsuccess = resolve
+	})
 
 	Promise.all([dynasentDone, dbnamesDone]).then(() => {
 		const elem = document.createElement("span")
