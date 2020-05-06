@@ -41,7 +41,7 @@ func main() {
 	}
 }
 
-func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) error {
+func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) (err error) {
 	userData, err := getUserData(c.GlobalString("user-data-path"))
 	if err != nil {
 		return err
@@ -56,6 +56,12 @@ func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) error 
 	if err := driver.Start(); err != nil {
 		return err
 	}
+	defer func() {
+		errStop := driver.Stop()
+		if err == nil {
+			err = errStop
+		}
+	}()
 
 	page, err := driver.NewPage()
 	if err != nil {
