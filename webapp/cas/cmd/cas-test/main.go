@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const omniledgerURL = "https://demo.c4dt.org/omniledger"
+const injectUserURL = "https://demo.c4dt.org"
 
 func main() {
 	app := cli.NewApp()
@@ -95,7 +95,7 @@ func getUserData(path string) (string, error) {
 }
 
 func injectUser(page *agouti.Page, userData string) error {
-	if err := page.Navigate(omniledgerURL); err != nil {
+	if err := page.Navigate(injectUserURL); err != nil {
 		return err
 	}
 
