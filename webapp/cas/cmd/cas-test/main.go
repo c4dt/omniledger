@@ -165,6 +165,9 @@ func clickWordpress(wordpressURL string, page *agouti.Page) error {
 	if err := page.Navigate(wordpressURL); err != nil {
 		return err
 	}
+	if err := page.FindByClass("mega-menu-toggle").Click(); err != nil {
+		return err
+	}
 	if err := page.FindByLink("About us").Click(); err != nil {
 		return err
 	}
