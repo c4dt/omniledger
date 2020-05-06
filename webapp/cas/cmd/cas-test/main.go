@@ -177,16 +177,17 @@ func clickWordpress(wordpressURL string, page *agouti.Page) error {
 	if err := page.FindByLink("Sign in with OmniLedger").Click(); err != nil {
 		return err
 	}
+
 	if err := page.FindByButton("Login").Click(); err != nil {
 		return err
 	}
 
-	visible, err := page.Find("article").Visible()
+	text, err := page.FindByID("content-area").FindByClass("main_title").Text()
 	if err != nil {
 		return err
 	}
-	if !visible {
-		return errors.New("on wordpress but weird state")
+	if text != "PARTNER LOGIN" {
+		return errors.New("on wordpress but not correctly redirected")
 	}
 
 	return nil
