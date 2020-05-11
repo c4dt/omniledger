@@ -137,7 +137,13 @@ func injectUser(page *agouti.Page, userData string) error {
 		return err
 	}
 
-	page.FindByID("run-script-done")
+	count, err := page.FindByID("run-script-done").Count()
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return errors.New("script not run to completion")
+	}
 
 	return nil
 }
@@ -152,13 +158,14 @@ func clickMatrix(matrixURL string, page *agouti.Page) error {
 	if err := page.FindByClass("mx_Login_sso_link").Click(); err != nil {
 		return err
 	}
+
 	if err := page.FindByButton("Login").Click(); err != nil {
 		return err
 	}
+
 	if err := page.FindByLink("I trust this address").Click(); err != nil {
 		return err
 	}
-
 	visible, err := page.FindByID("matrixchat").Visible()
 	if err != nil {
 		return err
