@@ -100,16 +100,17 @@ func injectUser(page *agouti.Page, userData string) error {
 	}
 
 	storageDBInjector := `
-	const dynasentDone = new Promise((resolve) => {
+	const dynasentDone = new Promise((resolve, reject) => {
 		const request = window.indexedDB.open("dynasent", 10)
 		request.onupgradeneeded = (event) =>
 			event.target.result.
 				createObjectStore("contacts", {keyPath: "key"}).
 				put(JSON.parse(data)).onsuccess
 		request.onsuccess = resolve
+		request.onerror = reject
 	})
 
-	const dbnamesDone = new Promise((resolve) => {
+	const dbnamesDone = new Promise((resolve, reject) => {
 		const objectStoreName = "dbnames"
 		const request = window.indexedDB.open("__dbnames", 10)
 		request.onupgradeneeded = (event) =>
@@ -121,13 +122,14 @@ func injectUser(page *agouti.Page, userData string) error {
 				objectStore(objectStoreName).
 				put({name: "dynasent"}).
 				onsuccess = resolve
+		request.onerror = reject
 	})
 
-	Promise.all([dynasentDone, dbnamesDone]).then(() => {
-		const elem = document.createElement("span")
-		elem.id = "run-script-done"
-		document.body.appendChild(elem)
-	})
+	const elem = document.createElement("span")
+	elem.id = "run-script-done"
+	Promise.all([dynasentDone, dbnamesDone])
+		.catch((e) => { elem.textContent = e.name + ": " + e.message })
+		.finally(() => document.body.appendChild(elem))
 	`
 
 	if err := page.RunScript(
@@ -137,12 +139,12 @@ func injectUser(page *agouti.Page, userData string) error {
 		return err
 	}
 
-	count, err := page.FindByID("run-script-done").Count()
+	scriptErr, err := page.FindByID("run-script-done").Text()
 	if err != nil {
 		return err
 	}
-	if count != 1 {
-		return errors.New("script not run to completion")
+	if scriptErr != "" {
+		return fmt.Errorf("script failed: %v", scriptErr)
 	}
 
 	return nil
