@@ -141,7 +141,7 @@ func injectUser(page *agouti.Page, userData string) error {
 
 	scriptErr, err := page.FindByID("run-script-done").Text()
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't get script's end marker: %v", err)
 	}
 	if scriptErr != "" {
 		return fmt.Errorf("script failed: %v", scriptErr)
