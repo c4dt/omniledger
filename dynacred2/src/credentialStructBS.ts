@@ -10,49 +10,21 @@ import {Point, PointFactory} from "@dedis/kyber";
 import {ConvertBS} from "./observableUtils";
 import {CredentialTransaction} from "./credentialTransaction";
 import {bufferToObject} from "./utils";
-import Log from "@dedis/cothority/log";
-
-export enum ECredentials {
-    pub = "1-public",
-    config = "1-config",
-    devices = "1-devices",
-    recoveries = "1-recovery",
-    calypso = "1-calypso"
-}
-
-export enum EAttributesPublic {
-    contacts = "contactsBuf",
-    alias = "alias",
-    email = "email",
-    coinID = "coin",
-    seedPub = "seedPub",
-    phone = "phone",
-    actions = "actions",
-    groups = "groups",
-    url = "url",
-    challenge = "challenge",
-    personhood = "personhood",
-    subscribe = "subscribe",
-    snacked = "snacked",
-    version = "version"
-}
-
-export enum EAttributesConfig {
-    view = "view",
-    spawner = "spawner",
-    structVersion = "structVersion",
-    ltsID = "ltsID",
-    ltsX = "ltsX",
-}
-
-export interface IUpdateCredential {
-    cred: ECredentials;
-    attr: EAttributesPublic | EAttributesConfig | string;
-    value: string | Buffer | undefined;
-}
 
 /**
- * Credential holds static methods that allow to setup instances for credentials.
+ * The CredentialStructBS is the main part of a user-account in ByzCoin.
+ * It references all other instances that are available to the user.
+ * This class and its subclasses only hold data that can be interpreted without having to look up something on the
+ * chain.
+ * For example, the `credDevices` only holds the `InstanceID`s that point to the devices available by this credential.
+ * The devices themselves are only available through the `CredentialSignerBS` class, which is referenced in `User`.
+ *
+ * The credential has a 2-level storage system, that has been arbitrarily chosen to hold the following data:
+ *   - public: holds all data about the user that is publicly available. Most of it can be empty.
+ *   - config: some configuration data used by the front-end
+ *   - devices: implements the naming system to point to all DARCs that have access to this credential
+ *   - recoveries: points to all DARCs that have the right to do a recovery of access to this credential
+ *   - calypso: a list of all calypso instances held by this credential
  */
 export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     public static readonly structVersionLatest = 2;
@@ -82,9 +54,13 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         return CredentialBS.fromScratch(this, name);
     }
 
-    // updateCredentials sets all new credentials given in 'cred' and then
-    // sends a ClientTransaction to Byzcoin.
-    // If a value of a Credential is empty, it will be deleted.
+    /**
+     * updateCredentials sets all new credentials given in 'cred'.
+     * If a value of a Credential is empty, it will be deleted.
+     *
+     * @param tx
+     * @param cred
+     */
     public updateCredential(tx: CredentialTransaction, ...cred: IUpdateCredential[]) {
         const orig = this.getValue();
         for (const c of cred) {
@@ -337,6 +313,9 @@ export class AttributeInstanceSetBS extends BehaviorSubject<InstanceSet> {
     }
 }
 
+/**
+ *
+ */
 export class CredentialPublic {
     public contacts: AttributeInstanceSetBS;
     public alias: AttributeStringBS;
@@ -488,3 +467,43 @@ export interface InstanceMapKV {
     key: Buffer,
     value: string
 }
+
+export enum ECredentials {
+    pub = "1-public",
+    config = "1-config",
+    devices = "1-devices",
+    recoveries = "1-recovery",
+    calypso = "1-calypso"
+}
+
+export enum EAttributesPublic {
+    contacts = "contactsBuf",
+    alias = "alias",
+    email = "email",
+    coinID = "coin",
+    seedPub = "seedPub",
+    phone = "phone",
+    actions = "actions",
+    groups = "groups",
+    url = "url",
+    challenge = "challenge",
+    personhood = "personhood",
+    subscribe = "subscribe",
+    snacked = "snacked",
+    version = "version"
+}
+
+export enum EAttributesConfig {
+    view = "view",
+    spawner = "spawner",
+    structVersion = "structVersion",
+    ltsID = "ltsID",
+    ltsX = "ltsX",
+}
+
+export interface IUpdateCredential {
+    cred: ECredentials;
+    attr: EAttributesPublic | EAttributesConfig | string;
+    value: string | Buffer | undefined;
+}
+

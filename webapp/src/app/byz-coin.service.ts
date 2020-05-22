@@ -1,7 +1,7 @@
 import Dexie from "dexie";
 import {Injectable} from '@angular/core';
 import {ByzCoinBuilder, User} from "dynacred2";
-import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
+import {ByzCoinRPC, IStorage} from "@dedis/cothority/byzcoin";
 import {RosterWSConnection} from "@dedis/cothority/network";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 import {StatusRequest, StatusResponse} from "@dedis/cothority/status/proto";
@@ -17,10 +17,9 @@ export class ByzCoinService extends ByzCoinBuilder {
     public config?: Config;
     public conn?: RosterWSConnection;
     private readonly storageKeyLatest = "latest_skipblock";
-    // this will be updated.
-    private readonly idKnown = Buffer.from("3781100c76ab3e6243da881036372387f8237c59cedd27fa0f556f71dc2dff48", "hex");
-
-    // This is the hardcoded block at 0x6000, supposed to have higher forward-links. Once 0x8000 is created,
+    // This is the hardcoded block at 0xc000, which has higher forward-links than 0, which is broken :(.
+    // Once 0x10000 is created, this will be updated.
+    private readonly idKnown = Buffer.from("8a03be0092afc09e3158b2b427191cb933704a81b8ec63bc1df131341095892c", "hex");
 
     constructor() {
         // Initialize with undefined. Before using, the root component has to call `loadConfig`.
@@ -45,6 +44,11 @@ export class ByzCoinService extends ByzCoinBuilder {
         this.conn.setParallel(1);
         logger("Fetching latest block", 70);
         this.db = new StorageDB();
+        const sc = new SkipchainRPC(this.conn);
+        // @ts-ignore
+        global.sc = sc;
+        // @ts-ignore
+        global.bcs = this;
         try {
             let latest: SkipBlock;
             const latestBuf = await this.db.get(this.storageKeyLatest);
@@ -52,7 +56,6 @@ export class ByzCoinService extends ByzCoinBuilder {
                 latest = SkipBlock.decode(latestBuf);
                 Log.lvl2("Loaded latest block from db:", latest.index);
             } else {
-                const sc = new SkipchainRPC(this.conn);
                 latest = await sc.getSkipBlock(this.idKnown);
                 Log.lvl2("Got known skipblock");
             }
@@ -68,15 +71,6 @@ export class ByzCoinService extends ByzCoinBuilder {
         logger("Done connecting", 100);
     }
 
-    async loadUser(): Promise<void> {
-        try {
-            this.user = await this.retrieveUserByDB();
-            return;
-        } catch(e){
-            Log.warn("couldn't find dynacred2 user");
-        }
-    }
-
     async hasUser(base = "main"): Promise<boolean> {
         try {
             await this.retrieveUserKeyCredID(base);
@@ -87,12 +81,28 @@ export class ByzCoinService extends ByzCoinBuilder {
         return false;
     }
 
+    async loadUser(): Promise<void> {
+        try {
+            this.user = await this.retrieveUserByDB();
+            return;
+        } catch (e) {
+            Log.warn("couldn't find dynacred2 user");
+        }
+    }
+
     async migrate(): Promise<boolean> {
         return await this.migrateUser(new StorageDBOld());
     }
 }
 
-export class StorageDB {
+/**
+ * The main DB storage for dynacred users in the new version.
+ * The only important information that is stored is the private key
+ * of this device and the credentialID of the user.
+ * All other data stored is purely for caching reasons to give a
+ * better user-experience.
+ */
+export class StorageDB implements IStorage {
     public db: Dexie.Table<{ key: string, buf: Buffer }, string>;
 
     constructor() {
@@ -116,7 +126,11 @@ export class StorageDB {
     }
 }
 
-export class StorageDBOld {
+/**
+ * This class is only for migration - it reads the data of the previous format of
+ * the user account, before it is written in the new DB format.
+ */
+export class StorageDBOld implements IStorage {
     public db: Dexie.Table<{ key: string, buffer: string }, string>;
 
     constructor() {

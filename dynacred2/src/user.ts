@@ -15,14 +15,20 @@ import {DarcBS} from "./byzcoin/darcsBS";
 import {CredentialTransaction} from "./credentialTransaction";
 import {Calypso} from "./calypso";
 import {LongTermSecret} from "@dedis/cothority/calypso";
-import Log from "@dedis/cothority/log";
 
-// The user class is to be used only once for a given DB. It is unique for
-// one URL-domain and represents the logged in user.
-// When calling `User.load`, it tries to migrate from a previous dynacred
-// installation.
-// If the migration is successful, it uses this configuration, stores the
-// new information and deletes the old config.
+/**
+ * The User-class has references to all other needed classes.
+ * Its only additional data is the private key, which is not available in any other class.
+ * To allow for multiple users in the same db, `dbBase` is prefixed to all keys used by the user.
+ *
+ * To instantiate a user class, you should use one of the Builder.retrieveUser* methods.
+ *
+ * The user class and all classes it references are built on a simple premise:
+ * the only necessary data is the credential-ID and the private key.
+ * All other data is fetched live from the chain.
+ * A caching system makes sure that this loading is fast after a first warming up of the cache.
+ * Interacting with ByzCoin is optimized to only fetch changes of the instances.
+ */
 export class User {
     public static readonly keyPriv = "private";
     public static readonly keyCredID = "credID";
@@ -46,10 +52,6 @@ export class User {
         const ltsX = credStructBS.credConfig.ltsX.getValue();
         if (ltsID && ltsID.length === 32 && ltsX) {
             const lts = new LongTermSecret(this.bc, ltsID, ltsX);
-            const iCoin = {
-                instance: this.coinBS.getValue(),
-                signers: [this.kpp.signer()]
-            };
             this.calypso = new Calypso(lts, credSignerBS.getValue().getBaseID(), credStructBS.credCalypso);
         }
     }
@@ -83,6 +85,7 @@ export class User {
         return newKP;
     }
 
+    // TODO: should this be here or in CredentialStructBS?
     public getUrlForDevice(priv: Scalar): string {
         return `${User.urlNewDevice}?` +
             `credentialIID=${this.credStructBS.id.toString("hex")}` +

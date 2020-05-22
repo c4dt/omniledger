@@ -13,8 +13,18 @@ import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {UserSkeleton} from "./userSkeleton";
 import {CoinBS} from "./byzcoin/coinBS";
 import {CredentialTransaction} from "./credentialTransaction";
-import Log from "@c4dt/cothority/log";
 
+/**
+ * The `AddressBook` represents the following DARCs of the `CredentialStruct`:
+ * - `credPublic.contacts` as `ABContactsBS` - links to other credentials the user knows
+ * - `credPublic.groups` as `ABGroupsBS` - groups the user follows
+ * - `credPublic.actions` as `ABActionsBS` - actions, which are DARCs + a coin-instance for actions like login
+ *
+ * Every field is set up as a `BehaviorSubject`, which means that there is a `getValue()` method to get the current
+ * value, but also a `.subscribe()` to be informed if anything changes.
+ * If an element is removed or added, the `BehaviorSubject` calls `next` method on all observers.
+ * If an element is changed, only the `BehaviorSubject` of this element is updated.
+ */
 export class AddressBook {
     constructor(public readonly contacts: ABContactsBS,
                 public readonly groups: ABGroupsBS,

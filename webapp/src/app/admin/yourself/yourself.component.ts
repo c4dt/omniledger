@@ -18,7 +18,6 @@ import {UserService} from "src/app/user.service";
 export class YourselfComponent implements OnInit {
     contactForm: FormGroup;
     views = UIViews;
-    coins = "loading";
 
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
@@ -42,10 +41,6 @@ export class YourselfComponent implements OnInit {
             this.contactForm.patchValue({phone}));
         conf.view.subscribe((view) =>
             this.contactForm.patchValue({view}));
-        this.user.coinBS.subscribe((coin) =>
-            this.coins = coin.value.toString()
-        )
-
     }
 
     async updateContact() {

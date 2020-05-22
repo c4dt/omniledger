@@ -7,8 +7,6 @@ import Log from "@dedis/cothority/log";
 
 import { showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
-import {User} from "dynacred2";
-import {ByzCoinRPC} from "@dedis/cothority/byzcoin";
 import {ByzCoinService} from "src/app/byz-coin.service";
 
 @Component({
@@ -67,6 +65,8 @@ export class AppComponent implements OnInit {
                 this.loading = false;
                 return this.newUser();
             }
+            this.logAppend("Migration successful, reloading", 100);
+            setTimeout(() => this.ngOnInit(), 1000);
         } else {
             try {
                 this.logAppend("Loading data", 80);

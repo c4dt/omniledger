@@ -3,6 +3,9 @@ import {SignerEd25519} from "@dedis/cothority/darc";
 import {Log} from "@dedis/cothority";
 const ed25519 = curve.newCurve("edwards25519");
 
+/**
+ * KeyPair implements some wrappers for the ed25519 private and public keys.
+ */
 export class KeyPair {
 
     public static rand(): KeyPair {

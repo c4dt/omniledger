@@ -1,5 +1,5 @@
 <ul>
-  <li>Memory: {{coins}}
+  <li>Memory: {{(user.coinBS | async).value}}
   </li>
 </ul>
 <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact()">

@@ -29,45 +29,18 @@ import {DarcBS, DarcsBS} from "./byzcoin/darcsBS";
 import {CoinBS} from "./byzcoin/coinBS";
 import {bufferToObject} from "./utils";
 
-export interface IMigrate {
-    keyPersonhood?: string;
-    keyIdentity: string;
-    version: number;
-    contact: { credential: Buffer };
-}
-
+/**
+ * ByzCoinBuilder implements convenience methods to get instances needed for a credential.
+ * This class can retrieve different instances from a ByzCoin chain.
+ * The only method that changes the db is `migrateUser`.
+ * All other methods only retrieve the information from ByzCoin.
+ *
+ * The use of `dbBase` is to allow for different users in the same IStorage.
+ */
 export class ByzCoinBuilder {
 
     constructor(public bc: ByzCoinRPC,
                 public db: IStorage) {
-    }
-
-    public async retrieveAddressBook(cp: CredentialPublic): Promise<AddressBook> {
-        Log.lvl3("getting contacts");
-        const contactBS = new ABContactsBS(cp.contacts,
-            await ObservableToBS(cp.contacts.pipe(
-                flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    (id) => this.retrieveCredentialStructBS(id)
-                ))),
-                map(css => css.filter(cs => cs !== undefined)),
-                )
-            )
-        );
-
-        Log.lvl3("getting groups");
-        const groupsBS = new ABGroupsBS(cp.groups,
-            await this.retrieveDarcsBS(ConvertBS(cp.groups, gr => gr.toInstanceIDs())));
-
-        Log.lvl3("getting actions");
-        const actionsBS = new ABActionsBS(cp.actions,
-            await ObservableToBS(cp.actions.pipe(
-                flatMap(ais => Promise.all(ais.toInstanceIDs().map(
-                    id => this.retrieveDarcBS(id)
-                ))),
-                map(dbs => dbs.filter(db => db !== undefined)),
-                map(dbs => dbs.map(db => new ActionBS(db)))
-            )));
-        return new AddressBook(contactBS, groupsBS, actionsBS);
     }
 
     public async retrieveUser(credID: InstanceID, privBuf: Buffer,
@@ -136,7 +109,22 @@ export class ByzCoinBuilder {
         return u;
     }
 
-    public async migrateUser(dbold: IStorage, base = "main"): Promise<boolean> {
+    public async retrieveUserByDB(dbBase = "main"): Promise<User> {
+        Log.lvl3("getting key and credID from DB");
+        const [privBuf, credID] = await this.retrieveUserKeyCredID(dbBase);
+        return this.retrieveUser(credID, privBuf, dbBase);
+    }
+
+    public async retrieveUserKeyCredID(dbBase = "main"): Promise<[Buffer, Buffer]> {
+        const key = await this.db.get(`${dbBase}:${User.keyPriv}`);
+        const credID = await this.db.get(`${dbBase}:${User.keyCredID}`);
+        if (key && credID && key.length === 32 && credID.length === 32) {
+            return [key, credID];
+        }
+        throw new Error("couldn't find correct key and/or credID at: " + dbBase);
+    }
+
+    public async migrateUser(dbold: IStorage, dbBase = "main"): Promise<boolean> {
         try {
             Log.lvl3("trying to migrate");
             const userData = await dbold.get(User.keyMigrate);
@@ -156,8 +144,8 @@ export class ByzCoinBuilder {
                 }
                 const credID = CredentialsInstance.credentialIID(seed);
                 const privKey = Buffer.from(migrate.keyIdentity, "hex");
-                await this.db.set(`${base}:${User.keyPriv}`, privKey);
-                await this.db.set(`${base}:${User.keyCredID}`, credID);
+                await this.db.set(`${dbBase}:${User.keyPriv}`, privKey);
+                await this.db.set(`${dbBase}:${User.keyCredID}`, credID);
                 Log.lvl1("Successfully written private key and credID");
                 return true;
             }
@@ -167,19 +155,32 @@ export class ByzCoinBuilder {
         return false;
     }
 
-    public async retrieveUserByDB(base = "main"): Promise<User> {
-        Log.lvl3("getting key and credID from DB");
-        const [privBuf, credID] = await this.retrieveUserKeyCredID(base);
-        return this.retrieveUser(credID, privBuf, base);
-    }
+    public async retrieveAddressBook(cp: CredentialPublic): Promise<AddressBook> {
+        Log.lvl3("getting contacts");
+        const contactBS = new ABContactsBS(cp.contacts,
+            await ObservableToBS(cp.contacts.pipe(
+                flatMap(ais => Promise.all(ais.toInstanceIDs().map(
+                    (id) => this.retrieveCredentialStructBS(id)
+                ))),
+                map(css => css.filter(cs => cs !== undefined)),
+                )
+            )
+        );
 
-    public async retrieveUserKeyCredID(base = "main"): Promise<[Buffer, Buffer]> {
-        const key = await this.db.get(`${base}:${User.keyPriv}`);
-        const credID = await this.db.get(`${base}:${User.keyCredID}`);
-        if (key && credID && key.length === 32 && credID.length === 32) {
-            return [key, credID];
-        }
-        throw new Error("couldn't find correct key and/or credID at: " + base);
+        Log.lvl3("getting groups");
+        const groupsBS = new ABGroupsBS(cp.groups,
+            await this.retrieveDarcsBS(ConvertBS(cp.groups, gr => gr.toInstanceIDs())));
+
+        Log.lvl3("getting actions");
+        const actionsBS = new ABActionsBS(cp.actions,
+            await ObservableToBS(cp.actions.pipe(
+                flatMap(ais => Promise.all(ais.toInstanceIDs().map(
+                    id => this.retrieveDarcBS(id)
+                ))),
+                map(dbs => dbs.filter(db => db !== undefined)),
+                map(dbs => dbs.map(db => new ActionBS(db)))
+            )));
+        return new AddressBook(contactBS, groupsBS, actionsBS);
     }
 
     public async retrieveCoinBS(coinID: BehaviorSubject<InstanceID> | InstanceID):
@@ -264,4 +265,10 @@ export class ByzCoinBuilder {
     }
 }
 
+export interface IMigrate {
+    keyPersonhood?: string;
+    keyIdentity: string;
+    version: number;
+    contact: { credential: Buffer };
+}
 
