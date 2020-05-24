@@ -4,7 +4,6 @@ import { RouterModule, Routes } from "@angular/router";
 import { AdminComponent } from "./admin/admin.component";
 import { ContactsComponent } from "./admin/contacts/contacts.component";
 import { DevicesComponent } from "./admin/devices/devices.component";
-import { PersonhoodComponent } from "./admin/personhood/personhood.component";
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
 import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
@@ -31,7 +30,6 @@ const routes: Routes = [
         path: "admin", component: AdminComponent, children: [
             {path: "yourself", component: YourselfComponent},
             {path: "contacts", component: ContactsComponent},
-            {path: "personhood", component: PersonhoodComponent},
             {path: "status", component: StatusComponent},
             {path: "devices", component: DevicesComponent},
             {path: "", redirectTo: "yourself", pathMatch: "full"},

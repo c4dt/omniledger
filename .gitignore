@@ -2,3 +2,4 @@
 /cothority/
 /.vscode/
 **/*.spec.js
+build/

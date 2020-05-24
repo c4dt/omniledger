@@ -1,9 +1,23 @@
 import { Component, Inject } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogRef,
+} from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Data, TProgress } from "@c4dt/dynacred";
+
 import Log from "@dedis/cothority/log";
+
+import { IUpdateCredential } from "dynacred";
+
+import { UserService } from "src/app/user.service";
 import { DialogTransactionComponent } from "./dialog-transaction";
+
+// Progress type to be used in showTransactions.
+export type TProgress = (percentage: number, text: string) => void;
+
+// tslint:disable-next-line
+export let UIViews = ["c4dt_user", "c4dt_partner", "c4dt_admin", "admin"];
 
 /**
  * Shows a simple snack-message at the bottom of the screen. The message is informative
@@ -44,9 +58,18 @@ export async function showSnack(snack: MatSnackBar, text: string, cmd: () => voi
  * @param buttons can override the text of the OKButton ("OK") or the CancelButton ("Cancel")
  */
 export async function showDialogOKC(dialog: MatDialog, title: string, text: string,
-                                    buttons: IDialogOKCButtons = {OKButton: "OK", CancelButton: "Cancel"}):
+                                    buttons: IDialogOKCButtons = {
+                                        CancelButton: "Cancel",
+                                        OKButton: "OK",
+                                    }):
     Promise<boolean> {
-    const tc = dialog.open(DialogOKCancelComponent, {data: {Title: title, Text: text, Buttons: buttons}});
+    const tc = dialog.open(DialogOKCancelComponent, {
+        data: {
+            Buttons: buttons,
+            Text: text,
+            Title: title,
+        },
+    });
     return new Promise((resolve) => tc.afterClosed().subscribe((result) => resolve(result)));
 }
 
@@ -75,12 +98,16 @@ export async function showDialogInfo(dialog: MatDialog, title: string, text: str
  *
  * @param dialog reference to the matDialog
  * @param title shown in h1 in the dialog
- * @param store the callback to the actual storing of the credential.
+ * @param user reference to the UserService
+ * @param cred updates to the credential
  */
-export async function storeCredential(dialog: MatDialog, title: string, uData: Data) {
+export async function storeUserCredential(dialog: MatDialog, title: string, user: UserService,
+                                          ...cred: IUpdateCredential[]) {
     return showTransactions(dialog, title, async (progress: TProgress) => {
         progress(50, "Storing Credential");
-        await uData.save();
+        await user.executeTransactions((tx) => {
+            user.credStructBS.updateCredential(tx, ...cred);
+        });
     });
 }
 

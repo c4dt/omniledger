@@ -6,14 +6,14 @@ import { Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { TProgress } from "@c4dt/dynacred";
 import { Argument, ClientTransaction, InstanceID, Instruction } from "@dedis/cothority/byzcoin";
 import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 
-import { showTransactions } from "../../../../../lib/Ui";
-import { UserData } from "../../../../user-data.service";
-import { Config, ConfigService } from "../config.service";
+import { Config, ConfigService } from "src/app/api/v0/cas/config.service";
+import { ByzCoinService } from "src/app/byz-coin.service";
+import { UserService } from "src/app/user.service";
+import { showTransactions, TProgress } from "../../../../../lib/Ui";
 
 enum StateT {
     LOADING,
@@ -39,8 +39,9 @@ export class LoginComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private uData: UserData,
         configService: ConfigService,
+        private user: UserService,
+        private builder: ByzCoinService,
     ) {
         this.state = StateT.LOADING;
 
@@ -63,9 +64,9 @@ export class LoginComponent implements OnInit {
             throw new Error(`no such service found: ${this.service.href}`);
         }
 
-        const availables = await this.uData.bc.checkAuthorization(
-            this.uData.bc.genesisID, action.darc,
-            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+        const availables = await this.builder.bc.checkAuthorization(
+            this.builder.bc.genesisID, action.darc,
+            IdentityWrapper.fromIdentity(this.user.kiSigner));
         const isAuthorized = availables.indexOf(Darc.ruleSign) !== -1;
 
         this.state = isAuthorized ?
@@ -91,7 +92,7 @@ export class LoginComponent implements OnInit {
         }
         this.state = StateT.REDIRECTING;
 
-        const userCredID = this.uData.contact.credentialIID;
+        const userCredID = this.user.credStructBS.id;
         const ticket = Buffer.concat([challenge, userCredID]);
 
         const nextLocation = this.redirect;
@@ -132,15 +133,15 @@ export class LoginComponent implements OnInit {
             new Argument({name: CoinInstance.argumentCoins, value: coins}),
             new Argument({name: CoinInstance.argumentDestination, value: dst})];
 
-        const userCoinID = this.uData.coinInstance.id;
-        const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(),
+        const userCoinID = this.user.coinBS.getValue().id;
+        const ctx = ClientTransaction.make(this.builder.bc.getProtocolVersion(),
             createInvoke(userCoinID, transfer(action.coin)),
             createInvoke(action.coin, transfer(userCoinID).concat([
                 new Argument({name: config.txArgName, value: challengeHashed})])));
-        await ctx.updateCountersAndSign(this.uData.bc, [[this.uData.keyIdentitySigner]]);
+        await ctx.updateCountersAndSign(this.builder.bc, [[this.user.kiSigner]]);
 
         try {
-            await this.uData.bc.sendTransactionAndWait(ctx);
+            await this.builder.bc.sendTransactionAndWait(ctx);
         } catch (err) {
             if (err instanceof Error && err.message.includes(
                 `Contract coin got Instruction ${ctx.instructions[1].hash().toString("hex")}` +

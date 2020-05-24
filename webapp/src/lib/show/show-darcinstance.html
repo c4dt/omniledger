@@ -1,0 +1,24 @@
+<div>
+  <h2>
+    Details of "{{ (data.inst | async).description.toString() | titlecase }}"
+  </h2>
+  <p>
+    ID: {{ (data.inst|async).id.toString("hex") }}
+  </p>
+
+  <p>
+    Version: {{ (data.inst|async).version }}
+  </p>
+
+  <p>
+    Rules:
+  </p>
+  <ul>
+    <li *ngFor="let rule of (data.inst|async).rules.list">
+      {{ rule.toString() }}
+    </li>
+  </ul>
+  <p>
+    <button [matDialogClose]>Close</button>
+  </p>
+</div>

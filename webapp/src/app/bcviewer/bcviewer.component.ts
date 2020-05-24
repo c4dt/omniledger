@@ -1,33 +1,20 @@
-import { Component, EventEmitter, Inject, Injectable, OnInit, Output } from "@angular/core";
+import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import Long from "long";
 import { sprintf } from "sprintf-js";
 
-import { ByzCoinRPC, Instruction } from "@dedis/cothority/byzcoin";
+import { ByzCoinRPC, InstanceID, Instruction } from "@dedis/cothority/byzcoin";
 import Instance from "@dedis/cothority/byzcoin/instance";
 import Proof from "@dedis/cothority/byzcoin/proof";
 import DataBody from "@dedis/cothority/byzcoin/proto/data-body";
 import DataHeader from "@dedis/cothority/byzcoin/proto/data-header";
 import TxResult from "@dedis/cothority/byzcoin/proto/tx-result";
 import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
-import { ForwardLink, SkipBlock } from "@dedis/cothority/skipchain";
+import { SkipBlock } from "@dedis/cothority/skipchain";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-import { UserData } from "../user-data.service";
-
-@Injectable({
-    providedIn: "root",
-})
-export class BcviewerService {
-
-    @Output() update: EventEmitter<void> = new EventEmitter();
-    @Output() newStatus: EventEmitter<void> = new EventEmitter();
-    currentBlock: SkipBlock;
-
-    updateBlocks() {
-        this.update.emit();
-    }
-
-}
+import { AddressBook } from "dynacred";
+import { ByzCoinService } from "src/app/byz-coin.service";
+import { UserService } from "src/app/user.service";
 
 @Component({
     selector: "app-bcviewer",
@@ -38,37 +25,19 @@ export class BcviewerComponent implements OnInit {
     scRPC: SkipchainRPC;
     blocks: BCBlock[] = [];
 
-    constructor(private showBlockService: BcviewerService,
-                private dialog: MatDialog,
-                private uData: UserData) {
-        setInterval(async () => {
-            await this.updateBlocks();
-        }, 30000);
-        setTimeout(async () => {
-            await this.updateBlocks();
-        }, 1000);
+    constructor(private dialog: MatDialog,
+                private bcs: ByzCoinService) {
     }
 
-    async updateBlocks(): Promise<any> {
-        if (this.uData.bc) {
-            if (!this.scRPC) {
-                this.scRPC = new SkipchainRPC(this.uData.conn);
-            }
-            let latest = this.uData.bc.genesisID;
-            if (this.blocks && this.blocks.length > 0) {
-                latest = this.blocks[this.blocks.length - 1].sb.hash;
-            }
-            const sbBlocks = await this.scRPC.getUpdateChain(latest, false);
-            sbBlocks.forEach((sbB) => {
-                if (!this.blocks.find((b) => b.sb.hash.equals(sbB.hash))) {
-                    this.blocks.push(new BCBlock(this.scRPC, sbB));
-                }
-            });
-            if (this.blocks.length > 4) {
-                this.blocks.splice(0, this.blocks.length - 4);
-            }
-            this.showBlockService.currentBlock = this.blocks[this.blocks.length - 1].sb;
-            this.showBlockService.newStatus.emit();
+    async updateBlock(block: SkipBlock) {
+        this.blocks.push(new BCBlock(this.scRPC, block));
+        while (this.blocks.length < 4 && this.blocks[0].sb.index > 0) {
+            const sbRep = await this.scRPC.getSkipBlockByIndex(this.bcs.bc.genesisID,
+                this.blocks[0].sb.index - 1);
+            this.blocks.unshift(new BCBlock(this.scRPC, sbRep.skipblock));
+        }
+        if (this.blocks.length > 4) {
+            this.blocks.splice(0, this.blocks.length - 4);
         }
     }
 
@@ -78,9 +47,8 @@ export class BcviewerComponent implements OnInit {
     }
 
     async ngOnInit() {
-        this.showBlockService.update.subscribe(async () => {
-            await this.updateBlocks();
-        });
+        this.scRPC = new SkipchainRPC(this.bcs.conn);
+        (await this.bcs.bc.getNewBlocks()).subscribe((block) => this.updateBlock(block));
     }
 }
 
@@ -89,8 +57,8 @@ export class BCBlock {
     body: DataBody;
     time: Date;
     timeStr: string;
-    forwardLinks: LinkBlock[] = [];
-    backwardLinks: LinkBlock[] = [];
+    forwardLinks: ForwardLinkBlock[] = [];
+    backwardLinks: BackwardLinkBlock[] = [];
 
     constructor(public scRPC: SkipchainRPC, public sb: SkipBlock) {
         this.sb = sb;
@@ -103,9 +71,9 @@ export class BCBlock {
     }
 
     async updateLinks() {
-        this.forwardLinks = this.sb.forwardLinks.map((fl) => new LinkBlock(this.scRPC, fl, this.sb));
+        this.forwardLinks = this.sb.forwardLinks.map((_, i) => new ForwardLinkBlock(this.sb, i));
         if (this.sb.index > 0) {
-            this.backwardLinks = this.sb.backlinks.map((fl) => new LinkBlock(this.scRPC, fl));
+            this.backwardLinks = this.sb.backlinks.map((_, i) => new BackwardLinkBlock(this.sb, i));
         }
     }
 }
@@ -121,7 +89,8 @@ export class ShowBlockComponent {
 
     constructor(
         private dialogRef: MatDialogRef<ShowBlockComponent>,
-        private uData: UserData,
+        private bcs: ByzCoinService,
+        private user: UserService,
         @Inject(MAT_DIALOG_DATA) public data: BCBlock) {
         this.updateVars();
         data.updateLinks();
@@ -129,11 +98,12 @@ export class ShowBlockComponent {
 
     updateVars() {
         this.roster = this.data.sb.roster.list.slice(1).map((l) => l.description);
-        this.ctxs = this.data.body.txResults.map((txr, index) => new TxStr(this.uData.bc, txr, index));
+        this.ctxs = this.data.body.txResults.map((txr, index) =>
+            new TxStr(this.user.addressBook, txr, index));
     }
 
-    async goBlock(l: LinkBlock) {
-        const sb = await this.data.scRPC.getSkipBlock(l.id);
+    async goBlock(id: Buffer) {
+        const sb = await this.data.scRPC.getSkipBlock(id);
         this.data = new BCBlock(this.data.scRPC, sb);
         this.updateVars();
         await this.data.updateLinks();
@@ -144,8 +114,9 @@ class TxStr {
     instructions: InstStr[];
     accepted: boolean;
 
-    constructor(bc: ByzCoinRPC, tx: TxResult, public index: number) {
-        this.instructions = tx.clientTransaction.instructions.map((inst, ind) => new InstStr(bc, inst, ind));
+    constructor(address: AddressBook, tx: TxResult, public index: number) {
+        this.instructions = tx.clientTransaction.instructions.map((inst, ind) =>
+            new InstStr(address, inst, ind));
         this.accepted = tx.accepted;
     }
 }
@@ -155,65 +126,77 @@ class InstStr {
     args: string[];
     contractID: string;
     command: string;
-    instance: LinkInstance;
+    description: string | undefined;
 
-    constructor(bc: ByzCoinRPC, public inst: Instruction, public index: number) {
+    constructor(address: AddressBook, public inst: Instruction, public index: number) {
         switch (inst.type) {
             case 0:
                 this.type = "spawn";
                 this.args = inst.spawn.args.map((arg) => arg.name);
                 this.contractID = inst.spawn.contractID;
+                this.description = `Spawn call to ${this.contractID}`;
                 break;
             case 1:
                 this.type = "invoke";
                 this.args = inst.invoke.args.map((arg) => arg.name);
                 this.contractID = inst.invoke.contractID;
                 this.command = inst.invoke.command;
+                this.description = this.getDescription(address, inst.instanceID);
                 break;
             case 2:
                 this.type = "delete";
                 this.contractID = inst.delete.contractID;
+                this.description = this.getDescription(address, inst.instanceID);
                 break;
         }
-        this.instance = new LinkInstance(bc, inst, this.contractID);
     }
 
-    getInstanceStr(inst: Instruction): string {
-
-        return inst.instanceID.toString("hex");
+    getDescription(address: AddressBook, id: InstanceID): string {
+        switch (this.contractID) {
+            case "config":
+                return "Genesis Configuration";
+            case CredentialsInstance.contractID:
+                const cred = address.contacts.getValue().find((c) => c.id.equals(id));
+                if (cred) {
+                    return `Credential '${cred.credPublic.alias.getValue()}'`;
+                }
+                return "Unknown Credential";
+        }
+        return this.contractID;
     }
 }
 
-class LinkBlock {
+class ForwardLinkBlock {
     index: number;
-    height: number;
     maxHeight: number;
     sign: string = "";
     id: Buffer;
 
-    constructor(sbRPC: SkipchainRPC, link: (ForwardLink | Buffer), sbNow?: SkipBlock) {
-        if (Buffer.isBuffer(link)) {
-            this.id = link as Buffer;
-        } else {
-            const l = (link as ForwardLink);
-            this.id = l.to;
-            if (sbNow !== undefined) {
-                // TODO: extend to more than 32 nodes
-                const maskBuf = Buffer.alloc(4);
-                l.signature.getMask().copy(maskBuf);
-                const mask = Buffer.from(maskBuf.reverse()).readInt32BE(0);
-                const roster = l.newRoster || sbNow.roster;
-                roster.list.forEach((_, i) => {
-                    // tslint:disable-next-line:no-bitwise
-                    this.sign += (mask & (1 << i)) !== 0 ? "x" : "-";
-                });
-            }
-        }
-        sbRPC.getSkipBlock(this.id).then((sb) => {
-            this.index = sb.index;
-            this.height = sb.forwardLinks.length;
-            this.maxHeight = sb.height;
+    constructor(sb: SkipBlock, height: number) {
+        const link = sb.forwardLinks[height];
+        this.id = link.to;
+        // TODO: extend to more than 32 nodes
+        const maskBuf = Buffer.alloc(4);
+        link.signature.getMask().copy(maskBuf);
+        const mask = Buffer.from(maskBuf.reverse()).readInt32BE(0);
+        const roster = link.newRoster || sb.roster;
+        roster.list.forEach((_, i) => {
+            // tslint:disable-next-line:no-bitwise
+            this.sign += (mask & (1 << i)) !== 0 ? "x" : "-";
         });
+
+        this.index = sb.index + Math.pow(sb.baseHeight, height);
+        this.maxHeight = sb.height;
+    }
+}
+
+class BackwardLinkBlock {
+    index: number;
+    id: Buffer;
+
+    constructor(sb: SkipBlock, height: number) {
+        this.id = sb.backlinks[height];
+        this.index = sb.index - Math.pow(sb.baseHeight, height);
     }
 }
 

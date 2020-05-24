@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from "@angular/core";
+import { NgModule } from "@angular/core";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -6,6 +6,7 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { QRCodeModule } from "angularx-qrcode";
+import { DarcInstanceInfoComponent, RenameComponent, ShowComponent } from "src/lib/show/show.component";
 import { DialogTransactionComponent } from "../lib/dialog-transaction";
 import { DialogOKCancelComponent } from "../lib/Ui";
 import { DemoMaterialModule } from "../material-module";
@@ -16,7 +17,6 @@ import {
     ContactsComponent,
     CreateComponent,
     DarcInstanceAddComponent,
-    DarcInstanceInfoComponent,
     SignupLinkComponent,
     TransferCoinComponent,
     UserCredComponent,
@@ -25,12 +25,9 @@ import {
     DeviceAddComponent,
     DeviceRecoveryComponent,
     DevicesComponent,
-    RenameComponent,
-    ShowComponent,
-} from "./admin/devices/devices.component";
+    } from "./admin/devices/devices.component";
 import { ManageDarcComponent } from "./admin/manage-darc";
 import { PersonhoodComponent } from "./admin/personhood/personhood.component";
-import { CalypsoShowAccessComponent, CalypsoUploadComponent, SecureComponent } from "./admin/secure/secure.component";
 import { StatusComponent } from "./admin/status/status.component";
 import { YourselfComponent } from "./admin/yourself/yourself.component";
 import { LoginComponent as CASLoginComponent } from "./api/v0/cas/login/login.component";
@@ -48,13 +45,6 @@ import { ExplorerComponent } from "./explorer/explorer.component";
 import { NewuserComponent } from "./newuser/newuser.component";
 import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
-import { UserData } from "./user-data.service";
-
-// This is empty as the UserData is now initialized in the
-// app.component, so that the success can be logged.
-export function loadUserDataConfig(d: UserData) {
-    return () => {const a = 2; };
-}
 
 @NgModule({
     bootstrap: [AppComponent],
@@ -68,13 +58,10 @@ export function loadUserDataConfig(d: UserData) {
         AddContactComponent,
         TransferCoinComponent,
         UserCredComponent,
-        CalypsoUploadComponent,
-        CalypsoShowAccessComponent,
         RetryLoadComponent,
         RegisterComponent,
         YourselfComponent,
         ContactsComponent,
-        SecureComponent,
         StatusComponent,
         ProfileComponent,
         AdminComponent,
@@ -109,8 +96,6 @@ export function loadUserDataConfig(d: UserData) {
         SignupLinkComponent,
         TransferCoinComponent,
         UserCredComponent,
-        CalypsoUploadComponent,
-        CalypsoShowAccessComponent,
         RetryLoadComponent,
         CreateComponent,
         DialogOKCancelComponent,
@@ -132,15 +117,6 @@ export function loadUserDataConfig(d: UserData) {
         MatDialogModule,
         AppRoutingModule,
         QRCodeModule,
-    ],
-    providers: [
-        UserData,
-        {
-            deps: [UserData],
-            multi: true,
-            provide: APP_INITIALIZER,
-            useFactory: loadUserDataConfig,
-        },
     ],
 })
 export class AppModule {

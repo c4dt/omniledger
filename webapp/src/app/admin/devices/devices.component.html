@@ -1,18 +1,36 @@
 <h2>Available Devices</h2>
 <ul>
-  <li *ngFor="let device of devices">
-    {{ device.name }} -
-    <button mat-button (click)="deleteDevice(device)">Delete</button> -
-    <button mat-button (click)="rename(device, 'devices')">Rename</button>
+  <li *ngFor="let device of devices | async">
+    <div *ngIf="isActiveDevice(devices, device)">
+      <button mat-button (click)="darcShow(device)">
+        {{ getName(devices, device) }}
+      </button>
+      -
+      <button mat-button (click)="deviceDelete(device)">Delete</button>
+      -
+      <button mat-button (click)="rename(devices, device)">Rename</button>
+    </div>
+    <div *ngIf="!isActiveDevice(devices, device)">
+      Deleting
+    </div>
   </li>
-  <button mat-stroked-button (click)="addDevice()">Add Device</button>
+  <button mat-stroked-button (click)="deviceCreate()">Add Device</button>
 </ul>
 <h2>Recovery accounts</h2>
 <ul>
-  <li *ngFor="let device of recovery">
-    {{ device.name }} -
-    <button mat-button (click)="deleteRecovery(device)">Delete</button> -
-    <button mat-button (click)="rename(device, 'recovery')">Rename</button>
+  <li *ngFor="let device of recovery | async">
+    <div *ngIf="isActiveDevice(recovery, device)">
+      <button mat-button (click)="darcShow(device)">
+        {{ getName(recovery, device) }}
+      </button>
+      -
+      <button mat-button (click)="recoveryDelete(device)">Delete</button>
+      -
+      <button mat-button (click)="rename(recovery, device)">Rename</button>
+    </div>
+    <div *ngIf="!isActiveDevice(recovery, device)">
+      Deleting
+    </div>
   </li>
-  <button mat-stroked-button (click)="addRecovery()">Add Recovery</button>
+  <button mat-stroked-button (click)="recoveryCreate()">Add Recovery</button>
 </ul>

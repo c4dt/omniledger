@@ -1,9 +1,5 @@
 <ul>
-  <li>
-    Memory: {{ uData.coinInstance.value.toNumber() }}
-    -
-    <button mat-button (click)="updateCoins()">Update</button>
-  </li>
+  <li>Memory: {{ (user.coinBS | async).value }}</li>
 </ul>
 <form [formGroup]="contactForm" class="formwidth" (ngSubmit)="updateContact()">
   <mat-form-field class="width100">

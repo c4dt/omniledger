@@ -1,7 +1,6 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 
-import Log from "@dedis/cothority/log";
-import { UserData } from "../../user-data.service";
+import { UserService } from "src/app/user.service";
 
 @Component({
     selector: "app-welcome",
@@ -10,7 +9,9 @@ import { UserData } from "../../user-data.service";
 export class WelcomeComponent {
     name: string;
 
-    constructor(private uData: UserData) {
-        this.name = uData.contact.alias;
+    constructor(private user: UserService) {
+        user.credStructBS.credPublic.alias.subscribe((alias) => {
+            this.name = alias;
+        });
     }
 }

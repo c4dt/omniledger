@@ -25,21 +25,23 @@
             <div fxFlex="1 1 20em">{{roster.join(", ")}}</div>
           </div>
           <div fxLayout="row">
+            <div fxFlex="1 1 10em">BackwardLinks:</div>
             <div fxFlex="1 1 20em">
-              BackwardLinks:
               <span
                 *ngFor="let backward of data.backwardLinks"
-                (click)="goBlock(backward)"
+                (click)="goBlock(backward.id)"
                 class="link"
               >
                 {{backward.index}}</span
               >
             </div>
+          </div>
+          <div fxLayout="row">
+            <div fxFlex="1 1 10em">ForwardLinks:</div>
             <div fxFlex="1 1 20em">
-              ForwardLinks:
               <span
                 *ngFor="let forward of data.forwardLinks"
-                (click)="goBlock(forward)"
+                (click)="goBlock(forward.id)"
                 class="link"
               >
                 {{forward.index}}/{{forward.sign}}</span
@@ -48,7 +50,7 @@
           </div>
         </div>
       </mat-expansion-panel>
-      <mat-expansion-panel expanded="true">
+      <mat-expansion-panel expanded="false">
         <mat-expansion-panel-header>
           <mat-panel-title>
             ByzCoin Body
@@ -64,9 +66,7 @@
               <div *ngFor="let inst of ctx.instructions">
                 <li>Instruction: {{inst.index}}</li>
                 <ul>
-                  <li *ngIf="inst.instance">
-                    Instance: {{inst.instance.description}}
-                  </li>
+                  <li>Instance: {{inst.description}}</li>
                   <li>
                     ContractID: {{inst.contractID}} :: Type: {{inst.type}}
                     <span *ngIf="inst.command"

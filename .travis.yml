@@ -30,6 +30,7 @@ jobs:
        - gimme 1.12.4
        - . $HOME/.gimme/envs/go1.12.4.env
        - ( git clone --depth=1 https://github.com/dedis/cothority; cd cothority; make docker )
+       - rm -rf cothority
        - cd dynacred && npm ci
       script: npm run test
     - name: webapp
@@ -38,8 +39,8 @@ jobs:
       install:
         - gimme 1.12.4
         - . $HOME/.gimme/envs/go1.12.4.env
+        - ( cd dynacred && npm ci )
         - cd webapp && npm ci
-        - npm link ../dynacred
       before_script: npm run lint
       script:
         - npm run build --prod

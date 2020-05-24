@@ -2,13 +2,14 @@ import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Router } from "@angular/router";
 
-import { Data } from "@c4dt/dynacred";
-
-import { showSnack, storeCredential } from "../../../lib/Ui";
-import { BcviewerService } from "../../bcviewer/bcviewer.component";
-import { UserData } from "../../user-data.service";
+import {
+    EAttributesConfig,
+    EAttributesPublic,
+    ECredentials,
+} from "dynacred";
+import { UserService } from "src/app/user.service";
+import { storeUserCredential, UIViews } from "../../../lib/Ui";
 
 @Component({
     selector: "app-yourself",
@@ -16,39 +17,54 @@ import { UserData } from "../../user-data.service";
 })
 export class YourselfComponent implements OnInit {
     contactForm: FormGroup;
-    views = Data.views;
+    views = UIViews;
 
     constructor(private snack: MatSnackBar,
                 private dialog: MatDialog,
-                private router: Router,
-                private bcs: BcviewerService,
-                public uData: UserData) {
+                public user: UserService) {
     }
 
     async ngOnInit() {
-        this.updateContactForm();
-    }
-
-    updateContactForm() {
         this.contactForm = new FormGroup({
-            alias: new FormControl(this.uData.contact.alias),
-            email: new FormControl(this.uData.contact.email, Validators.email),
-            phone: new FormControl(this.uData.contact.phone),
-            view: new FormControl(this.uData.contact.view),
+            alias: new FormControl("loading"),
+            email: new FormControl("loading", Validators.email),
+            phone: new FormControl("loading"),
+            view: new FormControl("loading"),
         });
-    }
-
-    async updateCoins() {
-        await showSnack(this.snack, "Updating coins", async () => {
-            await this.uData.coinInstance.update();
-        });
+        const pub = this.user.credStructBS.credPublic;
+        const conf = this.user.credStructBS.credConfig;
+        pub.alias.subscribe((alias) =>
+            this.contactForm.patchValue({alias}));
+        pub.email.subscribe((email) =>
+            this.contactForm.patchValue({email}));
+        pub.phone.subscribe((phone) =>
+            this.contactForm.patchValue({phone}));
+        conf.view.subscribe((view) =>
+            this.contactForm.patchValue({view}));
     }
 
     async updateContact() {
-        this.uData.contact.alias = this.contactForm.controls.alias.value;
-        this.uData.contact.email = this.contactForm.controls.email.value;
-        this.uData.contact.phone = this.contactForm.controls.phone.value;
-        this.uData.contact.view = this.contactForm.controls.view.value;
-        await storeCredential(this.dialog, "Updating User Data", this.uData);
+        await storeUserCredential(this.dialog, "Updating user User Data", this.user,
+            {
+                attr: EAttributesPublic.alias,
+                cred: ECredentials.pub,
+                value: this.contactForm.controls.alias.value,
+            },
+            {
+                attr: EAttributesPublic.email,
+                cred: ECredentials.pub,
+                value: this.contactForm.controls.email.value,
+            },
+            {
+                attr: EAttributesPublic.phone,
+                cred: ECredentials.pub,
+                value: this.contactForm.controls.phone.value,
+            },
+            {
+                attr: EAttributesConfig.view,
+                cred: ECredentials.config,
+                value: this.contactForm.controls.view.value,
+            },
+            );
     }
 }
