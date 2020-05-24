@@ -152,29 +152,6 @@ cothority_npm: kyber_npm
 	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/cothority:\@dedis/cothority:" && \
 	npm i -s @dedis/cothority
 
-dynacred_src: app/lib/dynacred
-	npm r @c4dt/dynacred
-
-app/lib/dynacred: ../dynacred/src
-	@cp -a $< $@
-	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@c4dt/dynacred:~/lib/dynacred:"
-	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
-
-dynacred_npm: cothority_npm
-	@echo "Using dynacred-npm libraries"
-	@if [ ! -d app/lib/dynacred ]; then \
-		echo "there is no dynacred-source present, aborting"; \
-		exit 1; \
-	fi; \
-	find app/lib/dynacred -name "*.js" | xargs rm && \
-	find app/lib/dynacred -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh remove && \
-	diff -Naurq ../dynacred/src/ app/lib/dynacred/ || \
-		( echo "Moving changes to dynacred"; cp -a app/lib/dynacred/* ../dynacred/src ); \
-	rm -rf app/lib/dynacred && \
-	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/dynacred:\@c4dt/dynacred:" && \
-	( cd ../dynacred; npm run lint:fix ) && \
-	npm i -s @c4dt/dynacred
-
 src: kyber_src
 
-npm: dynacred_npm
+npm: cothority_npm

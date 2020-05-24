@@ -1,6 +1,0 @@
-/node_modules/
-*.d.ts
-*.js
-/doc/
-/cothority/
-output.log
