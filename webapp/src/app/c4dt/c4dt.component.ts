@@ -3,7 +3,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 
 import Log from "@dedis/cothority/log";
-import { UserData } from "../user-data.service";
+import { UserService } from "src/app/user.service";
 
 @Component({
     selector: "app-c4dt",
@@ -15,13 +15,14 @@ export class C4dtComponent implements OnInit {
 
     constructor(private dialog: MatDialog,
                 private router: Router,
-                private uData: UserData) {
+                private user: UserService) {
     }
 
     async ngOnInit() {
         Log.lvl1("pathname is", window.location.pathname);
         let path = "/c4dt/";
-        switch (this.uData.contact.view) {
+        const view = this.user.credStructBS.credConfig.view.getValue();
+        switch (view) {
             case "c4dt_admin":
             case "c4dt_partner":
                 this.isPartner = true;
@@ -33,7 +34,7 @@ export class C4dtComponent implements OnInit {
                 path = "/admin";
         }
 
-        Log.lvl1("navigating to", path, "because of", this.uData.contact.view);
+        Log.lvl1("navigating to", path, "because of", view);
         if (window.location.pathname.match(/\/c4dt$/)) {
             return this.router.navigateByUrl(path);
         }

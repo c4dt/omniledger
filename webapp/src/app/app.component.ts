@@ -5,10 +5,9 @@ import { Router } from "@angular/router";
 import { IdentityWrapper } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
+import { ByzCoinService } from "src/app/byz-coin.service";
 import { showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
-import { BcviewerService } from "./bcviewer/bcviewer.component";
-import { UserData } from "./user-data.service";
 
 @Component({
     selector: "app-root",
@@ -27,9 +26,9 @@ export class AppComponent implements OnInit {
     constructor(
         private router: Router,
         private dialog: MatDialog,
-        private bcs: BcviewerService,
-        private uData: UserData,
+        private bcs: ByzCoinService,
     ) {
+        Log.lvl = 2;
     }
 
     logAppend(msg: string, perc: number) {
@@ -39,7 +38,7 @@ export class AppComponent implements OnInit {
     }
 
     async ngOnInit() {
-        await this.uData.loadConfig((msg: string, perc: number) => {
+        await this.bcs.loadConfig((msg: string, perc: number) => {
             this.logAppend(msg, perc * 0.8);
         });
 
@@ -50,7 +49,6 @@ export class AppComponent implements OnInit {
         }
 
         Log.lvl2("Starting to update blocks for viewer");
-        this.bcs.updateBlocks();
         this.bcviewer = true;
 
         if (window.location.pathname.match(/\/register(\/device)?/)) {
@@ -59,20 +57,25 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        if (!(await this.uData.isAvailableInStorage())) {
-            // No data saved - show how to get a new user
-            this.loading = false;
-            return this.newUser();
+        this.logAppend("Checking if user exists", 20);
+        if (!(await this.bcs.hasUser())) {
+            this.logAppend("Checking if we can migrate", 30);
+            if (!(await this.bcs.migrate())) {
+                // No data saved - show how to get a new user
+                this.loading = false;
+                return this.newUser();
+            }
+            this.logAppend("Migration successful, reloading", 100);
+            setTimeout(() => this.ngOnInit(), 1000);
         } else {
             try {
-                this.logAppend("Loading data", 90);
-                await this.uData.load();
-                const signerDarc = await this.uData.contact.getDarcSignIdentity();
-                const rules = await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, signerDarc.id,
-                    IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner));
+                this.logAppend("Loading data", 80);
+                await this.bcs.loadUser();
+                const signerDarc = await this.bcs.user.identityDarcSigner;
+                const rules = await this.bcs.bc.checkAuthorization(this.bcs.bc.genesisID, signerDarc.id,
+                    IdentityWrapper.fromIdentity(this.bcs.user.kiSigner));
                 if (rules.length === 0) {
-                    this.uData.setValues({});
-                    await this.uData.save();
+                    await this.bcs.user.clearDB();
                     await showDialogOKC(this.dialog, "Device revoked", "Sorry, but this device has been revoked." +
                         " If you want to use it again, you'll have to re-activate it.");
                     return this.newUser();
@@ -80,6 +83,7 @@ export class AppComponent implements OnInit {
                 this.logAppend("Done", 100);
                 this.loading = false;
             } catch (e) {
+                Log.catch(e, "failed loading user");
                 // Data was here, but loading failed afterward - might be a network failure.
                 const fileDialog = this.dialog.open(RetryLoadComponent, {
                     width: "300px",
@@ -97,7 +101,7 @@ export class AppComponent implements OnInit {
     }
 
     async newUser(): Promise<boolean> {
-        const roster = this.uData.bc.getConfig().roster;
+        const roster = this.bcs.bc.getConfig().roster;
         if (roster && !roster.list[0].address.includes("localhost")) {
             return this.router.navigate(["/newuser"]);
         } else {

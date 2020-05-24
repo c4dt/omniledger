@@ -1,6 +1,5 @@
-import { Component, OnInit } from "@angular/core";
-import Log from "@dedis/cothority/log";
-import { UserData } from "../../user-data.service";
+import { Component } from "@angular/core";
+import { UserService } from "src/app/user.service";
 
 @Component({
     selector: "app-personhood",
@@ -8,7 +7,7 @@ import { UserData } from "../../user-data.service";
 })
 export class PersonhoodComponent {
 
-    constructor(public uData: UserData) {
+    constructor(public user: UserService) {
     }
 
 }

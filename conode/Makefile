@@ -34,6 +34,7 @@ newdb: utils
 
 # Use this target to build from local source
 docker: build/Dockerfile cothority-pull
+	@echo Building new conode
 	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
 	go build -o build/conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
@@ -44,8 +45,7 @@ $(WEBAPP_ASSET): variables.txt build/conodes/public.toml
 	 echo >> $@
 	 cat $(lastword $^) >> $@
 
-docker_run: docker $(WEBAPP_ASSET)
-	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+docker_run: docker $(WEBAPP_ASSET) docker_start
 
 docker_run_travis: docker
 	docker run --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
@@ -60,7 +60,7 @@ docker_stop:
 	docker stop $(IMAGE_NAME)
 
 docker_start:
-	docker start $(IMAGE_NAME)
+	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop

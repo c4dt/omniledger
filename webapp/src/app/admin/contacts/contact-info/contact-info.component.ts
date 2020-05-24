@@ -1,10 +1,14 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 
-import { Contact } from "@c4dt/dynacred";
-
-import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc } from "@dedis/cothority/darc";
+import {
+    AddressBook,
+    CredentialConfig,
+    CredentialPublic,
+    CredentialSignerBS,
+    CredentialStructBS,
+} from "dynacred";
+import { ByzCoinService } from "src/app/byz-coin.service";
 
 @Component({
     selector: "app-contact-info",
@@ -15,19 +19,20 @@ import { IdentityDarc } from "@dedis/cothority/darc";
     templateUrl: "./contact-info.component.html",
 })
 export class ContactInfoComponent implements OnInit {
-    signerInstanceID: IdentityDarc | undefined;
-    contacts: Contact[] | undefined;
-    actions: DarcInstance[] | undefined;
-    groups: DarcInstance[] | undefined;
+    signerBS: CredentialSignerBS | undefined;
+    pub: CredentialPublic;
+    config: CredentialConfig;
+    addressBook: AddressBook | undefined;
 
     constructor(
         public dialogRef: MatDialogRef<ContactInfoComponent>,
-        @Inject(MAT_DIALOG_DATA) readonly data: { contact: Contact }) {}
+        private builder: ByzCoinService,
+        @Inject(MAT_DIALOG_DATA) readonly data: { contact: CredentialStructBS }) {}
 
     async ngOnInit() {
-        this.data.contact.getContacts().then(() => this.contacts = this.data.contact.contacts);
-        this.data.contact.getDarcSignIdentity().then((id) => this.signerInstanceID = id);
-        this.data.contact.getActions().then((actions) => this.actions = actions);
-        this.data.contact.getGroups().then((groups) => this.groups = groups);
+        this.pub = this.data.contact.credPublic;
+        this.config = this.data.contact.credConfig;
+        this.signerBS = await this.builder.retrieveCredentialSignerBS(this.data.contact);
+        this.addressBook = await this.builder.retrieveAddressBook(this.pub);
     }
 }

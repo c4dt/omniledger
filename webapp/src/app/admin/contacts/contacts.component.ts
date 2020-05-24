@@ -3,64 +3,56 @@ import { Component, Inject, OnInit } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
-
 import Long from "long";
 import { sprintf } from "sprintf-js";
 
-import { Argument, Instruction } from "@dedis/cothority/byzcoin";
-import ClientTransaction from "@dedis/cothority/byzcoin/client-transaction";
-import CoinInstance from "@dedis/cothority/byzcoin/contracts/coin-instance";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { IdentityDarc, IdentityWrapper, Rule } from "@dedis/cothority/darc";
-import Darc from "@dedis/cothority/darc/darc";
-import ISigner from "@dedis/cothority/darc/signer";
+import { IdentityDarc, IdentityWrapper, SignerEd25519 } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
-import CredentialsInstance from "@dedis/cothority/personhood/credentials-instance";
 
-import { Contact, Data, FileBlob, Private, TProgress } from "@c4dt/dynacred";
-
-import { showDialogInfo, showSnack, showTransactions, storeCredential } from "../../../lib/Ui";
-import { BcviewerService } from "../../bcviewer/bcviewer.component";
-import { UserData } from "../../user-data.service";
-import { ShowComponent } from "../devices/devices.component";
+import {
+    ABActionsBS,
+    ABContactsBS,
+    ABGroupsBS,
+    ActionBS,
+    byzcoin,
+    CredentialStructBS,
+    KeyPair,
+    User,
+    UserSkeleton,
+} from "dynacred";
+import { ByzCoinService } from "src/app/byz-coin.service";
+import { UserService } from "src/app/user.service";
+import { DarcInstanceInfoComponent, RenameComponent, ShowComponent } from "src/lib/show/show.component";
+import { showDialogInfo, showTransactions, TProgress, UIViews } from "../../../lib/Ui";
 import { ManageDarcComponent } from "../manage-darc";
-
 import { ContactInfoComponent } from "./contact-info/contact-info.component";
+
+type DarcBS = byzcoin.DarcBS;
 
 @Component({
     selector: "app-contacts",
     templateUrl: "./contacts.component.html",
 })
 export class ContactsComponent implements OnInit {
-    calypsoOurKeys: string[];
-    calypsoOtherKeys: Map<Contact, FileBlob[]>;
-    actions: DarcInstance[] = [];
-    groups: DarcInstance[] = [];
+    contacts: ABContactsBS;
+    actions: ABActionsBS;
+    groups: ABGroupsBS;
 
     constructor(
         protected dialog: MatDialog,
         private snackBar: MatSnackBar,
-        private bcvs: BcviewerService,
         private location: Location,
-        public uData: UserData,
+        public user: UserService,
+        private builder: ByzCoinService,
     ) {
-        this.calypsoOtherKeys = new Map();
-    }
-
-    async updateActions() {
-        this.actions = await this.uData.contact.getActions();
-    }
-
-    async updateGroups() {
-        this.groups = await this.uData.contact.getGroups();
+        this.contacts = user.addressBook.contacts;
+        this.actions = user.addressBook.actions;
+        this.groups = user.addressBook.groups;
     }
 
     async ngOnInit() {
         Log.lvl3("init contacts");
-        await showSnack(this.snackBar, "Updating actions and groups", async () => {
-            await this.updateActions();
-            await this.updateGroups();
-        });
     }
 
     /**
@@ -71,9 +63,9 @@ export class ContactsComponent implements OnInit {
      * @param view - must be either undefined or one of Data.views
      * @param groups - must be either undefined or one of the user's available groups
      */
-    async createContact(view?: string, groups?: string[]) {
-        const groupsInstAvail = await this.uData.contact.getGroups();
-        const groupsAvail = groupsInstAvail.map((g) => g.darc.description.toString());
+    async contactNew(view?: string, groups?: string[]) {
+        const groupsInstAvail = await this.user.addressBook.groups.getValue();
+        const groupsAvail = groupsInstAvail.map((g) => g.getValue().description.toString());
         const creds: IUserCred = {alias: "", email: "", view, groups, groupsAvail, recovery: undefined};
         // Search if the proposed groups are really available to the user
         if (groups && groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
@@ -87,97 +79,54 @@ export class ContactsComponent implements OnInit {
             if (result && result.alias !== "") {
                 const newUser = await showTransactions(this.dialog, "Creating new user " + result.alias,
                     async (progress: TProgress) => {
-                        const ek = Private.fromRand();
                         progress(30, "Creating User Instance");
-                        const nu = await this.uData.createUser(result.alias, ek);
-                        progress(-50, "Collecting User Information");
+                        const tempKey = KeyPair.rand();
+                        const tx = this.user.startTransaction();
+                        const userSkeleton = new UserSkeleton(result.alias, this.user.spawnerInstanceBS.getValue().id,
+                            tempKey.priv);
 
-                        if (nu) {
-                            nu.contact.email = result.email;
-                            if (result.view !== "") {
-                                Log.lvl2("Setting default view of", result.view);
-                                nu.contact.view = result.view;
-                            }
-                            nu.addContact(this.uData.contact);
-
-                            // Concatenate multiple instructions into one clientTransaction, so that
-                            // the update is faster, as there won't be a wait for all transactions to
-                            // go in.
-
-                            const instructions: Instruction[] = [];
-                            const signers: ISigner[][] = [];
-
-                            // Update all chosen group-darcs to include the new user
-                            const addedGroups = await Promise.all(result.groups.map(async (group) => {
-                                Log.lvl2("Adding group", group, "to user", result.alias);
-                                const gInst = groupsInstAvail.find((g) => group === g.darc.description.toString());
-                                await gInst.update();
-                                const newDarc = gInst.darc.evolve();
-                                const signID = (await nu.contact.getDarcSignIdentity());
-                                newDarc.rules.appendToRule(Darc.ruleSign, signID, Rule.OR);
-                                const args = [new Argument({
-                                    name: DarcInstance.argumentDarc,
-                                    value: Buffer.from(Darc.encode(newDarc).finish()),
-                                })];
-                                const instr = Instruction.createInvoke(newDarc.getBaseID(),
-                                    DarcInstance.contractID, DarcInstance.commandEvolve, args);
-                                instructions.push(instr);
-                                signers.push([this.uData.keyIdentitySigner]);
-                                return gInst;
-                            }));
-
-                            // Send enough coins to do 5 new devices
-                            const coins = Long.fromNumber(5 * 100);
-                            const argsTransfer = [
-                                new Argument({name: CoinInstance.argumentCoins, value: Buffer.from(coins.toBytesLE())}),
-                                new Argument({name: CoinInstance.argumentDestination, value: nu.coinInstance.id}),
-                            ];
-                            instructions.push(Instruction.createInvoke(this.uData.coinInstance.id,
-                                CoinInstance.contractID,
-                                CoinInstance.commandTransfer, argsTransfer));
-                            signers.push([this.uData.keyIdentitySigner]);
-
-                            // Update the new user
-                            nu.contact.setGroups(addedGroups);
-                            nu.contact.view = result.view;
-                            const instrUpdate = Instruction.createInvoke(
-                                nu.contact.credentialIID,
-                                CredentialsInstance.contractID,
-                                CredentialsInstance.commandUpdate,
-                                [new Argument({
-                                    name: CredentialsInstance.argumentCredential,
-                                    value: nu.contact.credential.toBytes(),
-                                })],
-                            );
-                            instructions.push(instrUpdate);
-                            signers.push([nu.keyIdentitySigner]);
-                            const ctx = ClientTransaction.make(this.uData.bc.getProtocolVersion(), ...instructions);
-                            await ctx.updateCountersAndSign(this.uData.bc, signers);
-
-                            progress(60, "Updating User Information");
-                            await this.uData.bc.sendTransactionAndWait(ctx);
-
-                            if (result.recovery && result.recovery !== UserCredComponent.noRecovery) {
-                                progress(70, "Adding recovery");
-                                await nu.contact.updateOrConnect();
-                                const gInst = groupsInstAvail.find((g) =>
-                                    result.recovery === g.darc.description.toString());
-                                await gInst.update();
-                                await nu.contact.addSigner("1-recovery", gInst.darc.description.toString(),
-                                    gInst.id, [nu.keyIdentitySigner]);
-                                await nu.contact.sendUpdate();
-                            }
-
-                            progress(80, "Adding User to Contacts");
-                            this.uData.addContact(nu.contact);
-                            await this.uData.save();
+                        userSkeleton.email = result.email;
+                        if (result.view !== "") {
+                            Log.lvl2("Setting default view of", result.view);
+                            userSkeleton.view = result.view;
                         }
-                        return nu;
+                        userSkeleton.addContact(this.user.credStructBS.id);
+
+                        if (result.recovery && result.recovery !== UserCredComponent.noRecovery) {
+                            progress(50, "Adding recovery");
+                            const g = this.user.addressBook.groups.find(result.recovery);
+                            if (g) {
+                                const gDarc = g.getValue();
+                                userSkeleton.addRecovery(gDarc.description.toString(),
+                                  gDarc.getBaseID());
+                            }
+                        }
+
+                        progress(70, "Updating groups");
+                        // Update all chosen group-darcs to include the new user
+                        result.groups.forEach((group) => {
+                            const g = this.user.addressBook.groups.find(group);
+                            if (g) {
+                                g.addSignEvolve(tx, userSkeleton.darcSign.getBaseID(), undefined);
+                                userSkeleton.addGroup(g.getValue().getBaseID());
+                            }
+                        });
+
+                        progress(80, "Adding User to Contacts");
+                        this.user.addressBook.contacts.link(tx, userSkeleton.credID);
+
+                        progress(90, "sending to OmniLedger");
+                        tx.createUser(userSkeleton, Long.fromNumber(1e6));
+                        await tx.sendCoins();
+                        return userSkeleton;
                     });
                 const url = this.location.prepareExternalUrl("/register?ephemeral=" +
-                    newUser.keyIdentity._private.toHex());
+                    newUser.keyPair.priv.marshalBinary().toString("hex"));
                 let host = window.location.host;
-                if (host.match(/^local[1-9]?:4200$/)) {
+
+                // Easier manual UI testing: if the url is local[1-8], return an url with the next number.
+                // This way you can have multiple users in multiple tabs on different hosts: local1, local2, ...
+                if (host.match(/^local[1-8]?:4200$/)) {
                     let index = parseInt(host.slice(5, 6), 10);
                     if (!index) {
                         index = 0;
@@ -192,28 +141,29 @@ export class ContactsComponent implements OnInit {
         });
     }
 
-    async addContact() {
+    async contactLink() {
         const ac = this.dialog.open(AddContactComponent);
         ac.afterClosed().subscribe(async (result) => {
             if (result) {
-                Log.lvl1("Got new contact:", result);
-                const userID = Buffer.from(result, "hex");
-                if (userID.length === 32) {
-                    this.uData.addContact(await Contact.fromByzcoin(this.uData.bc, userID));
-                    await storeCredential(this.dialog, "Adding contact", this.uData);
-                }
+                await showTransactions(this.dialog, "Linking contact", async (progress) => {
+                    progress(50, "Updating contact list");
+                    const userID = Buffer.from(result, "hex");
+                    if (userID.length === 32) {
+                        await this.user.executeTransactions((tx) => this.contacts.link(tx, userID));
+                    }
+                });
             }
         });
     }
 
-    async contactShow(contact: Contact) {
+    async contactShow(contact: CredentialStructBS) {
         this.dialog.open(ContactInfoComponent, {data: {contact}});
     }
 
-    async transferCoin(c: Contact) {
+    async contactTransfer(c: CredentialStructBS) {
         const tc = this.dialog.open(TransferCoinComponent,
             {
-                data: {alias: c.alias},
+                data: {alias: c.credPublic.alias.getValue()},
             });
         tc.afterClosed().subscribe(async (result) => {
             if (result) {
@@ -222,76 +172,85 @@ export class ContactsComponent implements OnInit {
                 if (coins.greaterThan(0)) {
                     await showTransactions(this.dialog, "Transferring coins",
                         async (progress: TProgress) => {
-                            await c.updateOrConnect(this.uData.bc);
                             progress(50, "Transferring Coins");
-                            await this.uData.coinInstance.transfer(coins, c.coinInstance.id,
-                                [this.uData.keyIdentitySigner]);
+                            await this.user.executeTransactions((tx) =>
+                                this.user.coinBS.transferCoins(tx, c.credPublic.coinID.getValue(), coins));
                         });
-                    await this.bcvs.updateBlocks();
                 }
             }
         });
     }
 
-    async contactRecover(c: Contact) {
-        const cid = await c.getDarcSignIdentity();
-        if ((await this.uData.bc.checkAuthorization(this.uData.bc.genesisID, cid.id,
-            IdentityWrapper.fromIdentity(this.uData.keyIdentitySigner))).length === 0) {
-            return showDialogInfo(this.dialog, "No recovery",
-                "Don't have the right to recover this user", "Understood");
-        }
-        const signers = [this.uData.keyIdentitySigner];
-        const device: string =
+    async contactRecover(c: CredentialStructBS) {
+        const deviceStr: string =
             await showTransactions(this.dialog, "Adding new device",
-                async (progress: TProgress) => {
-                    c.spawnerInstance = this.uData.contact.spawnerInstance;
-                    c.data = this.uData;
-                    const now = new Date();
-                    const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
-                        this.uData.contact.alias,
-                        now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
-                    const d = await c.createDevice(name, (p, s) => {
-                        progress(25 + p / 2, s);
-                    }, signers);
-                    progress(75, "Updating Device List");
-                    await c.sendUpdate(signers);
-                    return d;
+              async (progress: TProgress) => {
+                progress(30, "Checking if we have the right to recover " + c.credPublic.alias.getValue());
+                const cSign = await this.builder.retrieveCredentialSignerBS(c);
+                if ((await this.builder.bc.checkAuthorization(this.builder.bc.genesisID, cSign.getValue().getBaseID(),
+                    IdentityWrapper.fromIdentity(this.user.kiSigner))).length === 0) {
+                    await showDialogInfo(this.dialog, "No recovery",
+                        "Don't have the right to recover this user", "Understood");
+                    throw new Error("cannot recover this user");
+                }
+
+                progress(70, "Creating new device for recovery");
+                const now = new Date();
+                const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
+                    this.user.credStructBS.credPublic.alias.getValue(),
+                    now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
+                const ephemeralIdentity = SignerEd25519.random();
+                await this.user.executeTransactions((tx) => {
+                    cSign.devices.create(tx, name, [ephemeralIdentity]);
                 });
-        if (device) {
+                return sprintf("%s?credentialIID=%s&ephemeral=%s", User.urlNewDevice,
+                    c.id.toString("hex"),
+                    ephemeralIdentity.secret.marshalBinary().toString("hex"));
+            });
+        if (deviceStr) {
             const url = window.location.protocol + "//" + window.location.host +
-                this.location.prepareExternalUrl(device);
+                this.location.prepareExternalUrl(deviceStr);
             this.dialog.open(ShowComponent, {data: url});
         }
     }
 
-    async contactDelete(toDelete: Contact) {
-        this.uData.contacts = this.uData.contacts.filter((c) => !c.credentialIID.equals(toDelete.credentialIID));
-        await storeCredential(this.dialog, "Unlinking contact " + toDelete.alias, this.uData);
-    }
-
-    async calypsoSearch(c: Contact) {
-        await showTransactions(this.dialog, "Searching new secure data for " + c.alias.toLocaleUpperCase(),
-            async (progress: TProgress) => {
-                await c.updateOrConnect(this.uData.bc);
-                progress(33, "searching new calypso");
-                const sds = await this.uData.contact.calypso.read(c);
-                progress(66, "Storing credential");
-                await this.uData.save();
-                progress(90, "Updating Calypso");
-                this.updateCalypso();
+    async contactUnlink(toDelete: CredentialStructBS) {
+        await showTransactions(this.dialog, "Unlinking contact", async (progress) => {
+            progress(50, "Updating contact list");
+            await this.user.executeTransactions((tx) => {
+                this.user.addressBook.contacts.unlink(tx, toDelete.id);
             });
-        await this.bcvs.updateBlocks();
+        });
     }
 
-    async changeGroups(a: DarcInstance, filter: string) {
+    async groupRename(g: DarcBS) {
+        const ac = this.dialog.open(RenameComponent, {
+            data: {
+                name: g.getValue().description.toString(),
+                typeStr: "group",
+            },
+        });
+        ac.afterClosed().subscribe(async (result) => {
+            if (result) {
+                await showTransactions(this.dialog, "Renaming Group",
+                    async (progress) => {
+                        progress(50, "Updating description");
+                        await this.user.executeTransactions((tx) => {
+                            g.evolve(tx, {description: Buffer.from(result)});
+                        });
+                    });
+            }
+        });
+    }
+
+    async groupEdit(a: DarcBS, filter: string) {
         Log.lvl3("change groups");
-        await a.update();
         const tc = this.dialog.open(ManageDarcComponent,
             {
                 data: {
-                    darc: a.darc,
+                    darc: a.getValue(),
                     filter,
-                    title: a.darc.description.toString(),
+                    title: a.getValue().description.toString(),
                 },
                 height: "400px",
                 width: "400px",
@@ -301,77 +260,21 @@ export class ContactsComponent implements OnInit {
                 await showTransactions(this.dialog, "Updating Darc",
                     async (progress: TProgress) => {
                         progress(50, "Storing new DARC");
-                        await a.evolveDarcAndWait(result, [this.uData.keyIdentitySigner], 5);
+                        await this.user.executeTransactions((tx) => {
+                            a.evolve(tx, result);
+                        });
                     });
-                await this.bcvs.updateBlocks();
             }
         });
     }
 
-    async actionDelete(a: DarcInstance) {
-        this.uData.contact.setActions((await this.uData.contact.getActions())
-            .filter((aDI) => !aDI.id.equals(a.id)));
-        await storeCredential(this.dialog, "Deleting action", this.uData);
-        await this.updateActions();
-        await this.bcvs.updateBlocks();
-    }
-
-    async actionCreate() {
-        const name = await this.askNameOfNewDarcInstance("Action");
-        if (name === undefined) {
-            return;
-        }
-
-        await showTransactions(this.dialog, "Creating new Action", async (progress: TProgress) => {
-            progress(30, "Preparing new DARCs");
-            const userDarcSigner = await this.uData.contact.getDarcSignIdentity();
-            const signDarc = Darc.createBasic([userDarcSigner], [userDarcSigner], Buffer.from(name));
-            const signDarcID = new IdentityDarc({id: signDarc.id});
-            const coinDarc = Darc.createBasic([], [signDarcID], Buffer.from(`${name}:coin`),
-                [`invoke:${CoinInstance.contractID}.${CoinInstance.commandTransfer}`]);
-
-            const coinID = Buffer.from(`${name}:coin`);
-
-            const transaction = ClientTransaction.make(this.uData.bc.getProtocolVersion(),
-                ...this.uData.spawnerInstance.spawnDarcInstructions(
-                    this.uData.coinInstance,
-                    signDarc, coinDarc),
-                ...this.uData.spawnerInstance.spawnCoinInstructions(
-                    this.uData.coinInstance,
-                    coinDarc.id,
-                    coinID));
-            await transaction.updateCountersAndSign(this.uData.bc, [[this.uData.keyIdentitySigner]]);
-
-            progress(60, "Creating new DARC and coin");
-            Log.lvl2(`creating coin instance with id: ${CoinInstance.coinIID(coinID).toString("hex")}`);
-            await this.uData.bc.sendTransactionAndWait(transaction);
-
-            progress(90, "Storing credential");
-            const newDI = await DarcInstance.fromByzcoin(this.uData.bc, signDarc.id);
-            const actions = await this.uData.contact.getActions();
-            this.uData.contact.setActions(actions.concat(newDI));
-            await this.updateActions();
-            await this.uData.save();
+    async groupUnlink(g: DarcBS) {
+        await showTransactions(this.dialog, "Unlink group", async (progress) => {
+            progress(50, "Unlinking group");
+            await this.user.executeTransactions((tx) => {
+                this.user.addressBook.groups.unlink(tx, g.getValue().getBaseID());
+            });
         });
-
-        await this.bcvs.updateBlocks();
-    }
-
-    async actionAdd() {
-        await this.getDarcInstance(this.actions, "Action");
-        this.uData.contact.setActions(this.actions);
-        await storeCredential(this.dialog, `Adding Action`, this.uData);
-    }
-
-    async actionShow(inst: DarcInstance) {
-        this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
-    }
-
-    async groupDelete(g: DarcInstance) {
-        this.uData.contact.setGroups((await this.uData.contact.getGroups()).filter((gDI) => !gDI.id.equals(g.id)));
-        await storeCredential(this.dialog, "Deleting action", this.uData);
-        await this.updateGroups();
-        await this.bcvs.updateBlocks();
     }
 
     async groupCreate() {
@@ -381,49 +284,73 @@ export class ContactsComponent implements OnInit {
         }
 
         await showTransactions(this.dialog, "Creating new Group", async (progress: TProgress) => {
-            progress(-30, "Getting Identity");
-            const di = await this.uData.contact.getDarcSignIdentity();
-            const nd = Darc.createBasic([di], [di], Buffer.from(name));
-
-            progress(60, "Creating new DARCs");
-            const ndInst = await this.uData.spawnerInstance.spawnDarcs(this.uData.coinInstance,
-                [this.uData.keyIdentitySigner], nd);
-
-            progress(90, "Storing credential");
-            const groups = await this.uData.contact.getGroups();
-            this.uData.contact.setGroups(groups.concat(ndInst));
-            await this.updateGroups();
-            await this.uData.save();
+            progress(50, "Creating new DARCs");
+            await this.user.executeTransactions((tx) =>
+                this.groups.create(tx, name, [this.user.identityDarcSigner]), 1);
         });
 
-        await this.bcvs.updateBlocks();
     }
 
-    async groupAdd() {
+    async groupLink() {
         await this.getDarcInstance(this.groups, "Group");
-        this.uData.contact.setGroups(this.groups);
-        await storeCredential(this.dialog, `Adding Group`, this.uData);
     }
 
-    async groupShow(inst: DarcInstance) {
+    async groupShow(inst: DarcBS) {
         this.dialog.open(DarcInstanceInfoComponent, {data: {inst}});
     }
 
-    /**
-     * updateCalypso stores the keys and the FileBlobs in the class-variables so that the UI
-     * can correctly show them.
-     */
-    updateCalypso() {
-        this.calypsoOurKeys = Array.from(this.uData.contact.calypso.ours.keys());
-        Array.from(this.uData.contact.calypso.others.keys()).forEach((oid) => {
-            const other = this.uData.contacts.find((c) => c.credentialIID.equals(oid));
-            const fbs = Array.from(this.uData.contact.calypso.others.get(oid))
-                .map((sd) => FileBlob.fromBuffer(sd.plainData));
-            this.calypsoOtherKeys.set(other, fbs);
+    async actionCreate() {
+        const name = await this.askNameOfNewDarcInstance("Action");
+        if (name === undefined) {
+            return;
+        }
+
+        await showTransactions(this.dialog, "Creating new Action", async (progress: TProgress) => {
+            progress(50, "Creating new action");
+            await this.user.executeTransactions((tx) =>
+                this.actions.create(tx, name, [this.user.identityDarcSigner]));
+        });
+
+    }
+
+    async actionUnlink(a: ActionBS) {
+        await showTransactions(this.dialog, "Unlink action", async (progress) => {
+            progress(50, "Unlinking action");
+            await this.user.executeTransactions((tx) => {
+                this.user.addressBook.actions.unlink(tx, a.darc.getValue().getBaseID());
+            });
         });
     }
 
-    private async getDarcInstance(array: DarcInstance[], type: string): Promise<void> {
+    async actionLink() {
+        await this.getDarcInstance(this.actions, "Action");
+    }
+
+    async actionShow(inst: ActionBS) {
+        this.dialog.open(DarcInstanceInfoComponent, {data: {inst: inst.darc}});
+    }
+
+    async actionRename(g: DarcBS) {
+        const ac = this.dialog.open(RenameComponent, {
+            data: {
+                name: g.getValue().description.toString(),
+                typeStr: "group",
+            },
+        });
+        ac.afterClosed().subscribe(async (result) => {
+            if (result) {
+                await showTransactions(this.dialog, "Renaming Group",
+                    async (progress) => {
+                        progress(50, "Updating description");
+                        await this.user.executeTransactions((tx) => {
+                            g.evolve(tx, {description: Buffer.from(result)});
+                        });
+                    });
+            }
+        });
+    }
+
+    private async getDarcInstance(dbs: ABActionsBS | ABGroupsBS, type: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.dialog.open(DarcInstanceAddComponent, {data: {type}})
                 .afterClosed().subscribe(async (darcID: string | undefined) => {
@@ -433,11 +360,11 @@ export class ContactsComponent implements OnInit {
                 const id = Buffer.from(darcID, "hex");
 
                 try {
-                    const inst = await DarcInstance.fromByzcoin(this.uData.bc, id);
-                    if (array.some((a) => a.darc.id.equals(id))) {
+                    const inst = await DarcInstance.fromByzcoin(this.builder.bc, id);
+                    if (dbs.getValue().some((a) => a.id.equals(id))) {
                         reject(`Given ${type} is already added under the name "${inst.darc.description}"`);
                     }
-                    array.push(inst);
+                    await this.user.executeTransactions((tx) => dbs.link(tx, inst.id));
                 } catch (e) {
                     if (e.message === `key not in proof: ${darcID}`) {
                         e = new Error(`Given ${type}'s ID was not found`);
@@ -489,7 +416,7 @@ export interface IUserCred {
 export class UserCredComponent {
 
     static noRecovery = "No recovery";
-    views = Data.views;
+    views = UIViews;
     showGroups: boolean;
     showViews: boolean;
     recoveryGroups: string[];
@@ -500,7 +427,7 @@ export class UserCredComponent {
         this.showGroups = data.groups === undefined;
         this.showViews = data.view === undefined;
         if (this.showViews) {
-            data.view = Data.views[0];
+            data.view = UIViews[0];
         }
         data.groups = [];
         this.recoveryGroups = [UserCredComponent.noRecovery].concat(data.groupsAvail);
@@ -547,17 +474,6 @@ export class CreateComponent {
     constructor(
         public dialogRef: MatDialogRef<CreateComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
-    }
-}
-
-@Component({
-    selector: "app-show-darcinstance",
-    templateUrl: "show-darcinstance.html",
-})
-export class DarcInstanceInfoComponent {
-    constructor(
-        public dialogRef: MatDialogRef<DarcInstanceInfoComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { inst: DarcInstance }) {
     }
 }
 

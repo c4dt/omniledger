@@ -1,6 +1,6 @@
 <div [ngSwitch]="kind">
   <app-credential
-    [contact]="contact"
+    [credStruct]="credStruct"
     *ngSwitchCase="'credential'"
   ></app-credential>
   <app-coin [coin]="coin" *ngSwitchCase="'coin'"></app-coin>
