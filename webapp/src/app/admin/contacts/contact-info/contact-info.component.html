@@ -1,61 +1,62 @@
 <h2>Details of "{{ pub.alias | async }}"</h2>
 <p>
-  version: {{ pub.version | async }}<br />
-  struct version: {{ config.structVersion | async }}<br />
+    version: {{ pub.version | async }}<br />
+    struct version: {{ config.structVersion | async }}<br />
 </p>
 <p>
-  email: {{ pub.email | async }}<br />
-  url: {{ pub.url | async }}<br />
-  phone: {{ pub.phone | async }}<br />
-  view: {{ config.view | async }}<br />
-  subscribed to newsletter: {{ pub.subscribe | async }}<br />
+    email: {{ pub.email | async }}<br />
+    url: {{ pub.url | async }}<br />
+    phone: {{ pub.phone | async }}<br />
+    view: {{ config.view | async }}<br />
+    subscribed to newsletter: {{ pub.subscribe | async }}<br />
 </p>
 <p>
-  credentials instance ID (user ID): {{ data.contact.id.toString("hex") }}<br />
-  spawner instance ID: {{ (config.spawnerID | async).toString("hex") }}<br />
-  coin instance ID: {{ (pub.coinID | async).toString("hex") }}<br />
-  LTS instance ID: {{ (config.ltsID | async).toString("hex") }}<br />
-  signer instance ID:
-  <span *ngIf="signerBS === undefined" class="waiting">fetching</span>
-  <span *ngIf="signerBS !== undefined">{{
-    (signerBS | async).getBaseID().toString("hex")
-  }}</span>
+    credentials instance ID (user ID): {{ data.contact.id.toString("hex")
+    }}<br />
+    spawner instance ID: {{ (config.spawnerID | async).toString("hex") }}<br />
+    coin instance ID: {{ (pub.coinID | async).toString("hex") }}<br />
+    LTS instance ID: {{ (config.ltsID | async).toString("hex") }}<br />
+    signer instance ID:
+    <span *ngIf="signerBS === undefined" class="waiting">fetching</span>
+    <span *ngIf="signerBS !== undefined">{{
+        (signerBS | async).getBaseID().toString("hex")
+    }}</span>
 </p>
 <p>
-  seed public: {{ (pub.seedPub | async).toString("hex") }}<br />
-  personhood public:
-  <span *ngIf="(pub.personhood | async) === undefined" class="undefined"
-    >undefined</span
-  >
-  <span *ngIf="(pub.personhood | async) !== undefined">{{
-    (pub.personhood | async).marshalBinary().toString("hex")
-  }}</span>
-  <br />
-  LTS X: {{ config.ltsX | async }}<br />
+    seed public: {{ (pub.seedPub | async).toString("hex") }}<br />
+    personhood public:
+    <span *ngIf="(pub.personhood | async) === undefined" class="undefined"
+        >undefined</span
+    >
+    <span *ngIf="(pub.personhood | async) !== undefined">{{
+        (pub.personhood | async).marshalBinary().toString("hex")
+    }}</span>
+    <br />
+    LTS X: {{ config.ltsX | async }}<br />
 </p>
 
 <div *ngIf="addressBook === undefined" class="waiting">
-  Loading address-book
+    Loading address-book
 </div>
 <div *ngIf="addressBook !== undefined">
-  contacts:
-  <ul>
-    <li *ngFor="let c of addressBook.contacts | async">
-      {{ c.credPublic.alias | async }}
-    </li>
-  </ul>
+    contacts:
+    <ul>
+        <li *ngFor="let c of addressBook.contacts | async">
+            {{ c.credPublic.alias | async }}
+        </li>
+    </ul>
 
-  actions:
-  <ul>
-    <li *ngFor="let a of addressBook.actions | async">
-      {{ (a.darc | async).description.toString() }}
-    </li>
-  </ul>
+    actions:
+    <ul>
+        <li *ngFor="let a of addressBook.actions | async">
+            {{ (a.darc | async).description.toString() }}
+        </li>
+    </ul>
 
-  groups:
-  <ul>
-    <li *ngFor="let g of addressBook.groups | async">
-      {{ (g | async).description }}
-    </li>
-  </ul>
+    groups:
+    <ul>
+        <li *ngFor="let g of addressBook.groups | async">
+            {{ (g | async).description }}
+        </li>
+    </ul>
 </div>

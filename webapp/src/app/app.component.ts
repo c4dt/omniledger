@@ -35,6 +35,7 @@ export class AppComponent implements OnInit {
         this.log += `${msg}\n`;
         this.text = msg;
         this.percentage = perc;
+        Log.lvl2("UI-log:", perc, msg);
     }
 
     async ngOnInit() {
@@ -60,8 +61,11 @@ export class AppComponent implements OnInit {
         this.logAppend("Checking if user exists", 20);
         if (!(await this.bcs.hasUser())) {
             this.logAppend("Checking if we can migrate", 30);
-            if (!(await this.bcs.migrate())) {
+            try {
+                await this.bcs.migrate();
+            } catch (e) {
                 // No data saved - show how to get a new user
+                Log.catch(e, "couldn't migrate data");
                 this.loading = false;
                 return this.newUser();
             }

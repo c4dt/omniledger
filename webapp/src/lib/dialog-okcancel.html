@@ -1,23 +1,23 @@
 <div>
-  <h1>{{data.Title}}</h1>
-  <p [innerHTML]="data.Text"></p>
-  <p>
-    <button
-      mat-raised-button
-      color="primary"
-      [mat-dialog-close]="true"
-      cdkFocusInitial
-    >
-      {{data.Buttons.OKButton}}
-    </button>
-    <button
-      *ngIf="data.Buttons.CancelButton != ''"
-      mat-raised-button
-      color="primary"
-      [mat-dialog-close]="false"
-      cdkFocusInitial
-    >
-      {{data.Buttons.CancelButton}}
-    </button>
-  </p>
+    <h1>{{data.Title}}</h1>
+    <p [innerHTML]="data.Text"></p>
+    <p>
+        <button
+            mat-raised-button
+            color="primary"
+            [mat-dialog-close]="true"
+            cdkFocusInitial
+        >
+            {{data.Buttons.OKButton}}
+        </button>
+        <button
+            *ngIf="data.Buttons.CancelButton != ''"
+            mat-raised-button
+            color="primary"
+            [mat-dialog-close]="false"
+            cdkFocusInitial
+        >
+            {{data.Buttons.CancelButton}}
+        </button>
+    </p>
 </div>

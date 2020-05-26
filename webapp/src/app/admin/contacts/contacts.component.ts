@@ -292,7 +292,7 @@ export class ContactsComponent implements OnInit {
     }
 
     async groupLink() {
-        await this.getDarcInstance(this.groups, "Group");
+        await this.linkDarcInstance(this.groups, "Group");
     }
 
     async groupShow(inst: DarcBS) {
@@ -323,7 +323,7 @@ export class ContactsComponent implements OnInit {
     }
 
     async actionLink() {
-        await this.getDarcInstance(this.actions, "Action");
+        await this.linkDarcInstance(this.actions, "Action");
     }
 
     async actionShow(inst: ActionBS) {
@@ -350,7 +350,7 @@ export class ContactsComponent implements OnInit {
         });
     }
 
-    private async getDarcInstance(dbs: ABActionsBS | ABGroupsBS, type: string): Promise<void> {
+    private async linkDarcInstance(dbs: ABActionsBS | ABGroupsBS, type: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.dialog.open(DarcInstanceAddComponent, {data: {type}})
                 .afterClosed().subscribe(async (darcID: string | undefined) => {

@@ -85,7 +85,6 @@ export class User {
         return newKP;
     }
 
-    // TODO: should this be here or in CredentialStructBS?
     getUrlForDevice(priv: Scalar): string {
         return `${User.urlNewDevice}?` +
             `credentialIID=${this.credStructBS.id.toString("hex")}` +

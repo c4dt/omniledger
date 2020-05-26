@@ -124,35 +124,30 @@ export class ByzCoinBuilder {
         throw new Error("couldn't find correct key and/or credID at: " + dbBase);
     }
 
-    async migrateUser(dbold: IStorage, dbBase = "main"): Promise<boolean> {
-        try {
-            Log.lvl3("trying to migrate");
-            const userData = await dbold.get(User.keyMigrate);
-            if (!userData) {
-                return false;
-            }
-            const migrate = bufferToObject(userData) as IMigrate;
-            if (migrate && migrate.version === User.versionMigrate) {
-                // Just suppose everything is here and let it fail otherwise.
-                Log.lvl1("Migrating from", migrate);
-                const credStruct = CredentialStruct.decode(migrate.contact.credential);
-                const seed = credStruct.getAttribute(ECredentials.pub,
-                    EAttributesPublic.seedPub);
-                if (!seed) {
-                    Log.error("couldn't get seed");
-                    return false;
-                }
-                const credID = CredentialsInstance.credentialIID(seed);
-                const privKey = Buffer.from(migrate.keyIdentity, "hex");
-                await this.db.set(`${dbBase}:${User.keyPriv}`, privKey);
-                await this.db.set(`${dbBase}:${User.keyCredID}`, credID);
-                Log.lvl1("Successfully written private key and credID");
-                return true;
-            }
-        } catch (e) {
-            Log.lvl4("Nothing to migrate from", e);
+    async migrateUser(dbold: IStorage, dbBase = "main"): Promise<void> {
+        Log.lvl3("trying to migrate");
+        const userData = await dbold.get(User.keyMigrate);
+        if (!userData) {
+            throw new Error("didn't find any user data");
         }
-        return false;
+        const migrate = bufferToObject(userData) as IMigrate;
+        Log.lvl1("Migrating from:", migrate);
+        if (migrate.version !== User.versionMigrate) {
+                Log.warn("Trying to migrate an old account - good luck");
+        }
+
+        // Just suppose everything is here and let it fail otherwise.
+        const credStruct = CredentialStruct.decode(migrate.contact.credential);
+        const seed = credStruct.getAttribute(ECredentials.pub,
+                EAttributesPublic.seedPub);
+        if (!seed) {
+                throw new Error("couldn't get seed");
+        }
+        const credID = CredentialsInstance.credentialIID(seed);
+        const privKey = Buffer.from(migrate.keyIdentity, "hex");
+        await this.db.set(`${dbBase}:${User.keyPriv}`, privKey);
+        await this.db.set(`${dbBase}:${User.keyCredID}`, credID);
+        Log.lvl1("Successfully written private key and credID");
     }
 
     async retrieveAddressBook(cp: CredentialPublic): Promise<AddressBook> {
@@ -269,6 +264,6 @@ export class ByzCoinBuilder {
 export interface IMigrate {
     keyPersonhood?: string;
     keyIdentity: string;
-    version: number;
+    version?: number;
     contact: { credential: Buffer };
 }

@@ -1,13 +1,13 @@
 <div [ngSwitch]="kind">
-  <app-credential
-    [credStruct]="credStruct"
-    *ngSwitchCase="'credential'"
-  ></app-credential>
-  <app-coin [coin]="coin" *ngSwitchCase="'coin'"></app-coin>
-  <app-darc [inst]="darc" *ngSwitchCase="'darc'"></app-darc>
-  <div *ngSwitchCase="'unknown'">
-    <h2>Unknown id</h2>
-    <p>Don't know what to do with this id, sorry.</p>
-  </div>
-  <div *ngSwitchDefault>Loading Instance</div>
+    <app-credential
+        [credStruct]="credStruct"
+        *ngSwitchCase="'credential'"
+    ></app-credential>
+    <app-coin [coin]="coin" *ngSwitchCase="'coin'"></app-coin>
+    <app-darc [inst]="darc" *ngSwitchCase="'darc'"></app-darc>
+    <div *ngSwitchCase="'unknown'">
+        <h2>Unknown id</h2>
+        <p>Don't know what to do with this id, sorry.</p>
+    </div>
+    <div *ngSwitchDefault>Loading Instance</div>
 </div>

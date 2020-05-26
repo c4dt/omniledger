@@ -28,8 +28,8 @@ import { bufferToObject } from "./utils";
  */
 export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
     static readonly structVersionLatest = 2;
-    static readonly urlRegistered = "https://pop.dedis.ch/qrcode/identity-2";
-    static readonly urlUnregistered = "https://pop.dedis.ch/qrcode/unregistered-2";
+    static readonly urlRegistered = "https://qrcode.c4dt.org/registered";
+    static readonly urlUnregistered = "https://qrcode.c4dt.org/unregistered";
 
     credPublic: CredentialPublic;
     credConfig: CredentialConfig;
@@ -263,9 +263,9 @@ export class AttributeLongBS extends BehaviorSubject<Long> {
     }
 }
 
-export class AttributePointBS extends BehaviorSubject<Point> {
+export class AttributePointBS extends BehaviorSubject<Point | undefined> {
     constructor(private cbs: CredentialBS,
-                bss: BehaviorSubject<Point>, private name: string) {
+                bss: BehaviorSubject<Point | undefined>, private name: string) {
         super(bss.getValue());
         bss.subscribe(this);
     }

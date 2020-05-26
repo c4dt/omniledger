@@ -82,16 +82,11 @@ export class ByzCoinService extends ByzCoinBuilder {
     }
 
     async loadUser(): Promise<void> {
-        try {
-            this.user = await this.retrieveUserByDB();
-            return;
-        } catch (e) {
-            Log.warn("couldn't find dynacred2 user");
-        }
+        this.user = await this.retrieveUserByDB();
     }
 
-    async migrate(): Promise<boolean> {
-        return await this.migrateUser(new StorageDBOld());
+    async migrate(): Promise<void> {
+        return this.migrateUser(new StorageDBOld());
     }
 }
 

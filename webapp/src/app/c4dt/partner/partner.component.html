@@ -1,15 +1,15 @@
 <h2>Contacts</h2>
 <ul>
-  <li *ngFor="let contact of user.addressBook.contacts | async">
-    {{ contact.credPublic.alias | async | titlecase }} -
-    <button mat-button (click)="contactUnlink(contact)">Delete</button>
-  </li>
+    <li *ngFor="let contact of user.addressBook.contacts | async">
+        {{ contact.credPublic.alias | async | titlecase }} -
+        <button mat-button (click)="contactUnlink(contact)">Delete</button>
+    </li>
 </ul>
 <div>
-  <button mat-stroked-button color="primary" (click)="createSimpleContact()">
-    New User
-  </button>
-  <button mat-stroked-button color="primary" (click)="contactLink()">
-    Add Contact
-  </button>
+    <button mat-stroked-button color="primary" (click)="createSimpleContact()">
+        New User
+    </button>
+    <button mat-stroked-button color="primary" (click)="contactLink()">
+        Add Contact
+    </button>
 </div>

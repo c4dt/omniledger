@@ -1,72 +1,74 @@
 <h2>Contacts</h2>
 <ul>
-  <li *ngFor="let contact of contacts | async">
-    <button mat-button (click)="contactShow(contact)">
-      {{ contact.credPublic.alias | async | titlecase }}
-    </button>
-    -
-    <button mat-button (click)="contactTransfer(contact)">Transfer</button>
-    -
-    <button mat-button (click)="contactRecover(contact)">Recover</button>
-    -
-    <button mat-button (click)="contactUnlink(contact)">Unlink</button>
-  </li>
+    <li *ngFor="let contact of contacts | async">
+        <button mat-button (click)="contactShow(contact)">
+            {{ contact.credPublic.alias | async | titlecase }}
+        </button>
+        -
+        <button mat-button (click)="contactTransfer(contact)">Transfer</button>
+        -
+        <button mat-button (click)="contactRecover(contact)">Recover</button>
+        -
+        <button mat-button (click)="contactUnlink(contact)">Unlink</button>
+    </li>
 </ul>
 <div style="padding: 10px;">
-  <button mat-stroked-button color="primary" (click)="contactNew()">
-    Create Contact
-  </button>
-  <button mat-stroked-button color="primary" (click)="contactLink()">
-    Link Contact
-  </button>
+    <button mat-stroked-button color="primary" (click)="contactNew()">
+        Create Contact
+    </button>
+    <button mat-stroked-button color="primary" (click)="contactLink()">
+        Link Contact
+    </button>
 </div>
 
 <h2>Groups</h2>
 <ul>
-  <li *ngFor="let group of groups | async">
-    <button mat-button (click)="groupShow(group)">
-      {{ group.getValue().description.toString() | titlecase }}
-    </button>
-    -
-    <button mat-button (click)="groupRename(group)">Rename group</button>
-    -
-    <button mat-button (click)="groupEdit(group, 'contact,group')">
-      Edit group
-    </button>
-    -
-    <button mat-button (click)="groupUnlink(group)">Unlink group</button>
-  </li>
+    <li *ngFor="let group of groups | async">
+        <button mat-button (click)="groupShow(group)">
+            {{ group.getValue().description.toString() | titlecase }}
+        </button>
+        -
+        <button mat-button (click)="groupRename(group)">Rename group</button>
+        -
+        <button mat-button (click)="groupEdit(group, 'contact,group')">
+            Edit group
+        </button>
+        -
+        <button mat-button (click)="groupUnlink(group)">Unlink group</button>
+    </li>
 </ul>
 <div style="padding: 10px;">
-  <button mat-stroked-button color="primary" (click)="groupCreate()">
-    Create Group
-  </button>
-  <button mat-stroked-button color="primary" (click)="groupLink()">
-    Link Group
-  </button>
+    <button mat-stroked-button color="primary" (click)="groupCreate()">
+        Create Group
+    </button>
+    <button mat-stroked-button color="primary" (click)="groupLink()">
+        Link Group
+    </button>
 </div>
 
 <h2>Actions</h2>
 <ul>
-  <li *ngFor="let action of actions | async">
-    <button mat-button (click)="actionShow(action)">
-      {{ action.darc.getValue().description.toString() | titlecase }}
-    </button>
-    -
-    <button mat-button (click)="groupRename(action.darc)">Rename action</button>
-    -
-    <button mat-button (click)="groupEdit(action.darc, 'group')">
-      Edit action
-    </button>
-    -
-    <button mat-button (click)="actionUnlink(action)">Unlink action</button>
-  </li>
+    <li *ngFor="let action of actions | async">
+        <button mat-button (click)="actionShow(action)">
+            {{ action.darc.getValue().description.toString() | titlecase }}
+        </button>
+        -
+        <button mat-button (click)="groupRename(action.darc)">
+            Rename action
+        </button>
+        -
+        <button mat-button (click)="groupEdit(action.darc, 'group')">
+            Edit action
+        </button>
+        -
+        <button mat-button (click)="actionUnlink(action)">Unlink action</button>
+    </li>
 </ul>
 <div style="padding: 10px;">
-  <button mat-stroked-button color="primary" (click)="actionCreate()">
-    Create Action
-  </button>
-  <button mat-stroked-button color="primary" (click)="actionLink()">
-    Link Action
-  </button>
+    <button mat-stroked-button color="primary" (click)="actionCreate()">
+        Create Action
+    </button>
+    <button mat-stroked-button color="primary" (click)="actionLink()">
+        Link Action
+    </button>
 </div>

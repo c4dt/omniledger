@@ -1,20 +1,20 @@
 <div>
-  <h2>Rename {{data.typeStr}}</h2>
-  <p>
-    <mat-form-field class="width100">
-      <mat-label>{{'New name for ' + origName}}</mat-label>
-      <input matInput [(ngModel)]="data.name" />
-    </mat-form-field>
-  </p>
-  <p>
-    <button mat-raised-button mat-dialog-close>Cancel</button>
-    <button
-      mat-raised-button
-      color="primary"
-      [mat-dialog-close]="data.name"
-      cdkFocusInitial
-    >
-      Rename
-    </button>
-  </p>
+    <h2>Rename {{data.typeStr}}</h2>
+    <p>
+        <mat-form-field class="width100">
+            <mat-label>{{'New name for ' + origName}}</mat-label>
+            <input matInput [(ngModel)]="data.name" />
+        </mat-form-field>
+    </p>
+    <p>
+        <button mat-raised-button mat-dialog-close>Cancel</button>
+        <button
+            mat-raised-button
+            color="primary"
+            [mat-dialog-close]="data.name"
+            cdkFocusInitial
+        >
+            Rename
+        </button>
+    </p>
 </div>

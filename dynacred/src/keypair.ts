@@ -43,6 +43,6 @@ export class KeyPair {
     }
 }
 
-function isScalar(o: any): o is Scalar {
-    return "marshalBinary" in o;
+function isScalar(o: Scalar | Buffer): o is Scalar {
+    return "setBytes" in o;
 }
