@@ -1,33 +1,34 @@
 <section fxLayoutAlign="center">
-  <div>
-    <h1>Logging service</h1>
+    <div>
+        <h1>Logging service</h1>
 
-    <p>
-      An external app coming from
-      <strong>{{ service.host + service.pathname }}</strong> asked to log you
-      in.
-    </p>
-    <div [ngSwitch]="state">
-      <ng-container *ngSwitchCase="StateT.LOADING"
-        >We are checking if you have access...</ng-container
-      >
-      <ng-container
-        *ngSwitchCase="
-          StateT.NO_ACCESS_WITH_CHECKAUTH || StateT.NO_ACCESS_WITH_TRANSACTION
-        "
-      >
-        Unfortunately, you don't have access :(
-      </ng-container>
-      <ng-container *ngSwitchCase="StateT.ASKING_IF_LOGIN">
-        <div>
-          <p>Do you want to accept or deny the request?</p>
-          <button mat-raised-button (click)="login()">Login</button>
-          <button mat-raised-button (click)="deny()">Deny</button>
+        <p>
+            An external app coming from
+            <strong>{{ service.host + service.pathname }}</strong> asked to log
+            you in.
+        </p>
+        <div [ngSwitch]="state">
+            <ng-container *ngSwitchCase="StateT.LOADING"
+                >We are checking if you have access...</ng-container
+            >
+            <ng-container
+                *ngSwitchCase="
+                    StateT.NO_ACCESS_WITH_CHECKAUTH ||
+                    StateT.NO_ACCESS_WITH_TRANSACTION
+                "
+            >
+                Unfortunately, you don't have access :(
+            </ng-container>
+            <ng-container *ngSwitchCase="StateT.ASKING_IF_LOGIN">
+                <div>
+                    <p>Do you want to accept or deny the request?</p>
+                    <button mat-raised-button (click)="login()">Login</button>
+                    <button mat-raised-button (click)="deny()">Deny</button>
+                </div>
+            </ng-container>
+            <ng-container *ngSwitchCase="StateT.REDIRECTING"
+                >You are getting redirected...</ng-container
+            >
         </div>
-      </ng-container>
-      <ng-container *ngSwitchCase="StateT.REDIRECTING"
-        >You are getting redirected...</ng-container
-      >
     </div>
-  </div>
 </section>

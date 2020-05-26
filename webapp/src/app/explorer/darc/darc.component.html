@@ -1,24 +1,24 @@
 <div>
-  <h2>DARC "{{ inst.darc.description.toString() | titlecase }}"</h2>
-  <p>ID: {{ inst.id.toString("hex") }}</p>
+    <h2>DARC "{{ inst.darc.description.toString() | titlecase }}"</h2>
+    <p>ID: {{ inst.id.toString("hex") }}</p>
 
-  <p>Version: {{ inst.darc.version }}</p>
+    <p>Version: {{ inst.darc.version }}</p>
 
-  <p>
-    Rules:
-  </p>
-  <ul>
-    <li *ngFor="let rule of rules">
-      {{ rule[0] }}
-      <ul>
-        <li *ngFor="let ev of rule[1]">
-          {{ ev[0] }}:
-          <span *ngIf="ev[0] === 'darc'"
-            ><a [routerLink]="'/explorer/' + ev[1]">{{ ev[1] }}</a>
-          </span>
-          <span *ngIf="ev[0] !== 'darc'">{{ ev[1] }}</span>
+    <p>
+        Rules:
+    </p>
+    <ul>
+        <li *ngFor="let rule of rules">
+            {{ rule[0] }}
+            <ul>
+                <li *ngFor="let ev of rule[1]">
+                    {{ ev[0] }}:
+                    <span *ngIf="ev[0] === 'darc'"
+                        ><a [routerLink]="'/explorer/' + ev[1]">{{ ev[1] }}</a>
+                    </span>
+                    <span *ngIf="ev[0] !== 'darc'">{{ ev[1] }}</span>
+                </li>
+            </ul>
         </li>
-      </ul>
-    </li>
-  </ul>
+    </ul>
 </div>

@@ -2,7 +2,7 @@ import {
     AfterViewInit,
     Component,
     ElementRef,
-    Inject,
+    Inject, OnInit,
     Renderer2,
     ViewChild,
 } from "@angular/core";
@@ -23,7 +23,7 @@ export interface IDialogTransactionConfig<T> {
     styleUrls: ["./dialog-transaction.scss"],
     templateUrl: "dialog-transaction.html",
 })
-export class DialogTransactionComponent<T> implements AfterViewInit {
+export class DialogTransactionComponent<T> implements OnInit {
 
     percentage: number = 0;
     text: string;
@@ -41,15 +41,12 @@ export class DialogTransactionComponent<T> implements AfterViewInit {
         @Inject(MAT_DIALOG_DATA) public data: IDialogTransactionConfig<T>) {
     }
 
-    async ngAfterViewInit() {
-        // TODO: replace the setTimeout with ChangeDetectorRef
-        setTimeout(async () => {
-            const last = this.bcs.bc.latest.index;
-            this.ub = (await this.bcs.bc.getNewBlocks()).pipe(
-                map((block) => block.index),
-                startWith(last - 3, last - 2, last - 1, last),
-            ).subscribe((nb) => this.updateBlocks(nb));
-        }, 100);
+    async ngOnInit() {
+        const last = this.bcs.bc.latest.index;
+        this.ub = (await this.bcs.bc.getNewBlocks()).pipe(
+            map((block) => block.index),
+            startWith(last - 3, last - 2, last - 1, last),
+        ).subscribe((nb) => this.updateBlocks(nb));
     }
 
     updateBlocks(index: number) {

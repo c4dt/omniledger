@@ -1,19 +1,19 @@
 <ul>
-  <li>User-id: {{ userID }}</li>
-  <li>Signer-id: {{ signID }}</li>
-  <li>Public key: {{ pubKey }}</li>
-  <li>
-    <button mat-button (click)="deleteUser()">DELETE USER</button>
-  </li>
-  <li><a href="/omniledger/c4dt">C4DT access</a></li>
-  <li>
-    <a href="/omniledger/admin"
-      >Admin access (potentially dangerous to your account)</a
-    >
-  </li>
+    <li>User-id: {{ userID }}</li>
+    <li>Signer-id: {{ signID }}</li>
+    <li>Public key: {{ pubKey }}</li>
+    <li>
+        <button mat-button (click)="deleteUser()">DELETE USER</button>
+    </li>
+    <li><a href="/omniledger/c4dt">C4DT access</a></li>
+    <li>
+        <a href="/omniledger/admin"
+            >Admin access (potentially dangerous to your account)</a
+        >
+    </li>
 </ul>
 <ul>
-  <li *ngFor="let node of nodes">
-    {{ node }}
-  </li>
+    <li *ngFor="let node of nodes">
+        {{ node }}
+    </li>
 </ul>

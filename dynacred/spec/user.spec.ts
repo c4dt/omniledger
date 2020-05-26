@@ -35,12 +35,17 @@ describe("User class should", async () => {
                 credential: user.credStructBS.getValue().toBytes(),
             },
             keyIdentity: user.kpp.priv.marshalBinary().toString("hex"),
-            version: User.versionMigrate,
         };
         await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
-        expect(await bct.migrateUser(db)).toBeTruthy();
+        await bct.migrateUser(db);
         const newUser = await bct.retrieveUserByDB();
         expect(newUser.credStructBS.credPublic.alias.getValue()).toBe("migrate");
+
+        migrate.version = User.versionMigrate;
+        await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
+        await bct.migrateUser(db);
+        const newUserVersion = await bct.retrieveUserByDB();
+        expect(newUserVersion.credStructBS.credPublic.alias.getValue()).toBe("migrate");
 
         await db.set(dbKP, Buffer.alloc(0));
         await expectAsync(bct.retrieveUserByDB()).toBeRejected();

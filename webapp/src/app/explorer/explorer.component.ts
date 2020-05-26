@@ -30,7 +30,7 @@ export class ExplorerComponent implements OnInit {
 
                 case CredentialsInstance.contractID:
                     this.credStruct = await this.bcs.retrieveCredentialStructBS(id);
-                    this.kind = "credentialObservable.ts";
+                    this.kind = "credential";
                     break;
 
                 case CoinInstance.contractID:

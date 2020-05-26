@@ -11,6 +11,9 @@ import { KeyPair } from "./keypair";
 
 // Copied from webapp/lib/UI.ts - should probably be merged in CredentialTransaction and then be used
 // in showTransactions - which should also be revamped. But that is for later...
+// If percentage is positive, the 'text' represents a transaction that is shown to move to the nodes, and then
+// in the block.
+// If percentage is negative, the 'text' represents a query and is only shown in the progress bar.
 export type TProgress = (percentage: number, text: string) => void;
 
 export class Calypso {

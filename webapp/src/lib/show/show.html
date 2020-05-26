@@ -1,20 +1,20 @@
 <div>
-  <h2>New Device Link</h2>
-  <div mat-dialog-content>
-    <div class="content" fxLayout="row" fxLayout.xs="column" fxFlexFill>
-      <div fxFlex="50">
-        <p>Open this link on the new device:</p>
-        <p>Registration link: <a href="{{data}}">New Device Link</a></p>
-      </div>
-      <div fxFlex="50">
-        <p>Or scan the following QRcode:</p>
-        <div style="padding-right: 20px;">
-          <qrcode [qrdata]="data" [size]="256" [level]="'M'"></qrcode>
+    <h2>New Device Link</h2>
+    <div mat-dialog-content>
+        <div class="content" fxLayout="row" fxLayout.xs="column" fxFlexFill>
+            <div fxFlex="50">
+                <p>Open this link on the new device:</p>
+                <p>Registration link: <a href="{{data}}">New Device Link</a></p>
+            </div>
+            <div fxFlex="50">
+                <p>Or scan the following QRcode:</p>
+                <div style="padding-right: 20px;">
+                    <qrcode [qrdata]="data" [size]="256" [level]="'M'"></qrcode>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-  <div mat-dialog-actions>
-    <button mat-button mat-dialog-close>Close</button>
-  </div>
+    <div mat-dialog-actions>
+        <button mat-button mat-dialog-close>Close</button>
+    </div>
 </div>

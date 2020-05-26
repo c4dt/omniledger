@@ -1,36 +1,39 @@
 <div *ngIf="loading">
-  <div fxLayout="column" style="margin-top: 2em; min-height: 95vh;">
-    <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
-      <div fxFlex="90%" fxFlexOffset="0">
-        <h1 class="center">Loading user</h1>
-        <br />
-        <div class="progress-box">
-          <div class="progress-text">
-            <div [style.width.%]="percentage" class="progress-bar"></div>
-            {{ text }}
-          </div>
-        </div>
+    <div fxLayout="column" style="margin-top: 2em; min-height: 95vh;">
+        <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
+            <div fxFlex="90%" fxFlexOffset="0">
+                <h1 class="center">Loading user</h1>
+                <br />
+                <div class="progress-box">
+                    <div class="progress-text">
+                        <div
+                            [style.width.%]="percentage"
+                            class="progress-bar"
+                        ></div>
+                        {{ text }}
+                    </div>
+                </div>
 
-        <pre class="progress-log">{{ log }}</pre>
-      </div>
+                <pre class="progress-log">{{ log }}</pre>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 <div *ngIf="!loading">
-  <div fxLayout="column" style="margin-top: 2em; min-height: 95vh;">
-    <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
-      <div fxFlex="90%" fxFlexOffset="0">
-        <router-outlet></router-outlet>
-      </div>
+    <div fxLayout="column" style="margin-top: 2em; min-height: 95vh;">
+        <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
+            <div fxFlex="90%" fxFlexOffset="0">
+                <router-outlet></router-outlet>
+            </div>
+        </div>
+        <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
+            <div fxFlex="1 0 9em" fxLayoutAlign="center end"></div>
+            <div *ngIf="bcviewer" fxFlex="10 0 9em" fxLayoutAlign="center end">
+                <app-bcviewer></app-bcviewer>
+            </div>
+            <div fxFlex="1 0 9em" fxLayoutAlign="center end">
+                Version<br />{{ version }}
+            </div>
+        </div>
     </div>
-    <div fxLayout="row" fxFlex="1 1 100%" fxLayoutAlign="center">
-      <div fxFlex="1 0 9em" fxLayoutAlign="center end"></div>
-      <div *ngIf="bcviewer" fxFlex="10 0 9em" fxLayoutAlign="center end">
-        <app-bcviewer></app-bcviewer>
-      </div>
-      <div fxFlex="1 0 9em" fxLayoutAlign="center end">
-        Version<br />{{ version }}
-      </div>
-    </div>
-  </div>
 </div>

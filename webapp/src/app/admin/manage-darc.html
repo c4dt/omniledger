@@ -1,45 +1,53 @@
 <div>
-  <h2>{{data.title}}</h2>
-  <mat-select [(value)]="rule" (selectionChange)="ruleChange($event)">
-    <mat-option *ngFor="let rule of newDarc.rules.list" [value]="rule.action"
-      >{{rule.action}}</mat-option
-    >
-  </mat-select>
-  <table width="100%" height="100%">
-    <tr height="20%">
-      <td style="border-right: 2px solid dimgray; width: 50%;">
-        <h3 class="center">Available Access</h3>
-      </td>
-      <td><h3 class="center">Chosen Access</h3></td>
-    </tr>
-    <tr>
-      <td style="border-right: 2px solid dimgray;" align="center">
-        <ul>
-          <li *ngFor="let item of available" (click)="add(item.identity)">
-            {{item.label}}
-          </li>
-        </ul>
-      </td>
-      <td align="center">
-        <ul>
-          <li *ngFor="let item of chosen" (click)="remove(item.identity)">
-            {{item.label}}
-          </li>
-        </ul>
-      </td>
-    </tr>
-  </table>
+    <h2>{{data.title}}</h2>
+    <mat-select [(value)]="rule" (selectionChange)="ruleChange($event)">
+        <mat-option
+            *ngFor="let rule of newDarc.rules.list"
+            [value]="rule.action"
+            >{{rule.action}}</mat-option
+        >
+    </mat-select>
+    <table width="100%" height="100%">
+        <tr height="20%">
+            <td style="border-right: 2px solid dimgray; width: 50%;">
+                <h3 class="center">Available Access</h3>
+            </td>
+            <td><h3 class="center">Chosen Access</h3></td>
+        </tr>
+        <tr>
+            <td style="border-right: 2px solid dimgray;" align="center">
+                <ul>
+                    <li
+                        *ngFor="let item of available"
+                        (click)="add(item.identity)"
+                    >
+                        {{item.label}}
+                    </li>
+                </ul>
+            </td>
+            <td align="center">
+                <ul>
+                    <li
+                        *ngFor="let item of chosen"
+                        (click)="remove(item.identity)"
+                    >
+                        {{item.label}}
+                    </li>
+                </ul>
+            </td>
+        </tr>
+    </table>
 
-  <p>
-    <button mat-raised-button mat-dialog-close>Cancel</button>
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="updateDarc()"
-      [mat-dialog-close]="newDarc"
-      cdkFocusInitial
-    >
-      Apply
-    </button>
-  </p>
+    <p>
+        <button mat-raised-button mat-dialog-close>Cancel</button>
+        <button
+            mat-raised-button
+            color="primary"
+            (click)="updateDarc()"
+            [mat-dialog-close]="newDarc"
+            cdkFocusInitial
+        >
+            Apply
+        </button>
+    </p>
 </div>
