@@ -17,22 +17,22 @@ import { DeviceComponent } from "./register/device/device.component";
 import { RegisterComponent } from "./register/register.component";
 
 const routes: Routes = [
-    {path: "", redirectTo: "/c4dt", pathMatch: "full"},
+    { path: "", redirectTo: "/c4dt", pathMatch: "full" },
     {
         // tslint:disable-next-line
         path: "register", children: [
-            {path: "device", component: DeviceComponent},
-            {path: "", component: RegisterComponent, pathMatch: "full"},
+            { path: "device", component: DeviceComponent },
+            { path: "", component: RegisterComponent, pathMatch: "full" },
         ],
     },
     {
         // tslint:disable-next-line
         path: "admin", component: AdminComponent, children: [
-            {path: "yourself", component: YourselfComponent},
-            {path: "contacts", component: ContactsComponent},
-            {path: "status", component: StatusComponent},
-            {path: "devices", component: DevicesComponent},
-            {path: "", redirectTo: "yourself", pathMatch: "full"},
+            { path: "yourself", component: YourselfComponent },
+            { path: "contacts", component: ContactsComponent },
+            { path: "status", component: StatusComponent },
+            { path: "devices", component: DevicesComponent },
+            { path: "", redirectTo: "yourself", pathMatch: "full" },
         ],
     },
     {
@@ -45,22 +45,22 @@ const routes: Routes = [
     {
         // tslint:disable-next-line
         path: "c4dt", component: C4dtComponent, children: [
-            {path: "partner", component: PartnerComponent},
-            {path: "profile", component: ProfileComponent},
-            {path: "welcome", component: WelcomeComponent},
-            {path: "devices", component: DevicesComponent},
-            {path: "status", component: StatusComponent},
+            { path: "partner", component: PartnerComponent },
+            { path: "profile", component: ProfileComponent },
+            { path: "welcome", component: WelcomeComponent },
+            { path: "devices", component: DevicesComponent },
+            { path: "status", component: StatusComponent },
         ],
     },
     {
         // tslint:disable-next-line
         path: "api/v0", children: [
-            {path: "cas/login", component: CASLoginComponent},
+            { path: "cas/login", component: CASLoginComponent },
         ],
     },
     {
         // tslint:disable-next-line
-        path: "explorer/:id", component: ExplorerComponent,
+        path: "explorer/:id", component: ExplorerComponent
     },
 ];
 

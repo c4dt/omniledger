@@ -4,8 +4,9 @@ import Log from "@dedis/cothority/log";
 import { randomBytes } from "crypto";
 import { KeyPair } from "dynacred";
 import { BCTestEnv, simul } from "spec/simul/itest";
-import { ROSTER } from "spec/support/conondes";
+import { ROSTER } from "spec/support/conodes";
 import { Calypso, CalypsoData } from "src/calypso";
+import { SpawnerTransactionBuilder } from "src/spawnerTransactionBuilder";
 
 describe("Calypso should", () => {
     it("be able to create write and read requests", async () => {
@@ -33,7 +34,7 @@ describe("Calypso should", () => {
         const content = Buffer.from("very important secret");
         const tx = bct.user.startTransaction();
         const wrID = calypso.addFile(tx, calypsoDarc.getBaseID(), fileName, content);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
         const im = bct.user.credStructBS.credCalypso.getValue();
         expect(im.map.size).toBe(1);
         expect(im.toKVs()[0].key.equals(wrID)).toBeTruthy();
@@ -41,11 +42,11 @@ describe("Calypso should", () => {
 
         const kp = KeyPair.rand();
         const buf = await calypso.getFile(tx, wrID, kp);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
         expect(content.equals(buf)).toBeTruthy();
 
         calypso.rmFile(tx, fileName);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
         await expectAsync(calypso.getFile(tx, wrID, kp)).toBeRejected();
     });
 

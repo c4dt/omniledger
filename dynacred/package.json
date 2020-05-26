@@ -1,6 +1,10 @@
 {
-  "name": "dynacred",
+  "name": "@c4dt/dynacred",
   "version": "2.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/c4dt/omniledger.git"
+  },
   "description": "New dynacred library based on observables, as everything can change",
   "main": "build/index.js",
   "types": "build/index.d.ts",

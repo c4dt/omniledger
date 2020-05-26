@@ -2,7 +2,15 @@ import { Argument, ByzCoinRPC, ClientTransaction, Instruction } from "@dedis/cot
 import { AddTxResponse } from "@dedis/cothority/byzcoin/proto/requests";
 import ISigner from "@dedis/cothority/darc/signer";
 
-export class Transaction {
+/**
+ * TransactionBuilder handles collecting multiple instructions and signing them all
+ * together before sending the transaction to the chain.
+ * There are convenience methods to create spawn, invoke, or delete instructions.
+ * Once all instructions are added, the send method will contact one or more nodes
+ * to submit the transaction.
+ * After a call to the send method, the transaction is ready for new instructions.
+ */
+export class TransactionBuilder {
     private instructions: Instruction[] = [];
 
     constructor(protected bc: ByzCoinRPC) {
@@ -10,31 +18,32 @@ export class Transaction {
 
     async send(signers: ISigner[][], wait = 0): Promise<[ClientTransaction, AddTxResponse]> {
         const ctx = ClientTransaction.make(this.bc.getProtocolVersion(), ...this.instructions);
-        this.instructions = [];
         await ctx.updateCountersAndSign(this.bc, signers);
-        return [ctx, await this.bc.sendTransactionAndWait(ctx, wait)];
+        const response = await this.bc.sendTransactionAndWait(ctx, wait);
+        this.instructions = [];
+        return [ctx, response];
     }
 
-    push(inst: Instruction): Instruction {
+    append(inst: Instruction): Instruction {
         this.instructions.push(inst);
         return inst;
     }
 
-    unshift(inst: Instruction): Instruction {
+    prepend(inst: Instruction): Instruction {
         this.instructions.unshift(inst);
         return inst;
     }
 
-    spawn(iid: Buffer, contractID: string, args: Argument[]) {
-        return this.push(Instruction.createSpawn(iid, contractID, args));
+    spawn(iid: Buffer, contractID: string, args: Argument[]): Instruction {
+        return this.append(Instruction.createSpawn(iid, contractID, args));
     }
 
-    invoke(iid: Buffer, contractID: string, command: string, args: Argument[]) {
-        return this.push(Instruction.createInvoke(iid, contractID, command, args));
+    invoke(iid: Buffer, contractID: string, command: string, args: Argument[]): Instruction {
+        return this.append(Instruction.createInvoke(iid, contractID, command, args));
     }
 
-    delete(iid: Buffer, contractID: string) {
-        return this.push(Instruction.createDelete(iid, contractID));
+    delete(iid: Buffer, contractID: string): Instruction {
+        return this.append(Instruction.createDelete(iid, contractID));
     }
 
     toString(): string {

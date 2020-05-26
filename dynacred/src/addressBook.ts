@@ -10,7 +10,7 @@ import { Darc, IdentityDarc, IIdentity } from "@dedis/cothority/darc";
 
 import { CoinBS, DarcBS, DarcsBS } from "./byzcoin";
 import { AttributeInstanceSetBS, CredentialStructBS, EAttributesPublic, ECredentials } from "./credentialStructBS";
-import { CredentialTransaction } from "./credentialTransaction";
+import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 import { UserSkeleton } from "./userSkeleton";
 
 /**
@@ -41,20 +41,20 @@ export class ABContactsBS extends BehaviorSubject<CredentialStructBS[]> {
         bscs.subscribe(this);
     }
 
-    create(tx: CredentialTransaction, user: UserSkeleton, initial = Long.fromNumber(0)) {
+    create(tx: SpawnerTransactionBuilder, user: UserSkeleton, initial = Long.fromNumber(0)) {
         tx.createUser(user, initial);
         this.link(tx, user.credID);
     }
 
-    link(tx: CredentialTransaction, id: InstanceID) {
+    link(tx: SpawnerTransactionBuilder, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().add(id));
     }
 
-    unlink(tx: CredentialTransaction, id: InstanceID) {
+    unlink(tx: SpawnerTransactionBuilder, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().rm(id));
     }
 
-    rename(tx: CredentialTransaction, oldName: string, newName: string) {
+    rename(tx: SpawnerTransactionBuilder, oldName: string, newName: string) {
         const group = this.getValue().find((d) => d.credPublic.alias.getValue() === oldName);
         if (!group) {
             throw new Error("couldn't find group with that name");
@@ -78,21 +78,21 @@ export class ABGroupsBS extends DarcsBS {
         return this.getValue().find((dbs) => dbs.getValue().description.toString().match(`\\b${name}$`));
     }
 
-    create(tx: CredentialTransaction, name: string, signers: IIdentity[]): Darc {
+    create(tx: SpawnerTransactionBuilder, name: string, signers: IIdentity[]): Darc {
         const d = tx.spawnDarcBasic(name, signers);
         this.link(tx, d.getBaseID());
         return d;
     }
 
-    link(tx: CredentialTransaction, id: InstanceID) {
+    link(tx: SpawnerTransactionBuilder, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().add(id));
     }
 
-    unlink(tx: CredentialTransaction, id: InstanceID) {
+    unlink(tx: SpawnerTransactionBuilder, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().rm(id));
     }
 
-    rename(tx: CredentialTransaction, oldName: string, newName: string) {
+    rename(tx: SpawnerTransactionBuilder, oldName: string, newName: string) {
         const group = this.getValue().find((d) => d.getValue().description.equals(Buffer.from(oldName)));
         if (!group) {
             throw new Error("couldn't find group with that name");
@@ -110,7 +110,7 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
         abs.subscribe(this);
     }
 
-    create(tx: CredentialTransaction, desc: string, signers: IIdentity[]) {
+    create(tx: SpawnerTransactionBuilder, desc: string, signers: IIdentity[]) {
         const signDarc = tx.spawnDarcBasic(desc, signers);
         const signDarcID = new IdentityDarc({id: signDarc.id});
         const coinDarc = Darc.createBasic([], [signDarcID], Buffer.from(`${name}:coin`),
@@ -121,15 +121,15 @@ export class ABActionsBS extends BehaviorSubject<ActionBS[]> {
         this.link(tx, signDarc.getBaseID());
     }
 
-    link(tx: CredentialTransaction, id: InstanceID) {
+    link(tx: SpawnerTransactionBuilder, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().add(id));
     }
 
-    unlink(tx: CredentialTransaction, id: InstanceID) {
+    unlink(tx: SpawnerTransactionBuilder, id: InstanceID) {
         this.ais.setInstanceSet(tx, this.ais.getValue().rm(id));
     }
 
-    rename(tx: CredentialTransaction, oldName: string, newName: string) {
+    rename(tx: SpawnerTransactionBuilder, oldName: string, newName: string) {
         const action = this.getValue().find((a) => a.darc.getValue().description.equals(Buffer.from(oldName)));
         if (!action) {
             throw new Error("couldn't find this action");

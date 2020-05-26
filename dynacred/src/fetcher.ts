@@ -14,30 +14,26 @@ import {
 import { Darc, IdentityDarc, IdentityWrapper } from "@dedis/cothority/darc";
 
 import { ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook } from "./addressBook";
-import { CoinBS } from "./byzcoin/coinBS";
-import { DarcBS, DarcsBS } from "./byzcoin/darcsBS";
+import { CoinBS } from "./byzcoin";
+import { DarcBS, DarcsBS } from "./byzcoin";
 import { CredentialSignerBS, CSTypesBS } from "./credentialSignerBS";
 import {
     CredentialInstanceMapBS,
     CredentialPublic,
     CredentialStructBS,
-    EAttributesPublic,
-    ECredentials,
 } from "./credentialStructBS";
 import { KeyPair } from "./keypair";
 import { ConvertBS, ObservableToBS } from "./observableUtils";
 import { User } from "./user";
-import { bufferToObject } from "./utils";
 
 /**
- * ByzCoinBuilder implements convenience methods to get instances needed for a credential.
+ * Fetcher implements convenience methods to get instances needed for a credential.
  * This class can retrieve different instances from a ByzCoin chain.
- * The only method that changes the db is `migrateUser`.
- * All other methods only retrieve the information from ByzCoin.
+ * All methods retrieve the information from ByzCoin.
  *
  * The use of `dbBase` is to allow for different users in the same IStorage.
  */
-export class ByzCoinBuilder {
+export class Fetcher {
 
     constructor(public bc: ByzCoinRPC,
                 public db: IStorage) {
@@ -100,8 +96,11 @@ export class ByzCoinBuilder {
         }
         const credID = Buffer.from(url.query.credentialIID, "hex");
         const ephemeralBuf = Buffer.from(url.query.ephemeral, "hex");
-        if (credID.length !== 32 || ephemeralBuf.length !== 32) {
-            throw new Error("either credentialIID or ephemeral is not of length 32 bytes");
+        if (credID.length !== 32) {
+            throw new Error("credentialIID is not of length 32 bytes");
+        }
+        if (ephemeralBuf.length !== 32) {
+            throw new Error("ephemeralBuf is not of length 32 bytes");
         }
 
         const u = await this.retrieveUser(credID, ephemeralBuf, dbBase);
@@ -122,32 +121,6 @@ export class ByzCoinBuilder {
             return [key, credID];
         }
         throw new Error("couldn't find correct key and/or credID at: " + dbBase);
-    }
-
-    async migrateUser(dbold: IStorage, dbBase = "main"): Promise<void> {
-        Log.lvl3("trying to migrate");
-        const userData = await dbold.get(User.keyMigrate);
-        if (!userData) {
-            throw new Error("didn't find any user data");
-        }
-        const migrate = bufferToObject(userData) as IMigrate;
-        Log.lvl1("Migrating from:", migrate);
-        if (migrate.version !== User.versionMigrate) {
-                Log.warn("Trying to migrate an old account - good luck");
-        }
-
-        // Just suppose everything is here and let it fail otherwise.
-        const credStruct = CredentialStruct.decode(migrate.contact.credential);
-        const seed = credStruct.getAttribute(ECredentials.pub,
-                EAttributesPublic.seedPub);
-        if (!seed) {
-                throw new Error("couldn't get seed");
-        }
-        const credID = CredentialsInstance.credentialIID(seed);
-        const privKey = Buffer.from(migrate.keyIdentity, "hex");
-        await this.db.set(`${dbBase}:${User.keyPriv}`, privKey);
-        await this.db.set(`${dbBase}:${User.keyCredID}`, credID);
-        Log.lvl1("Successfully written private key and credID");
     }
 
     async retrieveAddressBook(cp: CredentialPublic): Promise<AddressBook> {
@@ -234,6 +207,8 @@ export class ByzCoinBuilder {
     async retrieveDarcBS(darcID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<DarcBS | undefined> {
         Log.lvl3("getting darcBS");
+        // Need to verify against Buffer here, which is the defined type of InstanceID.
+        // Else typescript complains....
         if (darcID instanceof Buffer) {
             darcID = new BehaviorSubject(darcID);
         }
@@ -259,11 +234,4 @@ export class ByzCoinBuilder {
         const credDarc = await this.retrieveDarcBS(credDarcID);
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
     }
-}
-
-export interface IMigrate {
-    keyPersonhood?: string;
-    keyIdentity: string;
-    version?: number;
-    contact: { credential: Buffer };
 }

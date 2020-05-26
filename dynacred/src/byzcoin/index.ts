@@ -1,10 +1,11 @@
 import { CoinBS } from "./coinBS";
-import { DarcBS, DarcsBS } from "./darcsBS";
-import { Transaction } from "./transaction";
+import { DarcBS, DarcsBS, IDarcAttr } from "./darcsBS";
+import { TransactionBuilder } from "./transactionBuilder";
 
 export {
     CoinBS,
+    IDarcAttr,
     DarcBS,
     DarcsBS,
-    Transaction,
+    TransactionBuilder,
 };

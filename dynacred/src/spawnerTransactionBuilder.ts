@@ -17,25 +17,36 @@ import { Log } from "@dedis/cothority/index";
 import { CalypsoReadInstance, CalypsoWriteInstance, Read, Write } from "@dedis/cothority/calypso";
 import { Point } from "@dedis/kyber/index";
 import { randomBytes } from "crypto";
-import { Transaction } from "./byzcoin";
+import { TransactionBuilder } from "./byzcoin";
 import { EAttributesPublic, ECredentials } from "./credentialStructBS";
 import { ICoin } from "./genesis";
 import { UserSkeleton } from "./userSkeleton";
 
-export class CredentialTransaction extends Transaction {
+/**
+ * SpawnerTransactionBuilder offers an easy interface to create new instances
+ * using the SpawnerInstance.
+ * Contrary to 'pure' spawns, when using the SpawnerInstance, the caller must
+ * pay coins for the creation of a new instance.
+ * The SpawnerTransactionBuilder signs and sends all instructions when `sendCoins`
+ * is called.
+ * After a call to `sendCoins`, the builder can be used again for new instructions.
+ */
+export class SpawnerTransactionBuilder extends TransactionBuilder {
+    static readonly longWait = 10;
+
     private cost = Long.fromNumber(0);
 
     constructor(public bc: ByzCoinRPC, private spawner: SpawnerInstance, private coin: ICoin) {
         super(bc);
     }
 
-    clone(): CredentialTransaction {
-        return new CredentialTransaction(this.bc, this.spawner, this.coin);
+    clone(): SpawnerTransactionBuilder {
+        return new SpawnerTransactionBuilder(this.bc, this.spawner, this.coin);
     }
 
     async sendCoins(wait = 0): Promise<[ClientTransaction, AddTxResponse]> {
         if (this.cost.greaterThan(0)) {
-            this.unshift(Instruction.createInvoke(this.coin.instance.id,
+            this.prepend(Instruction.createInvoke(this.coin.instance.id,
                 CoinInstance.contractID, CoinInstance.commandFetch,
                 [new Argument({
                     name: CoinInstance.argumentCoins,
@@ -47,7 +58,7 @@ export class CredentialTransaction extends Transaction {
 
     spawnDarc(d: Darc): Darc {
         this.spawn(this.spawner.id, DarcInstance.contractID,
-            [new Argument({name: SpawnerInstance.argumentDarc, value: d.toBytes()})]);
+            [new Argument({ name: SpawnerInstance.argumentDarc, value: d.toBytes() })]);
         this.cost = this.cost.add(this.spawner.costs.costDarc.value);
         return d;
     }
@@ -63,14 +74,14 @@ export class CredentialTransaction extends Transaction {
         }
 
         this.spawn(this.spawner.id, CoinInstance.contractID,
-            [new Argument({name: SpawnerInstance.argumentCoinName, value: type}),
-                new Argument({name: SpawnerInstance.argumentDarcID, value: darcID}),
-                new Argument({name: SpawnerInstance.argumentCoinID, value: coinID}),
-                new Argument({name: SpawnerInstance.argumentCoinValue, value: Buffer.from(initial.toBytesLE())}),
+            [new Argument({ name: SpawnerInstance.argumentCoinName, value: type }),
+                new Argument({ name: SpawnerInstance.argumentDarcID, value: darcID }),
+                new Argument({ name: SpawnerInstance.argumentCoinID, value: coinID }),
+                new Argument({ name: SpawnerInstance.argumentCoinValue, value: Buffer.from(initial.toBytesLE()) }),
             ]);
         this.cost = this.cost.add(this.spawner.costs.costCoin.value.add(initial));
         return CoinInstance.create(this.bc, CoinInstance.coinIID(coinID),
-            darcID, new Coin({name: type, value: initial}));
+            darcID, new Coin({ name: type, value: initial }));
     }
 
     spawnCredential(cred: CredentialStruct, darcID: InstanceID, credID?: InstanceID) {
@@ -78,27 +89,27 @@ export class CredentialTransaction extends Transaction {
             credID = cred.getAttribute(ECredentials.pub, EAttributesPublic.seedPub);
         }
         this.spawn(this.spawner.id, CredentialsInstance.contractID,
-            [new Argument({name: SpawnerInstance.argumentCredID, value: credID}),
-                new Argument({name: SpawnerInstance.argumentDarcID, value: darcID}),
-                new Argument({name: SpawnerInstance.argumentCredential, value: cred.toBytes()})]);
+            [new Argument({ name: SpawnerInstance.argumentCredID, value: credID }),
+                new Argument({ name: SpawnerInstance.argumentDarcID, value: darcID }),
+                new Argument({ name: SpawnerInstance.argumentCredential, value: cred.toBytes() })]);
         this.cost = this.cost.add(this.spawner.costs.costCredential.value);
     }
 
     spawnCalypsoWrite(darcID: InstanceID, wr: Write, preID = randomBytes(32)): InstanceID {
         const args = [
-            new Argument({name: CalypsoWriteInstance.argumentWrite, value: Buffer.from(Write.encode(wr).finish())}),
-            new Argument({name: CalypsoWriteInstance.argumentDarcID, value: darcID}),
-            new Argument({name: CalypsoWriteInstance.argumentPreID, value: preID})];
+            new Argument({ name: CalypsoWriteInstance.argumentWrite, value: Buffer.from(Write.encode(wr).finish()) }),
+            new Argument({ name: CalypsoWriteInstance.argumentDarcID, value: darcID }),
+            new Argument({ name: CalypsoWriteInstance.argumentPreID, value: preID })];
         this.spawn(this.spawner.id, CalypsoWriteInstance.contractID, args);
         this.cost = this.cost.add(this.spawner.costs.costCWrite.value);
         return CalypsoWriteInstance.preToInstID(preID);
     }
 
     spawnCalypsoRead(wrID: InstanceID, pub: Point, preID = randomBytes(32)): InstanceID {
-        const read = new Read({write: wrID, xc: pub.marshalBinary()});
+        const read = new Read({ write: wrID, xc: pub.marshalBinary() });
         const args = [
-            new Argument({name: CalypsoReadInstance.argumentRead, value: Buffer.from(Read.encode(read).finish())}),
-            new Argument({name: CalypsoReadInstance.argumentPreID, value: preID}),
+            new Argument({ name: CalypsoReadInstance.argumentRead, value: Buffer.from(Read.encode(read).finish()) }),
+            new Argument({ name: CalypsoReadInstance.argumentPreID, value: preID }),
         ];
         this.spawn(wrID, CalypsoReadInstance.contractID, args);
         this.cost = this.cost.add(this.spawner.costs.costCRead.value);
@@ -109,7 +120,7 @@ export class CredentialTransaction extends Transaction {
         const newD = d.evolve();
         rules.forEach((rule) => newD.rules.setRuleExp(rule.action, rule.getExpr()));
         this.invoke(d.getBaseID(), DarcInstance.contractID, DarcInstance.commandEvolve,
-            [new Argument({name: DarcInstance.argumentDarc, value: newD.toBytes()})]);
+            [new Argument({ name: DarcInstance.argumentDarc, value: newD.toBytes() })]);
         return newD;
     }
 

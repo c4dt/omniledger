@@ -21,10 +21,19 @@
         mat-tab-link
         routerLink="/admin/devices"
         routerLinkActive
+        #rla3="routerLinkActive"
+        [active]="rla3.isActive"
+    >
+        Devices
+    </a>
+    <a
+        mat-tab-link
+        routerLink="/admin/calypso"
+        routerLinkActive
         #rla4="routerLinkActive"
         [active]="rla4.isActive"
     >
-        Devices
+        Calypso
     </a>
     <a
         mat-tab-link

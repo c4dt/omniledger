@@ -9,9 +9,9 @@ import Log from "@dedis/cothority/log";
 import { curve, Scalar } from "@dedis/kyber";
 
 import { LongTermSecret } from "@dedis/cothority/calypso";
-import { ByzCoinBuilder } from "./builder";
-import { CredentialTransaction } from "./credentialTransaction";
+import { Fetcher } from "./fetcher";
 import { KeyPair } from "./keypair";
+import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 import { User } from "./user";
 import { UserSkeleton } from "./userSkeleton";
 
@@ -28,7 +28,7 @@ export interface ICoin {
     signers: ISigner[];
 }
 
-export class Genesis extends ByzCoinBuilder {
+export class Genesis extends Fetcher {
 
     get signers(): SignerEd25519[] {
         if (!this.genesisUser) {
@@ -43,6 +43,7 @@ export class Genesis extends ByzCoinBuilder {
         }
         return this.genesisUser.darcID || this.genesisUser.darc.getBaseID();
     }
+
     static readonly rules = ["spawn:spawner", "spawn:coin", "spawn:credential", "spawn:longTermSecret",
         "spawn:calypsoWrite", "spawn:calypsoRead", "spawn:darc",
         "invoke:coin.mint", "invoke:coin.transfer", "invoke:coin.fetch"];
@@ -55,7 +56,7 @@ export class Genesis extends ByzCoinBuilder {
         if (!db) {
             db = new LocalCache();
         }
-        const gu = {keyPair, darc: adminDarc};
+        const gu = { keyPair, darc: adminDarc };
         const bc = await createBC(gu, db);
         return new Genesis(db, bc, gu);
     }
@@ -86,7 +87,7 @@ export class Genesis extends ByzCoinBuilder {
         }
         const instance = await CoinInstance.spawn(this.bc, this.darcID, this.signers, SPAWNER_COIN);
         await instance.mint(this.signers, Long.fromNumber(1e11));
-        this.coin = {instance, signers: this.signers};
+        this.coin = { instance, signers: this.signers };
         return this.coin;
     }
 
@@ -126,12 +127,12 @@ export class Genesis extends ByzCoinBuilder {
             priv = KeyPair.rand().priv;
         }
         const userFactory = new UserSkeleton(alias, this.spawner.id, priv);
-        const tx = new CredentialTransaction(this.bc, this.spawner, this.coin);
+        const tx = new SpawnerTransactionBuilder(this.bc, this.spawner, this.coin);
         if (lts) {
             userFactory.addLTS(lts);
         }
         tx.createUser(userFactory, Long.fromNumber(1e9));
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
         return this.retrieveUser(userFactory.credID, userFactory.keyPair.priv.marshalBinary(), dbBase);
     }
 }

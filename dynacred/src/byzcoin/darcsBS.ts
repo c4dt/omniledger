@@ -5,7 +5,7 @@ import { DarcInstance } from "@dedis/cothority/byzcoin/contracts";
 import { Darc, IIdentity, Rule, Rules } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 
-import { Transaction } from "./transaction";
+import { TransactionBuilder } from "./transactionBuilder";
 
 export class DarcsBS extends BehaviorSubject<DarcBS[]> {
     constructor(sbs: BehaviorSubject<DarcBS[]>) {
@@ -22,7 +22,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         darc.subscribe(this);
     }
 
-    evolve(tx: Transaction, updates: IDarcAttr, unrestricted = false): Darc {
+    evolve(tx: TransactionBuilder, updates: IDarcAttr, unrestricted = false): Darc {
         const newArgs = {...this.getValue().evolve(), ...updates};
         const newDarc = new Darc(newArgs);
         const cmd = unrestricted ? DarcInstance.commandEvolveUnrestricted : DarcInstance.commandEvolve;
@@ -34,7 +34,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         return newDarc;
     }
 
-    setSignEvolve(tx: Transaction, idSign: IIdentity | InstanceID, idEvolve = idSign) {
+    setSignEvolve(tx: TransactionBuilder, idSign: IIdentity | InstanceID, idEvolve = idSign) {
         const rules = this.getValue().rules.clone();
         rules.setRule(Darc.ruleSign, toIId(idSign));
         if (idEvolve) {
@@ -43,7 +43,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         this.evolve(tx, {rules});
     }
 
-    addSignEvolve(tx: Transaction, idSign: IIdentity | InstanceID, idEvolve = idSign) {
+    addSignEvolve(tx: TransactionBuilder, idSign: IIdentity | InstanceID, idEvolve = idSign) {
         const rules = this.getValue().rules.clone();
         rules.appendToRule(Darc.ruleSign, toIId(idSign), Rule.OR);
         if (idEvolve) {
@@ -52,7 +52,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
         this.evolve(tx, {rules});
     }
 
-    rmSignEvolve(tx: Transaction, id: IIdentity | InstanceID) {
+    rmSignEvolve(tx: TransactionBuilder, id: IIdentity | InstanceID) {
         const rules = this.getValue().rules.clone();
         rules.getRule(Darc.ruleSign).remove(toIId(id).toString());
         rules.getRule(DarcInstance.ruleEvolve).remove(toIId(id).toString());

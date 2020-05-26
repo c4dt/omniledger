@@ -8,7 +8,7 @@ import { curve } from "@dedis/kyber";
 import { Genesis, IGenesisUser, User, UserSkeleton } from "dynacred";
 
 import { ByzCoinSimul } from "spec/simul/byzcoinSimul";
-import { ROSTER } from "spec/support/conondes";
+import { ROSTER } from "spec/support/conodes";
 
 Log.lvl = 2;
 export const simul = true;

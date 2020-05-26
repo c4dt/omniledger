@@ -6,13 +6,13 @@ import { SkipBlock, SkipchainRPC } from "@dedis/cothority/skipchain";
 import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 import Dexie from "dexie";
-import { ByzCoinBuilder, User } from "dynacred";
+import { Fetcher, User } from "dynacred";
 import { Config } from "src/lib/config";
 
 @Injectable({
     providedIn: "root",
 })
-export class ByzCoinService extends ByzCoinBuilder {
+export class ByzCoinService extends Fetcher {
     user?: User;
     config?: Config;
     conn?: RosterWSConnection;
@@ -86,7 +86,7 @@ export class ByzCoinService extends ByzCoinBuilder {
     }
 
     async migrate(): Promise<void> {
-        return this.migrateUser(new StorageDBOld());
+        return User.migrate(new StorageDBOld(), new StorageDB());
     }
 }
 

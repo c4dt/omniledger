@@ -13,7 +13,7 @@ import { Darc, IIdentity } from "@dedis/cothority/darc";
 
 import { DarcBS, DarcsBS } from "./byzcoin/darcsBS";
 import { CredentialInstanceMapBS } from "./credentialStructBS";
-import { CredentialTransaction } from "./credentialTransaction";
+import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 
 export class CredentialSignerBS extends DarcBS {
     constructor(darcBS: DarcBS,
@@ -31,18 +31,18 @@ export class CSTypesBS extends DarcsBS {
         super(dbs);
     }
 
-    create(tx: CredentialTransaction, name: string, identity: IIdentity[]): Darc {
+    create(tx: SpawnerTransactionBuilder, name: string, identity: IIdentity[]): Darc {
         const newDarc = tx.spawnDarcBasic(`${this.prefix}:${name}`, identity);
         this.link(tx, name, newDarc.getBaseID());
         return newDarc;
     }
 
-    link(tx: CredentialTransaction, name: string, id: InstanceID) {
+    link(tx: SpawnerTransactionBuilder, name: string, id: InstanceID) {
         this.signerDarcBS.addSignEvolve(tx, id);
         this.cim.setEntry(tx, name, id);
     }
 
-    unlink(tx: CredentialTransaction, id: InstanceID) {
+    unlink(tx: SpawnerTransactionBuilder, id: InstanceID) {
         if (!this.cim.hasEntry(id)) {
             return;
         }
@@ -50,7 +50,7 @@ export class CSTypesBS extends DarcsBS {
         this.signerDarcBS.rmSignEvolve(tx, id);
     }
 
-    rename(tx: CredentialTransaction, id: Buffer, newName: string) {
+    rename(tx: SpawnerTransactionBuilder, id: Buffer, newName: string) {
         if (!this.cim.hasEntry(id)) {
             throw new Error("this signer doesn't exist");
         }
