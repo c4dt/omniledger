@@ -26,6 +26,6 @@ npm:
 	rm -f src/lib/{cothority,kyber}
 
 serve:
-	ng serve --disable-host-check --aot
+	npx ng serve --disable-host-check --aot
 
 build_serve: deps serve

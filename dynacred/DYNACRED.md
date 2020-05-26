@@ -6,18 +6,20 @@ The following figure shows a very rough overview of the different system parts t
 
 ![ByzCoin overview](dynacred-bc-overview.png)
 
-*   ByzCoin blockchain: a set of nodes come to a consensus every n seconds on what the new _global state_ of the chain
-*   should be. The global state consists of instances. Every instance: is linked to a contract defining what actions can
-*   be done (with a few exceptions like signer counters that don’t have a contract attached) has a darc attached to it
-*   that defines the rules to execute the available actions has data that is stored in all nodes User accounts are a set
-*   of different instances linked together as described in the rest of this document. One difference from other
-*   blockchains is the possibility to easily use different devices with separated keys that can be revoked on a
-*   per-device basis.
+* ByzCoin blockchain: a set of nodes come to a consensus every n seconds on what the new _global state_ of the chain
+should be. The global state consists of instances. Every instance: 
+    * is linked to a contract defining what actions can be done (with a few exceptions like signer counters that 
+    don’t have a contract attached) 
+    * has a darc attached to it that defines the rules to execute the available actions 
+    * has data that is stored in all nodes 
+* User accounts are a set of different instances linked together as described in the rest of this document. One 
+difference from other blockchains is the possibility to easily use different devices with separated keys that can be 
+revoked on a per-device basis.
 
 ### Contracts and Instances
 
-Similar to Ethereum, the global state of the ByzCoin network is a key/value storage where the value of a given key can
-evolve. This is different from Bitcoin, where every UTXO has only two states: spent and unspent.
+Similar to Ethereum, the global state of the ByzCoin network is a key/value storage where the value associated to a 
+given key can evolve. This is different from Bitcoin, where every UTXO has only two states: spent and unspent.
 
 Every key/value is called an instance in ByzCoin, as it is tied to a contract. It is similar to the object-oriented
 naming: every class (a ByzCoin contract) can be instantiated in multiple objects (a ByzCoin key/value entry).
@@ -45,22 +47,22 @@ information however she likes.
 
 The user management in ByzCoin uses the following contracts:
 
-
-
-*   DARC - the access to the user account is done using DARCs. This makes it easy to: add/revoke devices Define sets of
-*   recovery accounts
-
-    The most important DARC of the user is the _Signer_ DARC. All delegation from the active instances point to this
-    DARC. From here different devices are trusted, each implemented as a separate DARC.
-
-*   Credential - a special contract just for the user-management that implements a credential/attribute/value store.
-*   There are some pre-defined credentials that are interpreted by the UIs, but the user is free to add new credentials.
-*   Currently defined credentials are: Public: define all the attributes of the user that are publicly available Config:
-*   some configuration variables of the account Devices: a list of all devices linked to that account Recoveries: a list
-*   of all DARCs that are allowed to recover the account Calypso: a list of all stored secrets of this user Coin - every
-*   operation on OmniLedger has a cost that will be deduced from the coin account of the user. Currently only the
-*   creator of the OmniLedger network can fill up the coin accounts CalypsoWrite - a secret stored in OmniLedger with
-*   the possibility of delegating decryption access
+* DARC - the access to the user account is done using DARCs. This makes it easy to: 
+    * add/revoke devices 
+    * define sets of recovery accounts
+* The most important DARC of the user is the _Signer_ DARC. All delegation from the active instances point to this
+DARC. From here different devices are trusted, each implemented as a separate DARC.
+* Credential - a special contract just for the user-management that implements a credential/attribute/value store.
+There are some pre-defined credentials that are interpreted by the UIs, but the user is free to add new credentials.
+Currently defined credentials are: 
+    * Public: define all the attributes of the user that are publicly available 
+    * Config: some configuration variables of the account 
+    * Devices: a list of all devices linked to that account 
+    * Recoveries: a list of all DARCs that are allowed to recover the account 
+    * Calypso: a list of all stored secrets of this user 
+* Coin - every operation on OmniLedger has a cost that will be deduced from the coin account of the user. Currently only the
+creator of the OmniLedger network can fill up the coin accounts 
+* CalypsoWrite - a secret stored in OmniLedger with the possibility of delegating decryption access
 
 ### Instances Figure
 
@@ -68,11 +70,12 @@ The user management in ByzCoin uses the following contracts:
 
 The following observations can be made about the user:
 
-*   The user already has 2 devices setup that are allowed to sign on behalf of the _signer_ darc Each instance has its
-*   own darc that defines the rules specific to that instance. This is mostly for easier handling in the backend and to
-*   separate the devices-darcs from the other darcs. Each device darc represents one device that the user holds. A user
-*   can give access to his structure by adding a new device-darc with a new public key, and changing the __sign_ and
-*   _invoke:darc.evolve_ rules of the signer darc The _signer_ darc is referenced by all the other darcs in the user.
+* The user already has 2 devices setup that are allowed to sign on behalf of the _signer_ darc 
+* Each instance has its own darc that defines the rules specific to that instance. This is mostly for easier handling in the backend and to
+separate the devices-darcs from the other darcs. 
+* Each device darc represents one device that the user holds. A user can give access to his structure by adding a new 
+device-darc with a new public key, and changing the __sign_ and _invoke:darc.evolve_ rules of the signer darc 
+* The _signer_ darc is referenced by all the other darcs in the user.
 
 ### User Creation Details
 
@@ -82,9 +85,9 @@ Following are some details with regard to the creation of a new user by the spaw
 
 For a standard user, the following cost occurs:
 
-
-
-*   4 darcs = 4 * 100 1 coin = 1 * 100 1 credential = 1 * 1’000
+* 4 darcs = 4 * 100 
+* 1 coin = 1 * 100 
+* 1 credential = 1 * 1’000
 
 For more details, look at Appendix A. This is somewhat arbitrary, but reflects the idea that a credential is more load
 to the system than a darc or a coin, as the credential will be updated more often and can grow larger in size.
@@ -94,18 +97,19 @@ to the system than a darc or a coin, as the credential will be updated more ofte
 
 The standard setup of a new user should be like this:
 
-
-
-1. The new user chooses a keypair and sends the public key to the admin 2. The admin creates the new user using the
+1. The new user chooses a keypair and sends the public key to the admin 
+2. The admin creates the new user using the
 public key
 
 However, to avoid the user having to send something to the admin, the current code does the following:
 
-
-
-1. The admin 1. choses an ephemeral keypair 2. creates the new user with this keypair 3. Sends the private key to the
-new user 2. The new user 4. Choses a random keypair 5. Evolves the device darc and replaces the ephemeral keypair of the
-admin with his own keypair
+1. The admin 
+    1. choses an ephemeral keypair 
+    2. creates the new user with this keypair 
+    3. Sends the private key to the new user 
+2. The new user 
+    4. Choses a random keypair 
+    5. Evolves the device darc and replaces the ephemeral keypair of the admin with his own keypair
 
 This allows the admin to directly send a signup link to a new user, without having to do a back-and-forth between the
 new user and the admin. Once the device darc has been updated to the new keypair, the admin cannot change the darc
@@ -131,15 +135,14 @@ inverse is not always possible.
 Darcs are very general and allow for multiple use-cases. For the C4DT demonstrator, we use them to implement the
 following two use-cases:
 
-
-
-*   _Action_, which is not tied directly to an instance per se, but describes in its __sign_ rule who is allowed to
-*   execute a certain action outside of the system. For the moment we use two actions in the C4DT demonstrator: 1.
-*   _Login_C4DT_web_ - defines which users are allowed to visit the restricted pages in the c4dt site. The logins are
-*   done anonymously, all users are mapped to only one web-user 2. _Login_C4DT_matrix_ - defines which users are allowed
-*   to use the SSO of matrix to login. The logins are pseudonymous using parts of the credential-id of the user _Group_,
-*   federating users together, and giving the possibility of handling users in a decentralized way. In the current
-*   demonstrator, each industrial partner will be in a group darc.
+* _Action_, which is not tied directly to an instance per se, but describes in its __sign_ rule who is allowed to
+execute a certain action outside of the system. For the moment we use two actions in the C4DT demonstrator: 
+    1. _Login_C4DT_web_ - defines which users are allowed to visit the restricted pages in the c4dt site. The logins are
+    done anonymously, all users are mapped to only one web-user 
+    2. _Login_C4DT_matrix_ - defines which users are allowed to use the SSO of matrix to login. 
+    The logins are pseudonymous using parts of the credential-id of the user 
+* _Group_, federating users together, and giving the possibility of handling users in a decentralized way. In the current
+    demonstrator, each industrial partner will be in a group darc.
 
 This setup allows to delegate the responsibility of creating and managing users to the partners, while giving C4DT
 control to whom it allows to access its resources.
@@ -159,10 +162,11 @@ A central part of how ByzCoin handles the access rights are the DARCs. A darc is
 “[Chainiac](https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-nikitin.pdf)” from Nikitin Kirill et
 al. A darc
 
-*   is tied to one or more resources and holds rules that define who is allowed to access these resources can be
-*   evolved, meaning that the rules can be changed. Every time a darc evolves, the darc version is increased by one has
-*   an identity that is calculated by taking the hash of version 0 Exists in offline mode (as described in the paper)
-*   and online mode (as used in byzcoin), the difference being how to prove what the latest version of the darc is
+* is tied to one or more resources and holds rules that define who is allowed to access these resources 
+* can be evolved, meaning that the rules can be changed. Every time a darc evolves, the darc version is increased by one 
+* has an identity that is calculated by taking the hash of version 0 
+* exists in offline mode (as described in the paper) and online mode (as used in byzcoin), the difference being how 
+to prove what the latest version of the darc is
 
 The following figure gives an overview of a darc:
 
@@ -180,17 +184,13 @@ is used to evaluate the expression.
 
 The operators of the expression are:
 
-
-
-*   | for ORing identities together (either identity 1 OR identity 2 must sign) & for ANDing identities together
-*   (identity 1 AND identity 2 must sign) () for grouping operators
+* | for ORing identities together (either identity 1 OR identity 2 must sign) 
+* & for ANDing identities together (identity 1 AND identity 2 must sign) 
+* () for grouping operators
 
 Future operators should include:
 
-
-
 *   Thresh(n, id1, id2, …) for defining threshold signing
-
 
 ### Restricted and Unrestricted Darcs
 
@@ -211,17 +211,19 @@ spawner contract is defined by the main admin, which can be used to spawn new in
 
 A Transaction that wants to spawn a new instance will have at least two instructions:
 
-
-
-1. Fetch coins - remove coins from a coin instance and put it on the stack 2. Spawn instance - call the spawner
-contract, which will consume the coins and create the instance
+1. Fetch coins - remove coins from a coin instance and put it on the stack 
+2. Spawn instance - call the spawner contract, which will consume the coins and create the instance
 
 The second step can be repeated in the same transaction, as long as there are enough coins on the stack. The following
 costs are defined in the spawner contract:
 
-
-
-*   Darc Coin Credential CalypsoWrite PopParty RoPaSci (Rock Paper Scissors)
+* Darc 
+* Coin 
+* Credential 
+* CalypsoWrite 
+* PopParty 
+* RoPaSci (Rock Paper Scissors)
+* Value
 
 A special mention is the CalypsoWrite contract, as it must allow the spawning of CalypsoRead instances. To allow this,
 the CalypsoWrite instance also has a ‘cost’ field that defines how many coins must be available before spawning a new

@@ -1,6 +1,6 @@
 import { HistoryObs } from "spec/support/historyObs";
 
-describe("helper should", () => {
+describe("history should", () => {
     it("should wait", async () => {
         const h = new HistoryObs();
         await h.resolve([]);

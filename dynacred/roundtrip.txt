@@ -1,0 +1,31 @@
+@startuml
+
+box "browser"
+actor Caller
+database Cache
+control Observable
+end box
+entity ByzCoin
+
+Caller -> Observable: user.coinBS.subscribe((coin) =>\nconsole.log(coin.value))
+Observable -> Observable: console: 10000
+
+Caller -> Caller: const tx = \nuser.startTransaction()
+Caller -> Caller: user.coinBS.transferCoins(\ntx, destID, Long.from(1000))
+Caller -> ByzCoin: tx.sendCoins()
+activate ByzCoin
+
+ByzCoin -> ByzCoin: verify transaction and create block
+ByzCoin -> ByzCoin: update the global state
+ByzCoin -> Cache: new block available
+deactivate ByzCoin
+
+Cache -> ByzCoin: send ID of all known instances
+ByzCoin -> Cache: changed instances
+
+Cache -> Cache: update instances
+Cache -> Observable: new value available
+
+Observable -> Observable: console: 9000
+
+@enduml

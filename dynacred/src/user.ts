@@ -1,20 +1,22 @@
 import { BehaviorSubject } from "rxjs";
 
 import { ByzCoinRPC, IStorage } from "@dedis/cothority/byzcoin";
-import { SpawnerInstance } from "@dedis/cothority/byzcoin/contracts";
+import { CredentialsInstance, CredentialStruct, SpawnerInstance } from "@dedis/cothority/byzcoin/contracts";
 import { Darc, IdentityDarc, SignerEd25519 } from "@dedis/cothority/darc";
 import { Scalar } from "@dedis/kyber";
 
 import { LongTermSecret } from "@dedis/cothority/calypso";
+import { Log } from "@dedis/cothority/index";
 import { AddressBook } from "./addressBook";
 import { CoinBS } from "./byzcoin/coinBS";
 import { DarcBS } from "./byzcoin/darcsBS";
 import { Calypso } from "./calypso";
 import { CredentialSignerBS } from "./credentialSignerBS";
-import { CredentialStructBS } from "./credentialStructBS";
-import { CredentialTransaction } from "./credentialTransaction";
+import { CredentialStructBS, EAttributesPublic, ECredentials } from "./credentialStructBS";
 import { ICoin } from "./genesis";
 import { KeyPair } from "./keypair";
+import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
+import { bufferToObject } from "./utils";
 
 /**
  * The User-class has references to all other needed classes.
@@ -30,11 +32,45 @@ import { KeyPair } from "./keypair";
  * Interacting with ByzCoin is optimized to only fetch changes of the instances.
  */
 export class User {
+
+    get kiSigner(): SignerEd25519 {
+        return this.kpp.signer();
+    }
+
+    get identityDarcSigner(): IdentityDarc {
+        return new IdentityDarc({ id: this.credSignerBS.getValue().getBaseID() });
+    }
     static readonly keyPriv = "private";
     static readonly keyCredID = "credID";
     static readonly keyMigrate = "storage/data.json";
     static readonly versionMigrate = 1;
     static readonly urlNewDevice = "/register/device";
+
+    static async migrate(dbFrom: IStorage, dbNew = dbFrom, base = "main"): Promise<void> {
+        Log.lvl3("trying to migrate");
+        const userData = await dbFrom.get(User.keyMigrate);
+        if (!userData) {
+            throw new Error("didn't find any user data");
+        }
+        const migrate = bufferToObject(userData) as IMigrate;
+        Log.lvl1("Migrating from:", migrate);
+        if (migrate.version !== User.versionMigrate) {
+            Log.warn("Trying to migrate an old account - good luck");
+        }
+
+        // Just suppose everything is here and let it fail otherwise.
+        const credStruct = CredentialStruct.decode(migrate.contact.credential);
+        const seed = credStruct.getAttribute(ECredentials.pub,
+            EAttributesPublic.seedPub);
+        if (!seed) {
+            throw new Error("couldn't get seed");
+        }
+        const credID = CredentialsInstance.credentialIID(seed);
+        const privKey = Buffer.from(migrate.keyIdentity, "hex");
+        await dbNew.set(`${base}:${User.keyPriv}`, privKey);
+        await dbNew.set(`${base}:${User.keyCredID}`, credID);
+        Log.lvl1("Successfully written private key and credID");
+    }
     calypso?: Calypso;
 
     constructor(
@@ -54,14 +90,6 @@ export class User {
             const lts = new LongTermSecret(this.bc, ltsID, ltsX);
             this.calypso = new Calypso(lts, credSignerBS.getValue().getBaseID(), credStructBS.credCalypso);
         }
-    }
-
-    get kiSigner(): SignerEd25519 {
-        return this.kpp.signer();
-    }
-
-    get identityDarcSigner(): IdentityDarc {
-        return new IdentityDarc({id: this.credSignerBS.getValue().getBaseID()});
     }
 
     async switchKey(previous: KeyPair): Promise<KeyPair> {
@@ -108,14 +136,21 @@ export class User {
         };
     }
 
-    startTransaction(): CredentialTransaction {
-        return new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+    startTransaction(): SpawnerTransactionBuilder {
+        return new SpawnerTransactionBuilder(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
-    async executeTransactions(addTxs: (tx: CredentialTransaction) => Promise<unknown> | unknown,
+    async executeTransactions(addTxs: (tx: SpawnerTransactionBuilder) => Promise<unknown> | unknown,
                               wait = 0): Promise<void> {
-        const tx = new CredentialTransaction(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
+        const tx = new SpawnerTransactionBuilder(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
         await tx.sendCoins(wait);
     }
+}
+
+export interface IMigrate {
+    keyPersonhood?: string;
+    keyIdentity: string;
+    version?: number;
+    contact: { credential: Buffer };
 }

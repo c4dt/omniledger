@@ -60,14 +60,6 @@ Every `Instance` holds the following information (summarized):
 The ByzCoin blockchain has a fixed number of `Contracts` that can only be changed by modifying the code of the nodes.
 To allow for user-defined contracts, ByzCoin includes a full-fledged `Ethereum Virtual Machine`, `EVM`.
 
-## Dynacred instances on OmniLedger
-
-Here a small overview how the different instances are used on OmniLedger:
-
-```ascii
-
-```
-
 ## Caching of the instances
 
 A simple cache keeps track of all known instances and stores them locally.
@@ -87,22 +79,10 @@ All instructions are collected in a `ClientTransaction` and then sent to one of 
 To simplify the collection and the signature of these `Instruction`s, dynacred uses the `CredentialTransaction` class.
 It abstracts the collection of the instructions and the signing of the final `ClientTransaction`.
 
-To modify a structure in dynacred, the following steps happen:
-1. client: create a `CredentialTransaction`: `const tx = user.startTransaction()`
-2. client: invoke the method of the class: `user.coinBS.transferCoins(tx, destID, Long.from(1000))`
-3. client: finalize the transaction and send it to ByzCoin: `tx.sendCoins()`
-4. byzcoin: verify the transaction and put it in a block
-5. byzcoin: update the global state
-6. byzcoin: inform the client a new block is available
-7. client (background): send a list of all instances and the known version to byzcoin
-8. byzcoin: reply with the instances that changed
-9. client (background): update all changed instances and inform the `Observable` of the `InstanceBS`
-10. client (background): update the classes and inform the `Observable` of `coinBS`
-11. client (background): if the `coinBS` is included in angular using `(coinBS | async).value`, the value will be 
-automatically updated
+The following is an example of the caller creating an observable on the `user.coinBS`, and then sending some
+coins to another account:
 
-Only step 1. - 3. must be done by the code, as well as using `Observable`s correctly, with the given example in 
-Angular. 
+![Roundtrip](./roundtrip.png)
 
 ### Details of Transactions and Instructions
 

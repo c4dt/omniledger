@@ -3,11 +3,11 @@ import { filter, first } from "rxjs/operators";
 import { BCTestEnv } from "spec/simul/itest";
 import { HistoryObs } from "spec/support/historyObs";
 
-import { Darc, IdentityDarc } from "@dedis/cothority/darc";
+import { Darc } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
-import { IMigrate } from "src/builder";
-import { User } from "src/user";
+import { SpawnerTransactionBuilder } from "src/spawnerTransactionBuilder";
+import { IMigrate, User } from "src/user";
 
 describe("User class should", async () => {
     it("save and load a user", async () => {
@@ -37,13 +37,13 @@ describe("User class should", async () => {
             keyIdentity: user.kpp.priv.marshalBinary().toString("hex"),
         };
         await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
-        await bct.migrateUser(db);
+        await User.migrate(db);
         const newUser = await bct.retrieveUserByDB();
         expect(newUser.credStructBS.credPublic.alias.getValue()).toBe("migrate");
 
         migrate.version = User.versionMigrate;
         await db.set(User.keyMigrate, Buffer.from(JSON.stringify(migrate)));
-        await bct.migrateUser(db);
+        await User.migrate(db);
         const newUserVersion = await bct.retrieveUserByDB();
         expect(newUserVersion.credStructBS.credPublic.alias.getValue()).toBe("migrate");
 
@@ -68,7 +68,7 @@ describe("User class should", async () => {
         const ephemeralIdentity = KeyPair.rand().signer();
         Log.lvl2("Signer / private is:", ephemeralIdentity, ephemeralIdentity.secret.marshalBinary());
         nu.credSignerBS.devices.create(tx, "newDevice", [ephemeralIdentity]);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
         // This is needed to make sure that everything is updated locally.
         await nu.credSignerBS.pipe(
             filter((d) => d.rules.getRule(Darc.ruleSign).getIdentities().length === 2),
@@ -93,13 +93,13 @@ describe("User class should", async () => {
         const nu = await bct.createUser("master");
         const tx = nu.startTransaction();
         const rec = tx.spawnDarcBasic("recover", [nu.kiSigner]);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
 
         const kp = KeyPair.rand();
         const clientSkel = new UserSkeleton("client", bct.spawner.id, kp.priv);
         clientSkel.addRecovery("recover", rec.getBaseID());
         tx.createUser(clientSkel);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
 
         const client = await bct.retrieveUserByEphemeral(kp);
         expect(client.kpp.priv.equals(kp.priv)).toBeFalsy();

@@ -1,5 +1,5 @@
 import { ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook } from "./addressBook";
-import { ByzCoinBuilder } from "./builder";
+import { Calypso, CalypsoData, ILTSIDX } from "./calypso";
 import { CredentialSignerBS, CSTypesBS } from "./credentialSignerBS";
 import {
     CredentialBS,
@@ -9,10 +9,13 @@ import {
     EAttributesConfig,
     EAttributesPublic,
     ECredentials,
+    IInstanceMapKV,
     IUpdateCredential,
 } from "./credentialStructBS";
-import { Genesis, IGenesisUser } from "./genesis";
+import { Fetcher } from "./fetcher";
+import { Genesis, ICoin, IGenesisUser } from "./genesis";
 import { KeyPair } from "./keypair";
+import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 import { User } from "./user";
 import { UserSkeleton } from "./userSkeleton";
 
@@ -25,7 +28,9 @@ export {
     ABContactsBS,
     ABGroupsBS,
     ActionBS,
-    ByzCoinBuilder,
+    Fetcher,
+    Calypso,
+    CalypsoData,
     CredentialBS,
     CredentialSignerBS,
     CredentialStructBS,
@@ -36,9 +41,13 @@ export {
     EAttributesConfig,
     EAttributesPublic,
     Genesis,
+    ICoin,
     IGenesisUser,
     IUpdateCredential,
+    IInstanceMapKV,
+    ILTSIDX,
     KeyPair,
+    SpawnerTransactionBuilder,
     User,
     UserSkeleton,
 };

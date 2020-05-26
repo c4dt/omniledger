@@ -1,6 +1,7 @@
 import { CoinInstance } from "@dedis/cothority/byzcoin/contracts";
 
 import { BCTestEnv } from "spec/simul/itest";
+import { SpawnerTransactionBuilder } from "src/spawnerTransactionBuilder";
 
 describe("Transactions should", () => {
     it("spawn things", async () => {
@@ -17,7 +18,7 @@ describe("Transactions should", () => {
         const coin1 = tx.spawnCoin(coinType, signerDarcID, coinIDPreHash1);
         const coin2 = tx.spawnCoin(coinType, signerDarcID, coinIDPreHash2);
         const d = tx.spawnDarcBasic("darc 1", [user.kiSigner]);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
 
         const coinInst1 = await bct.retrieveCoinBS(coin1.id);
         const coinInst2 = await bct.retrieveCoinBS(coin2.id);

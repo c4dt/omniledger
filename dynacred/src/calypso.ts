@@ -2,19 +2,13 @@ import { Instance, InstanceID } from "@dedis/cothority/byzcoin";
 import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret, Write } from "@dedis/cothority/calypso";
 import { IdentityWrapper } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
+import Log from "@dedis/cothority/log";
 import { Point } from "@dedis/kyber/index";
 import { createDecipheriv } from "crypto";
 import { createCipheriv, randomBytes } from "crypto-browserify";
 import { CredentialInstanceMapBS } from "./credentialStructBS";
-import { CredentialTransaction } from "./credentialTransaction";
 import { KeyPair } from "./keypair";
-
-// Copied from webapp/lib/UI.ts - should probably be merged in CredentialTransaction and then be used
-// in showTransactions - which should also be revamped. But that is for later...
-// If percentage is positive, the 'text' represents a transaction that is shown to move to the nodes, and then
-// in the block.
-// If percentage is negative, the 'text' represents a query and is only shown in the progress bar.
-export type TProgress = (percentage: number, text: string) => void;
+import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 
 export class Calypso {
     constructor(
@@ -23,7 +17,7 @@ export class Calypso {
         public cim: CredentialInstanceMapBS) {
     }
 
-    addFile(tx: CredentialTransaction, darcID: InstanceID, name: string, data: Buffer): InstanceID {
+    addFile(tx: SpawnerTransactionBuilder, darcID: InstanceID, name: string, data: Buffer): InstanceID {
         if (this.cim.hasEntry(Buffer.from(name))) {
             throw new Error("cannot add file with existing name");
         }
@@ -34,7 +28,7 @@ export class Calypso {
         return wrID;
     }
 
-    rmFile(tx: CredentialTransaction, name: string) {
+    rmFile(tx: SpawnerTransactionBuilder, name: string) {
         const wrID = this.cim.getValue().toKVs()
             .find((kv) => kv.value === name);
         if (!wrID) {
@@ -44,21 +38,15 @@ export class Calypso {
         this.cim.rmEntry(tx, wrID.key);
     }
 
-    async getFile(tx: CredentialTransaction, wrID: Buffer, kp: KeyPair, p?: TProgress): Promise<Buffer> {
-        if (p) {
-            p(50, "Decryption Request");
-        }
+    async getFile(tx: SpawnerTransactionBuilder, wrID: Buffer, kp: KeyPair): Promise<Buffer> {
         const rdID = tx.spawnCalypsoRead(wrID, kp.pub);
-        await tx.sendCoins(10);
+        await tx.sendCoins(SpawnerTransactionBuilder.longWait);
 
-        if (p) {
-            p(-75, "Collective Re-Encryption");
-        }
         const wrProof = await this.lts.bc.getProof(wrID);
         const rdProof = await this.lts.bc.getProof(rdID);
         const xhatenc = await this.lts.reencryptKey(
-            wrProof,
             rdProof,
+            wrProof,
         );
 
         const key = await xhatenc.decrypt(kp.priv);
@@ -69,7 +57,8 @@ export class Calypso {
     async hasAccess(wrID: Buffer): Promise<boolean> {
         const caWr = await CalypsoWriteInstance.fromByzcoin(this.lts.bc, wrID);
         const auth = await this.lts.bc.checkAuthorization(this.lts.bc.genesisID, caWr.darcID,
-            IdentityWrapper.fromIdentity(new IdentityDarc({id: this.signerID})));
+            IdentityWrapper.fromIdentity(new IdentityDarc({ id: this.signerID })));
+        Log.print("authorizations are:", auth);
         return auth.find((rule) => rule === "spawn:" + CalypsoReadInstance.contractID) !== undefined;
     }
 }
