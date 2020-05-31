@@ -101,7 +101,7 @@ export class DialogTransactionComponent<T> implements OnInit {
         const txt = this.renderer.createText(text);
         this.transaction.appendChild(txt);
         this.main.nativeElement.appendChild(this.transaction);
-        this.transaction.classList.add("transactionBuilder.ts");
+        this.transaction.classList.add("transaction");
         this.transaction.classList.add("tx-send");
     }
 

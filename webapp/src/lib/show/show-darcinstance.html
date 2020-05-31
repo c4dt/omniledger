@@ -4,7 +4,7 @@
         }}"
     </h2>
     <p>
-        ID: {{ (data.inst|async).id.toString("hex") }}
+        BaseID: {{ (data.inst|async).getBaseID().toString("hex") }}
     </p>
 
     <p>

@@ -109,5 +109,8 @@
       }
     }
   },
-  "defaultProject": "omniledger"
+  "defaultProject": "omniledger",
+  "cli": {
+    "analytics": "e8bfce83-5b67-46ec-a1e6-15a0a4cf0c3f"
+  }
 }
