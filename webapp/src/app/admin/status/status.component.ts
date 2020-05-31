@@ -24,8 +24,8 @@ export class StatusComponent implements OnInit {
       private builder: ByzCoinService,
       ) {
     this.signID = this.user.identityDarcSigner.id.toString("hex");
-    this.userID = hexBuffer(this.user.credStructBS.id);
-    this.pubKey = hexBuffer(this.user.kpp.pub.marshalBinary());
+    this.userID = this.user.credStructBS.id.toString("hex");
+    this.pubKey = this.user.kpp.pub.marshalBinary().toString("hex");
   }
 
   async ngOnInit() {
