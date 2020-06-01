@@ -13,7 +13,9 @@
 <p>
     credentials instance ID (user ID): {{ data.contact.id.toString("hex")
     }}<br />
-    c4dt-matrix login: @ol-{{ data.contact.id.slice(0,8).toString("hex")}}:matrix.c4dt.org<br/>
+    c4dt-matrix login: @ol-{{
+        data.contact.id.slice(0, 8).toString("hex")
+    }}:matrix.c4dt.org<br />
     spawner instance ID: {{ (config.spawnerID | async).toString("hex") }}<br />
     coin instance ID: {{ (pub.coinID | async).toString("hex") }}<br />
     LTS instance ID: {{ (config.ltsID | async).toString("hex") }}<br />
