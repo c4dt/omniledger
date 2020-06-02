@@ -64,7 +64,7 @@ export class DevicesComponent {
                     async (progress: TProgress) => {
                         progress(30, "Deleting Device");
                         await this.user.executeTransactions((tx) =>
-                            this.user.credSignerBS.devices.unlink(tx, device.getValue().getBaseID()));
+                            this.user.credSignerBS.devices.unlink(tx, device.getValue().getBaseID()), 10);
                     });
             }
         } catch (e) {
@@ -83,7 +83,7 @@ export class DevicesComponent {
                             const ephemeralIdentity = KeyPair.rand().signer();
                             await this.user.executeTransactions((tx) => {
                                 this.user.credSignerBS.devices.create(tx, result, [ephemeralIdentity]);
-                            });
+                            }, 10);
                             return this.user.getUrlForDevice(ephemeralIdentity.secret);
                         });
                 const url = window.location.protocol + "//" + window.location.host +
@@ -109,7 +109,8 @@ export class DevicesComponent {
             await showTransactions(this.dialog, `Renaming ${type.prefix}:${oldName}`,
                 async (progress: TProgress) => {
                     progress(50, "Renaming and updating credential");
-                    await this.user.executeTransactions((tx) => type.rename(tx, dev.getValue().getBaseID(), newName));
+                    await this.user.executeTransactions((tx) =>
+                        type.rename(tx, dev.getValue().getBaseID(), newName), 10);
                 });
         });
     }
@@ -159,7 +160,7 @@ export class DevicesComponent {
                     const recovery = new IdentityDarc({id: result});
                     await this.user.executeTransactions((tx) => {
                         this.user.credSignerBS.recoveries.create(tx, d.name, [recovery]);
-                    });
+                    }, 10);
                 });
         });
     }
@@ -173,7 +174,7 @@ export class DevicesComponent {
                     progress(50, "Removing recovery account");
                     await this.user.executeTransactions((tx) => {
                         this.user.credSignerBS.recoveries.unlink(tx, dev.getValue().getBaseID());
-                    });
+                    }, 10);
                 });
         }
     }
