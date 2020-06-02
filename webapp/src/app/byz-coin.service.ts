@@ -17,9 +17,9 @@ export class ByzCoinService extends Fetcher {
     config?: Config;
     conn?: RosterWSConnection;
     private readonly storageKeyLatest = "latest_skipblock";
-    // This is the hardcoded block at 0xc000, which has higher forward-links than 0, which is broken :(.
+    // This is the hardcoded block at 55296, which has higher forward-links than 0, which is broken :(.
     // Once 0x10000 is created, this will be updated.
-    private readonly idKnown = Buffer.from("8a03be0092afc09e3158b2b427191cb933704a81b8ec63bc1df131341095892c", "hex");
+    private readonly idKnown = Buffer.from("fa27ea5947ea59521340d947bfa961fa1b558ce90007971e65ab63da88abcc10", "hex");
 
     constructor() {
         // Initialize with undefined. Before using, the root component has to call `loadConfig`.

@@ -89,13 +89,13 @@ export class ManageDarcComponent {
         if (filter.indexOf("action") >= 0) {
             for (const action of await this.user.addressBook.actions.getValue()) {
                 items.push(this.createItem("Action: " + action.darc.getValue().description.toString(),
-                    new IdentityDarc({id: action.darc.getValue().id})));
+                    new IdentityDarc({id: action.darc.getValue().getBaseID()})));
             }
         }
         if (filter.indexOf("group") >= 0) {
             for (const group of await this.user.addressBook.groups.getValue()) {
                 items.push(this.createItem("Group: " + group.getValue().description.toString(),
-                    new IdentityDarc({id: group.getValue().id})));
+                    new IdentityDarc({id: group.getValue().getBaseID()})));
             }
         }
         items.unshift(this.createItem("Ourselves: " + this.user.credStructBS.credPublic.alias.getValue(),

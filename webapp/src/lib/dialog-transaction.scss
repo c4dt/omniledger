@@ -24,14 +24,14 @@ $txTop: $clientTop + ($clientHeight - $txHeight) / 2;
 $txSentTop: ($cothorityHeight - $txHeight) / 2;
 $txSentLeft: $cothorityLeft + ($cothorityWidth - $txWidth) / 2;
 
-$progressBoxHeight: 24px;
+$progressBoxHeight: 32px;
 $progressColor: #ccffcc;
 
 .window {
   position: relative;
   width: $width;
   height: $height;
-  //border: 1px solid black;
+  border: 1px solid black;
 }
 
 .error {
@@ -72,6 +72,7 @@ $progressColor: #ccffcc;
   height: $progressBoxHeight;
   background-color: $progressColor;
   text-align: center;
+  vertical-align: middle;
 }
 
 .transaction {
@@ -97,7 +98,7 @@ $progressColor: #ccffcc;
 .tx-send {
   top: $txTop;
   left: $clientWidth;
-  animation: tx-send 1s both;
+  animation: tx-send 2s both;
 }
 
 .tx-block {
@@ -132,6 +133,7 @@ $progressColor: #ccffcc;
   }
   100% {
     transform: translate($txSentLeft - $clientWidth, $txSentTop - $txTop) scale(1);
+    //transform: translate(200, 0) scale(2);
   }
 }
 
