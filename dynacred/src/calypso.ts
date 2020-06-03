@@ -1,16 +1,26 @@
+import { Log } from "@dedis/cothority";
 import { Instance, InstanceID } from "@dedis/cothority/byzcoin";
 import { CalypsoReadInstance, CalypsoWriteInstance, LongTermSecret, Write } from "@dedis/cothority/calypso";
-import { IdentityWrapper } from "@dedis/cothority/darc";
+import { Darc, IdentityWrapper } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
-import Log from "@dedis/cothority/log";
-import { Point } from "@dedis/kyber/index";
-import { createDecipheriv } from "crypto";
-import { createCipheriv, randomBytes } from "crypto-browserify";
+import { Point } from "@dedis/kyber";
+import { createCipheriv, createDecipheriv, randomBytes } from "crypto-browserify";
 import { CredentialInstanceMapBS } from "./credentialStructBS";
 import { KeyPair } from "./keypair";
 import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 
 export class Calypso {
+
+    static spawnDarc(tx: SpawnerTransactionBuilder, desc: string, evolve: InstanceID,
+                     read = evolve, del = read, update = read): Darc {
+        const d = Darc.createBasic([new IdentityDarc({id: evolve})], [], Buffer.from(desc));
+        d.rules.setRule(`spawn:${CalypsoReadInstance.contractID}`, new IdentityDarc({id: read}));
+        d.rules.setRule(`delete:${CalypsoWriteInstance.contractID}`, new IdentityDarc({id: del}));
+        d.rules.setRule(`invoke:${CalypsoWriteInstance.contractID}.${CalypsoWriteInstance.commandUpdate}`,
+            new IdentityDarc({id: update}));
+        return tx.spawnDarc(d);
+    }
+
     constructor(
         public lts: LongTermSecret,
         private signerID: InstanceID,
@@ -38,27 +48,32 @@ export class Calypso {
         this.cim.rmEntry(tx, wrID.key);
     }
 
-    async getFile(tx: SpawnerTransactionBuilder, wrID: Buffer, kp: KeyPair): Promise<Buffer> {
+    async getFile(tx: SpawnerTransactionBuilder, wrID: Buffer, kp = KeyPair.rand()): Promise<Buffer> {
+        tx.progress(30, "Spawning read transaction");
         const rdID = tx.spawnCalypsoRead(wrID, kp.pub);
         await tx.sendCoins(SpawnerTransactionBuilder.longWait);
 
+        tx.progress(-40, "Getting write proof");
         const wrProof = await this.lts.bc.getProof(wrID);
+        tx.progress(-50, "Getting read proof");
         const rdProof = await this.lts.bc.getProof(rdID);
+        tx.progress(-60, "Asking for re-encryption");
         const xhatenc = await this.lts.reencryptKey(
-            rdProof,
             wrProof,
+            rdProof,
         );
 
         const key = await xhatenc.decrypt(kp.priv);
+        tx.progress(-80, "Getting write instance");
         const wrInst = new CalypsoWriteInstance(this.lts.bc, Instance.fromProof(wrID, wrProof));
+        tx.progress(-90, "Decrypting");
         return CalypsoData.decrypt(wrInst.write, key);
     }
 
     async hasAccess(wrID: Buffer): Promise<boolean> {
         const caWr = await CalypsoWriteInstance.fromByzcoin(this.lts.bc, wrID);
         const auth = await this.lts.bc.checkAuthorization(this.lts.bc.genesisID, caWr.darcID,
-            IdentityWrapper.fromIdentity(new IdentityDarc({ id: this.signerID })));
-        Log.print("authorizations are:", auth);
+            IdentityWrapper.fromIdentity(new IdentityDarc({id: this.signerID})));
         return auth.find((rule) => rule === "spawn:" + CalypsoReadInstance.contractID) !== undefined;
     }
 }

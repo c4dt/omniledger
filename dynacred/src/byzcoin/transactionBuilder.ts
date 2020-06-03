@@ -24,6 +24,10 @@ export class TransactionBuilder {
         return [ctx, response];
     }
 
+    hasInstructions(): boolean {
+        return this.instructions.length > 0;
+    }
+
     append(inst: Instruction): Instruction {
         this.instructions.push(inst);
         return inst;

@@ -5,8 +5,8 @@ import { CredentialsInstance, CredentialStruct, SpawnerInstance } from "@dedis/c
 import { Darc, IdentityDarc, SignerEd25519 } from "@dedis/cothority/darc";
 import { Scalar } from "@dedis/kyber";
 
+import { Log } from "@dedis/cothority";
 import { LongTermSecret } from "@dedis/cothority/calypso";
-import { Log } from "@dedis/cothority/index";
 import { AddressBook } from "./addressBook";
 import { CoinBS } from "./byzcoin/coinBS";
 import { DarcBS } from "./byzcoin/darcsBS";
@@ -71,7 +71,6 @@ export class User {
         await dbNew.set(`${base}:${User.keyCredID}`, credID);
         Log.lvl1("Successfully written private key and credID");
     }
-    calypso?: Calypso;
 
     constructor(
         public bc: ByzCoinRPC,
@@ -82,14 +81,8 @@ export class User {
         public spawnerInstanceBS: BehaviorSubject<SpawnerInstance>,
         public coinBS: CoinBS,
         public credSignerBS: CredentialSignerBS,
-        public addressBook: AddressBook) {
-
-        const ltsID = credStructBS.credConfig.ltsID.getValue();
-        const ltsX = credStructBS.credConfig.ltsX.getValue();
-        if (ltsID && ltsID.length === 32 && ltsX) {
-            const lts = new LongTermSecret(this.bc, ltsID, ltsX);
-            this.calypso = new Calypso(lts, credSignerBS.getValue().getBaseID(), credStructBS.credCalypso);
-        }
+        public addressBook: AddressBook,
+        public calypso?: Calypso) {
     }
 
     async switchKey(previous: KeyPair): Promise<KeyPair> {
@@ -144,7 +137,9 @@ export class User {
                               wait = 0): Promise<void> {
         const tx = new SpawnerTransactionBuilder(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         await addTxs(tx);
-        await tx.sendCoins(wait);
+        if (tx.hasInstructions()) {
+            await tx.sendCoins(wait);
+        }
     }
 }
 

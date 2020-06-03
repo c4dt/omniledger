@@ -13,7 +13,7 @@ export class UserService extends User {
     }
     super(bcs.user.bc, bcs.user.db, bcs.user.kpp, bcs.user.dbBase, bcs.user.credStructBS,
         bcs.user.spawnerInstanceBS, bcs.user.coinBS, bcs.user.credSignerBS,
-        bcs.user.addressBook);
+        bcs.user.addressBook, bcs.user.calypso);
   }
 }
 
