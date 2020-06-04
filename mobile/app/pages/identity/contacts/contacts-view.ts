@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Contact, TProgress } from "@c4dt/dynacred";
+import { Contact, TProgress } from "../../../lib/dynacred";
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
 import { Darc, Rule } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";

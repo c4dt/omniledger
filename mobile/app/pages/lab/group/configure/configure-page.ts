@@ -1,6 +1,6 @@
-import { GroupContract } from "@c4dt/dynacred";
-import { GroupContractCollection } from "@c4dt/dynacred";
-import { GroupDefinition, IGroupDefinition } from "@c4dt/dynacred";
+import { GroupContract } from "../../../../lib/dynacred";
+import { GroupContractCollection } from "../../../../lib/dynacred";
+import { GroupDefinition, IGroupDefinition } from "../../../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { ObservableArray } from "tns-core-modules/data/observable-array";

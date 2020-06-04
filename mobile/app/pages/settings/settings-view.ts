@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Data } from "@c4dt/dynacred";
+import { Data } from "../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import { Roster, ServerIdentity } from "@dedis/cothority/network";
 import { WebSocketConnection } from "@dedis/cothority/network/connection";

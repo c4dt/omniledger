@@ -1,4 +1,4 @@
-import { ENCODING, GroupContract, GroupContractCollection } from "@c4dt/dynacred";
+import { ENCODING, GroupContract, GroupContractCollection } from "../../../../lib/dynacred";
 import { localize } from "nativescript-localize";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";

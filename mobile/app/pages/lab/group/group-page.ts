@@ -4,7 +4,7 @@ a code-behind file. The code-behind is a great place to place your view
 logic, and to set up your page’s data binding.
 */
 
-import { GroupContractCollection } from "@c4dt/dynacred";
+import { GroupContractCollection } from "../../../lib/dynacred";
 import { EventData } from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame/frame";

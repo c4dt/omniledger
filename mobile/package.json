@@ -18,7 +18,6 @@
   "license": "AGPL-3.0-or-later",
   "repository": "github.com/c4dt/omniledger",
   "dependencies": {
-    "@c4dt/dynacred": "file:dynacred",
     "@dedis/cothority": "^3.4.3",
     "@dedis/kyber": "^3.4.2",
     "@sgarciac/bombadil": "^2.3.0",

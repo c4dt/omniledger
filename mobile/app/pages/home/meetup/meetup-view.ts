@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Contact, UserLocation } from "@c4dt/dynacred";
+import { Contact, UserLocation } from "../../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import { Observable } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
