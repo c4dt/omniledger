@@ -6,7 +6,7 @@ import * as dialogs from "tns-core-modules/ui/dialogs";
 import { topmost } from "tns-core-modules/ui/frame";
 import { ModalProgress } from "~/pages/modal/modal-progress";
 
-import { PartyItem, TProgress } from "@c4dt/dynacred";
+import { PartyItem, TProgress } from "../../../../lib/dynacred";
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";
 import { Page } from "tns-core-modules/ui/page";
 import URL from "url-parse";

@@ -18,16 +18,7 @@ gradle-prod:
 clean: gradle-simul
 	rm -rf node_modules platforms hooks
 
-../dynacred/build/index.js:
-	make -C ../dynacred
-
-npm-install: clean ../dynacred/build/index.js
-	# if dynacred is installed from the parent's directory with `npm i ../dynacred`,
-	# npm will install all dependencies, including @dedis/cothority, and this will conflict with
-	# the @dedis/cothority in mobile, which will lead to structures form the different cothorities not
-	# being recognized as the same, e.g., `r instanceof Roster` will not work over the two packages...
-	[ -d dynacred ] || ln -s $$(pwd)/../dynacred .
-	rm -rf dynacred/node_modules
+npm-install: clean
 	npm ci
 	find app -name "*js" -delete
 
@@ -130,7 +121,7 @@ kyber_npm:
 	find app/ -name "*.ts" | xargs perl -pi -e "s:~/lib/kyber:\@dedis/kyber:" && \
 	npm i -s @dedis/kyber
 
-cothority_src: dynacred_src cothority-pull app/lib/cothority
+cothority_src: cothority-pull app/lib/cothority
 	npm r @dedis/cothority
 
 app/lib/cothority: ../cothority/external/js/cothority/src

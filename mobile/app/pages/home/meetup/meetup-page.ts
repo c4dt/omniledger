@@ -1,8 +1,8 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Contact, TProgress } from "@c4dt/dynacred";
-import { Meetup, SocialNode } from "@c4dt/dynacred";
+import { Contact, TProgress } from "../../../lib/dynacred";
+import { Meetup, SocialNode } from "../../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import { EventData } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";

@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { PartyItem, Public } from "@c4dt/dynacred";
+import { PartyItem, Public } from "../../../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 
 import { partyQrcode } from "~/lib/qrcode";

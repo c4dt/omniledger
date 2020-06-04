@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Badge, PartyItem, TProgress } from "@c4dt/dynacred";
+import { Badge, PartyItem, TProgress } from "../../../lib/dynacred";
 import { IdentityWrapper } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 import { PopPartyInstance } from "@dedis/cothority/personhood/pop-party-instance";

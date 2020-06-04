@@ -1,5 +1,5 @@
-import { KeyPair } from "@c4dt/dynacred";
-import { GroupContract, GroupContractCollection } from "@c4dt/dynacred";
+import { KeyPair } from "./dynacred";
+import { GroupContract, GroupContractCollection } from "./dynacred";
 import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { fromNativeSource } from "tns-core-modules/image-source/image-source";

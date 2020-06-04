@@ -1,8 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Contact } from "@c4dt/dynacred";
-import { ChallengeCandidate, Data } from "@c4dt/dynacred";
+import { Contact, ChallengeCandidate, Data } from "../../../lib/dynacred";
 import { InstanceID } from "@dedis/cothority/byzcoin";
 import Log from "@dedis/cothority/log";
 import Long from "long";

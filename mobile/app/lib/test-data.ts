@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Data, Private } from "@c4dt/dynacred";
+import { Data, Private } from "./dynacred";
 import { ByzCoinRPC } from "@dedis/cothority/byzcoin";
 import { Signer, SignerEd25519 } from "@dedis/cothority/darc";
 import Darc from "@dedis/cothority/darc/darc";

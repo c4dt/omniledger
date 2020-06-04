@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { TProgress } from "@c4dt/dynacred";
+import { TProgress } from "../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import Long from "long";
 import { localize } from "nativescript-localize";

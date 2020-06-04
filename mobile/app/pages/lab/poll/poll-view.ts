@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Badge, PollStruct } from "@c4dt/dynacred";
+import { Badge, PollStruct } from "../../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { Observable } from "tns-core-modules/data/observable";

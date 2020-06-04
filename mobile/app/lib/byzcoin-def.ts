@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Data, PersonhoodRPC } from "@c4dt/dynacred";
+import { Data, PersonhoodRPC } from "./dynacred";
 import ByzCoinRPC from "@dedis/cothority/byzcoin/byzcoin-rpc";
 import { LongTermSecret } from "@dedis/cothority/calypso";
 import { IdentityWrapper } from "@dedis/cothority/darc";

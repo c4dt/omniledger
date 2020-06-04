@@ -1,7 +1,7 @@
 // tslint:disable-next-line
 require("nativescript-nodeify");
 
-import { Data } from "@c4dt/dynacred";
+import { Data } from "../../lib/dynacred";
 import Log from "@dedis/cothority/log";
 import { localize } from "nativescript-localize";
 import { EventData, fromObjectRecursive, Observable } from "tns-core-modules/data/observable";
