@@ -1,6 +1,6 @@
-import { Log } from "@dedis/cothority";
 import { SignerEd25519 } from "@dedis/cothority/darc";
 import { curve, Point, Scalar } from "@dedis/kyber";
+
 const ed25519 = curve.newCurve("edwards25519");
 
 /**
@@ -44,5 +44,5 @@ export class KeyPair {
 }
 
 function isScalar(o: Scalar | Buffer): o is Scalar {
-    return "setBytes" in o;
+    return !Buffer.isBuffer(o);
 }
