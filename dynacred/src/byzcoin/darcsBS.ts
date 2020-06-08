@@ -61,7 +61,7 @@ export class DarcBS extends BehaviorSubject<Darc> {
 }
 
 function toIId(id: IIdentity | InstanceID): IIdentity {
-    if (id instanceof Buffer) {
+    if (Buffer.isBuffer(id)) {
         return new IdentityDarc({id});
     }
     return id;

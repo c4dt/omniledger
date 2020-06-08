@@ -65,7 +65,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         const orig = this.getValue();
         for (const c of cred) {
             if (c.value !== undefined) {
-                const value = c.value instanceof Buffer ? c.value : Buffer.from(c.value);
+                const value = Buffer.isBuffer(c.value) ? c.value : Buffer.from(c.value);
                 orig.setAttribute(c.cred, c.attr, value);
             } else {
                 orig.deleteAttribute(c.cred, c.attr);
@@ -370,7 +370,7 @@ export class InstanceSet {
 
     static splitList(contacts: Buffer | Credential | null | undefined): Buffer[] {
         const list = [];
-        if (contacts instanceof Buffer) {
+        if (Buffer.isBuffer(contacts)) {
             if (contacts.toString().startsWith(`[{"type":"Buffer","data":`)) {
                 const ids = bufferToObject(contacts) as Buffer[];
                 list.push(...ids);
@@ -408,7 +408,7 @@ export class InstanceSet {
     }
 
     add(contact: InstanceID | string): InstanceSet {
-        if (contact instanceof Buffer) {
+        if (Buffer.isBuffer(contact)) {
             this.set.add(contact.toString("hex"));
         } else {
             this.set.add(contact);
@@ -417,7 +417,7 @@ export class InstanceSet {
     }
 
     rm(contact: InstanceID | string): InstanceSet {
-        if (contact instanceof Buffer) {
+        if (Buffer.isBuffer(contact)) {
             this.set.delete(contact.toString("hex"));
         } else {
             this.set.delete(contact);
@@ -426,7 +426,7 @@ export class InstanceSet {
     }
 
     has(contact: InstanceID | string): boolean {
-        if (contact instanceof Buffer) {
+        if (Buffer.isBuffer(contact)) {
             return this.set.has(contact.toString("hex"));
         } else {
             return this.set.has(contact);

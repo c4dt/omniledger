@@ -1,5 +1,5 @@
 import { BehaviorSubject, of } from "rxjs";
-import { catchError, flatMap, map, mergeAll, tap } from "rxjs/operators";
+import { catchError, flatMap, map, mergeAll } from "rxjs/operators";
 import URL from "url-parse";
 
 import { Log } from "@dedis/cothority";
@@ -13,15 +13,15 @@ import {
 } from "@dedis/cothority/byzcoin/contracts";
 import { Darc, IdentityDarc, IdentityWrapper } from "@dedis/cothority/darc";
 
+import { CreateLTSReply, LongTermSecret, LtsInstanceInfo, OnChainSecretRPC } from "@dedis/cothority/calypso";
+import { RosterWSConnection } from "@dedis/cothority/network";
+import { registerMessage } from "@dedis/cothority/protobuf";
+import { Message } from "protobufjs";
 import { ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook } from "./addressBook";
-import { CoinBS } from "./byzcoin";
-import { DarcBS, DarcsBS } from "./byzcoin";
+import { CoinBS, DarcBS, DarcsBS } from "./byzcoin";
+import { Calypso } from "./calypso";
 import { CredentialSignerBS, CSTypesBS } from "./credentialSignerBS";
-import {
-    CredentialInstanceMapBS,
-    CredentialPublic,
-    CredentialStructBS,
-} from "./credentialStructBS";
+import { CredentialInstanceMapBS, CredentialPublic, CredentialStructBS } from "./credentialStructBS";
 import { KeyPair } from "./keypair";
 import { ConvertBS, ObservableToBS } from "./observableUtils";
 import { User } from "./user";
@@ -68,9 +68,17 @@ export class Fetcher {
         const credSignerBS = await this.retrieveCredentialSignerBS(credStructBS);
         Log.lvl3("getting address book");
         const addressBook = await this.retrieveAddressBook(credStructBS.credPublic);
+        const ltsID = credStructBS.credConfig.ltsID.getValue();
+        let cal: Calypso | undefined;
+        if (ltsID && ltsID.length === 32) {
+            Log.lvl3("getting lts");
+            const lts = await this.retrieveLTS(ltsID);
+            cal = new Calypso(lts, credSignerBS.getValue().getBaseID(),
+                credStructBS.credCalypso);
+        }
         const user = new User(
             this.bc, this.db, kpp, dbBase, credStructBS, spawnerInstanceBS,
-            coinBS, credSignerBS, addressBook,
+            coinBS, credSignerBS, addressBook, cal,
         );
         await user.save();
         return user;
@@ -154,7 +162,7 @@ export class Fetcher {
     async retrieveCoinBS(coinID: BehaviorSubject<InstanceID> | InstanceID):
         Promise<CoinBS> {
         Log.lvl3("getting coinBS");
-        if (coinID instanceof Buffer) {
+        if (Buffer.isBuffer(coinID)) {
             coinID = new BehaviorSubject(coinID);
         }
         const coinObs = coinID.pipe(
@@ -209,7 +217,7 @@ export class Fetcher {
         Log.lvl3("getting darcBS");
         // Need to verify against Buffer here, which is the defined type of InstanceID.
         // Else typescript complains....
-        if (darcID instanceof Buffer) {
+        if (Buffer.isBuffer(darcID)) {
             darcID = new BehaviorSubject(darcID);
         }
         const instObs = darcID.pipe(
@@ -220,7 +228,7 @@ export class Fetcher {
                 return of(undefined as Proof);
             }),
             map((inst) => (inst && inst.value && inst.value.length > 0) ?
-              Darc.decode(inst.value) : undefined),
+                Darc.decode(inst.value) : undefined),
         );
         const bsDarc = await ObservableToBS(instObs);
         if (bsDarc.getValue() === undefined) {
@@ -233,5 +241,9 @@ export class Fetcher {
         Log.lvl3("getting signerIdentityDarc");
         const credDarc = await this.retrieveDarcBS(credDarcID);
         return IdentityWrapper.fromString(credDarc.getValue().rules.getRule(Darc.ruleSign).getIdentities()[0]).darc;
+    }
+
+    async retrieveLTS(ltsid: InstanceID): Promise<LongTermSecret> {
+        return LongTermSecret.fromService(this.bc, ltsid);
     }
 }

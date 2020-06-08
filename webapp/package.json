@@ -1,6 +1,6 @@
 {
   "name": "omniledger",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -23,8 +23,8 @@
     "@angular/platform-browser": "^8.2.14",
     "@angular/platform-browser-dynamic": "^8.2.14",
     "@angular/router": "^8.2.14",
-    "@dedis/cothority": "^3.4.5-p2005.2210.1948.0",
-    "@dedis/kyber": "^3.4.3-p2005.2210.1945.0",
+    "@dedis/cothority": "^3.4.6",
+    "@dedis/kyber": "^3.4.3",
     "angularx-qrcode": "^1.6.4",
     "core-js": "^2.6.10",
     "crypto-browserify": "^3.12.0",
@@ -32,7 +32,7 @@
     "hammerjs": "^2.0.8",
     "immutable": "^4.0.0-rc.12",
     "keccak": "^2.1.0",
-    "rxjs": "^6.5.3",
+    "rxjs": "^6.5.5",
     "toml": "^3.0.0",
     "tslib": "^1.10.0",
     "tweetnacl-ts": "^1.0.3",

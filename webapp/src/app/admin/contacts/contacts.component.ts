@@ -7,7 +7,7 @@ import Long from "long";
 import { sprintf } from "sprintf-js";
 
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { IdentityWrapper, SignerEd25519 } from "@dedis/cothority/darc";
+import { IdentityDarc, IdentityWrapper, SignerEd25519 } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
 import {
@@ -98,7 +98,7 @@ export class ContactsComponent implements OnInit {
                             if (g) {
                                 const gDarc = g.getValue();
                                 userSkeleton.addRecovery(gDarc.description.toString(),
-                                    gDarc.getBaseID());
+                                  gDarc.getBaseID());
                             }
                         }
 
@@ -184,30 +184,29 @@ export class ContactsComponent implements OnInit {
     async contactRecover(c: CredentialStructBS) {
         const deviceStr: string =
             await showTransactions(this.dialog, "Adding new device",
-                async (progress: TProgress) => {
-                    progress(30, "Checking if we have the right to recover " + c.credPublic.alias.getValue());
-                    const cSign = await this.builder.retrieveCredentialSignerBS(c);
-                    if ((await this.builder.bc.checkAuthorization(this.builder.bc.genesisID,
-                        cSign.getValue().getBaseID(),
-                        IdentityWrapper.fromIdentity(this.user.kiSigner))).length === 0) {
-                        await showDialogInfo(this.dialog, "No recovery",
-                            "Don't have the right to recover this user", "Understood");
-                        throw new Error("cannot recover this user");
-                    }
+              async (progress: TProgress) => {
+                progress(30, "Checking if we have the right to recover " + c.credPublic.alias.getValue());
+                const cSign = await this.builder.retrieveCredentialSignerBS(c);
+                if ((await this.builder.bc.checkAuthorization(this.builder.bc.genesisID, cSign.getValue().getBaseID(),
+                    IdentityWrapper.fromIdentity(this.user.kiSigner))).length === 0) {
+                    await showDialogInfo(this.dialog, "No recovery",
+                        "Don't have the right to recover this user", "Understood");
+                    throw new Error("cannot recover this user");
+                }
 
-                    progress(70, "Creating new device for recovery");
-                    const now = new Date();
-                    const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
-                        this.user.credStructBS.credPublic.alias.getValue(),
-                        now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
-                    const ephemeralIdentity = SignerEd25519.random();
-                    await this.user.executeTransactions((tx) => {
-                        cSign.devices.create(tx, name, [ephemeralIdentity]);
-                    });
-                    return sprintf("%s?credentialIID=%s&ephemeral=%s", User.urlNewDevice,
-                        c.id.toString("hex"),
-                        ephemeralIdentity.secret.marshalBinary().toString("hex"));
-                });
+                progress(70, "Creating new device for recovery");
+                const now = new Date();
+                const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
+                    this.user.credStructBS.credPublic.alias.getValue(),
+                    now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
+                const ephemeralIdentity = SignerEd25519.random();
+                await this.user.executeTransactions((tx) => {
+                    cSign.devices.create(tx, name, [ephemeralIdentity]);
+                }, 10);
+                return sprintf("%s?credentialIID=%s&ephemeral=%s", User.urlNewDevice,
+                    c.id.toString("hex"),
+                    ephemeralIdentity.secret.marshalBinary().toString("hex"));
+            });
         if (deviceStr) {
             const url = window.location.protocol + "//" + window.location.host +
                 this.location.prepareExternalUrl(deviceStr);
@@ -317,8 +316,9 @@ export class ContactsComponent implements OnInit {
     async actionUnlink(a: ActionBS) {
         await showTransactions(this.dialog, "Unlink action", async (progress) => {
             progress(50, "Unlinking action");
-            await this.user.executeTransactions((tx) =>
-                this.user.addressBook.actions.unlink(tx, a.darc.getValue().getBaseID()), 10);
+            await this.user.executeTransactions((tx) => {
+                this.user.addressBook.actions.unlink(tx, a.darc.getValue().getBaseID());
+            }, 10);
         });
     }
 
@@ -344,7 +344,7 @@ export class ContactsComponent implements OnInit {
                         progress(50, "Updating description");
                         await this.user.executeTransactions((tx) => {
                             g.evolve(tx, {description: Buffer.from(result)});
-                        });
+                        }, 10);
                     });
             }
         });
@@ -357,8 +357,11 @@ export class ContactsComponent implements OnInit {
                 return; // cancel yield empty string, escape yield undef
             }
             const id = Buffer.from(darcID, "hex");
-
             await showTransactions(this.dialog, "Link Instance", async (progress) => {
+                if (id.length !== 32) {
+                    throw new Error("Need ID with 32 bytes");
+                }
+
                 progress(-25, "Checking if link already exists");
                 const inst = await DarcInstance.fromByzcoin(this.builder.bc, id);
                 if (dbs instanceof ABActionsBS) {
