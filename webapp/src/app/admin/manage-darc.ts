@@ -1,8 +1,6 @@
 import { Component, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 
-import { curve } from "@dedis/kyber";
-
 import { Darc, IdentityEd25519, IIdentity, Rule } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 import IdentityWrapper from "@dedis/cothority/darc/identity-wrapper";
@@ -136,7 +134,6 @@ export class ManageDarcComponent {
 
     idWrapToId(idW: IdentityWrapper): IIdentity {
         const str = idW.toString();
-        const curve25519 = curve.newCurve("edwards25519");
 
         if (str.startsWith("ed25519:")) {
             return new IdentityEd25519({point: Buffer.from(str.slice(8), "hex")});
