@@ -280,7 +280,7 @@ export class ContactsComponent implements OnInit {
 
     async groupCreate() {
         const name = await this.askNameOfNewDarcInstance("Group");
-        if (name === undefined) {
+        if (name === undefined || name === "") {
             return;
         }
 
@@ -302,7 +302,7 @@ export class ContactsComponent implements OnInit {
 
     async actionCreate() {
         const name = await this.askNameOfNewDarcInstance("Action");
-        if (name === undefined) {
+        if (name === undefined || name === "") {
             return;
         }
 
@@ -471,9 +471,12 @@ export class AddContactComponent {
     templateUrl: "create.html",
 })
 export class CreateComponent {
+    title: string;
     constructor(
         public dialogRef: MatDialogRef<CreateComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
+        this.title = data;
+        this.data = "";
     }
 }
 
