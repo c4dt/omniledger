@@ -1,12 +1,8 @@
 <div>
-    <h2>Create a new action</h2>
+    <h2>Create a new {{title}}</h2>
     <p>
         <mat-form-field class="width100">
-            <input
-                matInput
-                [(ngModel)]="data"
-                placeholder="Name for new action"
-            />
+            <input matInput [(ngModel)]="data" [placeholder]="title" />
         </mat-form-field>
     </p>
     <p>
