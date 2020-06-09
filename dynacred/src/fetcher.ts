@@ -13,10 +13,7 @@ import {
 } from "@dedis/cothority/byzcoin/contracts";
 import { Darc, IdentityDarc, IdentityWrapper } from "@dedis/cothority/darc";
 
-import { CreateLTSReply, LongTermSecret, LtsInstanceInfo, OnChainSecretRPC } from "@dedis/cothority/calypso";
-import { RosterWSConnection } from "@dedis/cothority/network";
-import { registerMessage } from "@dedis/cothority/protobuf";
-import { Message } from "protobufjs";
+import { LongTermSecret } from "@dedis/cothority/calypso";
 import { ABActionsBS, ABContactsBS, ABGroupsBS, ActionBS, AddressBook } from "./addressBook";
 import { CoinBS, DarcBS, DarcsBS } from "./byzcoin";
 import { Calypso } from "./calypso";
@@ -72,9 +69,13 @@ export class Fetcher {
         let cal: Calypso | undefined;
         if (ltsID && ltsID.length === 32) {
             Log.lvl3("getting lts");
-            const lts = await this.retrieveLTS(ltsID);
-            cal = new Calypso(lts, credSignerBS.getValue().getBaseID(),
-                credStructBS.credCalypso);
+            try {
+                const lts = await this.retrieveLTS(ltsID);
+                cal = new Calypso(lts, credSignerBS.getValue().getBaseID(),
+                    credStructBS.credCalypso);
+            } catch (e) {
+                Log.warn("Couldn't load LTS:", e);
+            }
         }
         const user = new User(
             this.bc, this.db, kpp, dbBase, credStructBS, spawnerInstanceBS,
