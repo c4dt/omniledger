@@ -44,7 +44,7 @@ func main() {
 func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) (err error) {
 	userData, err := getUserData(c.GlobalString("user-data-path"))
 	if err != nil {
-		return err
+		return fmt.Errorf("get user data: %v", err)
 	}
 
 	if c.NArg() != 1 {
@@ -54,32 +54,32 @@ func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) (err e
 
 	driver := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"headless"}))
 	if err := driver.Start(); err != nil {
-		return err
+		return fmt.Errorf("driver start: %v", err)
 	}
 	defer func() {
 		errStop := driver.Stop()
-		if err == nil {
-			err = errStop
+		if err == nil && errStop != nil {
+			err = fmt.Errorf("driver stop: %v", errStop)
 		}
 	}()
 
 	page, err := driver.NewPage()
 	if err != nil {
-		return err
+		return fmt.Errorf("get new page: %v", err)
 	}
 	// how much time until failing to find smth
 	page.SetImplicitWait(60 * 1000)
 
 	if err := injectUser(page, userData); err != nil {
-		return err
+		return fmt.Errorf("inject user: %v", err)
 	}
 
 	if err := clicker(url, page); err != nil {
-		return err
+		return fmt.Errorf("simulate user: %v", err)
 	}
 
 	if err := page.Destroy(); err != nil {
-		return err
+		return fmt.Errorf("destroy page: %v", err)
 	}
 
 	return nil
@@ -96,7 +96,7 @@ func getUserData(path string) (string, error) {
 
 func injectUser(page *agouti.Page, userData string) error {
 	if err := page.Navigate(injectUserURL); err != nil {
-		return err
+		return fmt.Errorf("navigate to user injection page: %v", err)
 	}
 
 	storageDBInjector := `
@@ -136,12 +136,12 @@ func injectUser(page *agouti.Page, userData string) error {
 		storageDBInjector,
 		map[string]interface{}{"data": userData},
 		nil); err != nil {
-		return err
+		return fmt.Errorf("run script: %v", err)
 	}
 
 	scriptErr, err := page.FindByID("run-script-done").Text()
 	if err != nil {
-		return fmt.Errorf("couldn't get script's end marker: %v", err)
+		return fmt.Errorf("get script's end marker: %v", err)
 	}
 	if scriptErr != "" {
 		return fmt.Errorf("script failed: %v", scriptErr)
@@ -152,25 +152,25 @@ func injectUser(page *agouti.Page, userData string) error {
 
 func clickMatrix(matrixURL string, page *agouti.Page) error {
 	if err := page.Navigate(matrixURL); err != nil {
-		return err
+		return fmt.Errorf("navigate to %v: %v", matrixURL, err)
 	}
 	if err := page.FindByLink("Sign In").Click(); err != nil {
-		return err
+		return fmt.Errorf("matrix home: %v", err)
 	}
 	if err := page.FindByClass("mx_Login_sso_link").Click(); err != nil {
-		return err
+		return fmt.Errorf("matrix SSO login: %v", err)
 	}
 
 	if err := page.FindByButton("Login").Click(); err != nil {
-		return err
+		return fmt.Errorf("omniledger login: %v", err)
 	}
 
 	if err := page.FindByLink("I trust this address").Click(); err != nil {
-		return err
+		return fmt.Errorf("matrix CAS validation: %v", err)
 	}
 	visible, err := page.FindByID("matrixchat").Visible()
 	if err != nil {
-		return err
+		return fmt.Errorf("matrix chat: %v", err)
 	}
 	if !visible {
 		return errors.New("on matrix but weird state")
@@ -181,28 +181,28 @@ func clickMatrix(matrixURL string, page *agouti.Page) error {
 
 func clickWordpress(wordpressURL string, page *agouti.Page) error {
 	if err := page.Navigate(wordpressURL); err != nil {
-		return err
+		return fmt.Errorf("navigate to %v: %v", wordpressURL, err)
 	}
 	if err := page.FindByClass("mega-menu-toggle").Click(); err != nil {
-		return err
+		return fmt.Errorf("wordpress menu click: %v", err)
 	}
 	if err := page.FindByLink("About us").Click(); err != nil {
-		return err
+		return fmt.Errorf("wordpress menu category click: %v", err)
 	}
 	if err := page.FindByLink("Partner Login").Click(); err != nil {
-		return err
+		return fmt.Errorf("wordpress menu item click: %v", err)
 	}
 	if err := page.FindByLink("Sign in with OmniLedger").Click(); err != nil {
-		return err
+		return fmt.Errorf("wordpress login form: %v", err)
 	}
 
 	if err := page.FindByButton("Login").Click(); err != nil {
-		return err
+		return fmt.Errorf("omniledger login: %v", err)
 	}
 
 	text, err := page.FindByID("content-area").FindByClass("main_title").Text()
 	if err != nil {
-		return err
+		return fmt.Errorf("wordpress partners page: %v", err)
 	}
 	if text != "PARTNER LOGIN" {
 		return errors.New("on wordpress but not correctly redirected")
