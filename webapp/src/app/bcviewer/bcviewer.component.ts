@@ -208,7 +208,7 @@ class LinkInstance {
     constructor(bc: ByzCoinRPC, public inst: Instruction, public contractID: string) {
         this.instanceID = inst.instanceID;
         this.description = "loading...";
-        bc.getProofFromLatest(this.instanceID).then((p) => {
+        bc.getProofFromLatest(this.instanceID, undefined, undefined, false).then((p) => {
             this.instanceProof = p;
             switch (contractID) {
                 case "config":

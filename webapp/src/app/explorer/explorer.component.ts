@@ -25,7 +25,7 @@ export class ExplorerComponent implements OnInit {
         this.route.paramMap.subscribe(async (params) => {
             const id = Buffer.from(params.get("id"), "hex");
 
-            const p = await this.bcs.bc.getProofFromLatest(id);
+            const p = await this.bcs.bc.getProofFromLatest(id, undefined, undefined, false);
             switch (p.contractID) {
 
                 case CredentialsInstance.contractID:
