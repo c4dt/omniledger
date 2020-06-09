@@ -54,9 +54,9 @@ export class Calypso {
         await tx.sendCoins(SpawnerTransactionBuilder.longWait);
 
         tx.progress(-40, "Getting write proof");
-        const wrProof = await this.lts.bc.getProof(wrID);
+        const wrProof = await this.lts.bc.getProof(wrID, undefined, undefined, false);
         tx.progress(-50, "Getting read proof");
-        const rdProof = await this.lts.bc.getProof(rdID);
+        const rdProof = await this.lts.bc.getProof(rdID, undefined, undefined, false);
         tx.progress(-60, "Asking for re-encryption");
         const xhatenc = await this.lts.reencryptKey(
             wrProof,

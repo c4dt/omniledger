@@ -60,11 +60,11 @@ export class ByzCoinService extends Fetcher {
                 Log.lvl2("Got known skipblock");
             }
             this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID,
-                3, 1000, latest, this.db);
+                3, 1000, latest, this.db, false);
         } catch (e) {
             logger("Getting genesis chain", 80);
             this.bc = await ByzCoinRPC.fromByzcoin(this.conn, this.config.byzCoinID,
-                3, 1000, undefined, this.db);
+                3, 1000, undefined, this.db, false);
         }
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
         await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
