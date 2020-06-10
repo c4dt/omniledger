@@ -101,11 +101,13 @@ func injectUser(page *agouti.Page, userData string) error {
 
 	storageDBInjector := `
 	const dynasentDone = new Promise((resolve, reject) => {
-		const request = window.indexedDB.open("dynasent", 10)
-		request.onupgradeneeded = (event) =>
-			event.target.result.
-				createObjectStore("contacts", {keyPath: "key"}).
-				put(JSON.parse(data)).onsuccess
+		const request = window.indexedDB.open("dynasent2", 10)
+		request.onupgradeneeded = (event) => {
+			const store = event.target.result.
+				createObjectStore("contacts", {keyPath: "key"})
+			JSON.parse(data).
+				forEach(e => store.put(e))
+		}
 		request.onsuccess = resolve
 		request.onerror = reject
 	})
@@ -120,7 +122,7 @@ func injectUser(page *agouti.Page, userData string) error {
 		request.onsuccess = (event) =>
 			event.target.result.transaction(objectStoreName, "readwrite").
 				objectStore(objectStoreName).
-				put({name: "dynasent"}).
+				put({name: "dynasent2"}).
 				onsuccess = resolve
 		request.onerror = reject
 	})

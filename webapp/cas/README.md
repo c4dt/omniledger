@@ -30,12 +30,22 @@ It will take the given service and simulate a login fot the given user.
 
 To extract the user data from the browser, one could use something like
 ```javascript
-window.indexedDB.open("dynasent", 10).onsuccess = (event) =>
-	event.target.result
+function tr(e) {
+	if (e instanceof Uint8Array) return [...e.values()]
+	else if (e instanceof Object) return Object.fromEntries(Object.entries(e).map(([k,v]) => [k, tr(v)]))
+	else return e
+}
+window.indexedDB.open("dynasent2", 10).onsuccess = (event) => {
+	const store = event.target.result
 		.transaction(["contacts"])
 		.objectStore("contacts")
-		.get("storage/data.json").onsuccess = (event) =>
-			console.log(JSON.stringify(event.target.result))
+	store.get("main:credID").onsuccess = (cred_event) =>
+	store.get("main:private").onsuccess = (priv_event) =>
+		console.log(JSON.stringify([
+			tr(cred_event.target.result),
+			tr(priv_event.target.result),
+		]))
+}
 ```
 
 # Configuration for `cas`
