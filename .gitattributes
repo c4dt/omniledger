@@ -1,0 +1,7 @@
+# To use this file, you have to enable the 'theirs' merge driver and run this line:
+# git config merge.theirs.driver 'echo "Overwriting %P with their version"; mv "%B" "%A"'
+
+*.proto    -diff merge=theirs
+*.proto    linguist-generated=true
+package-lock.json  linguist-generated=true
+package-lock.json 	-diff merge=theirs
