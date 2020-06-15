@@ -10,7 +10,7 @@ roundtrip.png: roundtrip.txt
 	plantuml roundtrip.txt
 
 clean:
-	@ test -d ../cothority && ( echo "Cannot build with ../cothority present!"; exit 1 )
+	@test -d ../cothority && ( echo "Cannot build with ../cothority present!"; exit 1 ) || true
 	rm -rf build
 
 version:
@@ -27,5 +27,5 @@ version:
 		fi; \
 	fi
 
-publish: clean build
-	#npm publish
+publish: version clean build
+	npm publish
