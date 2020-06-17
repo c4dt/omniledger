@@ -11,6 +11,7 @@
 import { InstanceID } from "@dedis/cothority/byzcoin";
 import { Darc, IIdentity } from "@dedis/cothority/darc";
 
+import Log from "@dedis/cothority/log";
 import { DarcBS, DarcsBS } from "./byzcoin/darcsBS";
 import { CredentialInstanceMapBS } from "./credentialStructBS";
 import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
@@ -31,14 +32,30 @@ export class CSTypesBS extends DarcsBS {
         super(dbs);
     }
 
+    /**
+     * Creates a new entry for a device or a recovery.
+     *
+     * @param tx where to store the transactions
+     * @param name of the new device/recovery
+     * @param identity of the new device/recovery
+     */
     create(tx: SpawnerTransactionBuilder, name: string, identity: IIdentity[]): Darc {
         const newDarc = tx.spawnDarcBasic(`${this.prefix}:${name}`, identity);
-        this.link(tx, name, newDarc.getBaseID());
+        const id = newDarc.getBaseID();
+        this.link(tx, name, id);
         return newDarc;
     }
 
-    link(tx: SpawnerTransactionBuilder, name: string, id: InstanceID) {
-        this.signerDarcBS.addSignEvolve(tx, id);
+    /**
+     * Links a new darc to this device or recovery.
+     *
+     * @param tx where to store the transactions
+     * @param name of the new device/recovery
+     * @param id of the new device/recovery
+     * @param recovery if true will not create a "_sign" rule to avoid recovery-darcs with signing rights.
+     */
+    link(tx: SpawnerTransactionBuilder, name: string, id: InstanceID, recovery = false) {
+        this.signerDarcBS.addSignEvolve(tx, recovery ? undefined : id, id);
         this.cim.setEntry(tx, name, id);
     }
 

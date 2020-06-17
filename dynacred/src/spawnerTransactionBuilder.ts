@@ -66,6 +66,7 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
                     value: Buffer.from(this.cost.toBytesLE()),
                 })]));
         }
+        Log.lvl3(this);
         const reply = await this.send([this.coin.signers], wait);
         this.cost = Long.fromNumber(0);
         return reply;

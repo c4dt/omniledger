@@ -5,6 +5,7 @@ import { DarcInstance } from "@dedis/cothority/byzcoin/contracts";
 import { Darc, IIdentity, Rule, Rules } from "@dedis/cothority/darc";
 import IdentityDarc from "@dedis/cothority/darc/identity-darc";
 
+import Log from "@dedis/cothority/log";
 import { TransactionBuilder } from "./transactionBuilder";
 
 export class DarcsBS extends BehaviorSubject<DarcBS[]> {
@@ -43,9 +44,11 @@ export class DarcBS extends BehaviorSubject<Darc> {
         this.evolve(tx, {rules});
     }
 
-    addSignEvolve(tx: TransactionBuilder, idSign: IIdentity | InstanceID, idEvolve = idSign) {
+    addSignEvolve(tx: TransactionBuilder, idSign: IIdentity | InstanceID | undefined, idEvolve = idSign) {
         const rules = this.getValue().rules.clone();
-        rules.appendToRule(Darc.ruleSign, toIId(idSign), Rule.OR);
+        if (idSign) {
+            rules.appendToRule(Darc.ruleSign, toIId(idSign), Rule.OR);
+        }
         if (idEvolve) {
             rules.appendToRule(DarcInstance.ruleEvolve, toIId(idEvolve), Rule.OR);
         }
@@ -54,8 +57,16 @@ export class DarcBS extends BehaviorSubject<Darc> {
 
     rmSignEvolve(tx: TransactionBuilder, id: IIdentity | InstanceID) {
         const rules = this.getValue().rules.clone();
-        rules.getRule(Darc.ruleSign).remove(toIId(id).toString());
-        rules.getRule(DarcInstance.ruleEvolve).remove(toIId(id).toString());
+        try {
+            rules.getRule(Darc.ruleSign).remove(toIId(id).toString());
+        } catch (e) {
+            Log.warn("while removing identity from _sign:", e);
+        }
+        try {
+            rules.getRule(DarcInstance.ruleEvolve).remove(toIId(id).toString());
+        } catch (e) {
+            Log.warn("while removing identity from evolve:", e);
+        }
         this.evolve(tx, {rules});
     }
 }

@@ -1,14 +1,16 @@
 import Long from "long";
 
 import { Log } from "@dedis/cothority";
-import { ByzCoinRPC, CONFIG_INSTANCE_ID, IStorage } from "@dedis/cothority/byzcoin";
-import { LeaderConnection } from "@dedis/cothority/network";
+import { ByzCoinRPC, IStorage } from "@dedis/cothority/byzcoin";
+import { LeaderConnection, RosterWSConnection } from "@dedis/cothority/network";
 import { curve } from "@dedis/kyber";
 
 import { Genesis, IGenesisUser, User, UserSkeleton } from "dynacred";
 
+import { StatusRPC } from "@dedis/cothority/status";
+import { StatusRequest, StatusResponse } from "@dedis/cothority/status/proto";
 import { ByzCoinSimul } from "spec/simul/byzcoinSimul";
-import { ROSTER } from "spec/support/conodes";
+import { ROSTER, startConodes } from "spec/support/conodes";
 
 Log.lvl = 2;
 export const simul = true;
@@ -58,7 +60,14 @@ export class BCTestEnv extends Genesis {
 
     static async real(): Promise<BCTestEnv> {
         const bcte = await this.fromScratch(async (igd, db) => {
-            // await startConodes();
+            try {
+                const ws = new RosterWSConnection(ROSTER, StatusRPC.serviceName);
+                ws.setParallel(1);
+                await ws.send(new StatusRequest(), StatusResponse);
+                Log.warn("Using already running nodes for test!");
+            } catch (e) {
+                await startConodes();
+            }
             const bc = await ByzCoinRPC.newByzCoinRPC(ROSTER, igd.darc,
                 Long.fromNumber(1e8));
             const conn = new LeaderConnection(ROSTER, ByzCoinRPC.serviceName);
@@ -67,6 +76,7 @@ export class BCTestEnv extends Genesis {
         Log.lvl1("Successfully started real-byzcoin");
         return bcte;
     }
+
     bcSimul?: ByzCoinSimul;
 
     constructor(

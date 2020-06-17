@@ -1,5 +1,6 @@
 import { Log } from "@dedis/cothority/index";
 
+import { User } from "dynacred";
 import { BCTestEnv } from "spec/simul/itest";
 import { HistoryObs } from "spec/support/historyObs";
 
@@ -9,9 +10,10 @@ describe("Addressbook should", () => {
 
         Log.lvl1("checking credentials adding and removing");
         const user = await bct.createUser("contacts");
-        const contacts = await Promise.all(["foo", "bar", "alice"].map((alias) =>
-            bct.createUser(alias),
-        ));
+        const contacts: User[] = [];
+        for (const name of ["foo", "bar", "alice"]) {
+            contacts.push(await bct.createUser(name));
+        }
 
         Log.lvl2("subscribing to contactlist");
         const history = new HistoryObs();
