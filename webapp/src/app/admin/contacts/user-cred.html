@@ -6,6 +6,8 @@
                 matInput
                 [(ngModel)]="data.alias"
                 placeholder="Alias for new user"
+                cdkFocusInitial
+                (keyup.enter)="dialogRef.close(this.data)"
             />
         </mat-form-field>
         <mat-form-field class="width100">
@@ -44,12 +46,7 @@
     </p>
     <p>
         <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button
-            mat-raised-button
-            color="primary"
-            [mat-dialog-close]="data"
-            cdkFocusInitial
-        >
+        <button mat-raised-button color="primary" [mat-dialog-close]="data">
             Create
         </button>
     </p>

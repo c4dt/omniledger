@@ -86,7 +86,8 @@ export class Genesis extends Fetcher {
             throw new Error("cannot create coin without a genesisUser");
         }
         const instance = await CoinInstance.spawn(this.bc, this.darcID, this.signers, SPAWNER_COIN);
-        await instance.mint(this.signers, Long.fromNumber(1e11));
+        await instance.mint(this.signers, Long.fromNumber(1e11), 10);
+        await instance.update();
         this.coin = { instance, signers: this.signers };
         return this.coin;
     }

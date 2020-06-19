@@ -8,17 +8,14 @@
                 matInput
                 [(ngModel)]="userID"
                 placeholder="Enter userID of your contact"
+                cdkFocusInitial
+                (keyup.enter)="dialogRef.close(this.userID)"
             />
         </mat-form-field>
     </p>
     <p>
         <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button
-            mat-raised-button
-            color="primary"
-            [mat-dialog-close]="userID"
-            cdkFocusInitial
-        >
+        <button mat-raised-button color="primary" [mat-dialog-close]="userID">
             Ok
         </button>
     </p>

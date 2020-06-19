@@ -2,17 +2,18 @@
     <h2>Add a new Device</h2>
     <p>
         <mat-form-field class="width100">
-            <input matInput [(ngModel)]="data" placeholder="Name for device" />
+            <input
+                matInput
+                [(ngModel)]="data"
+                placeholder="Name for device"
+                cdkFocusInitial
+                (keyup.enter)="dialogRef.close(this.data)"
+            />
         </mat-form-field>
     </p>
     <p>
         <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button
-            mat-raised-button
-            color="primary"
-            [mat-dialog-close]="data"
-            cdkFocusInitial
-        >
+        <button mat-raised-button color="primary" [mat-dialog-close]="data">
             Create
         </button>
     </p>

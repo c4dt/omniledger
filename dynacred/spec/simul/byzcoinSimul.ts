@@ -311,9 +311,10 @@ export class ByzCoinSimul {
           darcID = ciDID;
         }
         const ciType = arg(isSI ? SpawnerInstance.argumentCoinName : CoinInstance.argumentType);
+        const valueBuf = arg(isSI ? SpawnerInstance.argumentCoinValue : CoinInstance.argumentCoins) || Buffer.alloc(0);
         const ciCoin = new Coin({
           name: ciType || ciid(Buffer.from("byzcoin")),
-          value: Long.fromNumber(0),
+          value: Long.fromBytesLE(Array.from(valueBuf)),
         });
         this.globalState.addOrUpdateInstance({
           block: blockIndex,
@@ -325,10 +326,7 @@ export class ByzCoinSimul {
         });
         break;
       case SpawnerInstance.contractID:
-        const siC = (cn: string) => new Coin({
-          name: ciid(Buffer.from("byzcoin")),
-          value: Long.fromBytesLE(Array.from(arg(cn))),
-        });
+        const siC = (cn: string) => Coin.decode(arg(cn));
         const siStruct = new SpawnerStruct({
           costCRead: siC("costCRead"),
           costCWrite: siC("costCWrite"),
