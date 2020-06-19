@@ -2,17 +2,18 @@
     <h2>Create a new {{title}}</h2>
     <p>
         <mat-form-field class="width100">
-            <input matInput [(ngModel)]="data" [placeholder]="title" />
+            <input
+                matInput
+                [(ngModel)]="data"
+                [placeholder]="title"
+                cdkFocusInitial
+                (keyup.enter)="dialogRef.close(this.data)"
+            />
         </mat-form-field>
     </p>
     <p>
         <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button
-            mat-raised-button
-            color="primary"
-            [mat-dialog-close]="data"
-            cdkFocusInitial
-        >
+        <button mat-raised-button color="primary" [mat-dialog-close]="data">
             Create
         </button>
     </p>

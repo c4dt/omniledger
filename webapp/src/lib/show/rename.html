@@ -3,7 +3,12 @@
     <p>
         <mat-form-field class="width100">
             <mat-label>{{'New name for ' + origName}}</mat-label>
-            <input matInput [(ngModel)]="data.name" />
+            <input
+                matInput
+                [(ngModel)]="data.name"
+                cdkFocusInitial
+                (keyup.enter)="dialogRef.close(this.data.name)"
+            />
         </mat-form-field>
     </p>
     <p>
@@ -12,7 +17,6 @@
             mat-raised-button
             color="primary"
             [mat-dialog-close]="data.name"
-            cdkFocusInitial
         >
             Rename
         </button>

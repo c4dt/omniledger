@@ -6,6 +6,8 @@
                 matInput
                 [(ngModel)]="data.coins"
                 placeholder="Enter number of coins"
+                cdkFocusInitial
+                (keyup.enter)="dialogRef.close(this.data.coins)"
             />
         </mat-form-field>
     </p>
@@ -15,7 +17,6 @@
             mat-raised-button
             color="primary"
             [mat-dialog-close]="data.coins"
-            cdkFocusInitial
         >
             Transfer
         </button>

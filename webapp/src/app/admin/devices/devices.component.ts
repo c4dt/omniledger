@@ -43,7 +43,7 @@ export class DevicesComponent {
         this.recovery = user.credSignerBS.recoveries;
     }
 
-    async deviceDelete(device: byzcoin.DarcBS) {
+    async deviceRevoke(device: byzcoin.DarcBS) {
         if (this.devices.getValue().length <= 1) {
             return showDialogInfo(this.dialog, "Too few devices", "There must be at least one device available, so " +
                 "it's not possible to remove the only device you have.", "Understood");
@@ -52,23 +52,23 @@ export class DevicesComponent {
             const deviceID = IdentityEd25519.fromPoint(this.user.kpp.pub);
             if (device.getValue().rules.getRule(Darc.ruleSign).getIdentities()
                 .find((ident) => ident === deviceID.toString())) {
-                return showDialogInfo(this.dialog, "No Suicide", "Cannot delete one's own device for security " +
+                return showDialogInfo(this.dialog, "No Suicide", "Cannot revoke one's own device for security " +
                     "reasons.", "Understood");
             }
             const name = device.getValue().description.toString().replace(/^device:/, "");
-            const confirm = await showDialogOKC(this.dialog, `Unlinking device`,
-                `Do you really want to remove the device ${name} from your keyring??`,
-                {OKButton: `Delete`, CancelButton: `Keep`});
+            const confirm = await showDialogOKC(this.dialog, `Revoke device`,
+                `Do you really want to revoke the device ${name} from your keyring??`,
+                {OKButton: `Revoke`, CancelButton: `Keep`});
             if (confirm) {
-                await showTransactions(this.dialog, "Deleting device " + name,
+                await showTransactions(this.dialog, "Revoking device " + name,
                     async (progress: TProgress) => {
-                        progress(30, "Deleting Device");
+                        progress(30, "Revoking Device");
                         await this.user.executeTransactions((tx) =>
                             this.user.credSignerBS.devices.unlink(tx, device.getValue().getBaseID()), 10);
                     });
             }
         } catch (e) {
-            await showDialogInfo(this.dialog, "Error while unlinking", e, "Too Bad");
+            await showDialogInfo(this.dialog, "Error while revoking", e, "Too Bad");
         }
     }
 

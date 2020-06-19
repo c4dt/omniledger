@@ -55,6 +55,10 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
             throw new Error("no instructions to send");
         }
         if (this.cost.greaterThan(0)) {
+            if (this.coin.instance.value.lessThan(this.cost)) {
+                throw new Error(`Not enough coins to send transaction: ` +
+                    `${this.cost.toString()} > ${this.coin.instance.value.toString()}`);
+            }
             this.prepend(Instruction.createInvoke(this.coin.instance.id,
                 CoinInstance.contractID, CoinInstance.commandFetch,
                 [new Argument({
@@ -148,7 +152,7 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
         Log.lvl3("Spawning darcs");
         [user.darcSign, user.darcDevice, user.darcCred, user.darcCoin].forEach((d) => this.spawnDarc(d));
 
-        Log.lvl3("Spawning coin");
+        Log.lvl3("Spawning coin", initial);
         this.spawnCoin(SPAWNER_COIN, user.darcCoin.getBaseID(), user.keyPair.pub.marshalBinary(), initial);
 
         Log.lvl3("Spawning credential with darcID", user.darcCred.getBaseID());

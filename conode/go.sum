@@ -220,6 +220,7 @@ go.dedis.ch/kyber/v4 v4.0.0-pre1/go.mod h1:cFStqSeD4d3Y7mal8kCRSq7I7QPeTBA0f5cRl
 go.dedis.ch/onet/v3 v3.0.26/go.mod h1:gwdcgrfh6OEzXFvMrgtAVEgdPrmcbZXDQZaDbqB0rjU=
 go.dedis.ch/onet/v3 v3.0.29 h1:7kG+gY0zQQ7mMjePewCxQQaMZwtns2020jY8uN5/Pcg=
 go.dedis.ch/onet/v3 v3.0.29/go.mod h1:eRhl/hDplVZQnvW9J67Q22vSMZO1umUS4DLY8wFY+b8=
+go.dedis.ch/onet/v3 v3.0.30/go.mod h1:eRhl/hDplVZQnvW9J67Q22vSMZO1umUS4DLY8wFY+b8=
 go.dedis.ch/onet/v3 v3.0.31 h1:iVIAxP9Zy1dEsJzRbVAgVcWtbtEOC3KVWBW0yaUYX5k=
 go.dedis.ch/onet/v3 v3.0.31/go.mod h1:P9R5g5BMoye1QvPVYY3LUmiq2YKodjgKfD2/nKDYosw=
 go.dedis.ch/onet/v3 v3.0.32 h1:k3ZuLU4j+NYPtM+hakhUzffbzmoETpRV6+Z8aq3P0eU=
@@ -275,6 +276,7 @@ golang.org/x/net v0.0.0-20190912160710-24e19bdeb0f2 h1:4dVFTC832rPn4pomLSz1vA+ar
 golang.org/x/net v0.0.0-20190912160710-24e19bdeb0f2/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/net v0.0.0-20191021144547-ec77196f6094 h1:5O4U9trLjNpuhpynaDsqwCk+Tw6seqJz1EbqbnzHrc8=
 golang.org/x/net v0.0.0-20191021144547-ec77196f6094/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
+golang.org/x/net v0.0.0-20200301022130-244492dfa37a h1:GuSPYbZzB5/dcLNCwLQLsg3obCJtX9IJhpXkvY7kzk0=
 golang.org/x/net v0.0.0-20200301022130-244492dfa37a/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/net v0.0.0-20200319234117-63522dbf7eec h1:w0SItUiQ4sBiXBAwWNkyu8Fu2Qpn/dtDIcoPkPDqjRw=
 golang.org/x/net v0.0.0-20200319234117-63522dbf7eec/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
@@ -300,6 +302,7 @@ golang.org/x/sys v0.0.0-20190912141932-bc967efca4b8 h1:41hwlulw1prEMBxLQSlMSux1z
 golang.org/x/sys v0.0.0-20190912141932-bc967efca4b8/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191024073052-e66fe6eb8e0c h1:usSYQsGq37L8RjJc5eznJ/AbwBxn3QFFEVkWNPAejLs=
 golang.org/x/sys v0.0.0-20191024073052-e66fe6eb8e0c/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 h1:LfCXLvNmTYH9kEmVgqbnsWfruoXZIrh4YBgqVHtDvw0=
 golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200317113312-5766fd39f98d h1:62ap6LNOjDU6uGmKXHJbSfciMoV+FeI1sRXx/pLDL44=
 golang.org/x/sys v0.0.0-20200317113312-5766fd39f98d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

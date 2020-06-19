@@ -96,7 +96,6 @@ export class AppComponent implements OnInit {
                     if (result) {
                         window.location.reload();
                     } else {
-                        this.loading = false;
                         return this.newUser();
                     }
                 });
@@ -105,6 +104,7 @@ export class AppComponent implements OnInit {
     }
 
     async newUser(): Promise<boolean> {
+        this.loading = false;
         const roster = this.bcs.bc.getConfig().roster;
         if (roster && !roster.list[0].address.includes("localhost")) {
             return this.router.navigate(["/newuser"]);

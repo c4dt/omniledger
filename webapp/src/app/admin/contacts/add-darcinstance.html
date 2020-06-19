@@ -10,6 +10,7 @@
                     cdkFocusInitial
                     [formControl]="form"
                     placeholder="{{ data.type }}'s ID"
+                    (keyup.enter)="dialogRef.close(this.form.value)"
                 />
             </mat-form-field>
         </p>
@@ -33,7 +34,6 @@
             color="primary"
             [mat-dialog-close]="form.value"
             [disabled]="form.invalid"
-            cdkFocusInitial
         >
             Ok
         </button>

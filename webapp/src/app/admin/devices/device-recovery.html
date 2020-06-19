@@ -2,7 +2,10 @@
     <h2>Add a new recovery</h2>
     <p>
         <mat-form-field class="width100">
-            <mat-select [(value)]="selected">
+            <mat-select
+                [(value)]="selected"
+                (keyup.enter)="dialogRef.close(this.selected)"
+            >
                 <mat-option *ngFor="let account of data" [value]="account.id">
                     {{account.name}}
                 </mat-option>
@@ -11,12 +14,7 @@
     </p>
     <p>
         <button mat-raised-button mat-dialog-close>Cancel</button>
-        <button
-            mat-raised-button
-            color="primary"
-            [mat-dialog-close]="selected"
-            cdkFocusInitial
-        >
+        <button mat-raised-button color="primary" [mat-dialog-close]="selected">
             Allow Recovery
         </button>
     </p>
