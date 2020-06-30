@@ -18,19 +18,27 @@
 </ul>
 <h2>Recovery accounts</h2>
 <ul>
-    <li *ngFor="let device of recovery | async">
-        <div *ngIf="isActiveDevice(recovery, device)">
-            <button mat-button (click)="darcShow(device)">
-                {{ getName(recovery, device) }}
+    <li *ngFor="let recovery of recoveries | async">
+        <div *ngIf="isActiveDevice(recoveries, recovery)">
+            <button mat-button (click)="darcShow(recovery)">
+                {{ getName(recoveries, recovery) }}
             </button>
             -
-            <button mat-button (click)="recoveryDelete(device)">Delete</button>
+            <button mat-button (click)="recoveryDelete(recovery)">
+                Delete
+            </button>
             -
-            <button mat-button (click)="rename(recovery, device)">
+            <button mat-button (click)="rename(recoveries, recovery)">
                 Rename
             </button>
+            <span *ngIf="recoveryVersion0(recovery)">
+                -
+                <button mat-button (click)="recoveryUpdate(recovery)">
+                    Update Recovery
+                </button>
+            </span>
         </div>
-        <div *ngIf="!isActiveDevice(recovery, device)">
+        <div *ngIf="!isActiveDevice(recoveries, recovery)">
             Deleting
         </div>
     </li>

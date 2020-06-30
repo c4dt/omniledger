@@ -15,6 +15,7 @@ import {
 import { Fetcher } from "./fetcher";
 import { Genesis, ICoin, IGenesisUser } from "./genesis";
 import { KeyPair } from "./keypair";
+import { Migrate } from "./migrate";
 import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 import { User } from "./user";
 import { UserSkeleton } from "./userSkeleton";
@@ -47,6 +48,7 @@ export {
     IInstanceMapKV,
     ILTSIDX,
     KeyPair,
+    Migrate,
     SpawnerTransactionBuilder,
     User,
     UserSkeleton,

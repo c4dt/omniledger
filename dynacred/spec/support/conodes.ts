@@ -39,7 +39,7 @@ export async function startConodes(): Promise<void> {
     console.log("Check output.log for the logs");
     const s = fs.createWriteStream("./output.log");
 
-    docker.run("dedis/conode-test", [], s, {
+    docker.run("c4dt/conode:dev", [], s, {
         ExposedPorts: {
             "7771/tcp": {},
             "7773/tcp": {},

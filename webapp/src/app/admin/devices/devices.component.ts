@@ -4,9 +4,9 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dial
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 import { InstanceID } from "@dedis/cothority/byzcoin";
-import { Darc, IdentityDarc, IdentityEd25519 } from "@dedis/cothority/darc";
+import { Darc, IdentityEd25519 } from "@dedis/cothority/darc";
 import { Attribute } from "@dedis/cothority/personhood/credentials-instance";
-import { byzcoin, CSTypesBS, KeyPair } from "dynacred";
+import { byzcoin, CSTypesBS, KeyPair, Migrate } from "dynacred";
 import { ByzCoinService } from "src/app/byz-coin.service";
 import { UserService } from "src/app/user.service";
 import { DarcInstanceInfoComponent, RenameComponent, ShowComponent } from "src/lib/show/show.component";
@@ -30,7 +30,7 @@ class Signer {
 })
 export class DevicesComponent {
     devices: CSTypesBS;
-    recovery: CSTypesBS;
+    recoveries: CSTypesBS;
 
     constructor(
         private dialog: MatDialog,
@@ -40,7 +40,7 @@ export class DevicesComponent {
         private builder: ByzCoinService,
     ) {
         this.devices = user.credSignerBS.devices;
-        this.recovery = user.credSignerBS.recoveries;
+        this.recoveries = user.credSignerBS.recoveries;
     }
 
     async deviceRevoke(device: byzcoin.DarcBS) {
@@ -115,7 +115,7 @@ export class DevicesComponent {
         });
     }
 
-    async recoveryCreate() {
+    async recoveryCreate(noSign = true) {
         const accounts: IAccount[] = [];
         await showSnack(this.snack, "Searching actions and groups", async () => {
             for (const c of this.user.addressBook.contacts.getValue()) {
@@ -148,7 +148,7 @@ export class DevicesComponent {
                 return showDialogInfo(this.dialog, "No such account",
                     "Didn't find the chosen account.", "Go on");
             }
-            if (this.recovery.getValue().find((r) => r.getValue().description.toString() === result)) {
+            if (this.recoveries.getValue().find((r) => r.getValue().description.toString() === result)) {
                 await showDialogInfo(this.dialog, "Duplicate name", `The recovery-name ${result} already exists`,
                     "Change");
                 return this.recoveryCreate();
@@ -157,9 +157,8 @@ export class DevicesComponent {
             await showTransactions(this.dialog, "Adding recovery account",
                 async (progress: TProgress) => {
                     progress(50, "Adding new recovery account");
-                    const recovery = new IdentityDarc({id: result});
                     await this.user.executeTransactions((tx) => {
-                        this.user.credSignerBS.recoveries.create(tx, d.name, [recovery]);
+                        this.user.credSignerBS.recoveries.link(tx, d.name, result, noSign);
                     }, 10);
                 });
         });
@@ -177,6 +176,19 @@ export class DevicesComponent {
                     }, 10);
                 });
         }
+    }
+
+    async recoveryUpdate(dev: byzcoin.DarcBS) {
+        await showTransactions(this.dialog, "Updating recovery account",
+            async (progress: TProgress) => {
+                progress(50, "Removing signing rule");
+                await this.user.executeTransactions((tx) =>
+                    Migrate.updateRecovery(tx, this.user.credSignerBS, dev), 10);
+            });
+    }
+
+    recoveryVersion0(dev: byzcoin.DarcBS): boolean {
+        return Migrate.versionRecovery(this.user.credSignerBS.getValue(), dev) === 0;
     }
 
     getName(cst: CSTypesBS, dev: byzcoin.DarcBS): string {
