@@ -71,7 +71,7 @@ export class ContactsComponent implements OnInit {
         if (groups && groups.find((group) => groupsAvail.find((g) => g === group) === undefined)) {
             return Promise.reject("unknown group");
         }
-        const ac = this.dialog.open(UserCredComponent, {
+        const ac = this.dialog.open(NewUserComponent, {
             data: creds,
             width: "400px",
         });
@@ -92,7 +92,7 @@ export class ContactsComponent implements OnInit {
                         }
                         userSkeleton.addContact(this.user.credStructBS.id);
 
-                        if (result.recovery && result.recovery !== UserCredComponent.noRecovery) {
+                        if (result.recovery && result.recovery !== NewUserComponent.noRecovery) {
                             progress(50, "Adding recovery");
                             const g = this.user.addressBook.groups.find(result.recovery);
                             if (g) {
@@ -389,7 +389,7 @@ export class ContactsComponent implements OnInit {
 
     private async askNameOfNewDarcInstance(title: string): Promise<string | undefined> {
         return new Promise((resolve, _) =>
-            this.dialog.open(CreateComponent, {data: title})
+            this.dialog.open(NewGroupActionComponent, {data: title})
                 .afterClosed().subscribe(resolve));
     }
 }
@@ -421,10 +421,10 @@ export interface IUserCred {
 }
 
 @Component({
-    selector: "app-user-cred",
-    templateUrl: "user-cred.html",
+    selector: "app-new-user",
+    templateUrl: "new-user.html",
 })
-export class UserCredComponent {
+export class NewUserComponent {
 
     static noRecovery = "No recovery";
     views = UIViews;
@@ -441,7 +441,7 @@ export class UserCredComponent {
             data.view = UIViews[0];
         }
         data.groups = [];
-        this.recoveryGroups = [UserCredComponent.noRecovery].concat(data.groupsAvail);
+        this.recoveryGroups = [NewUserComponent.noRecovery].concat(data.groupsAvail);
         data.recovery = this.recoveryGroups[0];
     }
 }
@@ -478,14 +478,14 @@ export class AddContactComponent {
 }
 
 @Component({
-    selector: "app-create",
-    templateUrl: "create.html",
+    selector: "app-new-group-action",
+    templateUrl: "new-group-action.html",
 })
-export class CreateComponent {
+export class NewGroupActionComponent {
     title: string;
 
     constructor(
-        public dialogRef: MatDialogRef<CreateComponent>,
+        public dialogRef: MatDialogRef<NewGroupActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: string) {
         this.title = data;
         this.data = "";
