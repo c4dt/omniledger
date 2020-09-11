@@ -21,9 +21,10 @@
     LTS instance ID: {{ (config.ltsID | async).toString("hex") }}<br />
     signer instance ID:
     <span *ngIf="signerBS === undefined" class="waiting">fetching</span>
-    <span *ngIf="signerBS !== undefined">{{
-        (signerBS | async).getBaseID().toString("hex")
-    }}</span>
+    <span *ngIf="signerBS !== undefined"
+        >{{ (signerBS | async).getBaseID().toString("hex") }}<br />
+        Recovery names: {{ (recoveries | async).join(" - ") }}
+    </span>
 </p>
 <p>
     seed public: {{ (pub.seedPub | async).toString("hex") }}<br />

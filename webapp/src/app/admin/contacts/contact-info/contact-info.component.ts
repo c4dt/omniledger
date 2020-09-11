@@ -8,6 +8,7 @@ import {
     CredentialSignerBS,
     CredentialStructBS,
 } from "dynacred";
+import { BehaviorSubject } from "rxjs";
 import { ByzCoinService } from "src/app/byz-coin.service";
 
 @Component({
@@ -23,6 +24,7 @@ export class ContactInfoComponent implements OnInit {
     pub: CredentialPublic;
     config: CredentialConfig;
     addressBook: AddressBook | undefined;
+    recoveries = new BehaviorSubject(["none"]);
 
     constructor(
         public dialogRef: MatDialogRef<ContactInfoComponent>,
@@ -34,5 +36,8 @@ export class ContactInfoComponent implements OnInit {
         this.config = this.data.contact.credConfig;
         this.signerBS = await this.builder.retrieveCredentialSignerBS(this.data.contact);
         this.addressBook = await this.builder.retrieveAddressBook(this.pub);
+        this.signerBS.recoveries.subscribe((dbs) => {
+            this.recoveries.next(dbs.map((d) => d.getValue().description.toString()));
+        });
     }
 }

@@ -15,11 +15,11 @@ import {
     AddContactComponent,
     ContactInfoComponent,
     ContactsComponent,
-    CreateComponent,
     DarcInstanceAddComponent,
+    NewGroupActionComponent,
+    NewUserComponent,
     SignupLinkComponent,
     TransferCoinComponent,
-    UserCredComponent,
 } from "./admin/contacts/contacts.component";
 import {
     DeviceAddComponent,
@@ -49,7 +49,7 @@ import { RegisterComponent } from "./register/register.component";
 @NgModule({
     bootstrap: [AppComponent],
     declarations: [
-        CreateComponent,
+        NewGroupActionComponent,
         AppComponent,
         SignupLinkComponent,
         ManageDarcComponent,
@@ -57,7 +57,7 @@ import { RegisterComponent } from "./register/register.component";
         DarcInstanceInfoComponent,
         AddContactComponent,
         TransferCoinComponent,
-        UserCredComponent,
+        NewUserComponent,
         RetryLoadComponent,
         RegisterComponent,
         YourselfComponent,
@@ -95,9 +95,9 @@ import { RegisterComponent } from "./register/register.component";
         ContactInfoComponent,
         SignupLinkComponent,
         TransferCoinComponent,
-        UserCredComponent,
+        NewUserComponent,
         RetryLoadComponent,
-        CreateComponent,
+        NewGroupActionComponent,
         DialogOKCancelComponent,
         DialogTransactionComponent,
         ShowBlockComponent,
