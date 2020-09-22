@@ -1,5 +1,14 @@
 Write down important changes to the architecture here, especially if it touches other parts of the system.
 
+2020-09-22 Linus Gasser
+    * Use old key for signing again (lost new key :(
+    * Update c4dt-conode URL
+    * 0.6.3: Add patch for no byzcoin-verification
+    * 0.6.4: UI improvement and don't use webapp-contacts
+
+2020-02-xx
+    * Added group mgmt
+
 2019-12-12 Linus Gasser
     * Merged all into the master branch, still waiting for some patches to go in at `dedis/cothority/external/js`
     * rewrote how the different configurations are handled

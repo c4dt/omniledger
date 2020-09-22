@@ -113,7 +113,7 @@ export const dedisRoster = Roster.fromTOML(`[[servers]]
 
 [[servers]]
   Address = "tls://conode.c4dt.org:7770"
-  Url = "https://conode.c4dt.org:7771"
+  Url = "https://conode.c4dt.org"
   Suite = "Ed25519"
   Public = "67e30e168f83c4d4614e277cefba42dbc1fb5886b3945364ea5dae3f4e4fbc0d"
   Description = "C4DT Conode"

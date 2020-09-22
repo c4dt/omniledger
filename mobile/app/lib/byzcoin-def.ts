@@ -23,7 +23,7 @@ export const bcDef = bdDEDIS;
 // export const bcDef = bdTest;
 
 // Version of the app - this is automatically copied from package.json
-export let appVersion = "0.5.8";
+export let appVersion = "0.6.4";
 
 // The global uData that is used all over the pages.
 export let uData: Data;

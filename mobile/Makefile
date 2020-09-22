@@ -24,6 +24,7 @@ npm-install: clean
 
 apply-patches: npm-install
 	patch -p0 < nodeify_temporary_patch.patch
+	patch -p0 < proof.patch
 	cp nodeify_noxml.js node_modules/nativescript-nodeify/nodeify.js
 	rm -rf node_modules/public-encrypt/test/
 
@@ -31,21 +32,25 @@ android-dev: apply-patches
 	tns prepare android
 
 roster-check:
-	[ -n "$$PERSONHOOD3_ANDROID_PASS" ]
+	[ -n "$$PERSONHOOD2_ANDROID_PASS" ]
 	@if grep -q -l '^export const bcDef = bdDEDIS' app/lib/byzcoin-def.ts; then \
 	  echo "Correct roster"; else \
 	  echo "\nPUT 'bcDef = bdDEDIS' IN app/lib/byzcoin-def.ts !!\n"; exit 1; fi
 
 update-version:
 	@REL=$$( grep version package.json | head -n 1 | sed -e "s/.*: .\(.*\).,/\1/" ) && \
+	CODE=$${REL//\./0} && \
+	SHORT=$$( echo $$REL | sed -e "s/\(.*\)\.[0-9]*/\1/" ) && \
+	perl -pi -e "s/(versionCode=\").*\"/\$${1}$$CODE\"/" app/App_Resources/Android/src/main/AndroidManifest.xml && \
 	perl -pi -e "s/(versionName=\").*\"/\$${1}$$REL\"/" app/App_Resources/Android/src/main/AndroidManifest.xml && \
 	perl -0pi -e "s:(<key>CFBundleVersion</key>.*?<string>).*?</:\$${1}$$REL</:s" app/App_Resources/iOS/Info.plist && \
-	perl -pi -e "s/appVersion.*/appVersion = \"$$REL\";/" app/lib/user-data.ts
+	perl -0pi -e "s:(<key>CFBundleShortVersionString</key>.*?<string>).*?</:\$${1}$$SHORT</:s" app/App_Resources/iOS/Info.plist && \
+	perl -pi -e "s/appVersion.*/appVersion = \"$$REL\";/" app/lib/byzcoin-def.ts
 
 android-compile: update-version
-	[ -n "$$PERSONHOOD3_ANDROID_PASS" ]
-	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD3_ANDROID_PASS \
-		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD3_ANDROID_PASS --release
+	[ -n "$$PERSONHOOD2_ANDROID_PASS" ]
+	@tns build android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS --release
 	@echo "Build successful - apk is at platforms/android/app/build/outputs/apk/release/app-release.ap"
 
 android-release-copy:
@@ -63,18 +68,18 @@ android-release-32-copy:
 android-release-32: gradle-simul roster-check apply-patches android-compile android-release-32-copy
 
 android-run: roster-check gradle-simul
-	[ -n "$$PERSONHOOD3_ANDROID_PASS" ]
-	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD3_ANDROID_PASS \
-		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD3_ANDROID_PASS
+	[ -n "$$PERSONHOOD2_ANDROID_PASS" ]
+	@tns run android --key-store-path c4dt-development.jks --key-store-password $$PERSONHOOD2_ANDROID_PASS \
+		--key-store-alias personhood --key-store-alias-password $$PERSONHOOD2_ANDROID_PASS
 
 release-key:
 	if [ -e c4dt-development.jks ]; then echo "Please remove c4dt-development.jks first"; exit 1; fi
 	keytool -genkey -v -storetype pkcs12 -keystore c4dt-development.jks -keyalg RSA -keysize 4096 -validity 10000 -alias personhood
 
 ios-prepare: update-version
-	perl -pi -e "s/org.c4dt.personhood2/ch.epfl.personhood2/" package.json
-	tns prepare ios
-	perl -pi -e "s/ch.epfl.personhood2/org.c4dt.personhood2/" package.json
+	perl -pi -e "s/org.c4dt.personhood2/ch.epfl.personhood3/" package.json
+	tns prepare ios --release
+	perl -pi -e "s/ch.epfl.personhood3/org.c4dt.personhood2/" package.json
 
 ios-dev: apply-patches ios-prepare
 
@@ -89,7 +94,7 @@ ios-release: apply-patches
 xcode-dev: ios-dev
 	open platforms/ios/mobile.xcworkspace/
 
-release: android-release-32 gradle-prod android-compile gradle-simul android-release-copy ios-prepare
+release: android-release-32 android-release ios-prepare
 	open platforms/ios/mobile.xcworkspace/
 
 ##
@@ -107,7 +112,7 @@ app/lib/kyber: ../cothority/external/js/kyber/src
 	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/kyber:~/lib/kyber:"
 	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
 
-kyber_npm:
+kyber_npm: cothority_src
 	@echo "Using kyber-npm libraries"
 	@if [ ! -d app/lib/kyber ]; then \
 		echo "there is no kyber-source present, aborting"; \
@@ -129,7 +134,7 @@ app/lib/cothority: ../cothority/external/js/cothority/src
 	@find app/ -name "*.ts" | xargs perl -pi -e "s:\@dedis/cothority:~/lib/cothority:"
 	@find $@ -name "*.ts" | grep -v .d.ts | xargs -n 1 ./nodeify.sh
 
-cothority_npm: kyber_npm
+cothority_npm:
 	@echo "Using cothority-npm libraries"
 	@if [ ! -d app/lib/cothority ]; then \
 		echo "there is no cothority-source present"; \

@@ -1,0 +1,11 @@
+diff -Naur node_modules/@dedis/cothority.orig/byzcoin/proof.js node_modules/@dedis/cothority/byzcoin/proof.js
+--- node_modules/@dedis/cothority.orig/byzcoin/proof.js	2020-09-22 13:27:14.000000000 +0200
++++ node_modules/@dedis/cothority/byzcoin/proof.js	2020-09-22 13:27:22.000000000 +0200
+@@ -123,6 +123,7 @@
+      * @deprecated use verifyFrom for a complete verification
+      */
+     verify(id) {
++        return null;
+         if (!this.latest.computeHash().equals(this.latest.hash)) {
+             return new Error("invalid latest block");
+         }

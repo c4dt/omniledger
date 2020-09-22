@@ -122,7 +122,7 @@ export class Contact {
     set contacts(cs: Contact[]) {
         this.contactsCache = cs;
         const csBuf = Buffer.concat(cs.map((c) => c.credentialIID));
-        this.credential.setAttribute("1-public", "contactsBuf", csBuf);
+        this.credential.setAttribute("1-public", "contactsBufApp", csBuf);
         this.incVersion();
     }
 

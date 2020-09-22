@@ -24,8 +24,8 @@ export const bdDEDIS: IByzcoinDef = {
     testingMode: false,
     roster: dedisRoster,
     byzCoinID: Buffer.from("9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3", "hex"),
-    // This is block #16384, which is a power of 4, so it should have nice forward-links
-    latestID: Buffer.from("75a0da2025a119fbb21b3187af9e2e8b978c75581ea9fe139d1f70dbf06ceefa", "hex"),
+    // This is block 0x18000, a height-8 block.
+    latestID: Buffer.from("5a5b5903a64b169448b997e1e7ed5890bace99f1e5b3ec094c50cd7e9dfc0834", "hex"),
     adminDarc: Buffer.from("28aa9504ad3d781611b57d98607e1bca25b1c92f3b32a08a7e341c3866db4675", "hex"),
     spawnerID: Buffer.from("ebc32cc89129c7542cdb8991585756be48ea4bd2869d939898f5413e7f757d96", "hex"),
     calypsoRoster: c4dtCalypsoRoster,
