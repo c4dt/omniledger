@@ -41,7 +41,7 @@ export class ByzCoinService extends Fetcher {
             const url = this.conn.getURL();
             logger(`Fastest node at ${i + 1}/3: ${url}`, 20 + i * 20);
         }
-        this.conn.setParallel(1);
+        this.conn.setParallel(2);
         logger("Fetching latest block", 70);
         this.db = new StorageDB();
         const sc = new SkipchainRPC(this.conn);
