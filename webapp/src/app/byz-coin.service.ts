@@ -9,6 +9,16 @@ import Dexie from "dexie";
 import { Fetcher, User } from "dynacred";
 import { Config } from "src/lib/config";
 
+function dbError(e: Error): Error {
+    return new Error("Couldn't open storage of browser.<br>This is probably due to one" +
+        " of:<br>" +
+        "- Using private browsing mode<br>" +
+        "- Setting your browser to not remember history<br>" +
+        "For more information, go to <a" +
+        " href='https://www.c4dt.org/article/failing-omniledger-login/' target='other'>OmniLedger login problems</a>" +
+        "<br><br>System error message: " + e.toString());
+}
+
 @Injectable({
     providedIn: "root",
 })
@@ -42,13 +52,18 @@ export class ByzCoinService extends Fetcher {
             logger(`Fastest node at ${i + 1}/3: ${url}`, 20 + i * 20);
         }
         this.conn.setParallel(2);
-        logger("Fetching latest block", 70);
-        this.db = new StorageDB();
+        logger("Opening DB", 65);
+        try {
+            this.db = new StorageDB();
+        } catch (e) {
+            throw dbError(e);
+        }
         const sc = new SkipchainRPC(this.conn);
         // @ts-ignore
         global.sc = sc;
         // @ts-ignore
         global.bcs = this;
+        logger("Fetching latest block", 70);
         try {
             let latest: SkipBlock;
             const latestBuf = await this.db.get(this.storageKeyLatest);
@@ -67,7 +82,11 @@ export class ByzCoinService extends Fetcher {
                 3, 1000, undefined, this.db, false);
         }
         Log.lvl2("storing latest block in db:", this.bc.latest.index);
-        await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
+        try {
+            await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
+        } catch (e) {
+            throw dbError(e);
+        }
         logger("Done connecting", 100);
     }
 
