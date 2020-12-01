@@ -6,7 +6,7 @@ import { IdentityWrapper } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
 import { ByzCoinService } from "src/app/byz-coin.service";
-import { showDialogOKC } from "src/lib/Ui";
+import { showDialogInfo, showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
 
 @Component({
@@ -39,9 +39,16 @@ export class AppComponent implements OnInit {
     }
 
     async ngOnInit() {
-        await this.bcs.loadConfig((msg: string, perc: number) => {
-            this.logAppend(msg, perc * 0.8);
-        });
+        try {
+            await this.bcs.loadConfig((msg: string, perc: number) => {
+                this.logAppend(msg, perc * 0.8);
+            });
+        } catch (e) {
+            await showDialogInfo(this.dialog, "Error",
+                `Something went wrong while loading the config: ${e.toString()}`, "Cancel");
+            this.loading = false;
+            return this.newUser();
+        }
 
         if (window.location.pathname.match(/\/explorer\//)) {
             Log.lvl2("using explorer - don't load user");
