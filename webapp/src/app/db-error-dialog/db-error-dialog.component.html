@@ -1,0 +1,30 @@
+<div>
+    <h1>Error</h1>
+
+    <p>
+        Couldn't open storage of browser.<br />
+        This is probably due to one of:<br />
+        - Using private browsing mode<br />
+        - Setting your browser to not remember history<br />
+        For more information, go to
+        <a
+            href="https://www.c4dt.org/article/failing-omniledger-login/"
+            target="other"
+            >OmniLedger login problems
+        </a>
+        <br />
+        <br />
+        System error message: {{ error.message }}
+    </p>
+
+    <p>
+        <button
+            mat-raised-button
+            color="primary"
+            [mat-dialog-close]="true"
+            cdkFocusInitial
+        >
+            Cancel
+        </button>
+    </p>
+</div>

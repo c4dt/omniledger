@@ -9,14 +9,13 @@ import Dexie from "dexie";
 import { Fetcher, User } from "dynacred";
 import { Config } from "src/lib/config";
 
-function dbError(e: Error): Error {
-    return new Error("Couldn't open storage of browser.<br>This is probably due to one" +
-        " of:<br>" +
-        "- Using private browsing mode<br>" +
-        "- Setting your browser to not remember history<br>" +
-        "For more information, go to <a" +
-        " href='https://www.c4dt.org/article/failing-omniledger-login/' target='other'>OmniLedger login problems</a>" +
-        "<br><br>System error message: " + e.toString());
+export class DBError implements Error {
+  readonly name = "DBError";
+  readonly message: string;
+
+  constructor(error: Error)  {
+    this.message = error.message;
+  }
 }
 
 @Injectable({
@@ -56,7 +55,7 @@ export class ByzCoinService extends Fetcher {
         try {
             this.db = new StorageDB();
         } catch (e) {
-            throw dbError(e);
+            throw new DBError(e);
         }
         const sc = new SkipchainRPC(this.conn);
         // @ts-ignore
@@ -85,7 +84,7 @@ export class ByzCoinService extends Fetcher {
         try {
             await this.db.set(this.storageKeyLatest, Buffer.from(SkipBlock.encode(this.bc.latest).finish()));
         } catch (e) {
-            throw dbError(e);
+            throw new DBError(e);
         }
         logger("Done connecting", 100);
     }

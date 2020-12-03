@@ -1,6 +1,6 @@
 <div>
-    <h1>{{data.Title}}</h1>
-    <p [innerHTML]="data.Text"></p>
+    <h1>{{ data.Title }}</h1>
+    <p>{{ data.Text }}</p>
     <p>
         <button
             mat-raised-button
@@ -8,7 +8,7 @@
             [mat-dialog-close]="true"
             cdkFocusInitial
         >
-            {{data.Buttons.OKButton}}
+            {{ data.Buttons.OKButton }}
         </button>
         <button
             *ngIf="data.Buttons.CancelButton != ''"
@@ -17,7 +17,7 @@
             [mat-dialog-close]="false"
             cdkFocusInitial
         >
-            {{data.Buttons.CancelButton}}
+            {{ data.Buttons.CancelButton }}
         </button>
     </p>
 </div>
