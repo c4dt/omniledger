@@ -38,6 +38,7 @@ import { C4dtComponent } from "./c4dt/c4dt.component";
 import { PartnerComponent } from "./c4dt/partner/partner.component";
 import { ProfileComponent } from "./c4dt/profile/profile.component";
 import { WelcomeComponent } from "./c4dt/welcome/welcome.component";
+import { DBErrorDialog } from "./db-error-dialog/db-error-dialog.component";
 import { CoinComponent } from "./explorer/coin/coin.component";
 import { CredentialComponent } from "./explorer/credential/credential.component";
 import { DarcComponent } from "./explorer/darc/darc.component";
@@ -65,6 +66,7 @@ import { RegisterComponent } from "./register/register.component";
         StatusComponent,
         ProfileComponent,
         AdminComponent,
+        DBErrorDialog,
         DialogOKCancelComponent,
         DialogTransactionComponent,
         BcviewerComponent,
@@ -98,6 +100,7 @@ import { RegisterComponent } from "./register/register.component";
         NewUserComponent,
         RetryLoadComponent,
         NewGroupActionComponent,
+        DBErrorDialog,
         DialogOKCancelComponent,
         DialogTransactionComponent,
         ShowBlockComponent,

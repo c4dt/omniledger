@@ -5,9 +5,10 @@ import { Router } from "@angular/router";
 import { IdentityWrapper } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
-import { ByzCoinService } from "src/app/byz-coin.service";
+import { ByzCoinService, DBError } from "src/app/byz-coin.service";
 import { showDialogInfo, showDialogOKC } from "src/lib/Ui";
 import { version } from "../../package.json";
+import { DBErrorDialog } from "./db-error-dialog/db-error-dialog.component";
 
 @Component({
     selector: "app-root",
@@ -44,8 +45,12 @@ export class AppComponent implements OnInit {
                 this.logAppend(msg, perc * 0.8);
             });
         } catch (e) {
-            await showDialogInfo(this.dialog, "Error",
-                `Something went wrong while loading the config: ${e.toString()}`, "Cancel");
+            if (e instanceof DBError) {
+              await DBErrorDialog.open(this.dialog, e);
+            } else {
+              await showDialogInfo(this.dialog, "Error",
+                  `Something went wrong while loading the config: ${e.toString()}`, "Cancel");
+            }
             this.loading = false;
             return this.newUser();
         }
