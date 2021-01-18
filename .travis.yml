@@ -50,7 +50,7 @@ jobs:
 #        - npm run test --no-watch
     - name: webapp/cas
       language: go
-      go: 1.12.x
+      go: 1.x
       install:
         - cd webapp/cas
         - export GO111MODULE=on
