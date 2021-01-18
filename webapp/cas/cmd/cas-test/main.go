@@ -109,7 +109,7 @@ func injectUser(page *agouti.Page, userData string) error {
 				forEach(e => store.put(e))
 		}
 		request.onsuccess = resolve
-		request.onerror = reject
+		request.onerror = () => reject(request.error)
 	})
 
 	const dbnamesDone = new Promise((resolve, reject) => {
@@ -124,7 +124,7 @@ func injectUser(page *agouti.Page, userData string) error {
 				objectStore(objectStoreName).
 				put({name: "dynasent2"}).
 				onsuccess = resolve
-		request.onerror = reject
+		request.onerror = () => reject(request.error)
 	})
 
 	const elem = document.createElement("span")
