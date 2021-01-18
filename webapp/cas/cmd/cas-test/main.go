@@ -105,7 +105,7 @@ func injectUser(page *agouti.Page, userData string) error {
 		request.onupgradeneeded = (event) => {
 			const store = event.target.result.
 				createObjectStore("contacts", {keyPath: "key"})
-			JSON.parse(data).
+			Array.from(JSON.parse(data)).
 				forEach(e => store.put(e))
 		}
 		request.onsuccess = resolve
