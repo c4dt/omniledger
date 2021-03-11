@@ -21,6 +21,7 @@ enum StateT {
     ASKING_IF_LOGIN,
     NO_ACCESS_WITH_TRANSACTION,
     REDIRECTING,
+    NO_SUCH_SERVICE
 }
 
 @Component({
@@ -61,6 +62,7 @@ export class LoginComponent implements OnInit {
     async ngOnInit() {
         const action = (await this.config).serviceToAction.get(this.service.href);
         if (action === undefined) {
+            this.state = StateT.NO_SUCH_SERVICE;
             throw new Error(`no such service found: ${this.service.href}`);
         }
 
@@ -119,7 +121,8 @@ export class LoginComponent implements OnInit {
     private async putChallenge(config: Config, challenge: Buffer): Promise<boolean> {
         const action = (await this.config).serviceToAction.get(this.service.href);
         if (action === undefined) {
-            throw new Error("no such service found");
+            this.state = StateT.NO_SUCH_SERVICE;
+            throw new Error(`no such service found: ${this.service.href}`);
         }
 
         const challengeHashed = config.challengeHasher(challenge);

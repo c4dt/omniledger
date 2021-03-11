@@ -19,6 +19,11 @@
             >
                 Unfortunately, you don't have access :(
             </ng-container>
+            <ng-container 
+                *ngSwitchCase="StateT.NO_SUCH_SERVICE"
+            >
+            No such service : "{{service.href}}" could be found...
+            </ng-container>
             <ng-container *ngSwitchCase="StateT.ASKING_IF_LOGIN">
                 <div>
                     <p>Do you want to accept or deny the request?</p>
