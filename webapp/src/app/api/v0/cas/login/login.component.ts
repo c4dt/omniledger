@@ -21,7 +21,7 @@ enum StateT {
     ASKING_IF_LOGIN,
     NO_ACCESS_WITH_TRANSACTION,
     REDIRECTING,
-    NO_SUCH_SERVICE
+    NO_SUCH_SERVICE,
 }
 
 @Component({
