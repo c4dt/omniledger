@@ -129,8 +129,8 @@ export class ContactsComponent implements OnInit {
                     });
                 const url = this.location.prepareExternalUrl("/register?ephemeral=" +
                     newUser.keyPair.priv.marshalBinary().toString("hex"));
-                let host = window.location.host;
 
+                let host = window.location.host;
                 // Easier manual UI testing: if the url is local[1-8], return an url with the next number.
                 // This way you can have multiple users in multiple tabs on different hosts: local1, local2, ...
                 if (host.match(/^local[1-8]?:4200$/)) {
@@ -139,9 +139,11 @@ export class ContactsComponent implements OnInit {
                         index = 0;
                     }
                     host = "local" + (index + 1) + ":4200";
+                } else {
+                    host = this.builder.config.baseURL;
                 }
                 this.dialog.open(SignupLinkComponent, {
-                    data: `${window.location.protocol}//${host + url}`,
+                    data: `${host + url}`,
                     width: "400px",
                 });
             }
@@ -216,7 +218,7 @@ export class ContactsComponent implements OnInit {
                         ephemeralIdentity.secret.marshalBinary().toString("hex"));
                 });
         if (deviceStr) {
-            const url = window.location.protocol + "//" + window.location.host +
+            const url = this.builder.config.baseURL +
                 this.location.prepareExternalUrl(deviceStr);
             this.dialog.open(ShowComponent, {data: url});
         }
