@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const injectUserURL = "https://demo.c4dt.org"
+const injectUserURL = "https://login.c4dt.org"
 
 func main() {
 	app := cli.NewApp()
