@@ -127,8 +127,8 @@ export class ContactsComponent implements OnInit {
                         await tx.sendCoins(10);
                         return userSkeleton;
                     });
-                const url = this.location.prepareExternalUrl("/register?ephemeral=" +
-                    newUser.keyPair.priv.marshalBinary().toString("hex"));
+                const url = "/register?ephemeral=" +
+                    newUser.keyPair.priv.marshalBinary().toString("hex");
 
                 let host = window.location.host;
                 // Easier manual UI testing: if the url is local[1-8], return an url with the next number.
@@ -218,8 +218,7 @@ export class ContactsComponent implements OnInit {
                         ephemeralIdentity.secret.marshalBinary().toString("hex"));
                 });
         if (deviceStr) {
-            const url = this.builder.config.baseURL +
-                this.location.prepareExternalUrl(deviceStr);
+            const url = this.builder.config.baseURL + deviceStr;
             this.dialog.open(ShowComponent, {data: url});
         }
     }
