@@ -1,8 +1,0 @@
-<Page shownModally="onShownModally"
-      tap="goBack">
-    <StackLayout style="text-align: center;">
-        <Label text="{{ 'Personhood-key' }}" class="h2"/>
-        <Image src="{{ qrcode }}" visibility="visible" width="100%"/>
-        <Label text="Tap to close"/>
-    </StackLayout>
-</Page>
