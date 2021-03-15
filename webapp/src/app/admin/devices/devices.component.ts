@@ -86,7 +86,7 @@ export class DevicesComponent {
                             }, 10);
                             return this.user.getUrlForDevice(ephemeralIdentity.secret);
                         });
-                const url = window.location.protocol + "//" + window.location.host +
+                const url = this.builder.config.baseURL +
                     this.location.prepareExternalUrl(device);
                 this.dialog.open(ShowComponent, {data: url});
             }

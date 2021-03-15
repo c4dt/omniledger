@@ -33,11 +33,19 @@ export class Config {
             return Buffer.from(field, "hex");
         };
 
+        const asString = (field: any): string => {
+            if (typeof field !== "string") {
+                throw Error("is not a string");
+            }
+            return field;
+        };
+
         return new Config(
             getField("ByzCoinID", asID),
             Roster.fromTOML(raw),
             tryToGetField("AdminDarcID", asID),
             tryToGetField("Ephemeral", asID),
+            tryToGetField("BaseURL", asString),
         );
     }
 
@@ -48,5 +56,10 @@ export class Config {
         // initial deploy; that's also why it's optional
         readonly adminDarcID?: ID,
         readonly ephemeral?: ID,
-    ) {}
+        readonly baseURL?: string,
+    ) {
+        if (baseURL === undefined) {
+            this.baseURL = window.location.protocol + "//" + window.location.host;
+        }
+    }
 }
