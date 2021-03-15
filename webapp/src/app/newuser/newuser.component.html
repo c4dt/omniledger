@@ -1,5 +1,6 @@
-<div fxLayout="column">
-    <div fxFlex="60%">
+<div fxLayout="row" fxLayoutAlign="center">
+    <div fxFlex="50%">
+        <!--    <div fxFlex="30%" style="font-size: 120%;">-->
         <h1>Welcome New User</h1>
         <p>
             This is the C4DT Omniledger / Calypso demo from the
@@ -10,12 +11,30 @@
                 >Showcase</a
             >
         </p>
+        <h2>Moving to login.c4dt.org</h2>
         <p>
-            If you do have a login but it doesn't work, it might be that it's
-            still stored in the old location at demo.c4dt.org. You can recover
-            it by going to the following link, and by adding a device. Clicking
-            on it, it will install your login under the new URL.
-            <a href="https://demo.c4dt.org/omniledger">Old Login</a>
+            On the 15th of March 2021, we moved the
+            <strong>demo.c4dt.org/omniledger</strong> URL to
+            <strong>login.c4dt.org</strong>. So if you have a login for the old
+            URL, it will not work directly under the new login, as your private
+            key is not available. The easiest way to recover is to do the
+            following:
+        </p>
+        <ol>
+            <li>
+                Go to
+                <a href="https://demo.c4dt.org/omniledger/admin/devices"
+                    >Old devices</a
+                >
+            </li>
+            <li>Click on <strong>Add Device</strong></li>
+            <li>Enter a new name and confirm</li>
+            <li>Click on the link for the new device</li>
+        </ol>
+        <p>
+            This should open the new device under the new URL
+            <strong>login.c4dt.org</strong>
+            and allow you to login again.
         </p>
     </div>
 </div>
