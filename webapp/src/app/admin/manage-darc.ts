@@ -25,7 +25,7 @@ interface INewRule {
 
 @Component({
     selector: "app-manage-darc",
-    styleUrls: ["manage-darc.css"],
+    styleUrls: ["manage-darc.scss"],
     templateUrl: "manage-darc.html",
 })
 export class ManageDarcComponent {

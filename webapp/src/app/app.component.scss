@@ -4,6 +4,12 @@ h1 {
   font-size: 250%;
 }
 
+@media (prefers-color-scheme: dark) {
+  h1 {
+    color: #acf;
+  }
+}
+
 .progress-log {
   position: relative;
   width: 50%;

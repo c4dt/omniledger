@@ -12,7 +12,7 @@ import { DBErrorDialog } from "./db-error-dialog/db-error-dialog.component";
 
 @Component({
     selector: "app-root",
-    styleUrls: ["./app.component.css"],
+    styleUrls: ["./app.component.scss"],
     templateUrl: "./app.component.html",
 })
 

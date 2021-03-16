@@ -1,0 +1,60 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "~@angular/material/theming";
+
+@include mat-core();
+$angular-primary: mat-palette($mat-teal, 500, 100, 900);
+$angular-accent: mat-palette($mat-pink, A200, A100, A400);
+$angular-warn: mat-palette($mat-red);
+$angular-default-theme: mat-light-theme(
+                $angular-primary,
+                $angular-accent,
+                $angular-warn,
+);
+@include angular-material-theme($angular-default-theme);
+
+$angular-dark-theme: mat-dark-theme(
+                $angular-primary,
+                $angular-accent,
+                $angular-warn,
+);
+
+.width100 {
+  width: 100%;
+}
+
+.center {
+  text-align: center;
+}
+
+html, body {
+  min-height: 95vh;
+  height: auto;
+  margin: 0;
+}
+
+.redBack {
+  background-color: red;
+}
+
+a:link, a:visited, a:hover, a:active {
+  color: #226622;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    @include angular-material-theme($angular-dark-theme);
+
+  a:link, a:visited, a:hover, a:active {
+    color: #ccffcc;
+  }
+
+  body {
+    background-color: #222222;
+    color: #ccccff;
+  }
+
+  .redBack {
+    background-color: darkred;
+  }
+}
