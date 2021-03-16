@@ -52,7 +52,7 @@ func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) (err e
 	}
 	url := c.Args().First()
 
-	driver := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"headless"}))
+	driver := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"headless", "disable-gpu"}))
 	if err := driver.Start(); err != nil {
 		return fmt.Errorf("driver start: %v", err)
 	}
