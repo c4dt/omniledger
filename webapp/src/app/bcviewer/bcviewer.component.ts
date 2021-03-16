@@ -18,7 +18,7 @@ import { UserService } from "src/app/user.service";
 
 @Component({
     selector: "app-bcviewer",
-    styleUrls: ["./bcviewer.component.css"],
+    styleUrls: ["./bcviewer.component.scss"],
     templateUrl: "./bcviewer.component.html",
 })
 export class BcviewerComponent implements OnInit {
@@ -80,7 +80,7 @@ export class BCBlock {
 
 @Component({
     selector: "app-show-block",
-    styleUrls: ["show-block.css", "bcviewer.component.css"],
+    styleUrls: ["show-block.scss", "bcviewer.component.scss"],
     templateUrl: "show-block.html",
 })
 export class ShowBlockComponent {

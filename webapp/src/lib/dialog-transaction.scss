@@ -25,7 +25,16 @@ $txSentTop: ($cothorityHeight - $txHeight) / 2;
 $txSentLeft: $cothorityLeft + ($cothorityWidth - $txWidth) / 2;
 
 $progressBoxHeight: 24px;
+
 $progressColor: #ccffcc;
+$errorColor: orangered;
+$transactionColor: #ffffffc0;
+$borderColor: black;
+
+$progressColorDark: #448844;
+$errorColorDark: 775511;
+$transactionColorDark: #222222c0;
+$borderColorDark: white;
 
 .window {
   position: relative;
@@ -35,7 +44,7 @@ $progressColor: #ccffcc;
 }
 
 .error {
-  background-color: orangered;
+  background-color: $errorColor;
   padding: 10px;
   margin: 10px;
 }
@@ -65,7 +74,7 @@ $progressColor: #ccffcc;
   top: $height - $progressBoxHeight;
   height: $progressBoxHeight;
   width: $width;
-  border: 1px solid black;
+  border: 1px solid $borderColor;
 }
 
 .progress-bar {
@@ -76,11 +85,11 @@ $progressColor: #ccffcc;
 
 .transaction {
   position: absolute;
-  border: 1px solid black;
+  border: 1px solid $borderColor;
   width: $txWidth - 2 * $txPadding;
   height: $txHeight - 2 * $txPadding;
   padding: $txPadding;
-  background-color: #fffffff0;
+  background-color: $transactionColor;
   z-index: 1;
 }
 
@@ -90,7 +99,7 @@ $progressColor: #ccffcc;
   height: $blockHeight - $blockPaddingTop;
   left: $blockLeft;
   padding-top: $blockPaddingTop;
-  border: 1px solid black;
+  border: 1px solid $borderColor;
   text-align: center;
 }
 
@@ -124,6 +133,28 @@ $progressColor: #ccffcc;
 .block4 {
   top: $blockTop + 2 * $blockRepeat;
   animation: block-out 1s both;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error {
+    background-color: $errorColorDark;
+  }
+  .progress-box {
+    border: 1px solid $borderColorDark;
+  }
+
+  .progress-bar {
+    background-color: $progressColorDark;
+  }
+
+  .transaction {
+    border: 1px solid $borderColorDark;
+    background-color: $transactionColorDark;
+  }
+
+  .block {
+    border: 1px solid $borderColorDark;
+  }
 }
 
 @keyframes tx-send {
