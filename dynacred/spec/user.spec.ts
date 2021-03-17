@@ -90,7 +90,7 @@ describe("User class should", async () => {
 
     it("support using a recovery account during initial signup", async () => {
         const bct = await BCTestEnv.start();
-        const nu = await bct.createUser("master");
+        const nu = await bct.createUser("admin");
         const tx = nu.startTransaction();
         const rec = tx.spawnDarcBasic("recover", [nu.kiSigner]);
         await tx.sendCoins(SpawnerTransactionBuilder.longWait);

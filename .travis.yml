@@ -7,7 +7,7 @@ addons:
 stages:
   - build
   - name: deploy
-    if: branch = master
+    if: branch = main
 
 jobs:
   include:
