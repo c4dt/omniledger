@@ -23,8 +23,15 @@ swap:
 cothority:
 	git clone https://github.com/${COT}/cothority --depth 1
 
-cothority-pull: cothority
-	cd cothority && git pull
+src: cothority
+	( cd cothority && git pull && \
+	  cd external/js/kyber && npm ci && \
+	  cd ../cothority && npm ci )
+	( cd dynacred && npm ci -D )
+	( cd webapp && npm ci -D )
+
+npm:
+	rm -rf cothority
 
 cothority_dedis: from := c4dt
 cothority_dedis: to := dedis
