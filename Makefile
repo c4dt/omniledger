@@ -24,11 +24,11 @@ cothority:
 	git clone https://github.com/${COT}/cothority --depth 1
 
 src: cothority
-	( cd cothority && git pull && \
+	cd cothority && git pull && \
 	  cd external/js/kyber && npm ci && \
-	  cd ../cothority && npm ci )
-	( cd dynacred && npm ci -D )
-	( cd webapp && npm ci -D )
+	  cd ../cothority && npm ci
+	cd dynacred && npm ci
+	cd webapp && npm ci
 
 npm:
 	rm -rf cothority
