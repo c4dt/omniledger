@@ -33,3 +33,7 @@ cothority_dedis: swap
 cothority_c4dt: from := dedis
 cothority_c4dt: to := c4dt
 cothority_c4dt: swap
+
+clean:
+	rm -rf cothority
+	rm -rf {webapp,dynacred}/node_modules
