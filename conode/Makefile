@@ -18,7 +18,7 @@ utils: cothority-pull
 		go build -o ../conode/build/phapp ./personhood/phapp
 
 cothority-pull:
-	make -C .. cothority-pull
+	make -C .. cothority
 
 newdb: utils
 	rm -f build/conodes/*db;

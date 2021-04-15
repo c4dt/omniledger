@@ -9,23 +9,10 @@ deps: ../dynacred/build/index.js
 dynacred-src:
 	make -C ../dynacred src
 
-.PHONY: src
-src: dynacred-src src/lib/cothority src/lib/kyber
+src/assets/config.toml:
+	cp src/assets/config.dedis.toml src/assets/config.toml
 
-src/lib:
-	mkdir -p src/lib
-
-src/lib/cothority: src/lib
-	ln -s $$(pwd)/../cothority/external/js/cothority/src src/lib/cothority
-
-src/lib/kyber: src/lib
-	ln -s $$(pwd)/../cothority/external/js/kyber/src src/lib/kyber
-
-npm:
-	make -C ../dynacred npm
-	rm -f src/lib/{cothority,kyber}
-
-serve:
-	npx ng serve --disable-host-check
+serve: src/assets/config.toml
+	npx ng serve --disable-host-check --watch
 
 build_serve: deps serve
