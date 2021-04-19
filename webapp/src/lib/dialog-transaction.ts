@@ -25,7 +25,7 @@ export class DialogTransactionComponent<T> implements OnInit {
     private blocks: Element[] = [];
     private transaction: Element;
     private ub: Subscription;
-    @ViewChild("main", {static: false}) private main?: ElementRef;
+    @ViewChild("main") private main?: ElementRef;
 
     constructor(
         private bcs: ByzCoinService,
