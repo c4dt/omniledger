@@ -118,7 +118,7 @@ export class ByzCoinSimul {
     const i = instr.invoke;
     const arg = (name: string) =>
       (i.args.find((a) => a.name === name) || { value: undefined }).value;
-    Log.lvl3("Invoke contract", i.contractID, instr.instanceID);
+    Log.lvl3("Invoke contract", i.contractID, i.command, instr.instanceID);
     switch (i.contractID) {
       case CredentialsInstance.contractID:
         const inv = i;
@@ -258,6 +258,9 @@ export class ByzCoinSimul {
         // Store new proofs in the db for later use
         tap((proof) =>
           this.db.set(idStr, Buffer.from(JSON.stringify(proof.inst)))),
+        // Debug output
+        tap((proof) =>
+            Log.lvl3(`Updating proof of ${proof.contractID} / ${proof.version} / ${proof.key.toString('hex')}`))
         // Link to the BehaviorSubject
       ).subscribe(bsNew);
 

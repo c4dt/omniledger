@@ -5,8 +5,8 @@ import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 /**
  * The Migrate class puts all possible migrations into one place. For every migration, two methods
  * should be added:
- * - versionElement - returns a number indicating the current version
- * - updateElement - updates to the latest available version
+ * - versionRecovery - returns a number indicating the current version
+ * - updateRecovery - updates to the latest available version
  */
 export class Migrate {
     static versionRecovery(sig: Darc, rec: byzcoin.DarcBS): number {

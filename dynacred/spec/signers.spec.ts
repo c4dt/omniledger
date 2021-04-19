@@ -1,6 +1,6 @@
 import { filter, first } from "rxjs/operators";
 
-import { IdentityDarc, SignerEd25519 } from "@dedis/cothority/darc";
+import {Darc, IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
 import { KeyPair } from "src/keypair";
@@ -144,11 +144,12 @@ describe("Signers should", () => {
         // These cannot be made in the same transaction, else the signer-darc is not updated.
         await user.executeTransactions((tx) =>
             user.credSignerBS.recoveries.link(tx, "old recovery", other1.credSignerBS.getValue().id), 10);
-        await user.credSignerBS.recoveries.pipe(filter((dbs) => dbs.length === 1), first()).toPromise();
+        await user.credSignerBS.pipe(filter((cs) => cs.version.equals(1)), first()).toPromise();
+
         await user.executeTransactions((tx) =>
             user.credSignerBS.recoveries.link(tx, "new recovery", other2.credSignerBS.getValue().id, true),
             10);
-        await user.credSignerBS.recoveries.pipe(filter((dbs) => dbs.length === 2), first()).toPromise();
+        await user.credSignerBS.pipe(filter((cs) => cs.version.equals(2)), first()).toPromise();
 
         // Verify we have the correct versions
         const oldRec = user.credSignerBS.recoveries.getValue()[0];
