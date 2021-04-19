@@ -5,6 +5,9 @@
   ],
   "jsRules": {},
   "rules": {
+    "deprecation": {
+      "severity": "warning"
+    },
     "variable-name": [
       true,
       "check-format",

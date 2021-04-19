@@ -82,5 +82,6 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 # Versions
 
+- 0.7.0 - 210428 - Moving to Angular 10
 - 0.6.0 - 190520 - Added devices: now you can distribute your identity over multiple
 devices
