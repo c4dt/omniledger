@@ -16,18 +16,9 @@ on this library is here:
 
 https://github.com/c4dt/cothority-ts
 
-## Running it using DEDIS' test network
-Instead of running the conodes yourself, you can instead use the test network of DEDIS using:
- 
-```bash
-make serve
-```
-You won't need to run this command after changes to the webapp, it should refresh automatically (usual caveats still apply for instance with css caching)
-
-
 ## Running it locally
 
-To run this locally, you need to run 4 conodes on your local machine, and then interact with
+To run the project locally, you need to run 4 conodes on your local machine, and then interact with
 those four conodes.
 
 First you need to create the docker image, which will download the necessary cothority branch
@@ -42,7 +33,7 @@ cd ../cothority
 make docker
 ```
 
-Every time you change the cothority-source, you will have to re-run ```make docker```.
+Every time you change the cothority-source, you will have to re-run ```bash make docker```.
 
 Now you can start the docker:
 
@@ -57,21 +48,7 @@ cd ../webapp
 npm ci
 ng serve --open
 ```
-
-## Contact
-
-You can contact us through linus.gasser@epfl.ch for questions.
-
-# Running it
-
-## Development server
-
-Use `make -C conode docker` to make the Docker image.
-
-Use `make -C conode docker_run` to run the Docker image, which will already have some config necessary to make the following
-work.
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Your default browser will proceed to connect to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
@@ -89,12 +66,14 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
 
+## Contact
+You can contact us through linus.gasser@epfl.ch for questions.
+
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/main/README.md).
 
 # Versions
 
-- 0.7.0 - 210428 - Moving to Angular 10
 - 0.6.0 - 190520 - Added devices: now you can distribute your identity over multiple
 devices
