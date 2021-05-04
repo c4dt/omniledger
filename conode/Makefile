@@ -36,6 +36,7 @@ newdb: utils
 docker: build/Dockerfile cothority-pull
 	@echo Building new conode
 	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
+	go get -u ./... 
 	go build -o build/conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
