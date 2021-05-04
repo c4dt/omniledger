@@ -16,6 +16,15 @@ on this library is here:
 
 https://github.com/c4dt/cothority-ts
 
+## Running it using DEDIS' test network
+Instead of running the conodes yourself, you can instead use the test network of DEDIS using:
+ 
+```bash
+make serve
+```
+You won't need to run this command after changes to the webapp, it should refresh automatically (usual caveats still apply for instance with css caching)
+
+
 ## Running it locally
 
 To run this locally, you need to run 4 conodes on your local machine, and then interact with
@@ -27,10 +36,13 @@ at this stage of development, you most probably will want to / have to work with
 code:
 
 ```bash
-make -C conode docker
+mv src/assets/config.toml src/assets/backup_config.toml
+mv src/assets/config.local.toml src/assets/config.toml 
+cd ../cothority
+make docker
 ```
 
-Every time you change the cothority-source, you will have to re-run this command.
+Every time you change the cothority-source, you will have to re-run ```make docker```.
 
 Now you can start the docker:
 
@@ -41,6 +53,7 @@ make -C conode docker_run
 And then run the code locally:
 
 ```bash
+cd ../webapp
 npm ci
 ng serve --open
 ```

@@ -5,6 +5,16 @@ Frontend for the dedis/omniledger blockchain with an accent on identity and cons
 - login to restricted spaces https://www.c4dt.org/members-only/ and https://matrix.c4dt.org
 - status of omniledger blockchain
 
+
+## Running it locally
+
+```bash
+cd webapp
+make
+```
+And connect to localhost:4200
+
+
 ## Development
 
 While developing the webapp and dynacred, it is sometimes useful to have access to the
