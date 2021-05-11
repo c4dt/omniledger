@@ -1,54 +1,55 @@
 CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
-WEBAPP_ASSET := ../webapp/src/assets/config.toml
+WEBAPP_ASSET := ../webapp/src/assets/config.local.toml
+BUILD_DIR := build/conodes
+BUILT := $(BUILD_DIR)/built
 
 all: docker
 
-.PHONY: cothority-pull conode newdb docker docker_run docker_wait docker_stop docker_start docker_clean clean
+.PHONY: newdb docker_run docker_wait docker_stop docker_start docker_clean clean
 
-.DEFAULT_GOAL := docker_run
+.DEFAULT_GOAL := $(BUILT)
 
-utils: cothority-pull
-	@echo "Compiling binaries"; \
-	go build -o build/conode; \
-	cd ../cothority && \
-		go build -o ../conode/build/bcadmin ./byzcoin/bcadmin && \
-		go build -o ../conode/build/csadmin ./calypso/csadmin && \
-		go build -o ../conode/build/phapp ./personhood/phapp
+$(BUILT): build/Dockerfile build/run_nodes.sh
+	make newdb
+	make docker
+	touch $(BUILT)
 
-cothority-pull:
-	make -C .. cothority
-
-newdb: utils
-	rm -f build/conodes/*db;
-	@echo "Starting nodes"; \
-	( cd build; COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -v 2 -t -n 4 -s -d conodes > /dev/null ) & \
-	make docker_wait; \
-	echo "Creating new ByzCoin and printing out important variables"; echo; \
-	rm -f *.cfg; \
-	( ./build/bcadmin -c . create build/conodes/public.toml --interval 500ms; \
-	  ./build/bcadmin latest --bc bc-*; \
-	  ./build/bcadmin key -print key-* ) | egrep "^(ByzCoin|Admin|Private|Creating Spawner)" | tee variables.txt; \
-	echo; echo "Shutting down conodes"; pkill -x conode; rm -f conodes/running
+newdb: docker
+	rm -f build/conodes/*{db,cfg,key}
+	@echo "Starting nodes"
+	docker run -di -v $$(pwd)/build/conodes:/root/conodes --name newdb -p 7770-7777:7770-7777 \
+		$(IMAGE_NAME):dev bash -c \
+		"COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -n 4 -v 2 -c -d /root/conodes"
+	make docker_wait
+	@echo "Creating new ByzCoin and printing out important variables"
+	docker exec newdb ./bcadmin -c conodes create conodes/public.toml --interval 500ms | tee variables.txt
+	docker exec newdb bash -c './bcadmin key -print $$(ls conodes/key*)' | tee -a variables.txt
+	docker exec newdb bash -c './bcadmin info --bc $$(ls conodes/bc*)' | grep AdminDarc | tee -a variables.txt
+	docker exec newdb chmod -R a+r /root/conodes
+	# This only works with the changes from May 2021 in cothority
+#	docker exec -ti newdb bash -c \
+#		'./bcadmin -c conodes/ user new --base-url http://localhost:4200/register/device \
+#		conodes/bc-* conodes/key-* admin' > newuser.txt
+	@echo "Shutting down conodes"; docker rm -f newdb
+	make $(WEBAPP_ASSET)
 
 # Use this target to build from local source
-docker: build/Dockerfile cothority-pull
+docker:
 	@echo Building new conode
-	@export GO111MODULE=on GOOS=linux GOARCH=amd64; \
-	go build -o build/conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-$(WEBAPP_ASSET): variables.txt build/conodes/public.toml
-	 echo "ByzCoinID = \"$$( grep ByzCoinID $< | sed -e 's/.* //' )\"" > $@
+$(WEBAPP_ASSET): build/conodes/public.toml
+	 echo "ByzCoinID = \"$$( ls build/conodes/bc-* | sed -e 's/.*bc-\(.*\).cfg/\1/' )\"" > $@
+	 echo "AdminDarcID = \"$$( grep AdminDarc variables.txt | sed -e 's/.* //' )\"" >> $@
+	 echo "Ephemeral = \"$$( grep Private variables.txt | sed -e 's/.* //' )\"" >> $@
 	 echo >> $@
 	 cat $(lastword $^) >> $@
 
-docker_run: docker $(WEBAPP_ASSET) docker_start
-
-docker_run_travis: docker
-	docker run --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+docker_run_travis: $(BUILT)
+	docker run -d --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_wait:
 	@for port in $$( seq 7771 2 7777 ); do \
@@ -57,14 +58,18 @@ docker_wait:
 	done
 
 docker_stop:
-	docker stop $(IMAGE_NAME)
+	docker rm -f $(CONTAINER) || echo "No running docker"
 
-docker_start:
-	docker run --rm -ti -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+docker_start: docker_stop $(BUILT)
+	docker run -ti --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
+
+docker_start_bg: docker_stop $(BUILT)
+	docker run -d --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_clean:
 	docker kill $(CONTAINER) || echo nothing to stop
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
+	rm $(BUILT)
 
 clean:
-	rm -rf build/conode
+	rm -rf build/conodes/*{db,cfg} $(BUILT)
