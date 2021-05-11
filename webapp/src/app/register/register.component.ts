@@ -49,9 +49,9 @@ export class RegisterComponent implements OnInit {
                 // These values are only valid in the local byzcoin-docker, so it's not a problem to have a
                 // private key here.
                 alias: new FormControl("admin"),
-                darcID: new FormControl("843a3a610f4ccb37eaf1188f743c969cbb5698054cdd608b85f5389f0fece783",
+                darcID: new FormControl(this.bcs.config.adminDarcID.toString('hex'),
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
-                ephemeralKey: new FormControl("dd50f8b8125e7344e7e7f19faeea0821c6a57a595528c4971b7f63a87d30fa0c",
+                ephemeralKey: new FormControl(this.bcs.config.ephemeral.toString('hex'),
                     Validators.pattern(/[0-9a-fA-F]{64}/)),
             });
         }

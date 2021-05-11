@@ -1,4 +1,6 @@
-ByzCoinID = "e9d41ddcaa8433de0d2a85f872a809ff2a53dac19ff82f88cf96f595cd165cb3"
+ByzCoinID = "0178ba9de75738c781719770e65da6a1c61b6686f3023148a1bbe7f62a607ffd"
+AdminDarcID = "c03442ce4baf9bf269e0175378b96f43a9e8748f8bdadceeb4c30def17697a4b"
+Ephemeral = "8431be2e5df68b3bbdcdec5f6e9cd5d10a2987bc5fc819dbcca80c81da400502"
 
 [[servers]]
   Address = "tls://localhost:7776"

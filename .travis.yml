@@ -18,11 +18,10 @@ jobs:
       go: "1.12.x"
       script:
         - cd conode
-        - export GO111MODULE=on
-        - make docker_run_travis &
+        - make
+        - make docker_run_travis
         - make docker_wait
-        - make utils
-        - build/bcadmin latest --bc bc*cfg
+        - docker exec conode bash -c './bcadmin latest --bc conodes/bc*cfg'
 
     - name: dynacred
       language: node_js

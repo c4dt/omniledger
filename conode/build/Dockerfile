@@ -1,7 +1,7 @@
-FROM debian:stretch-slim
+FROM c4dt/byzcoin:latest
 WORKDIR /root/
 COPY conodes ./conodes
-COPY conode run_nodes.sh ./
+COPY run_nodes.sh ./
 
 EXPOSE 7770 7771 7772 7773 7774 7775 7776 7777
 
