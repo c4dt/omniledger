@@ -2,53 +2,48 @@ CONTAINER = conode
 IMAGE_NAME = c4dt/$(CONTAINER)
 TAG = dev-$(shell date +%y%m%d)
 WEBAPP_ASSET := ../webapp/src/assets/config.local.toml
-BUILD_DIR := build/conodes
-BUILT := $(BUILD_DIR)/built
+VARIABLES := variables.txt
 
-all: docker
+.PHONY: build docker docker_start docker_start_detached docker_wait docker_stop docker_clean clean
 
-.PHONY: newdb docker_run docker_wait docker_stop docker_start docker_clean clean
-
-.DEFAULT_GOAL := $(BUILT)
-
-$(BUILT): build/Dockerfile build/run_nodes.sh
-	make newdb
-	make docker
-	touch $(BUILT)
-
-newdb: docker
-	rm -f build/conodes/*{db,cfg,key}
+$(VARIABLES): build/Dockerfile build/run_nodes.sh
+	$(MAKE) docker
 	@echo "Starting nodes"
 	docker run -di -v $$(pwd)/build/conodes:/root/conodes --name newdb -p 7770-7777:7770-7777 \
 		$(IMAGE_NAME):dev bash -c \
 		"COTHORITY_ALLOW_INSECURE_ADMIN=true ./run_nodes.sh -n 4 -v 2 -c -d /root/conodes"
-	make docker_wait
+	$(MAKE) docker_wait
+
 	@echo "Creating new ByzCoin and printing out important variables"
-	docker exec newdb ./bcadmin -c conodes create conodes/public.toml --interval 500ms | tee variables.txt
-	docker exec newdb bash -c './bcadmin key -print $$(ls conodes/key*)' | tee -a variables.txt
-	docker exec newdb bash -c './bcadmin info --bc $$(ls conodes/bc*)' | grep AdminDarc | tee -a variables.txt
+	docker exec newdb ./bcadmin -c conodes create conodes/public.toml --interval 500ms | tee $@
+	docker exec newdb bash -c './bcadmin key -print $$(ls conodes/key*)' | tee -a $@
+	docker exec newdb bash -c './bcadmin info --bc $$(ls conodes/bc*)' | grep AdminDarc | tee -a $@
 	docker exec newdb chmod -R a+r /root/conodes
-	# This only works with the changes from May 2021 in cothority
+
+# This only works with the changes from May 2021 in cothority
 #	docker exec -ti newdb bash -c \
 #		'./bcadmin -c conodes/ user new --base-url http://localhost:4200/register/device \
 #		conodes/bc-* conodes/key-* admin' > newuser.txt
-	@echo "Shutting down conodes"; docker rm -f newdb
-	make $(WEBAPP_ASSET)
 
-# Use this target to build from local source
+	@echo "Shutting down conodes"; docker rm -f newdb
+	$(MAKE) docker $(WEBAPP_ASSET)
+
+$(WEBAPP_ASSET): build/conodes/public.toml
+	 echo "ByzCoinID = \"$$( ls build/conodes/bc-* | sed -e 's/.*bc-\(.*\).cfg/\1/' )\"" > $@
+	 echo "AdminDarcID = \"$$( grep AdminDarc $(VARIABLES) | sed -e 's/.* //' )\"" >> $@
+	 echo "Ephemeral = \"$$( grep Private $(VARIABLES) | sed -e 's/.* //' )\"" >> $@
+	 echo >> $@
+	 cat $(lastword $^) >> $@
+
 docker:
 	@echo Building new conode
 	docker build -t $(IMAGE_NAME):$(TAG) -f build/Dockerfile build
 	docker tag $(IMAGE_NAME):$(TAG) $(IMAGE_NAME):dev
 
-$(WEBAPP_ASSET): build/conodes/public.toml
-	 echo "ByzCoinID = \"$$( ls build/conodes/bc-* | sed -e 's/.*bc-\(.*\).cfg/\1/' )\"" > $@
-	 echo "AdminDarcID = \"$$( grep AdminDarc variables.txt | sed -e 's/.* //' )\"" >> $@
-	 echo "Ephemeral = \"$$( grep Private variables.txt | sed -e 's/.* //' )\"" >> $@
-	 echo >> $@
-	 cat $(lastword $^) >> $@
+docker_start: docker_stop $(VARIABLES)
+	docker run -ti --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
-docker_run_travis: $(BUILT)
+docker_start_detached: docker_stop $(VARIABLES)
 	docker run -d --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
 
 docker_wait:
@@ -60,16 +55,8 @@ docker_wait:
 docker_stop:
 	docker rm -f $(CONTAINER) || echo "No running docker"
 
-docker_start: docker_stop $(BUILT)
-	docker run -ti --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
-
-docker_start_bg: docker_stop $(BUILT)
-	docker run -d --rm -p 7770-7777:7770-7777 --name $(CONTAINER) $(IMAGE_NAME):dev
-
-docker_clean:
-	docker kill $(CONTAINER) || echo nothing to stop
+docker_clean: docker_stop
 	docker image ls $(IMAGE_NAME) -q | xargs docker rmi -f || echo done
-	rm $(BUILT)
 
-clean:
-	rm -rf build/conodes/*{db,cfg} $(BUILT)
+clean: docker_clean
+	rm -rf build/conodes/*{db,cfg} $(VARIABLES) $(WEBAPP_ASSET)
