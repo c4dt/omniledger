@@ -21,7 +21,7 @@ serve:
 	npx ng serve --disable-host-check --watch
 
 docker_start:
-	make -C ../conode docker_start_bg
+	make -C ../conode docker_start_detached
 
 serve_local: CONFIG=local
 serve_local: docker_start serve

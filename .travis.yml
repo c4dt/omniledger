@@ -19,7 +19,7 @@ jobs:
       script:
         - cd conode
         - make
-        - make docker_run_travis
+        - make docker_start_detached
         - make docker_wait
         - docker exec conode bash -c './bcadmin latest --bc conodes/bc*cfg'
 
