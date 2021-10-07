@@ -1,7 +1,8 @@
 import { Component } from "@angular/core";
 
 import { showDialogInfo } from "../../../lib/Ui";
-import { ContactsComponent } from "../../admin/contacts/contacts.component";
+import { ContactInfoComponent, ContactsComponent } from "../../admin/contacts/contacts.component";
+import { CredentialStructBS } from "dynacred";
 
 @Component({
     selector: "app-partner",
@@ -15,5 +16,9 @@ export class PartnerComponent extends ContactsComponent {
                 "Understood");
         }
         await super.contactNew("c4dt_user", groups.map((g) => g.getValue().description.toString()));
+    }
+
+    async contactShow(contact: CredentialStructBS) {
+        this.dialog.open(ContactInfoComponent, {data: {contact}});
     }
 }
