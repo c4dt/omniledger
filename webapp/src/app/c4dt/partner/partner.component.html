@@ -1,7 +1,10 @@
 <h2>Contacts</h2>
 <ul>
     <li *ngFor="let contact of user.addressBook.contacts | async">
-        {{ contact.credPublic.alias | async | titlecase }} -
+        <button mat-button (click)="contactShow(contact)">
+            {{ contact.credPublic.alias | async | titlecase }}
+        </button>
+        -
         <button mat-button (click)="contactUnlink(contact)">Delete</button>
     </li>
 </ul>

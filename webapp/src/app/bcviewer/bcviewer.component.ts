@@ -12,7 +12,7 @@ import TxResult from "@dedis/cothority/byzcoin/proto/tx-result";
 import CredentialsInstance, { CredentialStruct } from "@dedis/cothority/personhood/credentials-instance";
 import { SkipBlock } from "@dedis/cothority/skipchain";
 import SkipchainRPC from "@dedis/cothority/skipchain/skipchain-rpc";
-import { AddressBook } from "dynacred";
+import { AddressBook, CredentialStructBS } from "dynacred";
 import { ByzCoinService } from "src/app/byz-coin.service";
 import { UserService } from "src/app/user.service";
 
@@ -99,7 +99,7 @@ export class ShowBlockComponent {
     updateVars() {
         this.roster = this.data.sb.roster.list.slice(1).map((l) => l.description);
         this.ctxs = this.data.body.txResults.map((txr, index) =>
-            new TxStr(this.user.addressBook, txr, index));
+            new TxStr(this.user.credStructBS, this.user.addressBook, txr, index));
     }
 
     async goBlock(id: Buffer) {
@@ -114,9 +114,9 @@ class TxStr {
     instructions: InstStr[];
     accepted: boolean;
 
-    constructor(address: AddressBook, tx: TxResult, public index: number) {
+    constructor(userCred: CredentialStructBS, address: AddressBook, tx: TxResult, public index: number) {
         this.instructions = tx.clientTransaction.instructions.map((inst, ind) =>
-            new InstStr(address, inst, ind));
+            new InstStr(userCred, address, inst, ind));
         this.accepted = tx.accepted;
     }
 }
@@ -128,7 +128,7 @@ class InstStr {
     command: string;
     description: string | undefined;
 
-    constructor(address: AddressBook, public inst: Instruction, public index: number) {
+    constructor(private userCred: CredentialStructBS, private address: AddressBook, public inst: Instruction, public index: number) {
         switch (inst.type) {
             case 0:
                 this.type = "spawn";
@@ -141,22 +141,25 @@ class InstStr {
                 this.args = inst.invoke.args.map((arg) => arg.name);
                 this.contractID = inst.invoke.contractID;
                 this.command = inst.invoke.command;
-                this.description = this.getDescription(address, inst.instanceID);
+                this.description = this.getDescription(inst.instanceID);
                 break;
             case 2:
                 this.type = "delete";
                 this.contractID = inst.delete.contractID;
-                this.description = this.getDescription(address, inst.instanceID);
+                this.description = this.getDescription(inst.instanceID);
                 break;
         }
     }
 
-    getDescription(address: AddressBook, id: InstanceID): string {
+    getDescription(id: InstanceID): string {
         switch (this.contractID) {
             case "config":
                 return "Genesis Configuration";
             case CredentialsInstance.contractID:
-                const cred = address.contacts.getValue().find((c) => c.id.equals(id));
+                if (this.userCred.id.equals(id)) {
+                    return this.userCred.credPublic.alias.getValue();
+                }
+                const cred = this.address.contacts.getValue().find((c) => c.id.equals(id));
                 if (cred) {
                     return `Credential '${cred.credPublic.alias.getValue()}'`;
                 }
