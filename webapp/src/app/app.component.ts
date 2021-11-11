@@ -46,10 +46,10 @@ export class AppComponent implements OnInit {
             });
         } catch (e) {
             if (e instanceof DBError) {
-              await DBErrorDialog.open(this.dialog, e);
+                await DBErrorDialog.open(this.dialog, e);
             } else {
-              await showDialogInfo(this.dialog, "Error",
-                  `Something went wrong while loading the config: ${e.toString()}`, "Cancel");
+                await showDialogInfo(this.dialog, "Error",
+                    `Something went wrong while loading the config: ${e.toString()}`, "Cancel");
             }
             this.loading = false;
             return this.newUser();
