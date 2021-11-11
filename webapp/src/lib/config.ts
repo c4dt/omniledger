@@ -1,6 +1,7 @@
 import { Roster } from "@dedis/cothority/network/proto";
 
 import toml from "toml";
+import Log from "@dedis/cothority/log";
 
 type ID = Buffer;
 
@@ -26,7 +27,17 @@ export class Config {
             if (typeof field !== "string") {
                 throw Error("is not a string");
             }
-            if (!(/[a-f0-9]{64}/).test(field)) {
+            if (!(/^[a-f0-9]{64}$/).test(field)) {
+                throw Error("is not of correct format");
+            }
+            return Buffer.from(field, "hex");
+        };
+
+        const asUUID = (field: any): ID => {
+            if (typeof field !== "string") {
+                throw Error("is not a string");
+            }
+            if (!(/^[a-f0-9]{32}$/).test(field)) {
                 throw Error("is not of correct format");
             }
 
@@ -43,6 +54,7 @@ export class Config {
         return new Config(
             getField("ByzCoinID", asID),
             Roster.fromTOML(raw),
+            tryToGetField("SignupNode", asString),
             tryToGetField("AdminDarcID", asID),
             tryToGetField("Ephemeral", asID),
             tryToGetField("BaseURL", asString),
@@ -52,6 +64,7 @@ export class Config {
     private constructor(
         readonly byzCoinID: ID,
         readonly roster: Roster,
+        readonly signupNode?: string,
         // TODO used only when registering, better provide them via URL during
         // initial deploy; that's also why it's optional
         readonly adminDarcID?: ID,

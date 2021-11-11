@@ -78,7 +78,7 @@ export class LoginComponent implements OnInit {
     async login() {
         const config = await this.config;
 
-        const challenge = new Buffer(config.challengeSize);
+        const challenge = Buffer.alloc(config.challengeSize);
         await promisify(crypto.randomFill)(challenge);
 
         const success = await showTransactions(

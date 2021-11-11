@@ -11,7 +11,84 @@
                 >Showcase</a
             >
         </p>
-        <h2>Moving to login.c4dt.org</h2>
+        <div *ngIf="bcs.config.signupNode !== undefined">
+            <h2 style="margin-top: 1em;">Signing up</h2>
+            <p>
+                Now you can sign up with your email to use Omniledger. Once you
+                enter your email address, a new user with that address is
+                created. Then an email with further instructions is sent to your
+                address. Please be sure to understand how Omniledger uses a
+                private key instead of a password. You can get more information
+                in this article:
+                <a href="https://www.c4dt.org/article/partner-login/"
+                    >C4DT Login</a
+                >.
+            </p>
+            <form
+                [formGroup]="signupForm"
+                class="formwidth"
+                (ngSubmit)="signup()"
+            >
+                <mat-form-field class="width100">
+                    <input
+                        matInput
+                        type="text"
+                        placeholder="Alias"
+                        formControlName="alias"
+                    />
+                </mat-form-field>
+                <mat-form-field class="width100">
+                    <input
+                        matInput
+                        type="text"
+                        placeholder="Your Email"
+                        formControlName="email"
+                    />
+                </mat-form-field>
+                <br />
+                <button
+                    mat-raised-button
+                    color="primary"
+                    class="submit-btn"
+                    type="submit"
+                >
+                    Signup
+                </button>
+            </form>
+
+            <h2 style="margin-top: 1em;">Recover account</h2>
+            <p>
+                If you lost your account because you deleted the history of your
+                browser, or because you changed device, you can request a
+                recovery here. Just enter your email address that is stored in
+                the account, and you will receive a recovery-link.
+            </p>
+            <form
+                [formGroup]="recoveryForm"
+                class="formwidth"
+                (ngSubmit)="recover()"
+            >
+                <mat-form-field class="width100">
+                    <input
+                        matInput
+                        type="text"
+                        placeholder="Your Email"
+                        formControlName="email"
+                    />
+                </mat-form-field>
+                <br />
+                <button
+                    mat-raised-button
+                    color="primary"
+                    class="submit-btn"
+                    type="submit"
+                >
+                    Recover
+                </button>
+            </form>
+        </div>
+
+        <h2 style="margin-top: 2em;">Moving to login.c4dt.org</h2>
         <p>
             On the 15th of March 2021, we moved the
             <strong>demo.c4dt.org/omniledger</strong> URL to

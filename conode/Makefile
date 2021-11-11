@@ -7,7 +7,7 @@ VARIABLES := variables.txt
 .PHONY: build docker docker_start docker_start_detached docker_wait docker_stop docker_clean clean
 
 $(VARIABLES): build/Dockerfile build/run_nodes.sh
-	$(MAKE) docker
+	$(MAKE) clean docker
 	@echo "Starting nodes"
 	docker run -di -v $$(pwd)/build/conodes:/root/conodes --name newdb -p 7770-7777:7770-7777 \
 		$(IMAGE_NAME):dev bash -c \
@@ -60,3 +60,4 @@ docker_clean: docker_stop
 
 clean: docker_clean
 	rm -rf build/conodes/*{db,cfg} $(VARIABLES) $(WEBAPP_ASSET)
+	rm -f $(VARIABLES)
