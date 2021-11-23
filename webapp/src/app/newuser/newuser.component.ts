@@ -13,18 +13,11 @@ import { ServerIdentity } from "@dedis/cothority/network";
     templateUrl: "./newuser.component.html",
 })
 export class NewuserComponent implements OnInit {
-    signupForm: FormGroup;
-    recoveryForm: FormGroup;
+    readonly signupForm: FormGroup;
+    readonly recoveryForm: FormGroup;
 
-    constructor(private snack: MatSnackBar,
-                private dialog: MatDialog,
+    constructor(private dialog: MatDialog,
                 public bcs: ByzCoinService) {
-    }
-
-    async ngOnInit() {
-        for (const node of this.bcs.config.roster.list) {
-            Log.info("node", node.description, "id", node.id);
-        }
         this.signupForm = new FormGroup({
             alias: new FormControl(),
             email: new FormControl("", Validators.email),
@@ -34,12 +27,16 @@ export class NewuserComponent implements OnInit {
         });
     }
 
+    async ngOnInit() {
+        // Nothing to do here
+    }
+
     getPHRPC(): PersonhoodRPC {
-        if (this.bcs.config.signupNode === "") {
+        if (this.bcs.config.signupNode === undefined) {
             throw new Error("didn't find signup node");
         }
         const node = new ServerIdentity({
-            url: this.bcs.config.signupNode,
+            url: this.bcs.config.signupNode.toString(),
             id: Buffer.alloc(32)
         });
         return new PersonhoodRPC(node);
