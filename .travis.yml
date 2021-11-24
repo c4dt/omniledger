@@ -71,9 +71,8 @@ jobs:
       deploy:
         provider: script
         script: ssh omniledger@c4dtsrv1.epfl.ch bin/update.sh
-      on:
-        branch:
-          main
+        on:
+          branch: main
 
     - name: NPM
       language: node_js
