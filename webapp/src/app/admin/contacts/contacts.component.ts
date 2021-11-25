@@ -210,11 +210,11 @@ export class ContactsComponent implements OnInit {
                         this.user.credStructBS.credPublic.alias.getValue(),
                         now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
                     const ephemeralIdentity = SignerEd25519.random();
-                    let newDarc: Darc;
-                    await this.user.executeTransactions((tx) => {
-                        newDarc = tx.spawnDarcBasic(`recover:${name}`, [ephemeralIdentity]);
+                    const newDarc = await this.user.executeTransactions((tx) => {
+                        const d = tx.spawnDarcBasic(`recover:${name}`, [ephemeralIdentity]);
                         const idEph = newDarc.getBaseID();
                         cSign.devices.signerDarcBS.addSignEvolve(tx, idEph, idEph);
+                        return d;
                     }, 10);
 
                     progress(75, "Attaching new device to user");

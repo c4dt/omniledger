@@ -133,13 +133,14 @@ export class User {
         return new SpawnerTransactionBuilder(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
     }
 
-    async executeTransactions(addTxs: (tx: SpawnerTransactionBuilder) => Promise<unknown> | unknown,
-                              wait = 0): Promise<void> {
+    async executeTransactions<T>(addTxs: (tx: SpawnerTransactionBuilder) => Promise<T> | T,
+                              wait = 0): Promise<T> {
         const tx = new SpawnerTransactionBuilder(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
-        await addTxs(tx);
+        const ret = await addTxs(tx);
         if (tx.hasInstructions()) {
             await tx.sendCoins(wait);
         }
+        return ret;
     }
 }
 
