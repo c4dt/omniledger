@@ -8,8 +8,8 @@ import { Attribute, Credential, CredentialsInstance, CredentialStruct } from "@d
 import { Point, PointFactory } from "@dedis/kyber";
 
 import { ConvertBS } from "./observableUtils";
-import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
 import { bufferToObject } from "./utils";
+import { TransactionBuilder } from "./byzcoin";
 
 /**
  * The CredentialStructBS is the main part of a user-account in ByzCoin.
@@ -61,7 +61,7 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
      * @param tx
      * @param cred
      */
-    updateCredential(tx: SpawnerTransactionBuilder, ...cred: IUpdateCredential[]) {
+    updateCredential(tx: TransactionBuilder, ...cred: IUpdateCredential[]) {
         const orig = this.getValue();
         for (const c of cred) {
             if (c.value !== undefined) {
@@ -74,13 +74,13 @@ export class CredentialStructBS extends BehaviorSubject<CredentialStruct> {
         this.setCredentialStruct(tx, orig);
     }
 
-    setCredential(tx: SpawnerTransactionBuilder, cred: Credential) {
+    setCredential(tx: TransactionBuilder, cred: Credential) {
         const credStruct = this.getValue();
         credStruct.setCredential(cred.name, cred);
         this.setCredentialStruct(tx, credStruct);
     }
 
-    setCredentialStruct(tx: SpawnerTransactionBuilder, credStruct: CredentialStruct) {
+    setCredentialStruct(tx: TransactionBuilder, credStruct: CredentialStruct) {
         const versionBuf = Buffer.alloc(4);
         versionBuf.writeInt32LE(this.credPublic.version.getValue() + 1, 0);
         credStruct.setAttribute(ECredentials.pub, EAttributesPublic.version, versionBuf);
@@ -161,15 +161,15 @@ export class CredentialBS extends BehaviorSubject<Credential> {
         return new AttributeInstanceSetBS(this, bs, name);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, attr: string, value: string | Buffer) {
+    setValue(tx: TransactionBuilder, attr: string, value: string | Buffer) {
         this.csbs.updateCredential(tx, {cred: this.cred, attr, value});
     }
 
-    rmValue(tx: SpawnerTransactionBuilder, attr: string) {
+    rmValue(tx: TransactionBuilder, attr: string) {
         this.setValue(tx, attr, undefined);
     }
 
-    set(tx: SpawnerTransactionBuilder, cred: Credential) {
+    set(tx: TransactionBuilder, cred: Credential) {
         this.csbs.setCredential(tx, cred);
     }
 
@@ -198,7 +198,7 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
         bsim.subscribe(this);
     }
 
-    setInstanceMap(tx: SpawnerTransactionBuilder, val: InstanceMap) {
+    setInstanceMap(tx: TransactionBuilder, val: InstanceMap) {
         const cred = this.cbs.getValue();
         cred.attributes.splice(0);
         Array.from(val.map.entries()).forEach(([idStr, name]) =>
@@ -206,13 +206,13 @@ export class CredentialInstanceMapBS extends BehaviorSubject<InstanceMap> {
         this.cbs.set(tx, cred);
     }
 
-    setEntry(tx: SpawnerTransactionBuilder, name: string, id: Buffer) {
+    setEntry(tx: TransactionBuilder, name: string, id: Buffer) {
         const val = this.getValue();
         val.map.set(id.toString("hex"), name);
         return this.setInstanceMap(tx, val);
     }
 
-    rmEntry(tx: SpawnerTransactionBuilder, id: Buffer) {
+    rmEntry(tx: TransactionBuilder, id: Buffer) {
         const val = this.getValue();
         val.map.delete(id.toString("hex"));
         this.setInstanceMap(tx, val);
@@ -234,7 +234,7 @@ export class AttributeBufferBS extends BehaviorSubject<Buffer> {
         bsb.subscribe(this);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, val: Buffer) {
+    setValue(tx: TransactionBuilder, val: Buffer) {
         return this.cbs.setValue(tx, this.name, val);
     }
 }
@@ -246,7 +246,7 @@ export class AttributeStringBS extends BehaviorSubject<string> {
         bss.subscribe(this);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, val: string) {
+    setValue(tx: TransactionBuilder, val: string) {
         return this.cbs.setValue(tx, this.name, val);
     }
 }
@@ -258,7 +258,7 @@ export class AttributeLongBS extends BehaviorSubject<Long> {
         bss.subscribe(this);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, val: Long) {
+    setValue(tx: TransactionBuilder, val: Long) {
         return this.cbs.setValue(tx, this.name, Buffer.from(val.toBytesLE()));
     }
 }
@@ -270,7 +270,7 @@ export class AttributePointBS extends BehaviorSubject<Point | undefined> {
         bss.subscribe(this);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, val: Point) {
+    setValue(tx: TransactionBuilder, val: Point) {
         return this.cbs.setValue(tx, this.name, val.toProto());
     }
 }
@@ -282,7 +282,7 @@ export class AttributeBoolBS extends BehaviorSubject<boolean> {
         bss.subscribe(this);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, val: boolean) {
+    setValue(tx: TransactionBuilder, val: boolean) {
         return this.cbs.setValue(tx, this.name, Buffer.from(val ? "true" : "false"));
     }
 }
@@ -294,7 +294,7 @@ export class AttributeNumberBS extends BehaviorSubject<number> {
         bss.subscribe(this);
     }
 
-    setValue(tx: SpawnerTransactionBuilder, val: number) {
+    setValue(tx: TransactionBuilder, val: number) {
         const buf = Buffer.alloc(4);
         buf.writeInt32LE(val, 0);
         return this.cbs.setValue(tx, this.name, buf);
@@ -308,7 +308,7 @@ export class AttributeInstanceSetBS extends BehaviorSubject<InstanceSet> {
         bsis.subscribe(this);
     }
 
-    setInstanceSet(tx: SpawnerTransactionBuilder, val: InstanceSet) {
+    setInstanceSet(tx: TransactionBuilder, val: InstanceSet) {
         this.cbs.setValue(tx, this.name, val.toBuffer());
     }
 }
