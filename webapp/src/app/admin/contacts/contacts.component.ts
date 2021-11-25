@@ -7,7 +7,7 @@ import Long from "long";
 import { sprintf } from "sprintf-js";
 
 import DarcInstance from "@dedis/cothority/byzcoin/contracts/darc-instance";
-import { IdentityWrapper, SignerEd25519 } from "@dedis/cothority/darc";
+import { Darc, IdentityWrapper, SignerEd25519 } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
 import {
@@ -204,15 +204,23 @@ export class ContactsComponent implements OnInit {
                         throw new Error("cannot recover this user");
                     }
 
-                    progress(70, "Creating new device for recovery");
+                    progress(50, "Creating new device for recovery");
                     const now = new Date();
                     const name = sprintf("recovered by %s at %d/%02d/%02d %02d:%02d",
                         this.user.credStructBS.credPublic.alias.getValue(),
                         now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
                     const ephemeralIdentity = SignerEd25519.random();
-                    await this.user.executeTransactions((tx) => {
-                        cSign.devices.create(tx, name, [ephemeralIdentity]);
+                    const newDarc = await this.user.executeTransactions((tx) => {
+                        const d = tx.spawnDarcBasic(`recover:${name}`, [ephemeralIdentity]);
+                        const idEph = newDarc.getBaseID();
+                        cSign.devices.signerDarcBS.addSignEvolve(tx, idEph, idEph);
+                        return d;
                     }, 10);
+
+                    progress(75, "Attaching new device to user");
+                    const txDevice = new byzcoin.TransactionBuilder(this.user.bc);
+                    cSign.devices.cim.setEntry(txDevice, name, newDarc.getBaseID());
+                    await txDevice.send([[ephemeralIdentity]], 10);
                     return sprintf("%s?credentialIID=%s&ephemeral=%s", User.urlNewDevice,
                         c.id.toString("hex"),
                         ephemeralIdentity.secret.marshalBinary().toString("hex"));

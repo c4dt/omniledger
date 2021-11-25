@@ -110,7 +110,6 @@ export class UserSkeleton {
 
     addRecovery(name: string, id: InstanceID) {
         const idDarc = new IdentityDarc({id}).toString();
-        this.darcSign.rules.getRule(Darc.ruleSign).append(idDarc, Rule.OR);
         this.darcSign.rules.getRule(DarcInstance.ruleEvolve).append(idDarc, Rule.OR);
         this.cred.setAttribute(ECredentials.recoveries, name, id);
         this.updateDarcs();

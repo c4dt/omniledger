@@ -11,10 +11,10 @@
 import { InstanceID } from "@dedis/cothority/byzcoin";
 import { Darc, IIdentity } from "@dedis/cothority/darc";
 
-import Log from "@dedis/cothority/log";
-import { DarcBS, DarcsBS } from "./byzcoin/darcsBS";
+import { DarcBS, DarcsBS } from "./byzcoin";
 import { CredentialInstanceMapBS } from "./credentialStructBS";
 import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
+import { TransactionBuilder } from "./byzcoin";
 
 export class CredentialSignerBS extends DarcBS {
     constructor(darcBS: DarcBS,
@@ -25,7 +25,7 @@ export class CredentialSignerBS extends DarcBS {
 }
 
 export class CSTypesBS extends DarcsBS {
-    constructor(private signerDarcBS: DarcBS,
+    constructor(readonly signerDarcBS: DarcBS,
                 readonly cim: CredentialInstanceMapBS,
                 readonly prefix: string,
                 dbs: DarcsBS) {
@@ -54,7 +54,7 @@ export class CSTypesBS extends DarcsBS {
      * @param id of the new device/recovery
      * @param recovery if true will not create a "_sign" rule to avoid recovery-darcs with signing rights.
      */
-    link(tx: SpawnerTransactionBuilder, name: string, id: InstanceID, recovery = false) {
+    link(tx: TransactionBuilder, name: string, id: InstanceID, recovery = false) {
         this.signerDarcBS.addSignEvolve(tx, recovery ? undefined : id, id);
         this.cim.setEntry(tx, name, id);
     }
