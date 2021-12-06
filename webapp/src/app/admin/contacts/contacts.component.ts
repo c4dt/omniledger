@@ -212,7 +212,7 @@ export class ContactsComponent implements OnInit {
                     const ephemeralIdentity = SignerEd25519.random();
                     const newDarc = await this.user.executeTransactions((tx) => {
                         const d = tx.spawnDarcBasic(`recover:${name}`, [ephemeralIdentity]);
-                        const idEph = newDarc.getBaseID();
+                        const idEph = d.getBaseID();
                         cSign.devices.signerDarcBS.addSignEvolve(tx, idEph, idEph);
                         return d;
                     }, 10);
