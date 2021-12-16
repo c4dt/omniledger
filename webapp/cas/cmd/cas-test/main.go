@@ -167,9 +167,6 @@ func clickMatrix(matrixURL string, page *agouti.Page) error {
 		return fmt.Errorf("omniledger login: %v", err)
 	}
 
-	if err := page.FindByLink("Continue").Click(); err != nil {
-		return fmt.Errorf("matrix CAS validation: %v", err)
-	}
 	visible, err := page.FindByID("matrixchat").Visible()
 	if err != nil {
 		return fmt.Errorf("matrix chat: %v", err)
