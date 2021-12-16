@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/sclevine/agouti"
-	"github.com/urfave/cli"
+	cli "github.com/urfave/cli/v2"
 )
 
 const injectUserURL = "https://login.c4dt.org"
@@ -15,12 +15,12 @@ const injectUserURL = "https://login.c4dt.org"
 func main() {
 	app := cli.NewApp()
 
-	app.Flags = []cli.Flag{cli.StringFlag{
+	app.Flags = []cli.Flag{&cli.StringFlag{
 		Name:     "user-data-path",
 		Required: true,
 	}}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name: "wordpress",
 			Action: func(c *cli.Context) error {
@@ -42,7 +42,7 @@ func main() {
 }
 
 func runClicker(c *cli.Context, clicker func(string, *agouti.Page) error) (err error) {
-	userData, err := getUserData(c.GlobalString("user-data-path"))
+	userData, err := getUserData(c.String("user-data-path"))
 	if err != nil {
 		return fmt.Errorf("get user data: %v", err)
 	}
