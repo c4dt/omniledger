@@ -61,43 +61,31 @@ func (c coinActor) Transfer(amount uint, to coinActor) byzcoin.Instruction {
 	}
 }
 
-type user struct {
+// User is a ThinUser with a coin instance and some credentials
+type User struct {
 	ThinUser
 
-	coin  coinActor
-	creds byzcoin.InstanceID
+	Coin  coinActor
+	Creds byzcoin.InstanceID
 }
 
-func (u user) Coin() coinActor {
-	return u.coin
-}
-
-func (u user) Creds() byzcoin.InstanceID {
-	return u.creds
-}
-
-type userBuilder struct {
+// UserBuilder helps building User
+type UserBuilder struct {
 	coinAmount uint
 }
 
-// User is a ThinUser with a coin instance and some credentials
-type User interface {
-	ThinUser
-
-	Coin() coinActor
-	Creds() byzcoin.InstanceID
-}
-
 // NewUser create a User builder
-func NewUser() userBuilder {
-	return userBuilder{}
+func NewUser() UserBuilder {
+	return UserBuilder{}
 }
 
-func (b userBuilder) WithCoinReserve(amount uint) userBuilder {
-	return userBuilder{amount}
+// WithCoinReserve set the initial coints of the user
+func (b UserBuilder) WithCoinReserve(amount uint) UserBuilder {
+	return UserBuilder{amount}
 }
 
-func (b userBuilder) RunsOn(bc ByzCoin) user {
+// RunsOn creates the User on this ByzCoin
+func (b UserBuilder) RunsOn(bc ByzCoin) User {
 	bc.nameCounters.User++
 	name := fmt.Sprintf("user-%d", bc.nameCounters.User)
 
@@ -195,7 +183,7 @@ func (b userBuilder) RunsOn(bc ByzCoin) user {
 	log.Info("User should be correctly registered")
 
 	thinUser := NewThinUser(newUser, d.GetBaseID())
-	return user{thinUser, coinActor(coinIID), credIID}
+	return User{thinUser, coinActor(coinIID), credIID}
 }
 
 func coinAmountToArgument(amount uint) byzcoin.Argument {
