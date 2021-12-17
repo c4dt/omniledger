@@ -33,8 +33,8 @@ func TestServiceValidate(t *testing.T) {
 		_, err := rand.Read(challenge)
 		require.NoError(t, err)
 
-		sendCoin := user.Coin().Transfer(bc.Config.CoinCost, action.Coin)
-		recvCoin := action.Coin.Transfer(bc.Config.CoinCost, user.Coin())
+		sendCoin := user.Coin.Transfer(bc.Config.CoinCost, action.Coin)
+		recvCoin := action.Coin.Transfer(bc.Config.CoinCost, user.Coin)
 		recvCoin.Invoke.Args = append(recvCoin.Invoke.Args, byzcoin.Argument{
 			Name:  bc.Config.TxArgumentName,
 			Value: bc.Config.ChallengeHasher(challenge),
@@ -46,7 +46,7 @@ func TestServiceValidate(t *testing.T) {
 
 	requireAuthContaining := func(t *testing.T, toMatch string, challenge []byte, user test.User) {
 		ticket := append([]byte{}, challenge...)
-		ticket = append(ticket, user.Creds().Slice()...)
+		ticket = append(ticket, user.Creds.Slice()...)
 		url := "/api/v0/cas/p3/serviceValidate?service=http://localhost&" +
 			"ticket=ST-" + base64.URLEncoding.EncodeToString(ticket)
 

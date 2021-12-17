@@ -20,22 +20,23 @@ type Action struct {
 	Coin coinActor
 }
 
-type actionBuilder struct {
+// ActionBuilder helps building Action
+type ActionBuilder struct {
 	user User
 }
 
 // NewAction start a builder of an Action
-func NewAction() actionBuilder {
-	return actionBuilder{}
+func NewAction() ActionBuilder {
+	return ActionBuilder{}
 }
 
 // CanBeUsedBy set the User that can use the Action
-func (b actionBuilder) CanBeUsedBy(user User) actionBuilder {
-	return actionBuilder{user}
+func (b ActionBuilder) CanBeUsedBy(user User) ActionBuilder {
+	return ActionBuilder{user}
 }
 
 // RunsOn actually create the action on the given ByzCoin
-func (b actionBuilder) RunsOn(bc ByzCoin) Action {
+func (b ActionBuilder) RunsOn(bc ByzCoin) Action {
 	bc.nameCounters.Action++
 	name := fmt.Sprintf("action-%d", bc.nameCounters.Action)
 
