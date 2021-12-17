@@ -1,0 +1,54 @@
+name: deploy
+
+on:
+    workflow_run:
+        workflows: [lint-and-test]
+        branches: [main]
+        types: [completed]
+
+env:
+    DEPLOY_USER: omniledger
+    DEPLOY_HOST: srv1.c4dt.org
+
+jobs:
+    deploy-website:
+        name: deploy website
+        runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        steps:
+            - uses: actions/checkout@v2
+
+            - uses: kielabokkie/ssh-key-and-known-hosts-action@v1.2.0
+              with:
+                  ssh-host: ${{ env.DEPLOY_HOST }}
+                  ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+            - name: update remotely
+              run: >
+                  ssh "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}"
+                  bin/update.sh
+
+    prerelease-dynacred:
+        name: prerelease dynacred
+        runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        defaults:
+            run:
+                working-directory: dynacred
+        steps:
+            - uses: actions/checkout@v2
+
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: 12
+                  cache: npm
+
+            - run: npm ci
+
+            - run: npm version prerelease --preid=p`date +%Y%m%d%H%M%S`
+
+            - uses: JS-DevTools/npm-publish@v1
+              with:
+                  token: ${{ secrets.DEPLOY_NPM_TOKEN }}
+                  package: dynacred/package.json
+                  tag: dev
