@@ -13,18 +13,45 @@ jobs:
         name: deploy website
         runs-on: ubuntu-latest
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        defaults:
+            run:
+                working-directory: webapp
         steps:
             - uses: actions/checkout@v2
+
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: 12
+                  cache: npm
+                  cache-dependency-path: webapp/package-lock.json
 
             - uses: kielabokkie/ssh-key-and-known-hosts-action@v1.2.0
               with:
                   ssh-host: ${{ env.DEPLOY_HOST }}
                   ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-            - name: update remotely
+            - run: npm ci
+            - run: npm link ../dynacred
+
+            - name: copy assets from remote
+              run: scp "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:{bin/config.toml,api/cas.conf}" src/assets/
+
+            - run: npx ng build --prod --base-href / --aot --output-path dist
+            - name: build for old login
+              run: |
+                  npx ng build --prod --base-href /omniledger/ --aot --output-path omniledger_dist
+                  cp omniledger_dist/index.html dist/index_ol.html
+            - run: make cas
+              working-directory: webapp/cas
+
+            - name: rsync built
+              run: >
+                  rsync --archive --delete dist/
+                  "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:www"
+            - name: remotely restart cas daemon
               run: >
                   ssh "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}"
-                  bin/update.sh
+                  sudo /bin/systemctl restart omniledger-api.service
 
     prerelease-dynacred:
         name: prerelease dynacred
