@@ -1,10 +1,8 @@
 name: deploy
 
 on:
-    workflow_run:
-        workflows: [lint and test]
+    push:
         branches: [main]
-        types: [completed]
 
 env:
     DEPLOY_USER: omniledger
