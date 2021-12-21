@@ -38,10 +38,11 @@ jobs:
         steps:
             - uses: actions/checkout@v2
 
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v2
               with:
                   node-version: 12
                   cache: npm
+                  cache-dependency-path: dynacred/package-lock.json
 
             - run: npm ci
 
