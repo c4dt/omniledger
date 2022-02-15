@@ -1,7 +1,7 @@
 import Long from "long";
 
-import { Log } from "@dedis/cothority";
-import { Argument, ByzCoinRPC, ClientTransaction, Instance, InstanceID, Instruction } from "@dedis/cothority/byzcoin";
+import {Log} from "@dedis/cothority";
+import {Argument, ByzCoinRPC, ClientTransaction, Instance, InstanceID, Instruction} from "@dedis/cothority/byzcoin";
 import {
     Coin,
     CoinInstance,
@@ -11,17 +11,17 @@ import {
     SPAWNER_COIN,
     SpawnerInstance,
 } from "@dedis/cothority/byzcoin/contracts";
-import { AddTxResponse } from "@dedis/cothority/byzcoin/proto/requests";
-import { Darc, IIdentity, Rule } from "@dedis/cothority/darc";
+import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
+import {Darc, IIdentity, Rule} from "@dedis/cothority/darc";
 
 import ValueInstance from "@dedis/cothority/byzcoin/contracts/value-instance";
-import { CalypsoReadInstance, CalypsoWriteInstance, Read, Write } from "@dedis/cothority/calypso";
-import { Point } from "@dedis/kyber";
-import { randomBytes } from "crypto-browserify";
-import { TransactionBuilder } from "./byzcoin";
-import { EAttributesPublic, ECredentials } from "./credentialStructBS";
-import { ICoin } from "./genesis";
-import { UserSkeleton } from "./userSkeleton";
+import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from "@dedis/cothority/calypso";
+import {Point} from "@dedis/kyber";
+import {randomBytes} from "crypto-browserify";
+import {TransactionBuilder} from "./byzcoin";
+import {EAttributesPublic, ECredentials} from "./credentialStructBS";
+import {ICoin} from "./genesis";
+import {UserSkeleton} from "./userSkeleton";
 
 export type TProgress = (percentage: number, text: string) => void;
 
@@ -50,7 +50,14 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
         return new SpawnerTransactionBuilder(this.bc, this.spawner, this.coin);
     }
 
-    async sendCoins(wait = 0): Promise<[ClientTransaction, AddTxResponse]> {
+    async sendCoins(wait = 0, signers = [this.coin.signers]): Promise<[ClientTransaction, AddTxResponse]> {
+        this.addCoins(wait, signers);
+        const reply = await this.send(signers, wait);
+        this.cost = Long.fromNumber(0);
+        return reply;
+    }
+
+    addCoins(wait = 0, signers = [this.coin.signers]) {
         if (!this.hasInstructions()) {
             throw new Error("no instructions to send");
         }
@@ -67,9 +74,6 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
                 })]));
         }
         Log.lvl3(this);
-        const reply = await this.send([this.coin.signers], wait);
-        this.cost = Long.fromNumber(0);
-        return reply;
     }
 
     spawnDarc(d: Darc): Darc {
@@ -158,5 +162,9 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
 
         Log.lvl3("Spawning credential with darcID", user.darcCred.getBaseID());
         this.spawnCredential(user.cred, user.darcCred.getBaseID());
+    }
+
+    clientInstructions(): ClientTransaction {
+        return super.clientTransaction()
     }
 }

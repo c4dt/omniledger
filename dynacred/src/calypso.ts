@@ -48,11 +48,14 @@ export class Calypso {
         this.cim.rmEntry(tx, wrID.key);
     }
 
-    async getFile(tx: SpawnerTransactionBuilder, wrID: Buffer, kp = KeyPair.rand()): Promise<Buffer> {
+    async getFileRead(tx: SpawnerTransactionBuilder, wrID: Buffer, kp = KeyPair.rand()): Promise<InstanceID> {
         tx.progress(30, "Spawning read transaction");
         const rdID = tx.spawnCalypsoRead(wrID, kp.pub);
         await tx.sendCoins(SpawnerTransactionBuilder.longWait);
+        return rdID;
+    }
 
+    async getFileContent(tx: SpawnerTransactionBuilder, wrID: Buffer, rdID: Buffer, kp: KeyPair): Promise<Buffer> {
         tx.progress(-40, "Getting write proof");
         const wrProof = await this.lts.bc.getProof(wrID, undefined, undefined, false);
         tx.progress(-50, "Getting read proof");
@@ -68,6 +71,11 @@ export class Calypso {
         const wrInst = new CalypsoWriteInstance(this.lts.bc, Instance.fromProof(wrID, wrProof));
         tx.progress(-90, "Decrypting");
         return CalypsoData.decrypt(wrInst.write, key);
+    }
+
+    async getFile(tx: SpawnerTransactionBuilder, wrID: Buffer, kp = KeyPair.rand()): Promise<Buffer> {
+        const rdID = await this.getFileRead(tx, wrID, kp);
+        return this.getFileContent(tx, wrID, rdID, kp);
     }
 
     async hasAccess(wrID: Buffer): Promise<boolean> {

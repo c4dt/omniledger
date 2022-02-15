@@ -37,6 +37,13 @@ export class TransactionBuilder {
     }
 
     /**
+     * Returns the ClientTransaction for the instructions stored.
+     */
+    clientTransaction(): ClientTransaction{
+        return ClientTransaction.make(this.bc.getProtocolVersion(), ...this.instructions);
+    }
+
+    /**
      * @return true if one or more instructions are available.
      */
     hasInstructions(): boolean {
