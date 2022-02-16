@@ -51,13 +51,12 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
     }
 
     async sendCoins(wait = 0, signers = [this.coin.signers]): Promise<[ClientTransaction, AddTxResponse]> {
-        this.addCoins(wait, signers);
+        this.addCoins();
         const reply = await this.send(signers, wait);
-        this.cost = Long.fromNumber(0);
         return reply;
     }
 
-    addCoins(wait = 0, signers = [this.coin.signers]) {
+    addCoins() {
         if (!this.hasInstructions()) {
             throw new Error("no instructions to send");
         }
@@ -73,6 +72,7 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
                     value: Buffer.from(this.cost.toBytesLE()),
                 })]));
         }
+        this.cost = Long.fromNumber(0);
         Log.lvl3(this);
     }
 
@@ -162,9 +162,5 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
 
         Log.lvl3("Spawning credential with darcID", user.darcCred.getBaseID());
         this.spawnCredential(user.cred, user.darcCred.getBaseID());
-    }
-
-    clientInstructions(): ClientTransaction {
-        return super.clientTransaction()
     }
 }

@@ -4,40 +4,29 @@
       "dynacred": [
         "../dynacred/src",
       ],
-      "@c4dt/cothority/*": [
-        "../cothority/external/js/cothority/src/*",
-        "src/lib/cothority/*",
-        "node_modules/@c4dt/cothority/*"
-      ],
       "@dedis/cothority": [
         "../cothority/external/js/cothority/src",
-        "src/lib/cothority/*",
-        "node_modules/@dedis/cothority/*"
+        "src/lib/cothority",
+        "node_modules/@dedis/cothority/dist",
+        "node_modules/@dedis/cothority"
       ],
       "@dedis/cothority/*": [
         "../cothority/external/js/cothority/src/*",
         "src/lib/cothority/*",
+        "node_modules/@dedis/cothority/dist/*",
         "node_modules/@dedis/cothority/*"
       ],
       "@dedis/kyber": [
         "../cothority/external/js/kyber/src",
         "src/lib/kyber",
+        "node_modules/@dedis/kyber/dist",
         "node_modules/@dedis/kyber"
       ],
       "@dedis/kyber/*": [
         "../cothority/external/js/kyber/src/*",
         "src/lib/kyber/*",
+        "node_modules/@dedis/kyber/dist/*",
         "node_modules/@dedis/kyber/*"
-      ],
-      "@c4dt/kyber": [
-        "../cothority/external/js/kyber/src",
-        "src/lib/kyber",
-        "node_modules/@c4dt/kyber"
-      ],
-      "@c4dt/kyber/*": [
-        "../cothority/external/js/kyber/src/*",
-        "src/lib/kyber/*",
-        "node_modules/@c4dt/kyber/*"
       ],
     }
   }
