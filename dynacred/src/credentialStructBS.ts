@@ -7,9 +7,9 @@ import { Argument, InstanceID } from "@dedis/cothority/byzcoin";
 import { Attribute, Credential, CredentialsInstance, CredentialStruct } from "@dedis/cothority/byzcoin/contracts";
 import { Point, PointFactory } from "@dedis/kyber";
 
+import { TransactionBuilder } from "./byzcoin";
 import { ConvertBS } from "./observableUtils";
 import { bufferToObject } from "./utils";
-import { TransactionBuilder } from "./byzcoin";
 
 /**
  * The CredentialStructBS is the main part of a user-account in ByzCoin.

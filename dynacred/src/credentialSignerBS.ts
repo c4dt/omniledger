@@ -12,9 +12,9 @@ import { InstanceID } from "@dedis/cothority/byzcoin";
 import { Darc, IIdentity } from "@dedis/cothority/darc";
 
 import { DarcBS, DarcsBS } from "./byzcoin";
+import { TransactionBuilder } from "./byzcoin";
 import { CredentialInstanceMapBS } from "./credentialStructBS";
 import { SpawnerTransactionBuilder } from "./spawnerTransactionBuilder";
-import { TransactionBuilder } from "./byzcoin";
 
 export class CredentialSignerBS extends DarcBS {
     constructor(darcBS: DarcBS,

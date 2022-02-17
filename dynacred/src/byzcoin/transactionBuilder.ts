@@ -39,7 +39,7 @@ export class TransactionBuilder {
     /**
      * Returns the ClientTransaction for the instructions stored.
      */
-    clientTransaction(): ClientTransaction{
+    clientTransaction(): ClientTransaction {
         const ctx = ClientTransaction.make(this.bc.getProtocolVersion(), ...this.instructions);
         this.instructions = [];
         return ctx;

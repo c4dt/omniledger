@@ -1,7 +1,7 @@
 import Long from "long";
 
-import {Log} from "@dedis/cothority";
-import {Argument, ByzCoinRPC, ClientTransaction, Instance, InstanceID, Instruction} from "@dedis/cothority/byzcoin";
+import { Log } from "@dedis/cothority";
+import { Argument, ByzCoinRPC, ClientTransaction, Instance, InstanceID, Instruction } from "@dedis/cothority/byzcoin";
 import {
     Coin,
     CoinInstance,
@@ -11,17 +11,17 @@ import {
     SPAWNER_COIN,
     SpawnerInstance,
 } from "@dedis/cothority/byzcoin/contracts";
-import {AddTxResponse} from "@dedis/cothority/byzcoin/proto/requests";
-import {Darc, IIdentity, Rule} from "@dedis/cothority/darc";
+import { AddTxResponse } from "@dedis/cothority/byzcoin/proto/requests";
+import { Darc, IIdentity, Rule } from "@dedis/cothority/darc";
 
 import ValueInstance from "@dedis/cothority/byzcoin/contracts/value-instance";
-import {CalypsoReadInstance, CalypsoWriteInstance, Read, Write} from "@dedis/cothority/calypso";
-import {Point} from "@dedis/kyber";
-import {randomBytes} from "crypto-browserify";
-import {TransactionBuilder} from "./byzcoin";
-import {EAttributesPublic, ECredentials} from "./credentialStructBS";
-import {ICoin} from "./genesis";
-import {UserSkeleton} from "./userSkeleton";
+import { CalypsoReadInstance, CalypsoWriteInstance, Read, Write } from "@dedis/cothority/calypso";
+import { Point } from "@dedis/kyber";
+import { randomBytes } from "crypto-browserify";
+import { TransactionBuilder } from "./byzcoin";
+import { EAttributesPublic, ECredentials } from "./credentialStructBS";
+import { ICoin } from "./genesis";
+import { UserSkeleton } from "./userSkeleton";
 
 export type TProgress = (percentage: number, text: string) => void;
 
@@ -73,7 +73,6 @@ export class SpawnerTransactionBuilder extends TransactionBuilder {
                 })]));
         }
         this.cost = Long.fromNumber(0);
-        Log.lvl3(this);
     }
 
     spawnDarc(d: Darc): Darc {

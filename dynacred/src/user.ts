@@ -134,7 +134,7 @@ export class User {
     }
 
     async executeTransactions<T>(addTxs: (tx: SpawnerTransactionBuilder) => Promise<T> | T,
-                              wait = 0): Promise<T> {
+                                 wait = 0): Promise<T> {
         const tx = new SpawnerTransactionBuilder(this.bc, this.spawnerInstanceBS.getValue(), this.iCoin());
         const ret = await addTxs(tx);
         if (tx.hasInstructions()) {

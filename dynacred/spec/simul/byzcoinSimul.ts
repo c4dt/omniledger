@@ -260,7 +260,7 @@ export class ByzCoinSimul {
           this.db.set(idStr, Buffer.from(JSON.stringify(proof.inst)))),
         // Debug output
         tap((proof) =>
-            Log.lvl3(`Updating proof of ${proof.contractID} / ${proof.version} / ${proof.key.toString('hex')}`))
+            Log.lvl3(`Updating proof of ${proof.contractID} / ${proof.version} / ${proof.key.toString("hex")}`)),
         // Link to the BehaviorSubject
       ).subscribe(bsNew);
 

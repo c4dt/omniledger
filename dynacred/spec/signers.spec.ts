@@ -1,6 +1,6 @@
 import { filter, first } from "rxjs/operators";
 
-import {Darc, IdentityDarc, SignerEd25519} from "@dedis/cothority/darc";
+import { Darc, IdentityDarc, SignerEd25519 } from "@dedis/cothority/darc";
 import Log from "@dedis/cothority/log";
 
 import { KeyPair } from "src/keypair";
