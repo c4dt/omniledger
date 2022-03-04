@@ -2,39 +2,47 @@ ByzCoinID = "9cc36071ccb902a1de7e0d21a2c176d73894b1cf88ae4cc2ba4c95cd76f474f3"
 SignupNode = "https://byzcoin-signup.c4dt.org"
 
 [[servers]]
-    Address = "tls://conode.c4dt.org:7780"
+    Address = "tls://conode.gnarula.com:7770"
     Suite = "Ed25519"
-    Public = "8592a0dc194d1ba035693d922dd1e5076c89c28275143de80ea4e9640b4df6ea"
-    Description = "2nd C4DT conode"
-    URL = "https://conode.c4dt.org:7781"
-    [Services]
-     [Services.ByzCoin]
-       Public = "7e133eaa68d4df3af42d07fe23cc2c96c25c5508f6cb1aafd5dfa5a4da4c2a420eff2942b2cf94368d3a8c92156dd5920ba0dcc0d41588db623f6d94874051e565449e7de3598ac93c3bb286e8b11154a46dc4ae67d359838c1a3b4a331b85c10353d56889506cff201f33d489d8ff635b9574f07e24ecb7d0ce8fd12135065b"
-       Suite = "bn256.adapter"
-     [Services.Skipchain]
-       Public = "2baeb3ff4824177e50f203337e6ef32907c0e61b3a6357351cc0a64ad1b38129891455bcdaeff16b10cf1179605b4cbc356adc05164a7ce9511edfc8b8b0ea5787098900ccd14f119f574da1a0f5c639706c3c780e9d985d4893088c33df1eb15a668207b2e6195cd26be21516fd43474a5e0dd087574e24bcbc1c8f4ee98f4b"
-       Suite = "bn256.adapter"
+    Public = "de4945452449c9a740b0c665e83ee0dd5c52d3e8cda56272d4984d3fb58ee34c"
+    Description = "gnarula's conode"
+    URL = "https://conode.gnarula.com"
+    [servers.Services]
+        [servers.Services.ByzCoin]
+            Public = "7bdae8fb51544aa5bfbecc74146c0e2df7edd68c724e59a0922e5f6fb735bef10cfc070f7e29ac8fa92594a5f71eaa4047ab30710e93df1a6b6095a99c6237681f8ef292387ea80528f25906b3f4951995c60eda4f7d99e520d07216b949e9b54d3ca223a78829867958110690a60ec1607d05971551f1505c3258760d6fa22a"
+            Suite = "bn256.adapter"
+        [servers.Services.Skipchain]
+            Public = "3bc985c3073f51219e435fa254c84ae3301360905c5acec4996a677056f0418c4713148d29a13c3315d2bd4f81540a759da5c28603bac0d626f93c8d867fc369391cb40d5a303fd550d64d382da4cb14ed72f2b55990cb59a80f16f83394740b29cd38f795b48213bf35d95e4f5aed4c5efef42952f712d90c1722e5eb2ddf9e"
+            Suite = "bn256.adapter"
 
 [[servers]]
-	Address = "tls://conode.c4dt.org:7770"
-	Url = "https://conode.c4dt.org"
-	Suite = "Ed25519"
-	Public = "67e30e168f83c4d4614e277cefba42dbc1fb5886b3945364ea5dae3f4e4fbc0d"
-	Description = "C4DT Conode"
-	[servers.Services]
-		[servers.Services.ByzCoin]
-			Public = "6bb65e6c3fb7cb9d84c81a21ce4cedf70539452e3e220c0383f087832bbd1d588590eb4fe777a360c3e12b8020a424db20fc00deafb1212bf8a4f70b978adbae093efc9aadff0a97cb0199372d5b55f135793393d94028cac0f432fb144b269f12162dbc163a80e32bea7219c2c51700ae8de5bd849d6d4001dfb2a3a8e2a161"
-			Suite = "bn256.adapter"
-		[servers.Services.PoPServer]
-			Public = "842fdff85d9d1b16039c1ae3bde443fe949734080f80a3c1f0beb74ad2d3a43b7218b4f3d99f33da15f4411a0af0230681ced09e0c597b46408bd27a6dbe3aa1821acb39f8ba959da48c2567ed9e4b7ac10857efe771a6fa882b334b9972c9bc645ff507a5761bef61b69f5d4785876cceab29f78762d49b6f603574fb77b985"
-			Suite = "bn256.adapter"
-		[servers.Services.Skipchain]
-			Public = "70a1f68fee1a78e621e023ea9ab0eaa042c1fa72e5bc2abd8ed9c039ce9dbdce122306f8b9e3d423757084fc9b4043adcf7b91f04c6fb66577a98f24bcddc248636fe63a69f661cd7e668fc4fa63fc2b55316c9d108d864e6f5461e31b77e03b0bcd6fcfb60b60c8a19ff07e068c43e7b3abad35ffb297710680fb693f5eee72"
-			Suite = "bn256.adapter"
-		[servers.Services.blsCoSiService]
-			Public = "79e01b74993efc47a002c897356620eb0c3616127fcc2059ef87678c1198562e51b97148c9ce95dff439b0453a3a66e5f72baa275acb33591bd63b951b00e7f677f4a1814f4d73c028ad26d96a4c907d433c1189937fab27b2332079267db61a2be2e07ce1c10e52e645400cb998d8bc1f0c57382a13e07658c340f3f63f5e96"
-			Suite = "bn256.adapter"
- 
+    Address = "tls://conode.c4dt.org:7770"
+    Suite = "Ed25519"
+    Public = "67e30e168f83c4d4614e277cefba42dbc1fb5886b3945364ea5dae3f4e4fbc0d"
+    Description = "C4DT Conode"
+    URL = "https://conode.c4dt.org"
+    [servers.Services]
+        [servers.Services.ByzCoin]
+            Public = "6bb65e6c3fb7cb9d84c81a21ce4cedf70539452e3e220c0383f087832bbd1d588590eb4fe777a360c3e12b8020a424db20fc00deafb1212bf8a4f70b978adbae093efc9aadff0a97cb0199372d5b55f135793393d94028cac0f432fb144b269f12162dbc163a80e32bea7219c2c51700ae8de5bd849d6d4001dfb2a3a8e2a161"
+            Suite = "bn256.adapter"
+        [servers.Services.Skipchain]
+            Public = "70a1f68fee1a78e621e023ea9ab0eaa042c1fa72e5bc2abd8ed9c039ce9dbdce122306f8b9e3d423757084fc9b4043adcf7b91f04c6fb66577a98f24bcddc248636fe63a69f661cd7e668fc4fa63fc2b55316c9d108d864e6f5461e31b77e03b0bcd6fcfb60b60c8a19ff07e068c43e7b3abad35ffb297710680fb693f5eee72"
+            Suite = "bn256.adapter"
+
+[[servers]]
+    Address = "tls://conode2.c4dt.org:7771"
+    Suite = "Ed25519"
+    Public = "8592a0dc194d1ba035693d922dd1e5076c89c28275143de80ea4e9640b4df6ea"
+    Description = "2nd c4dt conode"
+    URL = "https://conode2.c4dt.org"
+    [servers.Services]
+        [servers.Services.ByzCoin]
+            Public = "7e133eaa68d4df3af42d07fe23cc2c96c25c5508f6cb1aafd5dfa5a4da4c2a420eff2942b2cf94368d3a8c92156dd5920ba0dcc0d41588db623f6d94874051e565449e7de3598ac93c3bb286e8b11154a46dc4ae67d359838c1a3b4a331b85c10353d56889506cff201f33d489d8ff635b9574f07e24ecb7d0ce8fd12135065b"
+            Suite = "bn256.adapter"
+        [servers.Services.Skipchain]
+            Public = "2baeb3ff4824177e50f203337e6ef32907c0e61b3a6357351cc0a64ad1b38129891455bcdaeff16b10cf1179605b4cbc356adc05164a7ce9511edfc8b8b0ea5787098900ccd14f119f574da1a0f5c639706c3c780e9d985d4893088c33df1eb15a668207b2e6195cd26be21516fd43474a5e0dd087574e24bcbc1c8f4ee98f4b"
+            Suite = "bn256.adapter"
+
 [[servers]]
 	Address = "tls://gasser.blue:7770"
 	Url = "https://gasser.blue:7771"
