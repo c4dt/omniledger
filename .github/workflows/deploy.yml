@@ -1,16 +1,18 @@
 name: deploy
 
 on:
-    push:
-        branches: [main]
+    workflow_run:
+        workflows: [lint and test]
+        types: [completed]
+    workflow_dispatch:
 
 env:
     DEPLOY_USER: omniledger
     DEPLOY_HOST: srv1.c4dt.org
 
 jobs:
-    deploy-website:
-        name: deploy website
+    github-release:
+        name: github release
         runs-on: ubuntu-latest
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         defaults:
@@ -33,25 +35,30 @@ jobs:
             - run: npm ci
             - run: npm link ../dynacred
 
-            - name: copy assets from remote
-              run: scp "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:{bin/config.toml,api/cas.conf}" src/assets/
-
             - run: npx ng build --prod --base-href / --aot --output-path dist
             - name: build for old login
               run: |
                   npx ng build --prod --base-href /omniledger/ --aot --output-path omniledger_dist
                   cp omniledger_dist/index.html dist/index_ol.html
-            - run: make cas
-              working-directory: webapp/cas
+            - name: Prepare for release
+              run: |
+                  mv dist www
+                  GOBIN=bin go install github.com/c4dt/omniledger/webapp/cas/cmd/cas@latest
+                  mv README.release.md README.md
+                  date tag=+%Y-%m-%d_%H:%M >> $GITHUB_ENV
 
-            - name: rsync built
-              run: >
-                  rsync --archive --delete dist/
-                  "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:www"
-            - name: remotely restart cas daemon
+            - name: Create github release
+              uses: ncipollo/release-action@v1
+              with:
+                  body: "Release of the omniledger webapp"
+                  artifacts: "www/*,bin/*,README.md"
+                  commit: main
+                  tag: ${{ env.tag }}
+
+            - name: Trigger remote install
               run: >
                   ssh "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}"
-                  sudo /bin/systemctl restart omniledger-api.service
+                  bin/install.sh
 
     prerelease-dynacred:
         name: prerelease dynacred
