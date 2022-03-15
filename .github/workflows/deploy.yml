@@ -1,6 +1,8 @@
 name: deploy
 
 on:
+    push:
+        branches: [main]
     workflow_run:
         workflows: [lint and test]
         types: [completed]
@@ -27,61 +29,61 @@ jobs:
                   cache: npm
                   cache-dependency-path: webapp/package-lock.json
 
-            - uses: kielabokkie/ssh-key-and-known-hosts-action@v1.2.0
-              with:
-                  ssh-host: ${{ env.DEPLOY_HOST }}
-                  ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
-
-            - run: npm ci
-            - run: npm link ../dynacred
-
-            - run: npx ng build --prod --base-href / --aot --output-path dist
-            - name: build for old login
-              run: |
-                  npx ng build --prod --base-href /omniledger/ --aot --output-path omniledger_dist
-                  cp omniledger_dist/index.html dist/index_ol.html
-            - name: Prepare for release
-              run: |
-                  mv dist www
-                  GOBIN=bin go install github.com/c4dt/omniledger/webapp/cas/cmd/cas@latest
-                  mv README.release.md README.md
-                  date tag=+%Y-%m-%d_%H:%M >> $GITHUB_ENV
-
-            - name: Create github release
-              uses: ncipollo/release-action@v1
-              with:
-                  body: "Release of the omniledger webapp"
-                  artifacts: "www/*,bin/*,README.md"
-                  commit: main
-                  tag: ${{ env.tag }}
-
-            - name: Trigger remote install
-              run: >
-                  ssh "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}"
-                  bin/install.sh
-
-    prerelease-dynacred:
-        name: prerelease dynacred
-        runs-on: ubuntu-latest
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        defaults:
-            run:
-                working-directory: dynacred
-        steps:
-            - uses: actions/checkout@v2
-
-            - uses: actions/setup-node@v2
-              with:
-                  node-version: 12
-                  cache: npm
-                  cache-dependency-path: dynacred/package-lock.json
-
-            - run: npm ci
-
-            - run: npm version prerelease --preid=p`date +%Y%m%d%H%M%S`
-
-            - uses: JS-DevTools/npm-publish@v1
-              with:
-                  token: ${{ secrets.DEPLOY_NPM_TOKEN }}
-                  package: dynacred/package.json
-                  tag: dev
+#            - uses: kielabokkie/ssh-key-and-known-hosts-action@v1.2.0
+#              with:
+#                  ssh-host: ${{ env.DEPLOY_HOST }}
+#                  ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+#
+#            - run: npm ci
+#            - run: npm link ../dynacred
+#
+#            - run: npx ng build --prod --base-href / --aot --output-path dist
+#            - name: build for old login
+#              run: |
+#                  npx ng build --prod --base-href /omniledger/ --aot --output-path omniledger_dist
+#                  cp omniledger_dist/index.html dist/index_ol.html
+#            - name: Prepare for release
+#              run: |
+#                  mv dist www
+#                  GOBIN=bin go install github.com/c4dt/omniledger/webapp/cas/cmd/cas@latest
+#                  mv README.release.md README.md
+#                  date tag=+%Y-%m-%d_%H:%M >> $GITHUB_ENV
+#
+#            - name: Create github release
+#              uses: ncipollo/release-action@v1
+#              with:
+#                  body: "Release of the omniledger webapp"
+#                  artifacts: "www/*,bin/*,README.md"
+#                  commit: main
+#                  tag: ${{ env.tag }}
+#
+#            - name: Trigger remote install
+#              run: >
+#                  ssh "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}"
+#                  bin/install.sh
+#
+#    prerelease-dynacred:
+#        name: prerelease dynacred
+#        runs-on: ubuntu-latest
+#        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+#        defaults:
+#            run:
+#                working-directory: dynacred
+#        steps:
+#            - uses: actions/checkout@v2
+#
+#            - uses: actions/setup-node@v2
+#              with:
+#                  node-version: 12
+#                  cache: npm
+#                  cache-dependency-path: dynacred/package-lock.json
+#
+#            - run: npm ci
+#
+#            - run: npm version prerelease --preid=p`date +%Y%m%d%H%M%S`
+#
+#            - uses: JS-DevTools/npm-publish@v1
+#              with:
+#                  token: ${{ secrets.DEPLOY_NPM_TOKEN }}
+#                  package: dynacred/package.json
+#                  tag: dev
