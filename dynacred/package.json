@@ -26,7 +26,7 @@
   "author": "Linus Gasser",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@dedis/cothority": "^3.6.5",
+    "@dedis/cothority": "^3.6.6",
     "@dedis/kyber": "^3.4.4",
     "bn.js": "^5.1.2",
     "crypto-browserify": "^3.12.0",

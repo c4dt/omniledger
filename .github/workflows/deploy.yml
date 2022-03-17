@@ -2,10 +2,7 @@ name: deploy
 
 on:
     push:
-        branches: [main, cleanup_deploy]
-#    workflow_run:
-#        workflows: [lint and test]
-#        types: [completed]
+        branches: [main]
     workflow_dispatch:
 
 env:
@@ -16,7 +13,6 @@ jobs:
     github-release:
         name: github release
         runs-on: ubuntu-latest
-#        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         defaults:
             run:
                 working-directory: webapp
@@ -40,7 +36,7 @@ jobs:
 
             - uses: actions/setup-go@v2
               with:
-                  go-version: '^1.17'
+                  go-version: '^1.18'
             - name: Prepare for release
               run: |
                   mv dist www
@@ -69,7 +65,6 @@ jobs:
     prerelease-dynacred:
         name: prerelease dynacred
         runs-on: ubuntu-latest
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         defaults:
             run:
                 working-directory: dynacred
