@@ -59,8 +59,8 @@ jobs:
             - name: Trigger remote install
               run: >
                   ssh "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}"
-                  bin/install.sh
-                  sudo /bin/systemctl restart omniledger-api.service
+                  "bin/install.sh &&
+                  sudo /bin/systemctl restart omniledger-api.service"
 
     prerelease-dynacred:
         name: prerelease dynacred
