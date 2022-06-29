@@ -4,9 +4,7 @@ import { Router } from "@angular/router";
 import Log from "@dedis/cothority/log";
 import StatusRPC from "@dedis/cothority/status/status-rpc";
 
-import { ByzCoinService } from "src/app/byz-coin.service";
 import { UserService } from "src/app/user.service";
-import { hexBuffer } from "../../../lib/Ui";
 
 @Component({
   selector: "app-status",
@@ -21,7 +19,6 @@ export class StatusComponent implements OnInit {
   constructor(
       private router: Router,
       private user: UserService,
-      private builder: ByzCoinService,
       ) {
     this.signID = this.user.identityDarcSigner.id.toString("hex");
     this.userID = this.user.credStructBS.id.toString("hex");
@@ -35,7 +32,7 @@ export class StatusComponent implements OnInit {
 
   async update() {
     this.nodes = [];
-    const roster = this.builder.bc.getConfig().roster;
+    const roster = this.user.bc.latest.roster;
     const list = roster.list;
     const srpc = new StatusRPC(roster);
     for (let i = 0; i < list.length; i++) {
