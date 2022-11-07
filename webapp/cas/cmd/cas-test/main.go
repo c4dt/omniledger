@@ -159,7 +159,7 @@ func clickMatrix(matrixURL string, page *agouti.Page) error {
 	if err := page.FindByLink("Sign In").Click(); err != nil {
 		return fmt.Errorf("matrix home: %v", err)
 	}
-	if err := page.FindByClass("mx_SSOButton").Click(); err != nil {
+	if err := page.Find(`[aria-label="Continue with CAS"]`).Click(); err != nil {
 		return fmt.Errorf("matrix SSO login: %v", err)
 	}
 
