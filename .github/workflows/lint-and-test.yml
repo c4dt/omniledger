@@ -24,7 +24,9 @@ jobs:
                 working-directory: dynacred
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '14'
 
             - uses: actions/checkout@v2
               with:
@@ -45,7 +47,9 @@ jobs:
                 working-directory: webapp
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '14'
 
             - run: npm ci
             - run: npm run lint
@@ -59,7 +63,9 @@ jobs:
                 working-directory: webapp
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '14'
 
             - run: npm ci
               working-directory: dynacred
@@ -75,12 +81,11 @@ jobs:
                 working-directory: webapp/cas
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-go@v2
+            - uses: actions/setup-go@v4
 
             - uses: Jerome1337/gofmt-action@v1.0.4
             - run: go vet ./...
 
-            - uses: dominikh/staticcheck-action@v1.1.0
             - uses: Jerome1337/golint-action@v1.0.2
 
     build-cas:
