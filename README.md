@@ -1,10 +1,15 @@
-# OmniLedger demonstrator
+# OmniLedger demonstrator - ARCHIVED
+
+This project is intended to be run together with the [ByzCoin](https://github.com/c4dt/byzcoin) blockchain.
+To test it locally, we recommend that you follow the instructions for setting up the ByzCoin project,
+and choose "Go to the OL Explorer" in the application menu.
+
+## Description
 
 Frontend for the dedis/omniledger blockchain with an accent on identity and consent-management. Current use-cases:
 - login to https://matrix.c4dt.org
 - login to restricted spaces https://www.c4dt.org/members-only/ and https://matrix.c4dt.org
 - status of omniledger blockchain
-
 
 ## Running it locally
 
